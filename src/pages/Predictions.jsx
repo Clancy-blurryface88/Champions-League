@@ -463,7 +463,7 @@ export default function Predictions() {
 
                   <CardContent className="p-5 pt-8 flex-1 flex flex-col justify-between">
                     {/* Header: Countdown / Status */}
-                    <div className="flex justify-center mb-6">
+                    <div className="flex justify-center mb-3">
                       {timeInfo.status === 'locked' || timeInfo.status === 'finished' ?
                       <div className="bg-slate-800/80 text-slate-300 px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-slate-700/50">
                           <Lock className="w-3.5 h-3.5" />
@@ -493,15 +493,18 @@ export default function Predictions() {
 
                     {/* Group badge */}
                     {match.league && (
-                      <div className="flex justify-center mb-3 -mt-3">
+                      <div className="flex justify-center mb-4">
                         <button
                           onClick={() => setSelectedGroup(match.league)}
-                          className="text-xs font-semibold text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 px-3 py-0.5 rounded-full hover:bg-yellow-400/20 hover:border-yellow-400/60 transition-colors cursor-pointer"
+                          className="text-sm font-semibold text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 px-5 py-1 rounded-full hover:bg-yellow-400/20 hover:border-yellow-400/60 transition-colors cursor-pointer"
                         >
                           {match.league}
                         </button>
                       </div>
                     )}
+
+                    {/* Separator below group badge */}
+                    <div className="border-t border-slate-700/50 mb-4" />
 
                     {/* Teams & Score Input */}
                     <div className="flex items-center justify-between gap-2 mb-4">
@@ -569,11 +572,9 @@ export default function Predictions() {
 
                     {/* Footer: Date & Location */}
                     <div className="mt-auto pt-4 border-t border-slate-700/50 space-y-1.5">
-                      <div className="flex items-center justify-center text-sm text-white" dir="rtl">
-                        <Calendar className="w-4 h-4 ml-2" />
-                        <span>
-                          בשעה {moment(match.match_date).format('HH:mm')} {moment(match.match_date).format('DD/MM/YYYY')}
-                        </span>
+                      <div className="flex items-center justify-center gap-1.5 text-sm text-white">
+                        <span className="text-base">🗓️</span>
+                        <span>{moment(match.match_date).format('DD/MM/YYYY')} · {moment(match.match_date).format('HH:mm')}</span>
                       </div>
                       {match.location && (
                         <div className="flex items-center justify-center text-xs text-white">
