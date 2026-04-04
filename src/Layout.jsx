@@ -82,6 +82,46 @@ export default function Layout({ children, currentPageName }) {
     }
   };
 
+  // האזנה לשינויי auth מ-Supabase
+  useEffect(() => {
+    import('@/api/supabase').then(({ supabase }) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN') {
+          checkAuthAndLoad();
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setAuthLoading(false);
+        }
+      });
+      return () => subscription.unsubscribe();
+    });
+  }, []);
+
+  const checkAuthAndLoad = async () => {
+    try {
+      const currentUser = await User.me();
+      await loadUserData(currentUser);
+    } catch (error) {
+      setUser(null);
+      setAuthLoading(false);
+    }
+  };
+
+  const loadUserData = async (currentUser) => {
+    if (!currentUser) { setUser(null); setAuthLoading(false); return; }
+    let userWithStats = { ...currentUser };
+    try {
+      const userStats = await UserStats.filter({ user_id: currentUser.id });
+      if (userStats.length > 0) {
+        userWithStats.total_points = userStats[0].total_points || 0;
+        userWithStats.exact_hits_count = userStats[0].exact_hits_count || 0;
+        userWithStats.total_predictions_count = userStats[0].total_predictions_count || 0;
+      }
+    } catch (e) {}
+    setUser(userWithStats);
+    setAuthLoading(false);
+  };
+
   // CRITICAL CHANGE: Load user data from UserStats instead of User entity for points
   useEffect(() => {
     const checkAuth = async () => {

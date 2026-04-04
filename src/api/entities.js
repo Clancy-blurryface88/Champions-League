@@ -38,9 +38,26 @@ export const User = {
       .from('profiles')
       .select('*')
       .eq('id', authUser.id)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+
+    // אם הפרופיל לא נוצר עדיין (race condition אחרי Google login) — ניצור אותו
+    if (!data) {
+      const { data: newProfile, error: insertError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authUser.id,
+          email: authUser.email,
+          display_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email?.split('@')[0],
+          avatar_url: authUser.user_metadata?.avatar_url,
+        })
+        .select()
+        .single();
+      if (insertError) throw insertError;
+      return newProfile;
+    }
+
     return data;
   },
 
