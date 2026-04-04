@@ -145,7 +145,6 @@ export default function AdminImportMatches() {
           match_date: new Date(m.DateUtc).toISOString(),
           order: m.MatchNumber,
           league: m.Group,
-          location: m.Location,
           is_finished: false,
           actual_score_a: null,
           actual_score_b: null,
@@ -189,10 +188,10 @@ export default function AdminImportMatches() {
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
-        {status === 'idle' && (
+        {(status === 'idle' || status === 'error') && (
           <Button onClick={handleImport} className="bg-blue-600 hover:bg-blue-700 w-full">
             <Download className="w-4 h-4 mr-2" />
-            ייבא עכשיו (3 מחזורים, 72 משחקים)
+            {status === 'error' ? 'נסה שוב' : 'ייבא עכשיו (3 מחזורים, 72 משחקים)'}
           </Button>
         )}
 
