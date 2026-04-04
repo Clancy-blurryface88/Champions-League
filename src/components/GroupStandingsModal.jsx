@@ -82,31 +82,41 @@ function calcStandings(matches) {
 
 const ALL_GROUPS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
 
+const toLetter = (g) => g.replace('Group ', '').trim();
+
 export default function GroupStandingsModal({ group: initialGroup, onClose }) {
-  const [activeGroup, setActiveGroup] = useState(initialGroup);
-  const [matches, setMatches] = useState([]);
+  const [activeGroup, setActiveGroup] = useState(() => toLetter(initialGroup));
+  const [allMatches, setAllMatches] = useState({});  // { A: [...], B: [...], ... }
   const [loading, setLoading] = useState(true);
 
+  // Load ALL matches once on mount
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
-        const data = await Match.filter({ league: `Group ${activeGroup}` });
-        setMatches(data.sort((a, b) => new Date(a.match_date) - new Date(b.match_date)));
+        const data = await Match.list('match_date');
+        // Group by letter (league = "Group A" → "A")
+        const grouped = {};
+        data.forEach(m => {
+          if (!m.league) return;
+          const letter = toLetter(m.league);
+          if (!grouped[letter]) grouped[letter] = [];
+          grouped[letter].push(m);
+        });
+        // Sort each group's matches by date
+        Object.keys(grouped).forEach(k => {
+          grouped[k].sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
+        });
+        setAllMatches(grouped);
       } catch (e) {
         console.error(e);
       }
       setLoading(false);
     };
     load();
-  }, [activeGroup]);
+  }, []);
 
-  // derive letter from "Group X" string (handles both "A" and "Group A")
-  useEffect(() => {
-    const letter = initialGroup.replace('Group ', '').trim();
-    setActiveGroup(letter);
-  }, [initialGroup]);
-
+  const matches = allMatches[activeGroup] || [];
   const standings = calcStandings(matches);
 
   return (
