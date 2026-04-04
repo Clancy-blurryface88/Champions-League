@@ -487,7 +487,7 @@ export default function Predictions() {
                     <div className="flex items-center justify-between gap-2 mb-4">
                       {/* Team A */}
                       <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                        <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" />
+                        <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" animate={shouldAnimate} />
                         <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words h-8 flex items-start justify-center">
                           {match.team_a}
                         </RevealText>
@@ -528,7 +528,7 @@ export default function Predictions() {
 
                       {/* Team B */}
                       <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                        <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" />
+                        <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" animate={shouldAnimate} />
                         <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words h-8 flex items-start justify-center">
                           {match.team_b}
                         </RevealText>

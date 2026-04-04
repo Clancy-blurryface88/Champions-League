@@ -1,9 +1,59 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
+import { PixelImage } from '@/components/magicui/pixel-image';
 
 const isUrl = (value) =>
   value && (value.startsWith('http') || value.startsWith('/') || value.startsWith('data:'));
 
-// size in pixels for flag rendering (default 48px = w-12)
+const ROWS = 4;
+const COLS = 4;
+const pixels = Array.from({ length: ROWS * COLS }, (_, i) => i);
+
+function FlagWithPixels({ code, name, px, animate }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: '0px' });
+
+  return (
+    <div
+      ref={ref}
+      className="relative rounded-full overflow-hidden flex-shrink-0 shadow-md"
+      style={{ width: px, height: px }}
+    >
+      {/* The flag */}
+      <span
+        className={`fi fi-${code} fis absolute inset-0`}
+        title={name}
+        style={{ width: px, height: px, fontSize: px, display: 'block', backgroundSize: 'cover', backgroundPosition: 'center' }}
+      />
+
+      {/* Pixel overlay — fades out like PixelImage */}
+      {animate && (
+        <div
+          className="absolute inset-0 grid z-10 rounded-full overflow-hidden"
+          style={{
+            gridTemplateRows: `repeat(${ROWS}, 1fr)`,
+            gridTemplateColumns: `repeat(${COLS}, 1fr)`,
+          }}
+        >
+          {pixels.map((i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 1 }}
+              animate={{ opacity: isInView ? 0 : 1 }}
+              transition={{
+                duration: 1,
+                delay: isInView ? (Math.random() * 1.2) : 0,
+                ease: 'easeInOut',
+              }}
+              className="bg-slate-800"
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const SIZE_MAP = {
   'w-8 h-8': 32,
   'w-10 h-10': 40,
@@ -12,7 +62,7 @@ const SIZE_MAP = {
   'w-16 h-16': 64,
 };
 
-export default function TeamFlag({ logo, name, className = 'w-12 h-12', size }) {
+export default function TeamFlag({ logo, name, className = 'w-12 h-12', size, animate = true }) {
   const px = size || SIZE_MAP[className] || 48;
 
   if (!logo) {
@@ -28,27 +78,16 @@ export default function TeamFlag({ logo, name, className = 'w-12 h-12', size }) 
 
   if (isUrl(logo)) {
     return (
-      <img
+      <PixelImage
         src={logo}
-        alt={name}
-        className={`${className} object-contain rounded-full flex-shrink-0`}
+        customGrid={{ rows: 4, cols: 4 }}
+        grayscaleAnimation
+        animate={animate}
+        className={className}
+        imageClassName="object-contain"
       />
     );
   }
 
-  // flag-icons ISO2 code — explicit size so fis doesn't fight Tailwind
-  return (
-    <span
-      className={`fi fi-${logo} fis rounded-full flex-shrink-0 shadow-md`}
-      title={name}
-      style={{
-        width: px,
-        height: px,
-        fontSize: px,
-        display: 'inline-block',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
-    />
-  );
+  return <FlagWithPixels code={logo} name={name} px={px} animate={animate} />;
 }
