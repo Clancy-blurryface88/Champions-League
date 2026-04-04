@@ -402,7 +402,7 @@ export default function Predictions() {
         <div className="flex justify-center mb-6">
           <GlowButton
             onClick={() => window.open('https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/standings', '_blank')}
-            className="text-yellow-400 px-6 py-3 font-medium relative border-radius overflow-hidden transition-all duration-300 leading-snug tracking-wider rounded-[0.6em] border-2 border-yellow-500 from-[rgba(234,179,8,0.1)] via-transparent to-[rgba(234,179,8,0.1)] shadow-[inset_0_0_10px_rgba(234,179,8,0.4),0_0_9px_3px_rgba(234,179,8,0.1)] hover:text-yellow-300 hover:shadow-[inset_0_0_10px_rgba(234,179,8,0.6),0_0_9px_3px_rgba(234,179,8,0.2)] before:content-[''] before:absolute before:left-[-4em] before:w-[4em] before:h-full before:top-0 before:transition-transform before:duration-400 before:ease-in-out before:bg-gradient-to-r before:from-transparent before:via-[rgba(234,179,8,0.1)] before:to-transparent hover:before:transform hover:before:translate-x-[15em] hover:bg-yellow-900/30"
+            className="text-yellow-400 px-6 py-3 font-medium relative overflow-hidden transition-all duration-300 leading-snug tracking-wider rounded-[0.6em] border-2 border-yellow-500 bg-transparent shadow-[inset_0_0_10px_rgba(234,179,8,0.2),0_0_9px_3px_rgba(234,179,8,0.1)] hover:text-yellow-300 hover:shadow-[inset_0_0_10px_rgba(234,179,8,0.4),0_0_9px_3px_rgba(234,179,8,0.2)] before:content-[''] before:absolute before:left-[-4em] before:w-[4em] before:h-full before:top-0 before:transition-transform before:duration-400 before:ease-in-out before:bg-gradient-to-r before:from-transparent before:via-[rgba(234,179,8,0.1)] before:to-transparent hover:before:transform hover:before:translate-x-[15em]"
             glowColor="yellow">
             Standings
           </GlowButton>
@@ -426,7 +426,7 @@ export default function Predictions() {
                 <Card className={`relative backdrop-blur-sm border transition-all duration-300 h-full flex flex-col ${
                 isLocked ?
                 'bg-slate-800/30 border-slate-700/50 opacity-70' :
-                'bg-slate-800/60 border-slate-700 hover:bg-slate-800/80'}`
+                'bg-[linear-gradient(110deg,rgba(15,23,42,0.85),45%,rgba(234,179,8,0.07),55%,rgba(15,23,42,0.85))] bg-[length:200%_100%] animate-shine border-slate-700'}`
                 }>
                   {/* Buttons */}
                   <Button
@@ -500,7 +500,7 @@ export default function Predictions() {
                         <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words flex items-start justify-center">
                           {match.team_a}
                         </RevealText>
-                        <span className="text-slate-500 text-[10px] leading-none">(Home)</span>
+                        <span className="text-slate-400 text-[10px] leading-none">(Home)</span>
                       </div>
 
                       {/* Score Input */}
@@ -542,7 +542,7 @@ export default function Predictions() {
                         <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words flex items-start justify-center">
                           {match.team_b}
                         </RevealText>
-                        <span className="text-slate-500 text-[10px] leading-none">(Away)</span>
+                        <span className="text-slate-400 text-[10px] leading-none">(Away)</span>
                       </div>
                     </div>
 

@@ -17,6 +17,7 @@ import IntroVideoModal from "./components/IntroVideoModal";
 // This import is kept as per outline
 import { createPageUrl } from "@/utils";
 import { LoaderBar } from "./components/ui/LoaderBar";
+import AppBackground from "./components/AppBackground";
 import LiveDataPanel from "./components/LiveDataPanel"; // Added: Import LiveDataPanel
 import YearlySummaryPanel from "./components/YearlySummaryPanel"; // NEW: YearlySummaryPanel
 
@@ -458,6 +459,7 @@ export default function Layout({ children, currentPageName }) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}>
+        <AppBackground />
 
         {/* כפתור המבורגר עם אייקון אסטרטגיה */}
         <div className="fixed top-4 left-4 z-40">
@@ -642,7 +644,7 @@ export default function Layout({ children, currentPageName }) {
                   <div className="flex items-center gap-3 bg-slate-800/80 backdrop-blur-sm rounded-full px-3 py-1.5 border border-slate-600 hover:bg-slate-700/80 transition-colors">
                     <img
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/8e94debbc_ssmvtnogc7ue0jufjd03h6mj89.png"
-                    alt="User Profile" className="text-sky-800 mr-1 w-7 h-7 rounded-full object-cover flex-shrink-0" />
+                    alt="User Profile" className="mr-1 w-7 h-7 rounded-full object-cover flex-shrink-0 ring-2 ring-yellow-400" />
 
                     <div className="text-center">
                       <div className="text-yellow-400 mr-1 text-base font-medium">

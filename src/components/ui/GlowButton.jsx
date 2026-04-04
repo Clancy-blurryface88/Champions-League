@@ -27,7 +27,7 @@ export function GlowButton({ children, onClick, disabled, className, ...props })
       )}
       {...props}>
 
-      <span className="text-blue-400 relative z-10">{children}</span>
+      <span className="relative z-10">{children}</span>
     </button>);
 
 }

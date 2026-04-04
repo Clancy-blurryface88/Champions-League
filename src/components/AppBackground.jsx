@@ -1,13 +1,13 @@
 import { BubbleBackground } from '@/components/animate-ui/components/backgrounds/bubble';
 
-// Yellow | Black | Royal Blue
+// Gold | Green | White
 const COLORS = {
-  first:  '65,105,225',   // royal blue
-  second: '234,179,8',    // yellow-500
-  third:  '29,78,216',    // blue-700
-  fourth: '253,224,71',   // yellow-300
-  fifth:  '99,132,255',   // blue-400 light
-  sixth:  '161,122,6',    // gold dark
+  first:  '234,179,8',    // gold
+  second: '34,197,94',    // green-500
+  third:  '255,255,255',  // white
+  fourth: '161,122,6',    // dark gold
+  fifth:  '74,222,128',   // green-400
+  sixth:  '253,224,71',   // yellow-300
 };
 
 export default function AppBackground() {
