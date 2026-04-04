@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TournamentHeader from "../components/TournamentHeader";
-import OrigamiBackground from "../components/OrigamiBackground";
+import AppBackground from "../components/AppBackground";
 import { LoaderBar } from "../components/ui/LoaderBar";
 // Import the new button component - this import is no longer needed but will be removed by user on a later refactor
 import { RoundsMarquee } from "../components/RoundsMarquee"; // NEW: Import RoundsMarquee
@@ -82,7 +82,7 @@ export default function Dashboard() {
   if (error) {
     return (
       <div className="min-h-screen relative">
-        <OrigamiBackground />
+        <AppBackground />
         <div className="relative z-[1] flex items-center justify-center min-h-screen">
           <div className="text-center max-w-md mx-auto p-6">
             <div className="text-red-400 text-lg mb-4">{error}</div>
@@ -101,7 +101,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="min-h-screen relative">
-        <OrigamiBackground />
+        <AppBackground />
         <div className="relative z-[1] flex items-center justify-center min-h-screen">
           <LoaderBar text="LOADING" />
         </div>
@@ -113,7 +113,7 @@ export default function Dashboard() {
   if (!user) {
     return (
       <div className="min-h-screen relative">
-        <OrigamiBackground />
+        <AppBackground />
         <div className="relative z-[1] flex items-center justify-center min-h-screen">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-white mb-4">ברוך הבא ל-World Cup 2026</h1>
@@ -128,7 +128,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-[calc(100vh-7rem)] relative flex flex-col">
-      <OrigamiBackground />
+      <AppBackground />
 
       <div className="relative z-[1] flex-1 flex flex-col items-center justify-center w-full gap-10 md:gap-16 pt-8 pb-12">
         <TournamentHeader />

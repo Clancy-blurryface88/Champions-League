@@ -436,7 +436,7 @@ export default function Layout({ children, currentPageName }) {
             animation: shine 2s linear infinite;
           }
         `}</style>
-        <div className="min-h-screen text-white relative overflow-hidden" style={{ background: '#060d1a' }}>
+        <div className="min-h-screen text-white relative overflow-hidden" style={{ background: '#030d0a' }}>
           <div className="relative z-10 text-center">
             <LoaderBar text="LOADING" />
           </div>
@@ -470,7 +470,7 @@ export default function Layout({ children, currentPageName }) {
       `}</style>
       <div
         className="min-h-screen text-white relative overflow-hidden"
-        style={{ background: '#060d1a' }}
+        style={{ background: '#030d0a' }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}>
