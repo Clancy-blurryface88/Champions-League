@@ -169,6 +169,7 @@ export default function AdminImportMatches() {
           match_date: new Date(m.DateUtc).toISOString(),
           order: m.MatchNumber,
           league: m.Group,
+          location: m.Location,
           is_finished: false,
           actual_score_a: null,
           actual_score_b: null,

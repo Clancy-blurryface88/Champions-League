@@ -483,6 +483,15 @@ export default function Predictions() {
                       }
                     </div>
 
+                    {/* Group badge */}
+                    {match.league && (
+                      <div className="flex justify-center mb-3 -mt-3">
+                        <span className="text-xs font-semibold text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 px-3 py-0.5 rounded-full">
+                          {match.league}
+                        </span>
+                      </div>
+                    )}
+
                     {/* Teams & Score Input */}
                     <div className="flex items-center justify-between gap-2 mb-4">
                       {/* Team A */}
@@ -545,12 +554,19 @@ export default function Predictions() {
                       </div>
                     }
 
-                    {/* Footer: Date & Time */}
-                    <div className="mt-auto pt-4 border-t border-slate-700/50 flex items-center justify-center text-sm text-slate-400" dir="rtl">
-                      <Calendar className="w-4 h-4 ml-2" />
-                      <span>
-                        בשעה {moment(match.match_date).format('HH:mm')} {moment(match.match_date).format('DD/MM/YYYY')}
-                      </span>
+                    {/* Footer: Date & Location */}
+                    <div className="mt-auto pt-4 border-t border-slate-700/50 space-y-1.5">
+                      <div className="flex items-center justify-center text-sm text-slate-400" dir="rtl">
+                        <Calendar className="w-4 h-4 ml-2" />
+                        <span>
+                          בשעה {moment(match.match_date).format('HH:mm')} {moment(match.match_date).format('DD/MM/YYYY')}
+                        </span>
+                      </div>
+                      {match.location && (
+                        <div className="flex items-center justify-center text-xs text-slate-500">
+                          <span>📍 {match.location}</span>
+                        </div>
+                      )}
                     </div>
                     
                     {/* Crowd Wisdom Stats */}
