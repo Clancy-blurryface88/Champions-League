@@ -423,11 +423,16 @@ export default function Predictions() {
                 transition={{ delay: index * 0.1 }}
                 className="snap-center flex-shrink-0 w-[85vw] max-w-md md:w-auto h-full">
 
-                <Card className={`relative backdrop-blur-sm border transition-all duration-300 h-full flex flex-col ${
-                isLocked ?
-                'bg-slate-800/30 border-slate-700/50 opacity-70' :
-                'bg-[linear-gradient(110deg,rgba(0,1,3,0.7),45%,rgba(30,38,49,0.9),55%,rgba(0,1,3,0.7))] bg-[length:200%_100%] animate-shine [animation-duration:4s] border border-neutral-800'}`
-                }>
+                <Card
+                  className={`relative border transition-all duration-300 h-full flex flex-col ${
+                  isLocked ?
+                  'border-slate-700/50 opacity-70' :
+                  'animate-shine [animation-duration:4s] border-neutral-800'}`}
+                  style={isLocked ? { background: 'rgba(15,23,42,0.3)' } : {
+                    background: 'linear-gradient(110deg, rgba(0,1,3,0.7) 0%, rgba(0,1,3,0.7) 45%, rgba(30,38,49,0.9) 55%, rgba(0,1,3,0.7) 100%)',
+                    backgroundSize: '200% 100%',
+                  }}
+                >
                   {/* Buttons */}
                   <Button
                     variant="ghost"
