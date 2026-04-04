@@ -80,7 +80,10 @@ function calcStandings(matches) {
   return result;
 }
 
-export default function GroupStandingsModal({ group, onClose }) {
+const ALL_GROUPS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+
+export default function GroupStandingsModal({ group: initialGroup, onClose }) {
+  const [activeGroup, setActiveGroup] = useState(initialGroup);
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -88,7 +91,7 @@ export default function GroupStandingsModal({ group, onClose }) {
     const load = async () => {
       setLoading(true);
       try {
-        const data = await Match.filter({ league: group });
+        const data = await Match.filter({ league: `Group ${activeGroup}` });
         setMatches(data.sort((a, b) => new Date(a.match_date) - new Date(b.match_date)));
       } catch (e) {
         console.error(e);
@@ -96,7 +99,13 @@ export default function GroupStandingsModal({ group, onClose }) {
       setLoading(false);
     };
     load();
-  }, [group]);
+  }, [activeGroup]);
+
+  // derive letter from "Group X" string (handles both "A" and "Group A")
+  useEffect(() => {
+    const letter = initialGroup.replace('Group ', '').trim();
+    setActiveGroup(letter);
+  }, [initialGroup]);
 
   const standings = calcStandings(matches);
 
@@ -122,11 +131,29 @@ export default function GroupStandingsModal({ group, onClose }) {
           className="relative w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-slate-900 border border-slate-700"
         >
           {/* Header */}
-          <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-slate-900 border-b border-slate-700">
-            <h2 className="text-white font-bold text-lg">{group}</h2>
-            <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
-              <X className="w-5 h-5" />
-            </button>
+          <div className="sticky top-0 z-10 bg-slate-900 border-b border-slate-700">
+            <div className="flex items-center justify-between px-5 py-3">
+              <h2 className="text-white font-bold text-lg">Group {activeGroup}</h2>
+              <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            {/* Group selector A–L */}
+            <div className="flex gap-1.5 px-4 pb-3 overflow-x-auto scrollbar-hide">
+              {ALL_GROUPS.map((letter) => (
+                <button
+                  key={letter}
+                  onClick={() => setActiveGroup(letter)}
+                  className={`flex-shrink-0 w-9 h-9 rounded-lg text-sm font-bold transition-all border ${
+                    activeGroup === letter
+                      ? 'bg-yellow-400/20 border-yellow-400 text-yellow-400'
+                      : 'bg-slate-800 border-slate-600 text-slate-300 hover:border-slate-400'
+                  }`}
+                >
+                  {letter}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="p-4 space-y-6">
@@ -138,7 +165,7 @@ export default function GroupStandingsModal({ group, onClose }) {
               <>
                 {/* Standings Table */}
                 <div>
-                  <h3 className="text-yellow-400 font-semibold text-sm uppercase tracking-wider mb-3">טבלת קבוצות</h3>
+                  <h3 className="text-yellow-400 font-semibold text-sm uppercase tracking-wider mb-3 text-center">טבלת קבוצות</h3>
                   <div className="overflow-x-auto rounded-xl border border-slate-700">
                     <table className="w-full text-sm">
                       <thead>
@@ -189,28 +216,14 @@ export default function GroupStandingsModal({ group, onClose }) {
 
                 {/* Matches List */}
                 <div>
-                  <h3 className="text-yellow-400 font-semibold text-sm uppercase tracking-wider mb-3">משחקי הבית</h3>
+                  <h3 className="text-yellow-400 font-semibold text-sm uppercase tracking-wider mb-3 text-center">משחקי הבית</h3>
                   <div className="space-y-2">
                     {matches.map((m) => {
                       const finished = m.is_finished && m.actual_score_a !== null && m.actual_score_b !== null;
                       return (
                         <div key={m.id} className="bg-slate-800/60 rounded-xl border border-slate-700/50 px-4 py-3">
-                          {/* Date + Location */}
-                          <div className="flex items-center justify-between text-[10px] text-slate-500 mb-2">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              <span>{moment(m.match_date).format("DD/MM/YYYY HH:mm")}</span>
-                            </div>
-                            {m.location && (
-                              <div className="flex items-center gap-1">
-                                <MapPin className="w-3 h-3" />
-                                <span className="truncate max-w-[130px]">{m.location}</span>
-                              </div>
-                            )}
-                          </div>
-
                           {/* Teams + Score */}
-                          <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center justify-between gap-2 mb-2">
                             {/* Team A */}
                             <div className="flex items-center gap-2 flex-1">
                               <TeamFlag logo={m.team_a_logo} name={m.team_a} className="w-7 h-7" />
@@ -233,6 +246,20 @@ export default function GroupStandingsModal({ group, onClose }) {
                               <span className="text-white text-xs font-medium truncate text-right">{m.team_b}</span>
                               <TeamFlag logo={m.team_b_logo} name={m.team_b} className="w-7 h-7" />
                             </div>
+                          </div>
+
+                          {/* Date + Location — below teams */}
+                          <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1.5 border-t border-slate-700/40">
+                            <div className="flex items-center gap-1">
+                              <span>🗓️</span>
+                              <span>{moment(m.match_date).format("DD/MM/YYYY · HH:mm")}</span>
+                            </div>
+                            {m.location && (
+                              <div className="flex items-center gap-1">
+                                <MapPin className="w-3 h-3" />
+                                <span className="truncate max-w-[130px]">{m.location}</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
