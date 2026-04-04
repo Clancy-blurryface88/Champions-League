@@ -4,7 +4,7 @@ export default function TournamentHeader() {
   return (
     <div className="relative flex flex-col items-center gap-4 md:gap-6 w-full">
       {/* Trophy Image */}
-      <div className="w-44 md:w-56">
+      <div className="w-[352px] md:w-[448px]">
         <img
           src="/trophy.png"
           alt="FIFA World Cup Trophy"
