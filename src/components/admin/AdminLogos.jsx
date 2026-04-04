@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { TeamLogo } from "@/api/entities";
+import TeamFlag from "@/components/TeamFlag";
 import { UploadFile } from "@/api/functions";
 import { motion } from "framer-motion";
 import { Upload, Trash2, Loader2 } from "lucide-react";
@@ -129,7 +130,7 @@ export default function AdminLogos() {
               className="relative group"
             >
               <Card className="bg-slate-800/80 border border-slate-700 aspect-square flex items-center justify-center p-4">
-                <img src={logo.logo_url} alt={logo.name} className="max-w-full max-h-full object-contain" />
+                <TeamFlag logo={logo.logo_url} name={logo.name} className="w-14 h-14" animate={false} />
               </Card>
               <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-center p-2">
                  <p className="text-white font-semibold text-sm mb-2">{logo.name}</p>

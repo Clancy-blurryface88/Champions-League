@@ -113,9 +113,10 @@ export default function AdminImportMatches() {
         if (!existingNames.has(teamName)) {
           await TeamLogo.create({ name: teamName, logo_url: flagCode });
           logosCreated++;
+          existingNames.add(teamName);
         }
       }
-      addLog(`${logosCreated} נבחרות נוספו ל-Team Logos (${existingNames.size} היו קיימות)`, 'success');
+      addLog(logosCreated > 0 ? `${logosCreated} נבחרות נוספו ל-Team Logos` : 'כל הנבחרות כבר קיימות ב-Team Logos', logosCreated > 0 ? 'success' : 'skip');
 
       // Step 1: Create or find rounds
       addLog('יוצר מחזורים...');
@@ -134,8 +135,11 @@ export default function AdminImportMatches() {
         }
       }
 
-      // Step 2: Create matches
+      // Step 2: Create matches (skip existing)
       addLog('יוצר משחקים...');
+      const existingMatches = await Match.list('order');
+      const existingKeys = new Set(existingMatches.map(m => `${m.round_id}_${m.order}`));
+
       const totalMatches = MATCHES_JSON.length;
       setProgress({ current: 0, total: totalMatches });
 
@@ -145,6 +149,12 @@ export default function AdminImportMatches() {
         if (!roundId) {
           addLog(`לא נמצא round_id למחזור ${m.RoundNumber}`, 'error');
           continue;
+        }
+
+        const matchKey = `${roundId}_${m.MatchNumber}`;
+        if (existingKeys.has(matchKey)) {
+          setProgress({ current: i + 1, total: totalMatches });
+          continue; // skip duplicate
         }
 
         const homeFlag = getFlagCode(m.HomeTeam);
