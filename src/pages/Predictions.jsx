@@ -426,7 +426,7 @@ export default function Predictions() {
                 <Card className={`relative backdrop-blur-sm border transition-all duration-300 h-full flex flex-col ${
                 isLocked ?
                 'bg-slate-800/30 border-slate-700/50 opacity-70' :
-                'bg-[linear-gradient(110deg,rgba(15,23,42,0.85),45%,rgba(234,179,8,0.07),55%,rgba(15,23,42,0.85))] bg-[length:200%_100%] animate-shine border-slate-700'}`
+                'bg-[linear-gradient(110deg,rgba(0,1,3,0.7),45%,rgba(30,38,49,0.9),55%,rgba(0,1,3,0.7))] bg-[length:200%_100%] animate-shine border-neutral-800'}`
                 }>
                   {/* Buttons */}
                   <Button
