@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import TextRotate from "./ui/TextRotate";
 
 const YOUTUBE_VIDEO_ID = "ejuiCkS7xXE"; // World Cup 2026 intro
-const VIDEO_DURATION_SECONDS = 22; // משך הסרטון: 22 שניות
+const VIDEO_DURATION_SECONDS = 21; // משך הסרטון: 21 שניות
 
 // טקסטים לאפקט הטקסט המסתובב
 const rotatingTexts = [
