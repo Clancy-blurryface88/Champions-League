@@ -250,7 +250,7 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                         שומר...
                       </div>
                     ) : (
-                      התחל לשחק
+                      <span>התחל לשחק</span>
                     )}
                   </Button>
                 </motion.div>
