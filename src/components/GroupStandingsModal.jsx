@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Calendar, MapPin } from "lucide-react";
 import moment from "moment";
 import TeamFlag from "@/components/TeamFlag";
-import { LoaderBar } from "@/components/ui/LoaderBar";
 
 // FIFA WC 2026 tiebreaker order (group stage):
 // 1. Pts  2. H2H Pts  3. H2H GD  4. H2H GF  5. Overall GD  6. Overall GF
@@ -168,8 +167,8 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
 
           <div className="p-4 space-y-6">
             {loading ? (
-              <div className="py-16">
-                <LoaderBar />
+              <div className="py-16 flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-yellow-400/30 border-t-yellow-400 rounded-full animate-spin" />
               </div>
             ) : (
               <>
