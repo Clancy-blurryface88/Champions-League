@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { User } from "@/api/entities";
-import { PublicProfile } from "@/api/entities";
-import { UserStats } from "@/api/entities";
+import { User, UserStats } from "@/api/entities";
 import { Settings, LogOut, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -164,25 +162,11 @@ export default function Layout({ children, currentPageName }) {
         // לוגיקה חדשה: הצגת WelcomeModal אם שם התצוגה לא מוגדר
         // או הצגת IntroVideoModal אם שם התצוגה מוגדר אבל הסרטון לא נצפה
         if (currentUser) {
-          try {
-            const publicProfiles = await PublicProfile.filter({ user_id: currentUser.id });
-            const hasDisplayName = publicProfiles.length > 0 && publicProfiles[0].display_name;
-
-            console.log("📝 Layout checkAuth - publicProfiles:", publicProfiles);
-            console.log("📝 Layout checkAuth - hasDisplayName:", hasDisplayName);
-
-            if (!hasDisplayName) {
-              console.log("🔄 Layout: No display name - showing WelcomeModal");
-              setShowWelcomeModal(true);
-            } else if (!userWithStats.has_seen_intro_video) {
-              console.log("🎬 Layout: Has display name but hasn't seen video - showing IntroVideoModal");
-              setShowIntroVideoModal(true);
-            } else {
-              console.log("✅ Layout: User has display name and has seen video - no modals needed");
-            }
-          } catch (error) {
-            console.error("Layout: Error checking PublicProfile:", error);
-            setShowWelcomeModal(true); // Fallback in case of error checking profile
+          const hasDisplayName = !!(currentUser.display_name);
+          if (!hasDisplayName) {
+            setShowWelcomeModal(true);
+          } else if (!userWithStats.has_seen_intro_video) {
+            setShowIntroVideoModal(true);
           }
         }
 

@@ -28,23 +28,8 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
     setShowAnimation(true);
     
     try {
-      const { supabase } = await import('@/api/supabase');
-
-      // upsert — מטפל גם ב-insert וגם ב-update, עוקף בעיות RLS של insert/update נפרדים
-      const { error } = await supabase
-        .from('public_profiles')
-        .upsert(
-          { user_id: currentUser.id, display_name: displayName.trim() },
-          { onConflict: 'user_id' }
-        );
-
-      if (error) {
-        console.error("upsert error:", error);
-        // fallback — שמור רק על User entity אם public_profiles נכשל
-        await import('@/api/entities').then(({ User }) =>
-          User.updateMyUserData({ display_name: displayName.trim() })
-        );
-      }
+      const { User } = await import('@/api/entities');
+      await User.updateMyUserData({ display_name: displayName.trim() });
 
       setTimeout(() => {
         onSave(displayName.trim());
