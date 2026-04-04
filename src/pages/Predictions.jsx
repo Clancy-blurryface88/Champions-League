@@ -16,8 +16,8 @@ import { useNavigate } from 'react-router-dom';
 import MatchScoringRulesModal from "../components/MatchScoringRulesModal";
 import MatchPredictionsModal from "../components/MatchPredictionsModal"; // ADDED MatchPredictionsModal import
 import CrowdWisdomStats from "../components/predictions/CrowdWisdomStats"; // ADDED CrowdWisdomStats import
-import { PixelImage } from "@/components/magicui/pixel-image";
 import { RevealText } from "@/components/magicui/reveal-text";
+import TeamFlag from "@/components/TeamFlag";
 
 export default function Predictions() {
   const [currentRound, setCurrentRound] = useState(null);
@@ -487,14 +487,7 @@ export default function Predictions() {
                     <div className="flex items-center justify-between gap-2 mb-4">
                       {/* Team A */}
                       <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                        <PixelImage
-                          src={match.team_a_logo}
-                          customGrid={{ rows: 4, cols: 4 }}
-                          grayscaleAnimation
-                          animate={shouldAnimate}
-                          className="w-12 h-12 flex-shrink-0"
-                          imageClassName="object-contain"
-                        />
+                        <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" />
                         <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words h-8 flex items-start justify-center">
                           {match.team_a}
                         </RevealText>
@@ -535,14 +528,7 @@ export default function Predictions() {
 
                       {/* Team B */}
                       <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                        <PixelImage
-                          src={match.team_b_logo}
-                          customGrid={{ rows: 4, cols: 4 }}
-                          grayscaleAnimation
-                          animate={shouldAnimate}
-                          className="w-12 h-12 flex-shrink-0"
-                          imageClassName="object-contain"
-                        />
+                        <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" />
                         <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words h-8 flex items-start justify-center">
                           {match.team_b}
                         </RevealText>
