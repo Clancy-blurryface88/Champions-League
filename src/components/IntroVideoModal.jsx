@@ -2,10 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import TextRotate from "./ui/TextRotate";
 
-const YOUTUBE_VIDEO_ID = "ejuiCkS7xXE"; // World Cup 2026 intro
-const VIDEO_DURATION_SECONDS = 21; // משך הסרטון: 21 שניות
+const VIDEO_DURATION_SECONDS = 21;
 
-// טקסטים לאפקט הטקסט המסתובב
 const rotatingTexts = [
   "ברוך הבא לטורניר הגדול בעולם",
   "מונדיאל 2026",
@@ -18,17 +16,18 @@ const rotatingTexts = [
 
 export default function IntroVideoModal({ isOpen, onVideoCompleted }) {
   const [showModal, setShowModal] = useState(isOpen);
-  const iframeRef = useRef(null);
+  const videoRef = useRef(null);
 
   useEffect(() => {
     setShowModal(isOpen);
     if (isOpen) {
-      // הגדרת טיימר לסיום אוטומטי של הסרטון לאחר משך זמן מוגדר
+      if (videoRef.current) {
+        videoRef.current.play().catch(() => {});
+      }
       const timer = setTimeout(() => {
         onVideoCompleted();
-      }, VIDEO_DURATION_SECONDS * 1000); // המרה לשניות
-
-      return () => clearTimeout(timer); // ניקוי טיימר
+      }, VIDEO_DURATION_SECONDS * 1000);
+      return () => clearTimeout(timer);
     }
   }, [isOpen, onVideoCompleted]);
 
@@ -48,20 +47,19 @@ export default function IntroVideoModal({ isOpen, onVideoCompleted }) {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
         >
-          <div className="relative pb-[56.25%] h-0"> {/* גודל 16:9 לוידאו */}
-            <iframe
-              ref={iframeRef}
-              className="absolute top-0 left-0 w-full h-full"
-              src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&loop=0&playsinline=1`}
-              title="Intro Video"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
+          <div className="relative pb-[56.25%] h-0">
+            <video
+              ref={videoRef}
+              className="absolute top-0 left-0 w-full h-full object-cover"
+              src="/VIDEO.mp4"
+              autoPlay
+              playsInline
+              onEnded={onVideoCompleted}
+            />
           </div>
 
           <div className="p-4 text-center">
-            <TextRotate 
+            <TextRotate
               texts={rotatingTexts}
               className="text-xl font-bold text-white"
               interval={3000}
