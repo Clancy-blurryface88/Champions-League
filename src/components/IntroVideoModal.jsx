@@ -47,16 +47,16 @@ export default function IntroVideoModal({ isOpen, onVideoCompleted }) {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
         >
-          <div className="relative pb-[56.25%] h-0">
-            <video
-              ref={videoRef}
-              className="absolute top-0 left-0 w-full h-full object-cover"
-              src="/VIDEO.mp4"
-              autoPlay
-              playsInline
-              onEnded={onVideoCompleted}
-            />
-          </div>
+          <video
+            ref={videoRef}
+            className="w-full block"
+            src="/VIDEO.mp4"
+            autoPlay
+            playsInline
+            controls
+            onEnded={onVideoCompleted}
+            style={{ maxHeight: '60vh' }}
+          />
 
           <div className="p-4 text-center">
             <TextRotate
