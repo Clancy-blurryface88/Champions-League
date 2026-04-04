@@ -4,7 +4,6 @@ import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { PublicProfile } from "@/api/entities";
 import { HyperText } from "./magicui/hyper-text";
 
 const WORLD_CUP_TROPHY = "/trophy.png";
@@ -29,37 +28,32 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
     setShowAnimation(true);
     
     try {
-      console.log("Saving PublicProfile for user:", currentUser.id);
-      
-      // Check if PublicProfile already exists
-      const existingProfiles = await PublicProfile.filter({ user_id: currentUser.id });
-      
-      if (existingProfiles.length > 0) {
-        // Update existing profile
-        console.log("Updating existing PublicProfile:", existingProfiles[0].id);
-        await PublicProfile.update(existingProfiles[0].id, {
-          display_name: displayName.trim()
-        });
-      } else {
-        // Create new profile
-        console.log("Creating new PublicProfile");
-        await PublicProfile.create({
-          user_id: currentUser.id,
-          display_name: displayName.trim()
-        });
+      const { supabase } = await import('@/api/supabase');
+
+      // upsert — מטפל גם ב-insert וגם ב-update, עוקף בעיות RLS של insert/update נפרדים
+      const { error } = await supabase
+        .from('public_profiles')
+        .upsert(
+          { user_id: currentUser.id, display_name: displayName.trim() },
+          { onConflict: 'user_id' }
+        );
+
+      if (error) {
+        console.error("upsert error:", error);
+        // fallback — שמור רק על User entity אם public_profiles נכשל
+        await import('@/api/entities').then(({ User }) =>
+          User.updateMyUserData({ display_name: displayName.trim() })
+        );
       }
-      
-      console.log("PublicProfile saved successfully");
-      
-      // Small delay for animation effect
+
       setTimeout(() => {
         onSave(displayName.trim());
         setSaving(false);
       }, 1000);
     } catch (error) {
-      console.error("Error saving public profile:", error);
+      console.error("Error saving display name:", error);
       setSaving(false);
-      alert("שגיאה בשמירת השם. אנא נסה שוב.");
+      alert("שגיאה בשמירת השם: " + (error?.message || JSON.stringify(error)));
     }
   };
 
