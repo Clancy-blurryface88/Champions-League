@@ -2,14 +2,14 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import TextRotate from "./ui/TextRotate";
 
-const YOUTUBE_VIDEO_ID = "I_G39kk-acg"; // הסרטון החדש
-const VIDEO_DURATION_SECONDS = 18; // משך הסרטון המדויק: 18 שניות
+const YOUTUBE_VIDEO_ID = "ejuiCkS7xXE"; // World Cup 2026 intro
+const VIDEO_DURATION_SECONDS = 22; // משך הסרטון: 22 שניות
 
 // טקסטים לאפקט הטקסט המסתובב
 const rotatingTexts = [
   "ברוך הבא",
-  "לעונת ליגת האלופות",
-  "שתהיה עונה ",
+  "למונדיאל 2026",
+  "שתהיה תחרות",
   "מוצלחת ומהנה",
   "🏆 בהצלחה",
   ""
