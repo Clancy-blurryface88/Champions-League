@@ -401,10 +401,10 @@ export default function Predictions() {
         {/* Knockout Bracket Link - Moved outside loop */}
         <div className="flex justify-center mb-6">
           <GlowButton
-            onClick={() => window.open('https://www.uefa.com/uefachampionsleague/standings/bracket/', '_blank')}
-            className="text-white px-6 py-3 font-medium relative border-radius overflow-hidden transition-all duration-300 leading-snug tracking-wider rounded-[0.6em] border-2 border-blue-500 from-[rgba(59,130,246,0.1)] via-transparent to-[rgba(59,130,246,0.1)] shadow-[inset_0_0_10px_rgba(59,130,246,0.4),0_0_9px_3px_rgba(59,130,246,0.1)] hover:text-blue-300 hover:shadow-[inset_0_0_10px_rgba(59,130,246,0.6),0_0_9px_3px_rgba(59,130,246,0.2)] before:content-[''] before:absolute before:left-[-4em] before:w-[4em] before:h-full before:top-0 before:transition-transform before:duration-400 before:ease-in-out before:bg-gradient-to-r before:from-transparent before:via-[rgba(59,130,246,0.1)] before:to-transparent hover:before:transform hover:before:translate-x-[15em] hover:bg-blue-700"
-            glowColor="blue">
-            שלבי הנוקאאוט
+            onClick={() => window.open('https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/standings', '_blank')}
+            className="text-yellow-400 px-6 py-3 font-medium relative border-radius overflow-hidden transition-all duration-300 leading-snug tracking-wider rounded-[0.6em] border-2 border-yellow-500 from-[rgba(234,179,8,0.1)] via-transparent to-[rgba(234,179,8,0.1)] shadow-[inset_0_0_10px_rgba(234,179,8,0.4),0_0_9px_3px_rgba(234,179,8,0.1)] hover:text-yellow-300 hover:shadow-[inset_0_0_10px_rgba(234,179,8,0.6),0_0_9px_3px_rgba(234,179,8,0.2)] before:content-[''] before:absolute before:left-[-4em] before:w-[4em] before:h-full before:top-0 before:transition-transform before:duration-400 before:ease-in-out before:bg-gradient-to-r before:from-transparent before:via-[rgba(234,179,8,0.1)] before:to-transparent hover:before:transform hover:before:translate-x-[15em] hover:bg-yellow-900/30"
+            glowColor="yellow">
+            Standings
           </GlowButton>
         </div>
 
