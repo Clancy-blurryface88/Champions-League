@@ -6,40 +6,78 @@ import moment from "moment";
 import TeamFlag from "@/components/TeamFlag";
 import { LoaderBar } from "@/components/ui/LoaderBar";
 
+// FIFA WC 2026 tiebreaker order (group stage):
+// 1. Pts  2. H2H Pts  3. H2H GD  4. H2H GF  5. Overall GD  6. Overall GF
 function calcStandings(matches) {
   const teams = {};
 
-  const getTeam = (name, logo) => {
-    if (!teams[name]) {
-      teams[name] = { name, logo, P: 0, W: 0, D: 0, L: 0, GF: 0, GA: 0, GD: 0, Pts: 0 };
-    }
+  const ensure = (name, logo) => {
+    if (!teams[name]) teams[name] = { name, logo, P: 0, W: 0, D: 0, L: 0, GF: 0, GA: 0, GD: 0, Pts: 0 };
     return teams[name];
   };
 
-  matches.forEach((m) => {
+  // Ensure every team appears even with 0 played
+  matches.forEach(m => { ensure(m.team_a, m.team_a_logo); ensure(m.team_b, m.team_b_logo); });
+
+  // Accumulate stats
+  matches.forEach(m => {
     if (!m.is_finished || m.actual_score_a === null || m.actual_score_b === null) return;
-    const a = getTeam(m.team_a, m.team_a_logo);
-    const b = getTeam(m.team_b, m.team_b_logo);
+    const a = teams[m.team_a], b = teams[m.team_b];
     const sa = m.actual_score_a, sb = m.actual_score_b;
-
     a.P++; b.P++;
-    a.GF += sa; a.GA += sb; a.GD = a.GF - a.GA;
-    b.GF += sb; b.GA += sa; b.GD = b.GF - b.GA;
-
+    a.GF += sa; a.GA += sb;
+    b.GF += sb; b.GA += sa;
     if (sa > sb)      { a.W++; a.Pts += 3; b.L++; }
     else if (sa < sb) { b.W++; b.Pts += 3; a.L++; }
-    else              { a.D++; a.Pts++; b.D++; b.Pts++; }
+    else              { a.D++; a.Pts++;    b.D++; b.Pts++; }
   });
+  Object.values(teams).forEach(t => { t.GD = t.GF - t.GA; });
 
-  // ensure all teams appear even with 0 games
-  matches.forEach((m) => {
-    getTeam(m.team_a, m.team_a_logo);
-    getTeam(m.team_b, m.team_b_logo);
-  });
+  // H2H stats for a subset of team names
+  const h2hStats = (names) => {
+    const s = {};
+    names.forEach(n => { s[n] = { Pts: 0, GD: 0, GF: 0 }; });
+    const set = new Set(names);
+    matches.forEach(m => {
+      if (!m.is_finished || m.actual_score_a === null || m.actual_score_b === null) return;
+      if (!set.has(m.team_a) || !set.has(m.team_b)) return;
+      const sa = m.actual_score_a, sb = m.actual_score_b;
+      s[m.team_a].GF += sa; s[m.team_a].GD += sa - sb;
+      s[m.team_b].GF += sb; s[m.team_b].GD += sb - sa;
+      if (sa > sb)      { s[m.team_a].Pts += 3; }
+      else if (sa < sb) { s[m.team_b].Pts += 3; }
+      else              { s[m.team_a].Pts++;  s[m.team_b].Pts++; }
+    });
+    return s;
+  };
 
-  return Object.values(teams).sort((a, b) =>
-    b.Pts - a.Pts || b.GD - a.GD || b.GF - a.GF || a.name.localeCompare(b.name)
-  );
+  const list = Object.values(teams);
+
+  // Sort: first by overall Pts, then apply tiebreakers within tied groups
+  list.sort((a, b) => b.Pts - a.Pts);
+
+  // Re-sort within groups of equal Pts using H2H then overall criteria
+  const result = [];
+  let i = 0;
+  while (i < list.length) {
+    let j = i + 1;
+    while (j < list.length && list[j].Pts === list[i].Pts) j++;
+    const group = list.slice(i, j);
+    if (group.length > 1) {
+      const h = h2hStats(group.map(t => t.name));
+      group.sort((a, b) =>
+        (h[b.name].Pts - h[a.name].Pts) ||
+        (h[b.name].GD  - h[a.name].GD)  ||
+        (h[b.name].GF  - h[a.name].GF)  ||
+        (b.GD - a.GD)                    ||
+        (b.GF - a.GF)                    ||
+        a.name.localeCompare(b.name)
+      );
+    }
+    result.push(...group);
+    i = j;
+  }
+  return result;
 }
 
 export default function GroupStandingsModal({ group, onClose }) {
@@ -117,8 +155,14 @@ export default function GroupStandingsModal({ group, onClose }) {
                       </thead>
                       <tbody>
                         {standings.map((team, i) => (
-                          <tr key={team.name} className={`border-t border-slate-700/50 ${i < 2 ? "bg-green-500/5" : ""}`}>
-                            <td className="px-3 py-2.5 text-slate-400 text-xs">{i + 1}</td>
+                          <tr key={team.name} className={`border-t border-slate-700/50 ${
+                            i < 2 ? "bg-green-500/5" : i === 2 ? "bg-yellow-500/5" : "bg-red-500/5"
+                          }`}>
+                            <td className="px-3 py-2.5 text-xs">
+                              <span className={`font-bold ${i < 2 ? "text-green-400" : i === 2 ? "text-yellow-400" : "text-red-400"}`}>
+                                {i + 1}
+                              </span>
+                            </td>
                             <td className="px-3 py-2.5">
                               <div className="flex items-center gap-2">
                                 <TeamFlag logo={team.logo} name={team.name} className="w-5 h-5" />
@@ -136,7 +180,11 @@ export default function GroupStandingsModal({ group, onClose }) {
                       </tbody>
                     </table>
                   </div>
-                  <p className="text-slate-600 text-[10px] mt-1.5 px-1">🟢 עוברות לשלב הנוקאאוט</p>
+                  <div className="flex gap-3 mt-2 px-1 text-[10px]">
+                    <span className="text-green-400">🟢 עובר אוטומטית</span>
+                    <span className="text-yellow-400">🟡 אולי עובר (3rd best)</span>
+                    <span className="text-red-400">🔴 יוצא</span>
+                  </div>
                 </div>
 
                 {/* Matches List */}
