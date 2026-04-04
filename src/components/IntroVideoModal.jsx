@@ -53,7 +53,6 @@ export default function IntroVideoModal({ isOpen, onVideoCompleted }) {
             src="/VIDEO.mp4"
             autoPlay
             playsInline
-            controls
             onEnded={onVideoCompleted}
             style={{ maxHeight: '60vh' }}
           />
