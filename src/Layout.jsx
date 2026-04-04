@@ -628,7 +628,7 @@ export default function Layout({ children, currentPageName }) {
               variant="outline"
               size="icon"
               onClick={() => window.dispatchEvent(new Event('openYearlySummaryPanel'))}
-              className="bg-slate-800/80 backdrop-blur-sm border-slate-600 hover:bg-slate-700/80 text-blue-400 rounded-full flex items-center justify-center w-[38px] h-[38px] shadow-lg"
+              className="bg-slate-800/80 backdrop-blur-sm border-slate-600 hover:bg-slate-700/80 text-yellow-400 rounded-full flex items-center justify-center w-[38px] h-[38px] shadow-lg"
             >
               <PlayCircle className="w-5 h-5" />
             </Button>
@@ -645,7 +645,7 @@ export default function Layout({ children, currentPageName }) {
                     alt="User Profile" className="text-sky-800 mr-1 w-7 h-7 rounded-full object-cover flex-shrink-0" />
 
                     <div className="text-center">
-                      <div className="text-blue-400 mr-1 text-base font-medium">
+                      <div className="text-yellow-400 mr-1 text-base font-medium">
                         {user.display_name || user.full_name}
                       </div>
                     </div>
