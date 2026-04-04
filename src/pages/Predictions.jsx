@@ -498,7 +498,7 @@ export default function Predictions() {
                           onClick={() => setSelectedGroup(match.league)}
                           className="text-xs font-semibold text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 px-3 py-0.5 rounded-full hover:bg-yellow-400/20 hover:border-yellow-400/60 transition-colors cursor-pointer"
                         >
-                          {match.league} ↗
+                          {match.league}
                         </button>
                       </div>
                     )}

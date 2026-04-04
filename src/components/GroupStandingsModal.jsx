@@ -107,12 +107,12 @@ export default function GroupStandingsModal({ group, onClose }) {
                         <tr className="bg-slate-800 text-slate-400 text-xs">
                           <th className="text-left px-3 py-2">#</th>
                           <th className="text-left px-3 py-2">קבוצה</th>
-                          <th className="text-center px-2 py-2">מ'</th>
-                          <th className="text-center px-2 py-2">נ</th>
-                          <th className="text-center px-2 py-2">ת</th>
-                          <th className="text-center px-2 py-2">ה</th>
-                          <th className="text-center px-2 py-2">+/-</th>
-                          <th className="text-center px-2 py-2 font-bold text-yellow-400">נק'</th>
+                          <th className="text-center px-2 py-2">P</th>
+                          <th className="text-center px-2 py-2">W</th>
+                          <th className="text-center px-2 py-2">D</th>
+                          <th className="text-center px-2 py-2">L</th>
+                          <th className="text-center px-2 py-2">GD</th>
+                          <th className="text-center px-2 py-2 font-bold text-yellow-400">Pts</th>
                         </tr>
                       </thead>
                       <tbody>
