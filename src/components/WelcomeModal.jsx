@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -220,8 +220,8 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                         transition: '.4s',
                         textAlign: 'center',
                       }}
-                      onMouseEnter={e => e.target.style.boxShadow = '0 0 0 2px rgba(135,207,235,0.186)'}
-                      onMouseLeave={e => e.target.style.boxShadow = document.activeElement === e.target ? '0 0 0 2px skyblue' : '0 0 8px rgba(0,0,0,0.5), 0 0 0 2px transparent'}
+                      onMouseEnter={e => e.target.style.boxShadow = '0 0 0 2px #60a5fa'}
+                      onMouseLeave={e => e.target.style.boxShadow = document.activeElement === e.target ? '0 0 0 2px #3b82f6' : '0 0 8px rgba(0,0,0,0.5), 0 0 0 2px transparent'}
                       onFocus={e => e.target.style.boxShadow = '0 0 0 2px skyblue'}
                       onBlur={e => e.target.style.boxShadow = '0 0 8px rgba(0,0,0,0.5), 0 0 0 2px transparent'}
                     />
@@ -250,10 +250,7 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                         שומר...
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2">
-                        <Trophy className="w-5 h-5" />
-                        התחל לשחק
-                      </div>
+                      התחל לשחק
                     )}
                   </Button>
                 </motion.div>

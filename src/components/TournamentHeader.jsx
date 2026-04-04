@@ -1,4 +1,5 @@
 import React from "react";
+import { HyperText } from "./magicui/hyper-text";
 
 export default function TournamentHeader() {
   return (
@@ -8,9 +9,13 @@ export default function TournamentHeader() {
         <h1 className="text-3xl md:text-4xl font-light text-white tracking-widest uppercase">
           World Cup
         </h1>
-        <p className="text-4xl md:text-5xl font-bold text-amber-400 tracking-wider mt-1">
+        <HyperText
+          className="text-4xl md:text-5xl font-bold text-amber-400 tracking-wider mt-1 block"
+          animateOnMount={true}
+          duration={1.2}
+        >
           2026
-        </p>
+        </HyperText>
       </div>
 
       {/* Trophy Image */}
