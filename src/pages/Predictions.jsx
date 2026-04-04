@@ -18,6 +18,7 @@ import MatchPredictionsModal from "../components/MatchPredictionsModal"; // ADDE
 import CrowdWisdomStats from "../components/predictions/CrowdWisdomStats"; // ADDED CrowdWisdomStats import
 import { RevealText } from "@/components/magicui/reveal-text";
 import TeamFlag from "@/components/TeamFlag";
+import GroupStandingsModal from "@/components/GroupStandingsModal";
 
 export default function Predictions() {
   const [currentRound, setCurrentRound] = useState(null);
@@ -36,6 +37,7 @@ export default function Predictions() {
   const [selectedMatchForRules, setSelectedMatchForRules] = useState(null);
   // NEW: Add state for predictions modal
   const [showPredictionsModal, setShowPredictionsModal] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedMatchForPredictions, setSelectedMatchForPredictions] = useState(null);
   const [shouldAnimate, setShouldAnimate] = useState(false);
 
@@ -492,9 +494,12 @@ export default function Predictions() {
                     {/* Group badge */}
                     {match.league && (
                       <div className="flex justify-center mb-3 -mt-3">
-                        <span className="text-xs font-semibold text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 px-3 py-0.5 rounded-full">
-                          {match.league}
-                        </span>
+                        <button
+                          onClick={() => setSelectedGroup(match.league)}
+                          className="text-xs font-semibold text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 px-3 py-0.5 rounded-full hover:bg-yellow-400/20 hover:border-yellow-400/60 transition-colors cursor-pointer"
+                        >
+                          {match.league} ↗
+                        </button>
                       </div>
                     )}
 
@@ -644,6 +649,11 @@ export default function Predictions() {
           onClose={handleClosePredictions}
           match={selectedMatchForPredictions} />
 
+        {selectedGroup && (
+          <GroupStandingsModal
+            group={selectedGroup}
+            onClose={() => setSelectedGroup(null)} />
+        )}
 
         {/* --- SUCCESS ANIMATION OVERLAY --- */}
         <AnimatePresence>
