@@ -8,14 +8,14 @@ import { ShineBorder } from "@/components/magicui/shine-border";
 const RoundCard = ({ round, onClick }) => {
   return (
     <div className="relative group cursor-pointer mx-3 flex-shrink-0" onClick={() => onClick(round)}>
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl blur opacity-40 group-hover:opacity-100 transition duration-500 group-hover:duration-200"></div>
+      <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-blue-600 rounded-xl blur opacity-40 group-hover:opacity-100 transition duration-500 group-hover:duration-200"></div>
       <figure
         className={cn(
           "relative h-16 w-60 overflow-hidden rounded-xl border p-3 transition-all duration-300 flex items-center",
           "border-slate-700 bg-slate-900 backdrop-blur-sm",
         )}
       >
-        <ShineBorder shineColor={["#10B981", "#3B82F6", "#06B6D4"]} borderRadius={12} borderWidth={1.5} />
+        <ShineBorder shineColor={["#F59E0B", "#FBBF24", "#1D4ED8"]} borderRadius={12} borderWidth={1.5} />
         {/* FIFA World Cup Logo - Left */}
         <div className="flex-shrink-0 ml-2">
           <img
