@@ -461,7 +461,7 @@ export default function Predictions() {
                     <Eye className="w-4 h-4" />
                   </Button>
 
-                  <CardContent className="p-5 pt-8 flex-1 flex flex-col justify-between">
+                  <CardContent className="p-5 pt-4 flex-1 flex flex-col justify-between">
                     {/* Header: Countdown / Status */}
                     <div className="flex justify-center mb-3">
                       {timeInfo.status === 'locked' || timeInfo.status === 'finished' ?
