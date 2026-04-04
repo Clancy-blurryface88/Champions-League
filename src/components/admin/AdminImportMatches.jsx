@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Round } from '@/api/entities';
 import { Match } from '@/api/entities';
+import { TeamLogo } from '@/api/entities';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { getFlagCode } from '@/utils/teamFlags';
+import { getFlagCode, TEAM_FLAGS } from '@/utils/teamFlags';
 
 const MATCHES_JSON = [
   { MatchNumber: 1, RoundNumber: 1, DateUtc: "2026-06-11 19:00:00Z", Location: "Mexico City Stadium", HomeTeam: "Mexico", AwayTeam: "South Africa", Group: "Group A" },
@@ -103,6 +104,19 @@ export default function AdminImportMatches() {
     setLog([]);
 
     try {
+      // Step 0: Seed team_logos
+      addLog('מאכלס נבחרות ב-Team Logos...');
+      const existingLogos = await TeamLogo.list('name');
+      const existingNames = new Set(existingLogos.map(l => l.name));
+      let logosCreated = 0;
+      for (const [teamName, flagCode] of Object.entries(TEAM_FLAGS)) {
+        if (!existingNames.has(teamName)) {
+          await TeamLogo.create({ name: teamName, logo_url: flagCode });
+          logosCreated++;
+        }
+      }
+      addLog(`${logosCreated} נבחרות נוספו ל-Team Logos (${existingNames.size} היו קיימות)`, 'success');
+
       // Step 1: Create or find rounds
       addLog('יוצר מחזורים...');
       const existingRounds = await Round.list('order');

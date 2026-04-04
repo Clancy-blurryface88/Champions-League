@@ -1,4 +1,5 @@
 
+import TeamFlag from "@/components/TeamFlag";
 import React from "react";
 import { motion } from "framer-motion";
 // Check import removed as it's replaced with inline SVG
@@ -71,10 +72,7 @@ export default function PredictionSummary({ predictions, matches, onConfirm, onC
                 <div className="flex items-center justify-between">
                   {/* לוגo קבוצה A */}
                   <div className="flex items-center justify-center w-12">
-                    <img
-                    src={match.team_a_logo}
-                    alt={match.team_a}
-                    className="w-10 h-10 object-contain" />
+                    <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-10 h-10 " />
 
                   </div>
 
@@ -87,10 +85,7 @@ export default function PredictionSummary({ predictions, matches, onConfirm, onC
 
                   {/* לוגו קבוצה B */}
                   <div className="flex items-center justify-center w-12">
-                    <img
-                    src={match.team_b_logo}
-                    alt={match.team_b}
-                    className="w-10 h-10 object-contain" />
+                    <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-10 h-10 " />
 
                   </div>
                 </div>

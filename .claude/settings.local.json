@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(vercel --version)",
+      "mcp__plugin_vercel_vercel__list_deployments",
+      "Bash(npm install:*)"
+    ]
+  }
+}

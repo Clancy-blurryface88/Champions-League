@@ -1,3 +1,4 @@
+import TeamFlag from "@/components/TeamFlag";
 import React, { useState, useEffect, useCallback } from "react";
 import { User } from "@/api/entities";
 import { Prediction } from "@/api/entities";
@@ -853,11 +854,7 @@ export default function MyStats() {
                       <div className="flex items-center justify-between gap-4">
                         {/* Team A Logo */}
                         <div className="flex items-center justify-center flex-1">
-                          <img
-                            src={bestMatch.match.team_a_logo}
-                            alt={bestMatch.match.team_a}
-                            className="w-12 h-12 object-contain"
-                          />
+                          <TeamFlag logo={bestMatch.match.team_a_logo} name={bestMatch.match.team_a} className="w-12 h-12 " />
                         </div>
 
                         {/* Score in center */}
@@ -869,11 +866,7 @@ export default function MyStats() {
 
                         {/* Team B Logo */}
                         <div className="flex items-center justify-center flex-1">
-                          <img
-                            src={bestMatch.match.team_b_logo}
-                            alt={bestMatch.match.team_b}
-                            className="w-12 h-12 object-contain"
-                          />
+                          <TeamFlag logo={bestMatch.match.team_b_logo} name={bestMatch.match.team_b} className="w-12 h-12 " />
                         </div>
                       </div>
 
@@ -1291,9 +1284,9 @@ export default function MyStats() {
                                   {comparisonMyBestMatch ? (
                                     <div className="space-y-3">
                                       <div className="flex items-center justify-center gap-2">
-                                        <img src={comparisonMyBestMatch.match.team_a_logo} alt={comparisonMyBestMatch.match.team_a} className="w-8 h-8 object-contain" />
+                                        <TeamFlag logo={comparisonMyBestMatch.match.team_a_logo} name={comparisonMyBestMatch.match.team_a} className="w-8 h-8 " />
                                         <span className="text-white font-bold">{comparisonMyBestMatch.match.actual_score_a}-{comparisonMyBestMatch.match.actual_score_b}</span>
-                                        <img src={comparisonMyBestMatch.match.team_b_logo} alt={comparisonMyBestMatch.match.team_b} className="w-8 h-8 object-contain" />
+                                        <TeamFlag logo={comparisonMyBestMatch.match.team_b_logo} name={comparisonMyBestMatch.match.team_b} className="w-8 h-8 " />
                                       </div>
                                       <div className="text-center">
                                         <p className="text-slate-400 text-xs">הניחוש: {comparisonMyBestMatch.prediction.predicted_score_a}-{comparisonMyBestMatch.prediction.predicted_score_b}</p>
@@ -1313,9 +1306,9 @@ export default function MyStats() {
                                   {comparisonBestMatch ? (
                                     <div className="space-y-3">
                                       <div className="flex items-center justify-center gap-2">
-                                        <img src={comparisonBestMatch.match.team_a_logo} alt={comparisonBestMatch.match.team_a} className="w-8 h-8 object-contain" />
+                                        <TeamFlag logo={comparisonBestMatch.match.team_a_logo} name={comparisonBestMatch.match.team_a} className="w-8 h-8 " />
                                         <span className="text-white font-bold">{comparisonBestMatch.match.actual_score_a}-{comparisonBestMatch.match.actual_score_b}</span>
-                                        <img src={comparisonBestMatch.match.team_b_logo} alt={comparisonBestMatch.match.team_b} className="w-8 h-8 object-contain" />
+                                        <TeamFlag logo={comparisonBestMatch.match.team_b_logo} name={comparisonBestMatch.match.team_b} className="w-8 h-8 " />
                                       </div>
                                       <div className="text-center">
                                         <p className="text-slate-400 text-xs">הניחוש: {comparisonBestMatch.prediction.predicted_score_a}-{comparisonBestMatch.prediction.predicted_score_b}</p>
@@ -1522,9 +1515,9 @@ export default function MyStats() {
                                   {player1BestMatch ? (
                                     <div className="space-y-3">
                                       <div className="flex items-center justify-center gap-2">
-                                        <img src={player1BestMatch.match.team_a_logo} alt={player1BestMatch.match.team_a} className="w-8 h-8 object-contain" />
+                                        <TeamFlag logo={player1BestMatch.match.team_a_logo} name={player1BestMatch.match.team_a} className="w-8 h-8 " />
                                         <span className="text-white font-bold">{player1BestMatch.match.actual_score_a}-{player1BestMatch.match.actual_score_b}</span>
-                                        <img src={player1BestMatch.match.team_b_logo} alt={player1BestMatch.match.team_b} className="w-8 h-8 object-contain" />
+                                        <TeamFlag logo={player1BestMatch.match.team_b_logo} name={player1BestMatch.match.team_b} className="w-8 h-8 " />
                                       </div>
                                       <div className="text-center">
                                         <p className="text-slate-400 text-xs">הניחוש: {player1BestMatch.prediction.predicted_score_a}-{player1BestMatch.prediction.predicted_score_b}</p>
@@ -1544,9 +1537,9 @@ export default function MyStats() {
                                   {player2BestMatch ? (
                                     <div className="space-y-3">
                                       <div className="flex items-center justify-center gap-2">
-                                        <img src={player2BestMatch.match.team_a_logo} alt={player2BestMatch.match.team_a} className="w-8 h-8 object-contain" />
+                                        <TeamFlag logo={player2BestMatch.match.team_a_logo} name={player2BestMatch.match.team_a} className="w-8 h-8 " />
                                         <span className="text-white font-bold">{player2BestMatch.match.actual_score_a}-{player2BestMatch.match.actual_score_b}</span>
-                                        <img src={player2BestMatch.match.team_b_logo} alt={player2BestMatch.match.team_b} className="w-8 h-8 object-contain" />
+                                        <TeamFlag logo={player2BestMatch.match.team_b_logo} name={player2BestMatch.match.team_b} className="w-8 h-8 " />
                                       </div>
                                       <div className="text-center">
                                         <p className="text-slate-400 text-xs">הניחוש: {player2BestMatch.prediction.predicted_score_a}-{player2BestMatch.prediction.predicted_score_b}</p>

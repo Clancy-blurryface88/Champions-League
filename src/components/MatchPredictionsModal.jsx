@@ -1,3 +1,4 @@
+import TeamFlag from "@/components/TeamFlag";
 import React, { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Prediction } from "@/api/entities";
@@ -95,7 +96,7 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
         {/* Match info */}
         <div className="flex items-start justify-center w-full p-4 bg-slate-700/50 rounded-lg mb-4 flex-shrink-0">
           <div className="flex items-start gap-3 flex-1 justify-end">
-            <img src={match.team_a_logo} alt={match.team_a} className="w-10 h-10 object-contain" />
+            <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-10 h-10 " />
             <div className="text-slate-50 text-sm font-medium text-left leading-tight pt-2.5">
               {match.team_a.split(' ').map((word, i) => (
                 <div key={i}>{word}</div>
@@ -111,7 +112,7 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
                 <div key={i}>{word}</div>
               ))}
             </div>
-            <img src={match.team_b_logo} alt={match.team_b} className="w-10 h-10 object-contain" />
+            <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-10 h-10 " />
           </div>
         </div>
 
@@ -151,11 +152,11 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
 
                         {/* Prediction with logos */}
                         <div className="flex items-center gap-2">
-                          <img src={match.team_a_logo} alt={match.team_a} className="w-5 h-5 object-contain" />
+                          <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5 " />
                           <span className="text-white font-bold text-base">
                             {prediction.predicted_score_a} - {prediction.predicted_score_b}
                           </span>
-                          <img src={match.team_b_logo} alt={match.team_b} className="w-5 h-5 object-contain" />
+                          <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5 " />
                         </div>
                       </div>
                     </motion.div>

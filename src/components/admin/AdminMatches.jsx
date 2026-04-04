@@ -1,3 +1,4 @@
+import TeamFlag from "@/components/TeamFlag";
 import React, { useState, useEffect } from "react";
 import { Match } from "@/api/entities";
 import { Round } from "@/api/entities";
@@ -138,13 +139,13 @@ export default function AdminMatches() {
               <CardHeader className="p-4 flex flex-row items-center justify-between bg-slate-800/50">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2 font-semibold text-white">
-                    <img src={match.team_a_logo} alt={match.team_a} className="w-6 h-6 object-contain" />
+                    <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-6 h-6 " />
                     <span>{match.team_a}</span>
                   </div>
                   <span className="text-slate-400">vs</span>
                   <div className="flex items-center gap-2 font-semibold text-white">
                     <span>{match.team_b}</span>
-                    <img src={match.team_b_logo} alt={match.team_b} className="w-6 h-6 object-contain" />
+                    <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-6 h-6 " />
                   </div>
                 </div>
                 <DropdownMenu>

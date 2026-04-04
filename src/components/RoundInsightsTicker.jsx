@@ -1,3 +1,4 @@
+import TeamFlag from "@/components/TeamFlag";
 import React, { useState, useEffect } from 'react';
 import { Match } from "@/api/entities";
 import { Round } from "@/api/entities";
@@ -230,9 +231,9 @@ export default function RoundInsightsTicker({ user }) {
                 text: <><span className="text-white">המשחק הכי טוב שלך:</span> <span className="text-emerald-400 font-bold">{bestMatch.points} נק'</span></>,
                 icon:
                 <div className="flex items-center gap-1">
-                                {matchObj.team_a_logo && <img src={matchObj.team_a_logo} alt={matchObj.team_a} className="w-[18px] h-[18px] object-contain" />}
+                                {matchObj.team_a_logo && <TeamFlag logo={matchObj.team_a_logo} name={matchObj.team_a} className="w-[18px] h-[18px] " />}
                                 <span className="text-slate-400 text-[10px] mx-0.5">vs</span>
-                                {matchObj.team_b_logo && <img src={matchObj.team_b_logo} alt={matchObj.team_b} className="w-[18px] h-[18px] object-contain" />}
+                                {matchObj.team_b_logo && <TeamFlag logo={matchObj.team_b_logo} name={matchObj.team_b} className="w-[18px] h-[18px] " />}
                             </div>
 
               };

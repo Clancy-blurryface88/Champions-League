@@ -1,4 +1,5 @@
 
+import TeamFlag from "@/components/TeamFlag";
 import React, { useState, useEffect } from "react";
 import { User } from "@/api/entities";
 import { Round } from "@/api/entities";
@@ -214,11 +215,7 @@ export default function AdminMatchPredictions() {
                       <div className="flex items-start justify-between">
                         {/* Team A - Logo and name underneath */}
                         <div className="flex flex-col items-center flex-1">
-                          <img
-                            src={match.team_a_logo}
-                            alt={match.team_a}
-                            className="w-16 h-16 object-contain mb-2"
-                          />
+                          <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-16 h-16 mb-2" />
                           <div className="text-center max-w-[100px]">
                             <div className="text-white font-semibold text-sm leading-tight">
                               {match.team_a.split(' ').map((word, i) => (
@@ -264,11 +261,7 @@ export default function AdminMatchPredictions() {
 
                         {/* Team B - Logo and name underneath */}
                         <div className="flex flex-col items-center flex-1">
-                          <img
-                            src={match.team_b_logo}
-                            alt={match.team_b}
-                            className="w-16 h-16 object-contain mb-2"
-                          />
+                          <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-16 h-16 mb-2" />
                           <div className="text-center max-w-[100px]">
                             <div className="text-white font-semibold text-sm leading-tight">
                               {match.team_b.split(' ').map((word, i) => (

@@ -1,3 +1,4 @@
+import TeamFlag from "@/components/TeamFlag";
 import React, { useState, useEffect, useCallback } from "react";
 import { User } from "@/api/entities";
 import { Round } from "@/api/entities";
@@ -408,20 +409,14 @@ export default function PredictionsResults() {
                           משחק {currentMatchIndex + 1} מתוך {finishedMatches.length}
                         </h3>
                         <div className="flex items-center justify-center gap-3">
-                          <img
-                            src={finishedMatches[currentMatchIndex]?.team_a_logo}
-                            alt={finishedMatches[currentMatchIndex]?.team_a}
-                            className="w-8 h-8 object-contain" />
+                          <TeamFlag logo={finishedMatches[currentMatchIndex]?.team_a_logo} name={finishedMatches[currentMatchIndex]?.team_a} className="w-8 h-8 " />
 
                           <div className="bg-slate-700 px-3 py-1 rounded-lg">
                             <span className="text-white font-bold">
                               {finishedMatches[currentMatchIndex]?.actual_score_a} - {finishedMatches[currentMatchIndex]?.actual_score_b}
                             </span>
                           </div>
-                          <img
-                            src={finishedMatches[currentMatchIndex]?.team_b_logo}
-                            alt={finishedMatches[currentMatchIndex]?.team_b}
-                            className="w-8 h-8 object-contain" />
+                          <TeamFlag logo={finishedMatches[currentMatchIndex]?.team_b_logo} name={finishedMatches[currentMatchIndex]?.team_b} className="w-8 h-8 " />
                         </div>
                       </div>
 
@@ -644,7 +639,7 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                   <div className="flex items-center justify-between">
                     {/* Team logos and match info */}
                     <div className="flex items-center gap-3 flex-1">
-                      <img src={match.team_a_logo} alt={match.team_a} className="w-6 h-6 object-contain" />
+                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-6 h-6 " />
                       <div className="text-center">
                         <div className="text-slate-300 text-sm font-medium">
                           {detail.prediction}
@@ -662,7 +657,7 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                           תוצאה
                         </div>
                       </div>
-                      <img src={match.team_b_logo} alt={match.team_b} className="w-6 h-6 object-contain" />
+                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-6 h-6 " />
                     </div>
 
                     {/* Points and status */}
@@ -739,9 +734,9 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                       {getUserDisplayName(prediction.user_id)}
                     </button>
                     <div className="text-slate-400 text-base flex items-center gap-1">
-                      <img src={match.team_a_logo} alt={match.team_a} className="w-4 h-4 object-contain" />
+                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-4 h-4 " />
                       <span className="text-slate-50 pr-2 pl-2 text-sm font-medium hover:text-blue-300 transition-colors">{prediction.predicted_score_a} - {prediction.predicted_score_b}</span>
-                      <img src={match.team_b_logo} alt={match.team_b} className="w-4 h-4 object-contain" />
+                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-4 h-4 " />
                     </div>
                   </div>
                 </div>

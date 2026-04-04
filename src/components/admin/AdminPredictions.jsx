@@ -1,4 +1,5 @@
 
+import TeamFlag from "@/components/TeamFlag";
 import React, { useState, useEffect } from "react";
 import { User } from "@/api/entities";
 import { Round } from "@/api/entities";
@@ -431,7 +432,7 @@ export default function AdminPredictions() {
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
-                          <img src={match.team_a_logo} alt={match.team_a} className="w-6 h-6 object-contain" />
+                          <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-6 h-6 " />
                           <span className="font-medium text-white text-sm">{match.team_a}</span>
                         </div>
                         <div className="bg-slate-600 px-2 py-1 rounded-md">
@@ -441,7 +442,7 @@ export default function AdminPredictions() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-white text-sm">{match.team_b}</span>
-                          <img src={match.team_b_logo} alt={match.team_b} className="w-6 h-6 object-contain" />
+                          <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-6 h-6 " />
                         </div>
                       </div>
                       

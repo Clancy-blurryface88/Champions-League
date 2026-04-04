@@ -1,3 +1,4 @@
+import TeamFlag from "@/components/TeamFlag";
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +23,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
             {/* Match teams display */}
             <div className="flex items-start justify-center w-full p-4 bg-slate-700/50 rounded-lg">
               <div className="flex items-start gap-3 flex-1 justify-end">
-                <img src={match.team_a_logo} alt={match.team_a} className="w-10 h-10 object-contain" />
+                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-10 h-10 " />
                 <div className="text-slate-50 text-sm font-medium text-left leading-tight pt-2.5">
                   {match.team_a.split(' ').map((word, i) => (
                     <div key={i}>{word}</div>
@@ -38,7 +39,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
                     <div key={i}>{word}</div>
                   ))}
                 </div>
-                <img src={match.team_b_logo} alt={match.team_b} className="w-10 h-10 object-contain" />
+                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-10 h-10 " />
               </div>
             </div>
 

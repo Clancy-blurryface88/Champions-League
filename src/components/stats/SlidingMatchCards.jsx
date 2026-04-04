@@ -1,3 +1,4 @@
+import TeamFlag from "@/components/TeamFlag";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -90,7 +91,7 @@ export default function SlidingMatchCards({ items }) {
               {/* Teams and Score Header */}
               <div className="flex items-center justify-between gap-3 mb-6">
                 <div className="flex items-center justify-center w-16 h-16 bg-white/5 rounded-full p-2">
-                  <img src={currentItem.match.team_a_logo} alt={currentItem.match.team_a} className="w-full h-full object-contain" />
+                  <TeamFlag logo={currentItem.match.team_a_logo} name={currentItem.match.team_a} className="w-full h-full " />
                 </div>
                 <div className="text-center flex-1">
                   <div className="text-3xl font-bold text-white tracking-wider" dir="ltr">
@@ -101,7 +102,7 @@ export default function SlidingMatchCards({ items }) {
                   </div>
                 </div>
                 <div className="flex items-center justify-center w-16 h-16 bg-white/5 rounded-full p-2">
-                  <img src={currentItem.match.team_b_logo} alt={currentItem.match.team_b} className="w-full h-full object-contain" />
+                  <TeamFlag logo={currentItem.match.team_b_logo} name={currentItem.match.team_b} className="w-full h-full " />
                 </div>
               </div>
 

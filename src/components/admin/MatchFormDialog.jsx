@@ -6,11 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
+import TeamFlag from "@/components/TeamFlag";
 
 const LogoSelectItem = React.forwardRef(({ children, logoUrl, ...props }, ref) => (
   <SelectItem ref={ref} {...props}>
     <div className="flex items-center gap-2">
-      <img src={logoUrl} alt={children} className="w-5 h-5 object-contain" />
+      <TeamFlag logo={logoUrl} name={children} className="w-5 h-5" animate={false} />
       <span>{children}</span>
     </div>
   </SelectItem>
@@ -124,7 +125,7 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
                   ))}
                 </SelectContent>
               </Select>
-              {formData.team_a_logo && <img src={formData.team_a_logo} alt="Team A Logo" className="w-16 h-16 mt-2 rounded object-contain bg-slate-700 p-1" />}
+              {formData.team_a_logo && <TeamFlag logo={formData.team_a_logo} name={formData.team_a} className="w-16 h-16" animate={false} />}
             </div>
             <div>
               <Label htmlFor="match_date">Match Date & Time</Label>
@@ -156,7 +157,7 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
                   ))}
                 </SelectContent>
               </Select>
-              {formData.team_b_logo && <img src={formData.team_b_logo} alt="Team B Logo" className="w-16 h-16 mt-2 rounded object-contain bg-slate-700 p-1" />}
+              {formData.team_b_logo && <TeamFlag logo={formData.team_b_logo} name={formData.team_b} className="w-16 h-16" animate={false} />}
             </div>
             <div>
               <Label htmlFor="league">League</Label>
