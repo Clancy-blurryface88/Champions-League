@@ -556,14 +556,14 @@ export default function Predictions() {
 
                     {/* Footer: Date & Location */}
                     <div className="mt-auto pt-4 border-t border-slate-700/50 space-y-1.5">
-                      <div className="flex items-center justify-center text-sm text-slate-400" dir="rtl">
+                      <div className="flex items-center justify-center text-sm text-white" dir="rtl">
                         <Calendar className="w-4 h-4 ml-2" />
                         <span>
                           בשעה {moment(match.match_date).format('HH:mm')} {moment(match.match_date).format('DD/MM/YYYY')}
                         </span>
                       </div>
                       {match.location && (
-                        <div className="flex items-center justify-center text-xs text-slate-500">
+                        <div className="flex items-center justify-center text-xs text-white">
                           <span>📍 {match.location}</span>
                         </div>
                       )}
