@@ -19,9 +19,9 @@ const RoundCard = ({ round, onClick }) => {
         {/* FIFA World Cup Logo - Left */}
         <div className="flex-shrink-0 ml-2">
           <img
-            src="/favicon.png"
+            src="/trophy.png"
             alt="FIFA World Cup 2026"
-            className="w-9 h-9 object-contain rounded-full"
+            className="h-10 w-auto object-contain"
           />
         </div>
         
