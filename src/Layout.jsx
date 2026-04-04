@@ -468,7 +468,7 @@ export default function Layout({ children, currentPageName }) {
             className="p-0 w-[60px] h-[60px] flex items-center justify-center rounded-xl transition-colors hover:bg-slate-700/40 backdrop-blur-sm border-0 bg-transparent shadow-none">
 
             <img
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/612f50af5_strategy_9620931.png"
+              src="/football-field.png"
               alt="Menu" className="mb-2 w-full h-full object-contain rounded-lg" />
           </Button>
         </div>
