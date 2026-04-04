@@ -16,13 +16,12 @@ const RoundCard = ({ round, onClick }) => {
         )}
       >
         <ShineBorder shineColor={["#10B981", "#3B82F6", "#06B6D4"]} borderRadius={12} borderWidth={1.5} />
-        {/* Champions League Logo - Left */}
+        {/* FIFA World Cup Logo - Left */}
         <div className="flex-shrink-0 ml-2">
           <img
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/e305e21bf_314b5002f_WhatsApp2025-07-07000346_91206de8.jpg"
-            alt="Champions League"
+            src="/favicon.png"
+            alt="FIFA World Cup 2026"
             className="w-9 h-9 object-contain rounded-full"
-            style={{ filter: 'brightness(1.2) contrast(1.1)' }}
           />
         </div>
         
