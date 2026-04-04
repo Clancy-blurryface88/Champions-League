@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Match } from "@/api/entities";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Calendar, MapPin } from "lucide-react";
@@ -85,8 +85,10 @@ const toLetter = (g) => g.replace('Group ', '').trim();
 
 export default function GroupStandingsModal({ group: initialGroup, onClose }) {
   const [activeGroup, setActiveGroup] = useState(() => toLetter(initialGroup));
-  const [allMatches, setAllMatches] = useState({});  // { A: [...], B: [...], ... }
+  const [allMatches, setAllMatches] = useState({});
   const [loading, setLoading] = useState(true);
+  const activeButtonRef = useRef(null);
+  const scrollContainerRef = useRef(null);
 
   // Load ALL matches once on mount
   useEffect(() => {
@@ -114,6 +116,17 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
     };
     load();
   }, []);
+
+  // Scroll active button into view whenever activeGroup changes
+  useEffect(() => {
+    if (activeButtonRef.current && scrollContainerRef.current) {
+      activeButtonRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center',
+      });
+    }
+  }, [activeGroup]);
 
   const matches = allMatches[activeGroup] || [];
   const standings = calcStandings(matches);
@@ -148,10 +161,11 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
               </button>
             </div>
             {/* Group selector A–L */}
-            <div className="flex gap-1.5 px-4 pb-3 overflow-x-auto scrollbar-hide">
+            <div ref={scrollContainerRef} className="flex gap-1.5 px-4 pb-3 overflow-x-auto scrollbar-hide">
               {ALL_GROUPS.map((letter) => (
                 <button
                   key={letter}
+                  ref={activeGroup === letter ? activeButtonRef : null}
                   onClick={() => setActiveGroup(letter)}
                   className="relative flex-shrink-0 w-9 h-9 rounded-lg text-sm font-bold border border-slate-600"
                 >
