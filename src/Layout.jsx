@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { User } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
 import { UserStats } from "@/api/entities";
-import { Settings, LogOut, PlayCircle } from "lucide-react";
+import { Settings, LogOut, PlayCircle, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -35,6 +35,8 @@ export default function Layout({ children, currentPageName }) {
   const [showLiveData, setShowLiveData] = useState(false); // Added: New state for LiveDataPanel
   const [showSidebar, setShowSidebar] = useState(false);
   const [showYearlySummary, setShowYearlySummary] = useState(false); // NEW: State for YearlySummaryPanel
+  const [isMuted, setIsMuted] = useState(false);
+  const audioRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -387,18 +389,19 @@ export default function Layout({ children, currentPageName }) {
   // לוגיקה חדשה: נקראת לאחר שהסרטון הסתיים או דולג
   const handleIntroVideoCompleted = async () => {
     console.log("🎬 Layout handleIntroVideoCompleted - starting");
-    setShowIntroVideoModal(false); // Close the video modal
+    setShowIntroVideoModal(false);
+    // הפעלת מוזיקת הרקע אחרי אינטראקציה עם המשתמש (סיום הסרטון)
+    if (audioRef.current) {
+      audioRef.current.volume = 0.3;
+      audioRef.current.play().catch(() => {});
+    }
     try {
-      // Update the user that they have seen the video
-      console.log("🎬 Layout: Updating user - has_seen_intro_video = true");
       await User.updateMyUserData({ has_seen_intro_video: true });
-      setUser((prev) => ({ ...prev, has_seen_intro_video: true })); // Update local state
-      console.log("✅ Layout: Successfully updated user");
+      setUser((prev) => ({ ...prev, has_seen_intro_video: true }));
     } catch (error) {
       console.error("❌ Layout: Failed to update intro video status:", error);
     } finally {
-      console.log("🔄 Layout: Navigating to Dashboard");
-      navigate(createPageUrl("Dashboard")); // Navigate to dashboard after completion/skip
+      navigate(createPageUrl("Dashboard"));
     }
   };
 
@@ -471,9 +474,27 @@ export default function Layout({ children, currentPageName }) {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}>
 
-        <audio src="https://www.dropbox.com/scl/fi/u6vr6hruu1xx7qiwb2q5n/Uefa-Champions-League-Anthem.mp3?rlkey=v8i31g6f8j1o6k0a1z7q5&dl=1" autoPlay loop className="hidden" />
+        <audio ref={audioRef} src="/theme.mp3" loop preload="auto" className="hidden" />
 
         <div className="absolute inset-0 bg-black/50" />
+
+        {/* כפתור Mute/Unmute */}
+        <div className="fixed bottom-6 left-4 z-40">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              if (audioRef.current) {
+                audioRef.current.muted = !isMuted;
+                setIsMuted(!isMuted);
+              }
+            }}
+            className="p-0 w-[44px] h-[44px] flex items-center justify-center rounded-full bg-slate-800/70 backdrop-blur-sm border border-slate-600 hover:bg-slate-700/80 shadow-lg">
+            {isMuted
+              ? <VolumeX className="w-5 h-5 text-slate-400" />
+              : <Volume2 className="w-5 h-5 text-blue-400" />
+            }
+          </Button>
+        </div>
 
         {/* כפתור המבורגר עם אייקון אסטרטגיה */}
         <div className="fixed top-4 left-4 z-40">
