@@ -4,7 +4,7 @@ import { Match } from '@/api/entities';
 import { TeamLogo } from '@/api/entities';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Download, CheckCircle, AlertCircle, Loader2, Trash2 } from 'lucide-react';
 import { getFlagCode, TEAM_FLAGS } from '@/utils/teamFlags';
 
 const MATCHES_JSON = [
@@ -198,6 +198,45 @@ export default function AdminImportMatches() {
     }
   };
 
+  const handleCleanDuplicates = async () => {
+    if (!window.confirm('זה ימחק כפילויות של משחקים — ישמור רק את הראשון לכל מספר משחק. להמשיך?')) return;
+    setStatus('running');
+    setLog([]);
+    try {
+      addLog('טוען כל המשחקים...');
+      const allMatches = await Match.list('order');
+      addLog(`נמצאו ${allMatches.length} משחקים`);
+
+      // Group by round_id + order, keep first (lowest id by created order), delete the rest
+      const seen = {};
+      const toDelete = [];
+      for (const m of allMatches) {
+        const key = `${m.round_id}_${m.order}`;
+        if (seen[key]) {
+          toDelete.push(m.id);
+        } else {
+          seen[key] = true;
+        }
+      }
+
+      if (toDelete.length === 0) {
+        addLog('לא נמצאו כפילויות', 'skip');
+        setStatus('done');
+        return;
+      }
+
+      addLog(`מוחק ${toDelete.length} כפילויות...`);
+      for (const id of toDelete) {
+        await Match.delete(id);
+      }
+      addLog(`✅ נמחקו ${toDelete.length} משחקים כפולים`, 'success');
+      setStatus('done');
+    } catch (err) {
+      addLog(`שגיאה: ${err.message}`, 'error');
+      setStatus('error');
+    }
+  };
+
   const logColor = { info: 'text-slate-300', success: 'text-green-400', error: 'text-red-400', skip: 'text-yellow-400' };
 
   return (
@@ -212,11 +251,17 @@ export default function AdminImportMatches() {
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
-        {(status === 'idle' || status === 'error') && (
-          <Button onClick={handleImport} className="bg-blue-600 hover:bg-blue-700 w-full">
-            <Download className="w-4 h-4 mr-2" />
-            {status === 'error' ? 'נסה שוב' : 'ייבא עכשיו (3 מחזורים, 72 משחקים)'}
-          </Button>
+        {(status === 'idle' || status === 'error' || status === 'done') && (
+          <div className="flex flex-col gap-2">
+            <Button onClick={handleImport} className="bg-blue-600 hover:bg-blue-700 w-full">
+              <Download className="w-4 h-4 mr-2" />
+              ייבא (3 מחזורים, 72 משחקים — מדלג על קיימים)
+            </Button>
+            <Button onClick={handleCleanDuplicates} variant="outline" className="border-red-700 text-red-400 hover:bg-red-900/30 w-full">
+              <Trash2 className="w-4 h-4 mr-2" />
+              נקה כפילויות
+            </Button>
+          </div>
         )}
 
         {status === 'running' && (
