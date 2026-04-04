@@ -26,8 +26,8 @@ const STYLE = `
     left: 0;
     width: var(--size-orbe);
     height: var(--size-orbe);
-    background-color: #3ae374;
-    box-shadow: 0px 0px 20px 2px #3ae374;
+    background-color: #F59E0B;
+    box-shadow: 0px 0px 20px 2px #F59E0B;
     border-radius: 50%;
   }
   @keyframes orbit7456 {
