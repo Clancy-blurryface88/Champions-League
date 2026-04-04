@@ -63,11 +63,12 @@ export default function IntroVideoModal({ isOpen, onVideoCompleted }) {
           <video
             ref={videoRef}
             className="w-full block"
-            src="/VIDEO.mp4"
             playsInline
             onEnded={onVideoCompleted}
             style={{ maxHeight: '70vh' }}
-          />
+          >
+            <source src="/VIDEO.mp4" type="video/mp4" />
+          </video>
 
           {needsTap && (
             <div

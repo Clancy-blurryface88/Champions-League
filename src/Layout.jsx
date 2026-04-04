@@ -163,9 +163,11 @@ export default function Layout({ children, currentPageName }) {
         // או הצגת IntroVideoModal אם שם התצוגה מוגדר אבל הסרטון לא נצפה
         if (currentUser) {
           const hasDisplayName = !!(currentUser.display_name);
+          const hasSeenVideo = userWithStats.has_seen_intro_video ||
+            localStorage.getItem('intro_seen_' + currentUser.id) === 'true';
           if (!hasDisplayName) {
             setShowWelcomeModal(true);
-          } else if (!userWithStats.has_seen_intro_video) {
+          } else if (!hasSeenVideo) {
             setShowIntroVideoModal(true);
           }
         }
@@ -362,15 +364,13 @@ export default function Layout({ children, currentPageName }) {
       setShowWelcomeModal(false); // Close the welcome modal
 
       // New logic: check if intro video needs to be shown
-      const currentUser = await User.me(); // Re-fetch user data to get latest has_seen_intro_video
-      console.log("🎬 Layout handleProfileSaved - currentUser.has_seen_intro_video:", currentUser.has_seen_intro_video);
-
-      if (!currentUser.has_seen_intro_video) {
-        console.log("🎬 Layout: User hasn't seen video - showing IntroVideoModal");
-        setShowIntroVideoModal(true); // Show the intro video modal
+      const currentUser = await User.me();
+      const hasSeenVideo = currentUser.has_seen_intro_video ||
+        localStorage.getItem('intro_seen_' + currentUser.id) === 'true';
+      if (!hasSeenVideo) {
+        setShowIntroVideoModal(true);
       } else {
-        console.log("✅ Layout: User has already seen video - navigating to Dashboard");
-        navigate(createPageUrl("Dashboard")); // If video already seen, navigate to dashboard
+        navigate(createPageUrl("Dashboard"));
       }
     } catch (error) {
       console.error("Error in handleProfileSaved:", error);
@@ -382,16 +382,16 @@ export default function Layout({ children, currentPageName }) {
 
   // לוגיקה חדשה: נקראת לאחר שהסרטון הסתיים או דולג
   const handleIntroVideoCompleted = async () => {
-    console.log("🎬 Layout handleIntroVideoCompleted - starting");
     setShowIntroVideoModal(false);
+    // שמור תמיד ב-localStorage כגיבוי
+    try { localStorage.setItem('intro_seen_' + (user?.id || 'guest'), 'true'); } catch {}
     try {
       await User.updateMyUserData({ has_seen_intro_video: true });
       setUser((prev) => ({ ...prev, has_seen_intro_video: true }));
     } catch (error) {
-      console.error("❌ Layout: Failed to update intro video status:", error);
-    } finally {
-      navigate(createPageUrl("Dashboard"));
+      console.error("❌ Failed to update intro video status:", error);
     }
+    navigate(createPageUrl("Dashboard"));
   };
 
   // Show loading while checking auth
