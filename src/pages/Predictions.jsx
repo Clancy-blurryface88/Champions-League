@@ -497,9 +497,10 @@ export default function Predictions() {
                       {/* Team A */}
                       <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
                         <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" animate={shouldAnimate} />
-                        <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words h-8 flex items-start justify-center">
+                        <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words flex items-start justify-center">
                           {match.team_a}
                         </RevealText>
+                        <span className="text-slate-500 text-[10px] leading-none">(Home)</span>
                       </div>
 
                       {/* Score Input */}
@@ -538,9 +539,10 @@ export default function Predictions() {
                       {/* Team B */}
                       <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
                         <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" animate={shouldAnimate} />
-                        <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words h-8 flex items-start justify-center">
+                        <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words flex items-start justify-center">
                           {match.team_b}
                         </RevealText>
+                        <span className="text-slate-500 text-[10px] leading-none">(Away)</span>
                       </div>
                     </div>
 
