@@ -427,7 +427,7 @@ export default function Predictions() {
                   className={`relative border transition-all duration-300 h-full flex flex-col ${
                   isLocked ?
                   'border-slate-700/50 opacity-70' :
-                  'animate-shine [animation-duration:8s] border-neutral-800'}`}
+                  'animate-shine [animation-duration:20s] border-neutral-800'}`}
                   style={isLocked ? { background: 'rgba(15,23,42,0.3)' } : {
                     background: 'linear-gradient(110deg, rgba(0,1,3,0.7) 0%, rgba(0,1,3,0.7) 45%, rgba(30,38,49,0.9) 55%, rgba(0,1,3,0.7) 100%)',
                     backgroundSize: '200% 100%',
