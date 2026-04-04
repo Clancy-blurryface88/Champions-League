@@ -459,7 +459,6 @@ export default function Layout({ children, currentPageName }) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}>
-        <AppBackground />
 
         {/* כפתור המבורגר עם אייקון אסטרטגיה */}
         <div className="fixed top-4 left-4 z-40">
