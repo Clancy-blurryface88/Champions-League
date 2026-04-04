@@ -362,13 +362,7 @@ export default function Layout({ children, currentPageName }) {
     console.log("📝 Layout handleProfileSaved - displayName:", displayName);
     try {
       if (user && user.id) {
-        // Original save logic from handleSaveDisplayName:
-        await PublicProfile.create({
-          user_id: user.id,
-          display_name: displayName
-        });
-
-        // Initialize UserStats for the new user if it doesn't exist
+        // WelcomeModal already saved PublicProfile — כאן רק מאתחלים UserStats
         const existingStats = await UserStats.filter({ user_id: user.id });
         if (existingStats.length === 0) {
           await UserStats.create({
@@ -442,11 +436,7 @@ export default function Layout({ children, currentPageName }) {
             animation: shine 2s linear infinite;
           }
         `}</style>
-        <div
-          className="min-h-screen text-white relative overflow-hidden bg-cover bg-center bg-fixed"
-          style={{ backgroundImage: "url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/600b73efd_476f29ab268611e99ed45d2196390f75.png')" }}>
-
-          <div className="absolute inset-0 bg-black/50" />
+        <div className="min-h-screen text-white relative overflow-hidden" style={{ background: '#060d1a' }}>
           <div className="relative z-10 text-center">
             <LoaderBar text="LOADING" />
           </div>
@@ -479,14 +469,11 @@ export default function Layout({ children, currentPageName }) {
         }
       `}</style>
       <div
-        className="min-h-screen text-white relative overflow-hidden bg-cover bg-center bg-fixed"
-        style={{ backgroundImage: "url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/600b73efd_476f29ab268611e99ed45d2196390f75.png')" }}
+        className="min-h-screen text-white relative overflow-hidden"
+        style={{ background: '#060d1a' }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}>
-
-
-        <div className="absolute inset-0 bg-black/50" />
 
         {/* כפתור המבורגר עם אייקון אסטרטגיה */}
         <div className="fixed top-4 left-4 z-40">

@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PublicProfile } from "@/api/entities";
 import { HyperText } from "./magicui/hyper-text";
 
-const CHAMPIONS_LEAGUE_LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/26822f956_image.png";
+const WORLD_CUP_TROPHY = "/trophy.png";
 const FOOTBALL_PLAYER_AVATAR = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/bae5d8a0c_football-player_5281682.png";
 
 export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser }) {
@@ -114,28 +114,24 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                   className="relative z-10"
                 >
                   <div className="flex justify-center mb-4">
-                    <img 
-                      src={CHAMPIONS_LEAGUE_LOGO} 
-                      alt="Champions League Logo" 
-                      className="w-64 h-auto object-contain mx-auto" 
+                    <img
+                      src={WORLD_CUP_TROPHY}
+                      alt="FIFA World Cup Trophy"
+                      className="w-28 h-auto object-contain mx-auto drop-shadow-2xl"
                     />
                   </div>
-                  
+
                   <HyperText
                     className="text-2xl font-bold text-white mb-2 block"
                     animateOnMount={true}
                     duration={1.2}
                   >
-                   Champions League
+                    World Cup
                   </HyperText>
-                  
-                  <HyperText
-                    className="text-blue-100 text-sm block"
-                    animateOnMount={true}
-                    duration={0.8}
-                  >
-                    2025-2026
-                  </HyperText>
+
+                  <span className="text-blue-100 text-xl font-bold block">
+                    2026
+                  </span>
                 </motion.div>
               </div>
 
