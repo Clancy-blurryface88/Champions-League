@@ -1,13 +1,13 @@
 import { BubbleBackground } from '@/components/animate-ui/components/backgrounds/bubble';
 
-// Green 500: 34,197,94 | Blue 500: 59,130,246
+// Yellow | Black | Royal Blue
 const COLORS = {
-  first:  '59,130,246',   // blue-500
-  second: '34,197,94',    // green-500
-  third:  '96,165,250',   // blue-400
-  fourth: '74,222,128',   // green-400
-  fifth:  '37,99,235',    // blue-600
-  sixth:  '22,163,74',    // green-600
+  first:  '65,105,225',   // royal blue
+  second: '234,179,8',    // yellow-500
+  third:  '29,78,216',    // blue-700
+  fourth: '253,224,71',   // yellow-300
+  fifth:  '99,132,255',   // blue-400 light
+  sixth:  '161,122,6',    // gold dark
 };
 
 export default function AppBackground() {
@@ -15,7 +15,7 @@ export default function AppBackground() {
     <BubbleBackground
       interactive={true}
       colors={COLORS}
-      className="fixed inset-0 bg-[#030d0a]"
+      className="fixed inset-0 bg-[#05050f]"
     />
   );
 }
