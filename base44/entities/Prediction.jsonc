@@ -1,0 +1,53 @@
+{
+  "name": "Prediction",
+  "type": "object",
+  "properties": {
+    "match_id": {
+      "type": "string",
+      "description": "ID of the match being predicted"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID of the user making the prediction"
+    },
+    "predicted_score_a": {
+      "type": "number",
+      "description": "Predicted goals for team A"
+    },
+    "predicted_score_b": {
+      "type": "number",
+      "description": "Predicted goals for team B"
+    },
+    "points_earned": {
+      "type": "number",
+      "default": 0,
+      "description": "Total points earned from this prediction"
+    },
+    "exact_score_points_earned": {
+      "type": "number",
+      "default": 0,
+      "description": "Points earned for exact score match"
+    },
+    "correct_outcome_points_earned": {
+      "type": "number",
+      "default": 0,
+      "description": "Points earned for correct outcome"
+    },
+    "goals_range_points_earned": {
+      "type": "number",
+      "default": 0,
+      "description": "Points earned for correct goal range"
+    },
+    "both_teams_scored_points_earned": {
+      "type": "number",
+      "default": 0,
+      "description": "Points earned for correct both teams scored prediction"
+    }
+  },
+  "required": [
+    "match_id",
+    "user_id",
+    "predicted_score_a",
+    "predicted_score_b"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "total_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Total points accumulated"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "URL to user's avatar image"
+    },
+    "is_admin": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether user has admin privileges"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Custom display name chosen by the user for the tournament"
+    },
+    "exact_hits_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of exact score predictions"
+    },
+    "total_predictions_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of predictions made by the user"
+    }
+  },
+  "required": []
+}

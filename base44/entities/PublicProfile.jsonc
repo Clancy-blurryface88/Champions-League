@@ -1,0 +1,23 @@
+{
+  "name": "PublicProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "ID of the user this profile belongs to"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Public display name for the user in the leaderboard"
+    },
+    "avatar_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Optional URL for a public avatar image"
+    }
+  },
+  "required": [
+    "user_id",
+    "display_name"
+  ]
+}

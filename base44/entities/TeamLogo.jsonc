@@ -1,0 +1,19 @@
+{
+  "name": "TeamLogo",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the team (e.g., Real Madrid)"
+    },
+    "logo_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Public URL of the uploaded logo image"
+    }
+  },
+  "required": [
+    "name",
+    "logo_url"
+  ]
+}

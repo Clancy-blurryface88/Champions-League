@@ -1,0 +1,23 @@
+{
+  "name": "Round",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Round name (e.g., 'Round 1', 'Quarter Finals')"
+    },
+    "order": {
+      "type": "number",
+      "description": "Display order of the round"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this round is available for predictions"
+    }
+  },
+  "required": [
+    "name",
+    "order"
+  ]
+}

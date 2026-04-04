@@ -1,0 +1,116 @@
+{
+  "name": "Match",
+  "type": "object",
+  "properties": {
+    "round_id": {
+      "type": "string",
+      "description": "ID of the round this match belongs to"
+    },
+    "team_a": {
+      "type": "string",
+      "description": "First team name"
+    },
+    "team_b": {
+      "type": "string",
+      "description": "Second team name"
+    },
+    "team_a_logo": {
+      "type": "string",
+      "description": "URL to team A logo"
+    },
+    "team_b_logo": {
+      "type": "string",
+      "description": "URL to team B logo"
+    },
+    "actual_score_a": {
+      "type": "number",
+      "description": "Actual goals scored by team A"
+    },
+    "actual_score_b": {
+      "type": "number",
+      "description": "Actual goals scored by team B"
+    },
+    "previous_match_score_a": {
+      "type": "number",
+      "description": "Score of team A in the previous encounter"
+    },
+    "previous_match_score_b": {
+      "type": "number",
+      "description": "Score of team B in the previous encounter"
+    },
+    "match_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the match is scheduled"
+    },
+    "is_finished": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the match has been completed"
+    },
+    "is_score_calculated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether scores have been calculated for this match"
+    },
+    "order": {
+      "type": "number",
+      "description": "Display order within the round"
+    },
+    "league": {
+      "type": "string",
+      "description": "League name"
+    },
+    "home_win_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Points for home team win"
+    },
+    "away_win_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Points for away team win"
+    },
+    "draw_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Points for a draw"
+    },
+    "btts_yes_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Points if both teams score = YES"
+    },
+    "btts_no_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Points if both teams score = NO"
+    },
+    "exact_score_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Points for exact score prediction"
+    },
+    "goals_0_2_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Points for 0-2 goals range"
+    },
+    "goals_3_4_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Points for 3-4 goals range"
+    },
+    "goals_5_plus_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Points for 5+ goals range"
+    }
+  },
+  "required": [
+    "round_id",
+    "team_a",
+    "team_b",
+    "order"
+  ]
+}

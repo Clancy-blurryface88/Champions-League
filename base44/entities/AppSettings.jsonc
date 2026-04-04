@@ -1,0 +1,31 @@
+{
+  "name": "AppSettings",
+  "type": "object",
+  "properties": {
+    "tournament_logo_url": {
+      "type": "string",
+      "description": "URL to the tournament logo"
+    },
+    "exact_score_points": {
+      "type": "number",
+      "default": 5,
+      "description": "Points awarded for exact score prediction"
+    },
+    "correct_outcome_points": {
+      "type": "number",
+      "default": 3,
+      "description": "Points awarded for correct outcome prediction"
+    },
+    "goals_range_points": {
+      "type": "number",
+      "default": 1,
+      "description": "Points awarded for correct goals range"
+    },
+    "both_teams_scored_points": {
+      "type": "number",
+      "default": 1,
+      "description": "Points awarded for correct both teams scored prediction"
+    }
+  },
+  "required": []
+}

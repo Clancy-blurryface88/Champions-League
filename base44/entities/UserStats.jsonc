@@ -1,0 +1,28 @@
+{
+  "name": "UserStats",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "ID of the user these stats belong to"
+    },
+    "total_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Total points accumulated by the user"
+    },
+    "exact_hits_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of exact score predictions"
+    },
+    "total_predictions_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of predictions made by the user"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}
