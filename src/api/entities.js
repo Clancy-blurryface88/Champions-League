@@ -97,10 +97,15 @@ export const User = {
   },
 
   loginWithRedirect: async (redirectUrl) => {
-    await supabase.auth.signInWithOAuth({
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: redirectUrl || window.location.href }
+      options: {
+        redirectTo: redirectUrl || window.location.origin,
+        queryParams: { prompt: 'select_account' }
+      }
     });
+    if (error) throw error;
+    return data;
   },
 
   logout: async () => {

@@ -332,9 +332,10 @@ export default function Layout({ children, currentPageName }) {
 
   const handleLogin = async () => {
     try {
-      await User.loginWithRedirect(window.location.href);
+      await User.loginWithRedirect(window.location.origin);
     } catch (error) {
       console.error("Error logging in:", error);
+      alert("שגיאה בכניסה: " + (error?.message || JSON.stringify(error)));
     }
   };
 
