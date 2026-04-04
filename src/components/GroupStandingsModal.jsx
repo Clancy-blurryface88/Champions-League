@@ -153,13 +153,20 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
                 <button
                   key={letter}
                   onClick={() => setActiveGroup(letter)}
-                  className={`flex-shrink-0 w-9 h-9 rounded-lg text-sm font-bold transition-all border ${
-                    activeGroup === letter
-                      ? 'bg-yellow-400/20 border-yellow-400 text-yellow-400'
-                      : 'bg-slate-800 border-slate-600 text-slate-300 hover:border-slate-400'
-                  }`}
+                  className="relative flex-shrink-0 w-9 h-9 rounded-lg text-sm font-bold border border-slate-600"
                 >
-                  {letter}
+                  {activeGroup === letter && (
+                    <motion.div
+                      layoutId="group-active"
+                      className="absolute inset-0 rounded-lg bg-yellow-400/20 border border-yellow-400"
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <span className={`relative z-10 transition-colors duration-150 ${
+                    activeGroup === letter ? 'text-yellow-400' : 'text-slate-300'
+                  }`}>
+                    {letter}
+                  </span>
                 </button>
               ))}
             </div>
