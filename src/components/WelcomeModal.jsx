@@ -198,14 +198,32 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                   </label>
                   
                   <div className="relative">
-                    <Input
+                    <input
                       value={displayName}
                       onChange={handleInputChange}
                       onKeyPress={handleKeyPress}
                       placeholder="הכנס את השם שלך..."
-                      className="bg-slate-700/50 border-slate-600 text-white text-center text-lg font-medium focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all"
                       maxLength={20}
                       disabled={saving}
+                      style={{
+                        fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI","Roboto","Oxygen","Ubuntu","Cantarell","Fira Sans","Droid Sans","Helvetica Neue",sans-serif',
+                        fontWeight: 500,
+                        fontSize: '1rem',
+                        color: '#fff',
+                        backgroundColor: 'rgb(28,28,30)',
+                        boxShadow: '0 0 8px rgba(0,0,0,0.5), 0 0 0 2px transparent',
+                        borderRadius: '8px',
+                        border: 'none',
+                        outline: 'none',
+                        padding: '10px 14px',
+                        width: '100%',
+                        transition: '.4s',
+                        textAlign: 'center',
+                      }}
+                      onMouseEnter={e => e.target.style.boxShadow = '0 0 0 2px rgba(135,207,235,0.186)'}
+                      onMouseLeave={e => e.target.style.boxShadow = document.activeElement === e.target ? '0 0 0 2px skyblue' : '0 0 8px rgba(0,0,0,0.5), 0 0 0 2px transparent'}
+                      onFocus={e => e.target.style.boxShadow = '0 0 0 2px skyblue'}
+                      onBlur={e => e.target.style.boxShadow = '0 0 8px rgba(0,0,0,0.5), 0 0 0 2px transparent'}
                     />
                   </div>
                   
