@@ -193,7 +193,7 @@ export const Match = {
     Object.entries(filters).forEach(([key, value]) => {
       query = query.eq(key, value);
     });
-    const { data, error } = await query.order('order', { ascending: true });
+    const { data, error } = await query.order('match_date', { ascending: true });
     if (error) throw error;
     return data;
   },

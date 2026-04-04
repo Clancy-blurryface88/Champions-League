@@ -158,7 +158,7 @@ export default function Predictions() {
       }
 
       setCurrentRound(rounds[0]);
-      setMatches(roundMatches.sort((a, b) => a.order - b.order));
+      setMatches(roundMatches.sort((a, b) => new Date(a.match_date) - new Date(b.match_date)));
 
       const userPredictions = await Prediction.filter({
         user_id: currentUser.id
