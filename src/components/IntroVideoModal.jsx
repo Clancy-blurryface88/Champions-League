@@ -52,7 +52,7 @@ export default function IntroVideoModal({ isOpen, onVideoCompleted }) {
             <iframe
               ref={iframeRef}
               className="absolute top-0 left-0 w-full h-full"
-              src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&controls=0&modestbranding=1&rel=0&showinfo=0&loop=0`}
+              src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&loop=0&playsinline=1`}
               title="Intro Video"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
