@@ -71,7 +71,7 @@ export default function Predictions() {
   const isMatchLocked = (matchDate) => {
     const now = new Date();
     const matchTime = new Date(matchDate);
-    const lockTime = new Date(matchTime.getTime() - 30 * 60 * 1000);
+    const lockTime = new Date(matchTime.getTime() - 15 * 60 * 1000);
     return now >= lockTime;
   };
 
@@ -80,7 +80,7 @@ export default function Predictions() {
   const getTimeUntilLock = (matchDate) => {
     const now = currentTime;
     const matchTime = new Date(matchDate);
-    const lockTime = new Date(matchTime.getTime() - 30 * 60 * 1000);
+    const lockTime = new Date(matchTime.getTime() - 15 * 60 * 1000);
 
     let days = 0;
     let hours = 0;
