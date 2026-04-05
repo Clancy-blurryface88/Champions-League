@@ -121,8 +121,10 @@ export default function Layout({ children, currentPageName }) {
     setUser(userWithStats);
     setAuthLoading(false);
 
-    // Show push banner if permission not yet decided
-    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+    // Show push banner if user hasn't dismissed it and permission not yet granted
+    const bannerDismissed = localStorage.getItem('push_banner_dismissed');
+    const alreadyGranted = typeof Notification !== 'undefined' && Notification.permission === 'granted';
+    if (!bannerDismissed && !alreadyGranted) {
       setShowPushBanner(true);
     }
   };
@@ -778,6 +780,7 @@ export default function Layout({ children, currentPageName }) {
                   <button
                     onClick={async () => {
                       setShowPushBanner(false);
+                      localStorage.setItem('push_banner_dismissed', 'true');
                       if (window.OneSignal) {
                         try { await window.OneSignal.Notifications.requestPermission(); } catch (e) {}
                       }
@@ -787,7 +790,7 @@ export default function Layout({ children, currentPageName }) {
                     הפעל
                   </button>
                   <button
-                    onClick={() => setShowPushBanner(false)}
+                    onClick={() => { setShowPushBanner(false); localStorage.setItem('push_banner_dismissed', 'true'); }}
                     className="text-slate-500 text-xs text-center"
                   >
                     אחר כך
