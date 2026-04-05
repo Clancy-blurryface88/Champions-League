@@ -119,6 +119,13 @@ export default function Layout({ children, currentPageName }) {
     } catch (e) {}
     setUser(userWithStats);
     setAuthLoading(false);
+
+    // Request push notification permission after login
+    if (window.OneSignal) {
+      try {
+        await window.OneSignal.Notifications.requestPermission();
+      } catch (e) {}
+    }
   };
 
   // CRITICAL CHANGE: Load user data from UserStats instead of User entity for points
