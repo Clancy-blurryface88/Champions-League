@@ -762,43 +762,60 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Push Notification Banner */}
         <AnimatePresence>
-          {showPushBanner && (
-            <motion.div
-              initial={{ y: 100, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 100, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed bottom-6 left-4 right-4 z-50 mx-auto max-w-sm"
-            >
-              <div className="bg-slate-900 border border-yellow-400/40 rounded-2xl px-4 py-3 shadow-2xl flex items-center gap-3">
-                <span className="text-2xl">🔔</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-semibold leading-tight">רוצה להישאר מעודכן?</p>
-                  <p className="text-slate-400 text-xs mt-0.5">קבל התראות על משחקים ותוצאות</p>
+          {showPushBanner && (() => {
+            const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+            const isStandalone = window.navigator.standalone === true;
+            const isIOSBrowser = isIOS && !isStandalone;
+
+            return (
+              <motion.div
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 100, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                className="fixed bottom-6 left-4 right-4 z-50 mx-auto max-w-sm"
+              >
+                <div className="bg-slate-900 border border-yellow-400/40 rounded-2xl px-4 py-3 shadow-2xl flex items-center gap-3">
+                  <span className="text-2xl">{isIOSBrowser ? '📲' : '🔔'}</span>
+                  <div className="flex-1 min-w-0">
+                    {isIOSBrowser ? (
+                      <>
+                        <p className="text-white text-sm font-semibold leading-tight">להפעלת התראות</p>
+                        <p className="text-slate-400 text-xs mt-0.5">הוסף למסך הבית ופתח משם ⬇️ שתף</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-white text-sm font-semibold leading-tight">רוצה להישאר מעודכן?</p>
+                        <p className="text-slate-400 text-xs mt-0.5">קבל התראות על משחקים ותוצאות</p>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    {!isIOSBrowser && (
+                      <button
+                        onClick={async () => {
+                          setShowPushBanner(false);
+                          localStorage.setItem('push_banner_dismissed', 'true');
+                          if (window.OneSignal) {
+                            try { await window.OneSignal.Notifications.requestPermission(); } catch (e) {}
+                          }
+                        }}
+                        className="bg-yellow-400 text-black text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"
+                      >
+                        הפעל
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { setShowPushBanner(false); localStorage.setItem('push_banner_dismissed', 'true'); }}
+                      className="text-slate-500 text-xs text-center"
+                    >
+                      {isIOSBrowser ? 'סגור' : 'אחר כך'}
+                    </button>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <button
-                    onClick={async () => {
-                      setShowPushBanner(false);
-                      localStorage.setItem('push_banner_dismissed', 'true');
-                      if (window.OneSignal) {
-                        try { await window.OneSignal.Notifications.requestPermission(); } catch (e) {}
-                      }
-                    }}
-                    className="bg-yellow-400 text-black text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"
-                  >
-                    הפעל
-                  </button>
-                  <button
-                    onClick={() => { setShowPushBanner(false); localStorage.setItem('push_banner_dismissed', 'true'); }}
-                    className="text-slate-500 text-xs text-center"
-                  >
-                    אחר כך
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            );
+          })()}
         </AnimatePresence>
       </div>
     </>);
