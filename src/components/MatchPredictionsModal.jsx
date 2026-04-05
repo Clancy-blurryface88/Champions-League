@@ -126,7 +126,7 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
           ) : !isLocked ? (
             <div className="text-center py-8">
               <p className="text-slate-300 text-lg font-medium">הניחושים ייחשפו לאחר נעילת המשחק</p>
-              <p className="text-slate-400 text-sm mt-2">המשחק ננעל 30 דקות לפני תחילתו</p>
+              <p className="text-slate-400 text-sm mt-2">המשחק ננעל 15 דקות לפני תחילתו</p>
             </div>
           ) : uniquePredictions.length === 0 ? (
             <div className="text-center py-8">

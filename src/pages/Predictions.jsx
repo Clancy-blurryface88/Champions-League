@@ -67,7 +67,7 @@ export default function Predictions() {
     return () => clearInterval(interval);
   }, []);
 
-  // Helper function to check if a match is locked (30 minutes before start)
+  // Helper function to check if a match is locked (15 minutes before start)
   const isMatchLocked = (matchDate) => {
     const now = new Date();
     const matchTime = new Date(matchDate);
@@ -395,7 +395,7 @@ export default function Predictions() {
               הניחושים שלך נשמרו במערכת ויחושבו לאחר סיום המשחק/ים
             </p>
             <p className="text-green-100 text-sm">
-              ניתן לעדכן ניחושים עד 30 דקות לפני תחילת המשחק
+              ניתן לעדכן ניחושים עד 15 דקות לפני תחילת המשחק
             </p>
           </motion.div>
         }
