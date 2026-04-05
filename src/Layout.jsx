@@ -122,7 +122,8 @@ export default function Layout({ children, currentPageName }) {
     setAuthLoading(false);
 
     // Show push banner if user hasn't dismissed it and permission not yet granted
-    const bannerDismissed = localStorage.getItem('push_banner_dismissed');
+    const bannerKey = `push_banner_dismissed_${currentUser.id}`;
+    const bannerDismissed = localStorage.getItem(bannerKey);
     const alreadyGranted = typeof Notification !== 'undefined' && Notification.permission === 'granted';
     if (!bannerDismissed && !alreadyGranted) {
       setShowPushBanner(true);
@@ -766,6 +767,7 @@ export default function Layout({ children, currentPageName }) {
             const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
             const isStandalone = window.navigator.standalone === true;
             const isIOSBrowser = isIOS && !isStandalone;
+            const bannerKey = `push_banner_dismissed_${user?.id}`;
 
             return (
               <motion.div
@@ -795,7 +797,7 @@ export default function Layout({ children, currentPageName }) {
                       <button
                         onClick={async () => {
                           setShowPushBanner(false);
-                          localStorage.setItem('push_banner_dismissed', 'true');
+                          localStorage.setItem(bannerKey, 'true');
                           if (window.OneSignal) {
                             try { await window.OneSignal.Notifications.requestPermission(); } catch (e) {}
                           }
@@ -808,7 +810,7 @@ export default function Layout({ children, currentPageName }) {
                     <button
                       onClick={() => {
                         setShowPushBanner(false);
-                        if (!isIOSBrowser) localStorage.setItem('push_banner_dismissed', 'true');
+                        if (!isIOSBrowser) localStorage.setItem(bannerKey, 'true');
                       }}
                       className="text-slate-500 text-xs text-center"
                     >
