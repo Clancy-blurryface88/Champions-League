@@ -238,9 +238,9 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
                     </table>
                   </div>
                   <div className="flex gap-3 mt-2 px-1 text-[10px]">
-                    <span className="text-green-400">🟢 עובר אוטומטית</span>
-                    <span className="text-yellow-400">🟡 אולי עובר (3rd best)</span>
-                    <span className="text-red-400">🔴 יוצא</span>
+                    <span className="text-green-400">🟢 עולה לשלב הבא</span>
+                    <span className="text-yellow-400">🟡 המקום ה-3 הטוב ביותר</span>
+                    <span className="text-red-400">🔴 מודחת</span>
                   </div>
                 </div>
 
