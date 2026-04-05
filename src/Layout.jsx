@@ -121,11 +121,14 @@ export default function Layout({ children, currentPageName }) {
     setUser(userWithStats);
     setAuthLoading(false);
 
-    // Show push banner if user hasn't dismissed it and permission not yet granted
+    // Show push banner if needed
     const bannerKey = `push_banner_dismissed_${currentUser.id}`;
     const bannerDismissed = localStorage.getItem(bannerKey);
     const alreadyGranted = typeof Notification !== 'undefined' && Notification.permission === 'granted';
-    if (!bannerDismissed && !alreadyGranted) {
+    const isStandalonePWA = window.navigator.standalone === true;
+    // On iOS PWA: always show if not granted (ignore dismissed flag)
+    // On other platforms: show if not dismissed and not granted
+    if (!alreadyGranted && (isStandalonePWA || !bannerDismissed)) {
       setShowPushBanner(true);
     }
   };
