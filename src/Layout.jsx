@@ -120,10 +120,10 @@ export default function Layout({ children, currentPageName }) {
     setUser(userWithStats);
     setAuthLoading(false);
 
-    // Request push notification permission after login
-    if (window.OneSignal) {
+    // Request push notification permission only if not yet decided
+    if (window.OneSignal && Notification.permission === 'default') {
       try {
-        await window.OneSignal.Notifications.requestPermission();
+        window.OneSignal.Notifications.requestPermission();
       } catch (e) {}
     }
   };
