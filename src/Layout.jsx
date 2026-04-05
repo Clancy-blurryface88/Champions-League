@@ -806,7 +806,10 @@ export default function Layout({ children, currentPageName }) {
                       </button>
                     )}
                     <button
-                      onClick={() => { setShowPushBanner(false); localStorage.setItem('push_banner_dismissed', 'true'); }}
+                      onClick={() => {
+                        setShowPushBanner(false);
+                        if (!isIOSBrowser) localStorage.setItem('push_banner_dismissed', 'true');
+                      }}
                       className="text-slate-500 text-xs text-center"
                     >
                       {isIOSBrowser ? 'סגור' : 'אחר כך'}
