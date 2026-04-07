@@ -19,6 +19,7 @@ import CrowdWisdomStats from "../components/predictions/CrowdWisdomStats"; // AD
 import { RevealText } from "@/components/magicui/reveal-text";
 import TeamFlag from "@/components/TeamFlag";
 import GroupStandingsModal from "@/components/GroupStandingsModal";
+import TeamInfoModal from "@/components/TeamInfoModal";
 
 export default function Predictions() {
   const [currentRound, setCurrentRound] = useState(null);
@@ -38,6 +39,7 @@ export default function Predictions() {
   // NEW: Add state for predictions modal
   const [showPredictionsModal, setShowPredictionsModal] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const [selectedTeam, setSelectedTeam] = useState(null);
   const [selectedMatchForPredictions, setSelectedMatchForPredictions] = useState(null);
   const [shouldAnimate, setShouldAnimate] = useState(false);
 
@@ -499,7 +501,9 @@ export default function Predictions() {
                     <div className="flex items-center justify-between gap-2 mb-4">
                       {/* Team A */}
                       <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                        <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" animate={shouldAnimate} />
+                        <div onClick={() => setSelectedTeam({ name: match.team_a, logo: match.team_a_logo })} className="cursor-pointer">
+                          <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" animate={shouldAnimate} />
+                        </div>
                         <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words flex items-start justify-center">
                           {match.team_a}
                         </RevealText>
@@ -541,7 +545,9 @@ export default function Predictions() {
 
                       {/* Team B */}
                       <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                        <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" animate={shouldAnimate} />
+                        <div onClick={() => setSelectedTeam({ name: match.team_b, logo: match.team_b_logo })} className="cursor-pointer">
+                          <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" animate={shouldAnimate} />
+                        </div>
                         <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words flex items-start justify-center">
                           {match.team_b}
                         </RevealText>
@@ -643,6 +649,13 @@ export default function Predictions() {
           <GroupStandingsModal
             group={selectedGroup}
             onClose={() => setSelectedGroup(null)} />
+        )}
+
+        {selectedTeam && (
+          <TeamInfoModal
+            teamName={selectedTeam.name}
+            teamLogo={selectedTeam.logo}
+            onClose={() => setSelectedTeam(null)} />
         )}
 
         {/* --- SUCCESS ANIMATION OVERLAY --- */}
