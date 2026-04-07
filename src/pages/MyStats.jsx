@@ -779,17 +779,21 @@ export default function MyStats() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <div className="reel-btn-wrapper w-full">
-              <button
+              <div
                 onClick={() => window.dispatchEvent(new Event('openYearlySummaryPanel'))}
-                className="w-full rounded-2xl bg-gradient-to-r from-yellow-500/10 to-amber-500/10 hover:from-yellow-500/20 hover:to-amber-500/20 transition-all duration-200 py-5 px-6 flex flex-col items-center justify-center gap-1"
+                className="group relative grid w-full cursor-pointer overflow-hidden rounded-xl px-4 py-5 shadow-[0_1000px_0_0_hsl(0_0%_20%)_inset] transition-colors duration-200"
               >
-                <div className="flex items-center gap-2">
-                  <p className="text-yellow-400 font-bold text-lg">World Cup Reel</p>
-                  <span className="text-2xl">🏆</span>
+                <span>
+                  <span className="spark mask-gradient animate-flip before:animate-kitrotate absolute inset-0 h-[100%] w-[100%] overflow-hidden rounded-xl [mask:linear-gradient(white,_transparent_50%)] before:absolute before:aspect-square before:w-[200%] before:rotate-[-90deg] before:bg-[conic-gradient(from_0deg,transparent_0_340deg,white_360deg)] before:content-[''] before:[inset:0_auto_auto_50%] before:[translate:-50%_-15%]" />
+                </span>
+                <span className="backdrop absolute inset-px rounded-[11px] bg-neutral-950 transition-colors duration-200" />
+                <div className="z-10 flex flex-col items-center gap-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-yellow-400 font-bold text-lg">World Cup Reel</p>
+                    <span className="text-2xl">🏆</span>
+                  </div>
+                  <p className="text-slate-400 text-sm">הסיכום האישי שלך בטורניר</p>
                 </div>
-                <p className="text-slate-400 text-sm">הסיכום האישי שלך בטורניר</p>
-              </button>
               </div>
             </motion.div>
 

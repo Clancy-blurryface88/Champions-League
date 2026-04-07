@@ -63,30 +63,30 @@ module.exports = {
   		},
   		keyframes: {
   			'accordion-down': {
-  				from: {
-  					height: '0'
-  				},
-  				to: {
-  					height: 'var(--radix-accordion-content-height)'
-  				}
+  				from: { height: '0' },
+  				to: { height: 'var(--radix-accordion-content-height)' }
   			},
   			'accordion-up': {
-  				from: {
-  					height: 'var(--radix-accordion-content-height)'
-  				},
-  				to: {
-  					height: '0'
-  				}
+  				from: { height: 'var(--radix-accordion-content-height)' },
+  				to: { height: '0' }
   			},
   			shine: {
   				from: { backgroundPosition: '0 0' },
   				to: { backgroundPosition: '-200% 0' },
+  			},
+  			flip: {
+  				to: { transform: 'rotate(360deg)' },
+  			},
+  			kitrotate: {
+  				to: { transform: 'rotate(90deg)' },
   			},
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
   			shine: 'shine 2s linear infinite',
+  			flip: 'flip 6s infinite steps(2, end)',
+  			kitrotate: 'kitrotate 3s linear infinite both',
   		}
   	}
   },
