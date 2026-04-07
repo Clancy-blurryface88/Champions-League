@@ -103,8 +103,9 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
 
               {/* Did You Know */}
               <div>
-                <div className="flex items-center gap-2 mb-3 justify-end">
-                  <h3 className="text-yellow-400 font-bold text-sm uppercase tracking-widest">הידעת ?!</h3>
+                {/* כותרת מיושרת לימין: אימוג'י ימין, טקסט שמאלה ממנו */}
+                <div className="flex items-center gap-2 mb-3" dir="ltr" style={{ justifyContent: 'flex-end' }}>
+                  <h3 className="text-yellow-400 font-bold text-sm tracking-widest">הידעת ?!</h3>
                   <span className="text-yellow-400 text-base">💡</span>
                 </div>
                 <div className="space-y-2">
@@ -114,7 +115,10 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.6 + i * 0.2 }}
-                      className="flex flex-row items-start gap-3 bg-slate-800/50 rounded-xl px-3 py-2.5 border border-slate-700/40"
+                      // dir="ltr" + justify-end: אימוג'י בימין, טקסט שמאלו
+                      className="flex items-start gap-3 bg-slate-800/50 rounded-xl px-3 py-2.5 border border-slate-700/40"
+                      dir="ltr"
+                      style={{ justifyContent: 'flex-end' }}
                     >
                       <p className="text-slate-300 text-sm leading-relaxed text-right flex-1">{item.text}</p>
                       <span className="text-lg flex-shrink-0 mt-0.5">{item.icon}</span>
@@ -128,8 +132,8 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
 
               {/* Historic Moments */}
               <div>
-                <div className="flex items-center gap-2 mb-4 justify-end">
-                  <h3 className="text-blue-400 font-bold text-sm uppercase tracking-widest">רגעים היסטוריים</h3>
+                <div className="flex items-center gap-2 mb-4" dir="ltr" style={{ justifyContent: 'flex-end' }}>
+                  <h3 className="text-blue-400 font-bold text-sm tracking-widest">רגעים היסטוריים</h3>
                   <span className="text-blue-400 text-base">🏛️</span>
                 </div>
                 <Timeline data={timelineData} />
