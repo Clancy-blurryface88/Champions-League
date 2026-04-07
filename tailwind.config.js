@@ -85,8 +85,8 @@ module.exports = {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
   			shine: 'shine 2s linear infinite',
-  			flip: 'flip 6s infinite steps(2, end)',
-  			kitrotate: 'kitrotate 3s linear infinite both',
+  			flip: 'flip 7.8s infinite steps(2, end)',
+  			kitrotate: 'kitrotate 3.9s linear infinite both',
   		}
   	}
   },
