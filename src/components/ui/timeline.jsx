@@ -1,79 +1,62 @@
 import React, { useEffect, useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 
 export function Timeline({ data }) {
   const containerRef = useRef(null);
-  const lineRef = useRef(null);
-  const [lineHeight, setLineHeight] = useState(0);
+  const [active, setActive] = useState(false);
 
-  useEffect(() => {
-    if (lineRef.current) {
-      setLineHeight(lineRef.current.getBoundingClientRect().height);
-    }
-  }, [data]);
-
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start 80%", "end 20%"],
-  });
-
-  const heightTransform = useTransform(scrollYProgress, [0, 1], [0, lineHeight]);
-  const opacityTransform = useTransform(scrollYProgress, [0, 0.05], [0, 1]);
-
-  return (
-    // ⚠️ dir="ltr" כאן כדי להשתלט על הפלקסבוקס בצורה נכונה — הטקסט עדיין מיושר לימין
-    <div ref={containerRef} className="relative w-full" dir="ltr">
-
-      {/* קו אנכי בצד ימין */}
-      <div
-        ref={lineRef}
-        className="absolute right-[7px] top-0 bottom-0 w-[2px] bg-slate-700/50 overflow-hidden"
-      >
-        <motion.div
-          style={{ height: heightTransform, opacity: opacityTransform }}
-          className="absolute top-0 left-0 w-full bg-gradient-to-b from-blue-500 via-blue-400 to-transparent rounded-full"
-        />
-      </div>
-
-      {/* פריטים — padding-right מפנה מקום לנקודה ולקו */}
-      <div className="space-y-5 pr-6">
-        {data.map((item, i) => (
-          <TimelineItem key={i} item={item} index={i} total={data.length} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function TimelineItem({ item, index }) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-
+  // מפעיל את כל האנימציה כשציר הזמן נכנס למסך
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-      { threshold: 0.15 }
+      ([entry]) => { if (entry.isIntersecting) setActive(true); },
+      { threshold: 0.1 }
     );
-    if (ref.current) observer.observe(ref.current);
+    if (containerRef.current) observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, []);
 
+  // כל פריט לוקח ~0.5s + stagger של 0.25s בינהם
+  const totalDuration = data.length * 0.45 + 0.3;
+
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, x: -20 }}
-      animate={visible ? { opacity: 1, x: 0 } : {}}
-      transition={{ duration: 0.5, delay: index * 0.1, ease: "easeOut" }}
-      className="relative flex items-start justify-end gap-3"
-    >
-      {/* תוכן — מיושר לימין */}
-      <div className="text-right flex-1">
-        <span className="text-blue-400 font-bold text-sm block">{item.title}</span>
-        <p className="text-slate-300 text-sm leading-relaxed mt-0.5">{item.content}</p>
+    <div ref={containerRef} className="relative w-full" dir="ltr">
+
+      {/* קו אנכי בצד ימין — מצייר את עצמו מלמעלה למטה */}
+      <div className="absolute right-[7px] top-2 bottom-2 w-[2px] bg-slate-700/40 rounded-full overflow-hidden">
+        <motion.div
+          className="absolute top-0 left-0 w-full bg-gradient-to-b from-blue-500 via-blue-400 to-blue-600 rounded-full"
+          initial={{ height: "0%" }}
+          animate={active ? { height: "100%" } : { height: "0%" }}
+          transition={{ duration: totalDuration, ease: "easeInOut", delay: 0.15 }}
+        />
       </div>
 
-      {/* נקודה כחולה — ממוקמת מול הקו בצד ימין */}
-      <div className="flex-shrink-0 w-3.5 h-3.5 rounded-full bg-blue-500 border-2 border-slate-900 mt-1 z-10" />
-    </motion.div>
+      {/* פריטים */}
+      <div className="space-y-5 pr-6">
+        {data.map((item, i) => (
+          <motion.div
+            key={i}
+            className="relative flex items-start justify-end gap-3"
+            initial={{ opacity: 0, x: -24 }}
+            animate={active ? { opacity: 1, x: 0 } : { opacity: 0, x: -24 }}
+            transition={{ duration: 0.45, delay: 0.1 + i * 0.22, ease: "easeOut" }}
+          >
+            {/* תוכן — מיושר לימין */}
+            <div className="text-right flex-1">
+              <span className="text-blue-400 font-bold text-sm block">{item.title}</span>
+              <p className="text-slate-300 text-sm leading-relaxed mt-0.5">{item.content}</p>
+            </div>
+
+            {/* נקודה כחולה — צצה עם האיבר */}
+            <motion.div
+              className="flex-shrink-0 w-3.5 h-3.5 rounded-full bg-blue-500 border-2 border-slate-900 mt-1 z-10"
+              initial={{ scale: 0 }}
+              animate={active ? { scale: 1 } : { scale: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 + i * 0.22 + 0.1, type: "spring", stiffness: 400 }}
+            />
+          </motion.div>
+        ))}
+      </div>
+    </div>
   );
 }
