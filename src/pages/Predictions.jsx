@@ -391,9 +391,7 @@ export default function Predictions() {
               <Check className="w-8 h-8 text-green-400" />
               <h3 className="text-xl font-bold text-green-300">הניחושים נשלחו בהצלחה</h3>
             </div>
-            <p className="text-green-200 mb-4">
-              הניחושים שלך נשמרו במערכת ויחושבו לאחר סיום המשחק/ים
-            </p>
+
             <p className="text-green-100 text-sm">
               ניתן לעדכן ניחושים עד 15 דקות לפני תחילת המשחק
             </p>
@@ -696,8 +694,6 @@ export default function Predictions() {
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.5 }}
                   className="text-green-200 text-center text-sm">
-
-                    הניחושים שלך נשמרו במערכת
                   </motion.p>
                 </motion.div>
               </motion.div>
