@@ -1,6 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import TeamFlag from "@/components/TeamFlag";
 
 // ========== DEMO DATA — Korea Republic (Hebrew) ==========
 const TEAM_DATA = {
@@ -68,12 +69,9 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
               <motion.div
                 animate={{ boxShadow: [`0 0 0px ${data?.color || '#fff'}00`, `0 0 40px ${data?.color || '#fff'}88`, `0 0 0px ${data?.color || '#fff'}00`] }}
                 transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                className="rounded-full overflow-hidden w-28 h-28 border-4 border-white/20"
+                className="rounded-full overflow-hidden border-4 border-white/20"
               >
-                {teamLogo && (
-                  <img src={teamLogo} alt={teamName} className="w-full h-full object-cover"
-                    onError={(e) => { e.target.style.display = 'none'; }} />
-                )}
+                <TeamFlag logo={teamLogo} name={teamName} className="w-28 h-28" />
               </motion.div>
             </motion.div>
 
