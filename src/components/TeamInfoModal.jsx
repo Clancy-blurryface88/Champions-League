@@ -5,7 +5,7 @@ import TeamFlag from "@/components/TeamFlag";
 
 // ========== DEMO DATA — South Korea ==========
 const TEAM_DATA = {
-  "South Korea": {
+  "Korea Republic": {
     flag: "https://flagcdn.com/kr.svg",
     color: "#C60C30",
     didYouKnow: [
