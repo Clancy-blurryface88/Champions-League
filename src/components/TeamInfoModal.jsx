@@ -2,6 +2,7 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
+import { Timeline } from "@/components/ui/timeline";
 
 // ========== DEMO DATA — Korea Republic (Hebrew) ==========
 const TEAM_DATA = {
@@ -29,6 +30,11 @@ const TEAM_DATA = {
 export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
   const dataKey = Object.keys(TEAM_DATA).find(k => k.toLowerCase() === teamName?.toLowerCase());
   const data = dataKey ? TEAM_DATA[dataKey] : null;
+
+  const timelineData = data?.historicMoments.map(m => ({
+    title: String(m.year),
+    content: m.text,
+  })) || [];
 
   return (
     <AnimatePresence>
@@ -98,7 +104,7 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
               {/* Did You Know */}
               <div>
                 <div className="flex items-center gap-2 mb-3 justify-end">
-                  <h3 className="text-yellow-400 font-bold text-sm uppercase tracking-widest">Did You Know</h3>
+                  <h3 className="text-yellow-400 font-bold text-sm uppercase tracking-widest">הידעת ?!</h3>
                   <span className="text-yellow-400 text-base">💡</span>
                 </div>
                 <div className="space-y-2">
@@ -108,10 +114,10 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.6 + i * 0.2 }}
-                      className="flex flex-row-reverse gap-3 bg-slate-800/50 rounded-xl px-3 py-2.5 border border-slate-700/40"
+                      className="flex flex-row items-start gap-3 bg-slate-800/50 rounded-xl px-3 py-2.5 border border-slate-700/40"
                     >
+                      <p className="text-slate-300 text-sm leading-relaxed text-right flex-1">{item.text}</p>
                       <span className="text-lg flex-shrink-0 mt-0.5">{item.icon}</span>
-                      <p className="text-slate-300 text-sm leading-relaxed text-right">{item.text}</p>
                     </motion.div>
                   ))}
                 </div>
@@ -122,30 +128,11 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
 
               {/* Historic Moments */}
               <div>
-                <div className="flex items-center gap-2 mb-3 justify-end">
-                  <h3 className="text-blue-400 font-bold text-sm uppercase tracking-widest">Historic Moments</h3>
+                <div className="flex items-center gap-2 mb-4 justify-end">
+                  <h3 className="text-blue-400 font-bold text-sm uppercase tracking-widest">רגעים היסטוריים</h3>
                   <span className="text-blue-400 text-base">🏛️</span>
                 </div>
-                <div className="relative pr-4">
-                  <div className="absolute right-[7px] top-2 bottom-2 w-px bg-slate-700" />
-                  <div className="space-y-4">
-                    {data.historicMoments.map((moment, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, x: 16 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.7 + i * 0.2 }}
-                        className="flex flex-row-reverse gap-3"
-                      >
-                        <div className="flex-shrink-0 w-3.5 h-3.5 rounded-full bg-blue-500 border-2 border-slate-900 mt-1 relative z-10" />
-                        <div className="text-right">
-                          <span className="text-blue-400 font-bold text-sm">{moment.year}</span>
-                          <p className="text-slate-300 text-sm leading-relaxed">{moment.text}</p>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
+                <Timeline data={timelineData} />
               </div>
             </div>
           )}
