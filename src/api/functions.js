@@ -75,7 +75,11 @@ const notImplemented = (name) => async () => {
   return { error: 'פונקציה זו תהיה זמינה בקרוב' };
 };
 
-export const fetchLiveMatchData = notImplemented('fetchLiveMatchData');
+export const fetchLiveMatchData = async ({ competition = 'CL', status = 'LIVE' } = {}) => {
+  const response = await fetch(`/api/football?competition=${competition}&status=${status}`);
+  if (!response.ok) throw new Error('Failed to fetch live data');
+  return response.json();
+};
 export const getMatchStats = notImplemented('getMatchStats');
 export const sofascoreApi = notImplemented('sofascoreApi');
 export const flashscoresApi = notImplemented('flashscoresApi');

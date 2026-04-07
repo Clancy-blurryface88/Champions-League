@@ -325,9 +325,11 @@ export default function Layout({ children, currentPageName }) {
     // Check if swipe started in the center area of the screen
     if (touchStart > centerZone && touchStart < screenWidth - centerZone) {
       if (isRightSwipe) {
-        console.log("🔄 Right swipe detected - opening leaderboard");
         setShowLeaderboard(true);
-        setShowLiveData(false); // Changed: Close LiveDataPanel instead of ExactHitsPanel
+        setShowLiveData(false);
+      } else if (isLeftSwipe) {
+        setShowLiveData(true);
+        setShowLeaderboard(false);
       }
     }
 
