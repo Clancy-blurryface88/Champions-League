@@ -28,7 +28,9 @@ const TEAM_DATA = {
 };
 
 export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
-  const data = TEAM_DATA[teamName];
+  // Case-insensitive lookup
+  const dataKey = Object.keys(TEAM_DATA).find(k => k.toLowerCase() === teamName?.toLowerCase());
+  const data = dataKey ? TEAM_DATA[dataKey] : null;
 
   return (
     <AnimatePresence>
@@ -72,7 +74,7 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
                 transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                 className="rounded-full overflow-hidden w-28 h-28 border-4 border-white/20"
               >
-                <img src={data?.flag || teamLogo} alt={teamName} className="w-full h-full object-cover" />
+                <img src={teamLogo || data?.flag} alt={teamName} className="w-full h-full object-cover" onError={(e) => { e.target.style.display='none'; }} />
               </motion.div>
             </motion.div>
 
