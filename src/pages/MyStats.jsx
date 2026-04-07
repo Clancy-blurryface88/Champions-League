@@ -781,16 +781,13 @@ export default function MyStats() {
             >
               <button
                 onClick={() => window.dispatchEvent(new Event('openYearlySummaryPanel'))}
-                className="w-full rounded-2xl border border-yellow-400/40 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 hover:from-yellow-500/20 hover:to-amber-500/20 transition-all duration-200 py-5 px-6 flex items-center justify-between"
+                className="w-full rounded-2xl border border-yellow-400/40 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 hover:from-yellow-500/20 hover:to-amber-500/20 transition-all duration-200 py-5 px-6 flex flex-col items-center justify-center gap-1"
               >
-                <div className="flex items-center gap-4">
-                  <span className="text-4xl">🏆</span>
-                  <div className="text-right">
-                    <p className="text-yellow-400 font-bold text-lg">World Cup Reel</p>
-                    <p className="text-slate-400 text-sm">הסיכום האישי שלך בטורניר</p>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <p className="text-yellow-400 font-bold text-lg">World Cup Reel</p>
+                  <span className="text-2xl">🏆</span>
                 </div>
-                <span className="text-yellow-400 text-2xl">▶</span>
+                <p className="text-slate-400 text-sm">הסיכום האישי שלך בטורניר</p>
               </button>
             </motion.div>
 
