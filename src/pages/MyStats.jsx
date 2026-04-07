@@ -779,9 +779,10 @@ export default function MyStats() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
+              <div className="reel-btn-wrapper w-full">
               <button
                 onClick={() => window.dispatchEvent(new Event('openYearlySummaryPanel'))}
-                className="w-full rounded-2xl border border-yellow-400/40 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 hover:from-yellow-500/20 hover:to-amber-500/20 transition-all duration-200 py-5 px-6 flex flex-col items-center justify-center gap-1"
+                className="w-full rounded-2xl bg-gradient-to-r from-yellow-500/10 to-amber-500/10 hover:from-yellow-500/20 hover:to-amber-500/20 transition-all duration-200 py-5 px-6 flex flex-col items-center justify-center gap-1"
               >
                 <div className="flex items-center gap-2">
                   <p className="text-yellow-400 font-bold text-lg">World Cup Reel</p>
@@ -789,6 +790,7 @@ export default function MyStats() {
                 </div>
                 <p className="text-slate-400 text-sm">הסיכום האישי שלך בטורניר</p>
               </button>
+              </div>
             </motion.div>
 
             {/* Combined Average Statistics Cards */}

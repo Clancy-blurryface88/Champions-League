@@ -86,3 +86,48 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes flip {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes kitrotate {
+  to { transform: rotate(90deg); }
+}
+
+.reel-btn-wrapper {
+  position: relative;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.reel-btn-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    #facc15 60deg,
+    #fbbf24 120deg,
+    transparent 180deg,
+    transparent 360deg
+  );
+  animation: flip 6s infinite steps(2, end);
+  border-radius: inherit;
+  z-index: 0;
+}
+
+.reel-btn-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: #0f172a;
+  border-radius: calc(1rem - 2px);
+  z-index: 1;
+}
+
+.reel-btn-wrapper > * {
+  position: relative;
+  z-index: 2;
+}
