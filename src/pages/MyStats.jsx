@@ -773,6 +773,27 @@ export default function MyStats() {
           </TabsContent>
 
           <TabsContent value="stats" className="space-y-6">
+            {/* World Cup Reel Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <button
+                onClick={() => window.dispatchEvent(new Event('openYearlySummaryPanel'))}
+                className="w-full rounded-2xl border border-yellow-400/40 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 hover:from-yellow-500/20 hover:to-amber-500/20 transition-all duration-200 py-5 px-6 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-4">
+                  <span className="text-4xl">🏆</span>
+                  <div className="text-right">
+                    <p className="text-yellow-400 font-bold text-lg">World Cup Reel</p>
+                    <p className="text-slate-400 text-sm">הסיכום האישי שלך בטורניר</p>
+                  </div>
+                </div>
+                <span className="text-yellow-400 text-2xl">▶</span>
+              </button>
+            </motion.div>
+
             {/* Combined Average Statistics Cards */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}

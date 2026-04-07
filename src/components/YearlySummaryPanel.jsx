@@ -431,7 +431,7 @@ export default function YearlySummaryPanel({ onClose, user }) {
 
   const Card1_Intro = () =>
   <div className="flex flex-col items-center justify-center h-full text-center p-6">
-      <h2 className="text-4xl font-bold text-white mb-8">Champions Reel</h2>
+      <h2 className="text-4xl font-bold text-white mb-8">World Cup Reel</h2>
       <div className="relative mb-10">
         <div className="absolute inset-0 bg-blue-500 blur-3xl opacity-20 rounded-full"></div>
         <img

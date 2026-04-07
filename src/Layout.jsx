@@ -637,14 +637,6 @@ export default function Layout({ children, currentPageName }) {
         {/* User Info & Admin Button */}
         {user &&
         <div className="fixed top-4 right-4 z-40 flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => window.dispatchEvent(new Event('openYearlySummaryPanel'))}
-              className="bg-slate-800/80 backdrop-blur-sm border-slate-600 hover:bg-slate-700/80 text-yellow-400 rounded-full flex items-center justify-center w-[38px] h-[38px] shadow-lg"
-            >
-              <PlayCircle className="w-5 h-5" />
-            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <motion.button
