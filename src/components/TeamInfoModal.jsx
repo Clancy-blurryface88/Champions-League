@@ -105,7 +105,7 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
               <div>
                 {/* כותרת מיושרת לימין: אימוג'י ימין, טקסט שמאלה ממנו */}
                 <div className="flex items-center gap-2 mb-3" dir="ltr" style={{ justifyContent: 'flex-end' }}>
-                  <h3 className="text-yellow-400 font-bold text-sm tracking-widest">הידעת ?!</h3>
+                  <h3 className="text-yellow-400 font-bold text-sm tracking-widest" dir="rtl">הידעת ?!</h3>
                   <span className="text-yellow-400 text-base">💡</span>
                 </div>
                 <div className="space-y-2">
