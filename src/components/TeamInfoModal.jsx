@@ -1097,21 +1097,26 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
                           {stat.isText ? (
                             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
                               <span style={{
-                                fontSize: "1rem", fontWeight: 800, lineHeight: 1.2,
+                                fontFamily: "'Orbitron', sans-serif",
+                                fontSize: "0.9rem", fontWeight: 700, lineHeight: 1.2,
                                 background: `linear-gradient(to bottom, #ffffff, ${data.color})`,
                                 WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                               }}>
                                 {stat.bestMain}
                               </span>
                               {stat.bestYear && (
-                                <span style={{ fontSize: "0.65rem", color: data.color, lineHeight: 1.2 }}>
+                                <span style={{
+                                  fontFamily: "'Orbitron', sans-serif",
+                                  fontSize: "0.58rem", color: data.color, lineHeight: 1.2,
+                                }}>
                                   {stat.bestYear}
                                 </span>
                               )}
                             </div>
                           ) : (
                             <span style={{
-                              fontSize: "1.9rem", fontWeight: 900, lineHeight: 1,
+                              fontFamily: "'Orbitron', sans-serif",
+                              fontSize: "2rem", fontWeight: 900, lineHeight: 1,
                               background: `linear-gradient(to bottom, #ffffff, ${data.color})`,
                               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                             }}>
@@ -1119,7 +1124,7 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
                             </span>
                           )}
                           {/* Label */}
-                          <span style={{ fontSize: "0.75rem", color: "#ffffff", lineHeight: 1.3, fontWeight: 600 }}>
+                          <span style={{ fontSize: "0.78rem", color: "#ffffff", lineHeight: 1.3, fontWeight: 600 }}>
                             {stat.label}
                           </span>
                         </div>
