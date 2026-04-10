@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from "react";
+import LoadingScreen from "@/components/LoadingScreen";
 import { Round } from "@/api/entities";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
@@ -85,17 +86,7 @@ export default function RoundsList() {
 
   }
 
-  // Show loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen relative">
-        <ParticleBackground />
-        <div className="relative z-[1] flex items-center justify-center min-h-screen">
-          <LoaderBar text="LOADING" />
-        </div>
-      </div>);
-
-  }
+  if (loading) return <LoadingScreen />;
 
   // Show login prompt if no user
   if (!user) {

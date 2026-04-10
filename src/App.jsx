@@ -19,19 +19,10 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
 
-const MIN_LOADING_MS = 2500;
-
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
-  const [minTimePassed, setMinTimePassed] = React.useState(false);
 
-  React.useEffect(() => {
-    const t = setTimeout(() => setMinTimePassed(true), MIN_LOADING_MS);
-    return () => clearTimeout(t);
-  }, []);
-
-  // Show loading screen until auth resolves AND minimum time has passed
-  if (isLoadingPublicSettings || isLoadingAuth || !minTimePassed) {
+  if (isLoadingPublicSettings || isLoadingAuth) {
     return <LoadingScreen />;
   }
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import LoadingScreen from "@/components/LoadingScreen";
 import { Round } from "@/api/entities";
 import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
@@ -334,17 +335,7 @@ export default function Predictions() {
 
 
 
-  if (loading) {
-    return (
-      <div className="min-h-screen">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="flex items-center justify-center py-12">
-            <div className="w-12 h-12 border-4 border-blue-400 border-t-transparent rounded-full animate-spin" />
-          </div>
-        </div>
-      </div>);
-
-  }
+  if (loading) return <LoadingScreen />;
 
   if (!currentRound) {
     return (

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -97,17 +98,7 @@ export default function Dashboard() {
 
   }
 
-  // Show loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen relative">
-        <AppBackground />
-        <div className="relative z-[1] flex items-center justify-center min-h-screen">
-          <LoaderBar text="LOADING" />
-        </div>
-      </div>);
-
-  }
+  if (loading) return <LoadingScreen />;
 
   // Show login prompt if no user
   if (!user) {

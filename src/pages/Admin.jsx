@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from "react";
+import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -59,13 +60,7 @@ export default function Admin() {
     setLoading(false);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoaderBar text="LOADING" />
-      </div>
-    );
-  }
+  if (loading) return <LoadingScreen />;
 
   const renderContent = () => {
     switch (activeView) {

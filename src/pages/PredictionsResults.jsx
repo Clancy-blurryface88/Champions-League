@@ -1,4 +1,5 @@
 import TeamFlag from "@/components/TeamFlag";
+import LoadingScreen from "@/components/LoadingScreen";
 import React, { useState, useEffect, useCallback } from "react";
 import { User } from "@/api/entities";
 import { Round } from "@/api/entities";
@@ -279,17 +280,7 @@ export default function PredictionsResults() {
     return getOutcomeStatus(prediction, match)?.type === 'exact';
   })();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#020817]"> {/* Dark background matching the app theme */}
-        <div className="flex items-center justify-center min-h-screen">
-          <LottieAnimation
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68656264510003eeef16bac3/40dfd5188_stadiofantachampions1.json"
-            className="w-full max-w-md"
-          />
-        </div>
-      </div>);
-  }
+  if (loading) return <LoadingScreen />;
 
   const availableRounds = rounds.filter((round) =>
   matches.some((match) =>
