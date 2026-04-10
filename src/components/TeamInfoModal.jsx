@@ -927,9 +927,62 @@ const TEAM_DATA = {
   },
 };
 
+// ========== WORLD CUP STATS ==========
+const TEAM_STATS = {
+  "Argentina":          { appearances: 19, bestResult: "אלופת העולם (1978, 1986, 2022)", goals: 137 },
+  "Austria":            { appearances: 8,  bestResult: "מקום שלישי (1954)",              goals: 43  },
+  "Australia":          { appearances: 6,  bestResult: "שמינית גמר (2006)",              goals: 17  },
+  "Bosnia-Herzegovina": { appearances: 1,  bestResult: "שלב הבתים (2014)",               goals: 4   },
+  "Belgium":            { appearances: 14, bestResult: "מקום שלישי (2018)",              goals: 68  },
+  "Brazil":             { appearances: 22, bestResult: "אלופת העולם (×5)",               goals: 237 },
+  "Canada":             { appearances: 3,  bestResult: "שלב הבתים",                      goals: 1   },
+  "Congo DR":           { appearances: 1,  bestResult: "שלב הבתים (1974)",               goals: 0   },
+  "Switzerland":        { appearances: 13, bestResult: "רבע גמר (1934, 1938, 1954)",     goals: 52  },
+  "Côte d'Ivoire":      { appearances: 3,  bestResult: "שלב הבתים",                      goals: 9   },
+  "Colombia":           { appearances: 7,  bestResult: "רבע גמר (2014)",                 goals: 34  },
+  "Cabo Verde":         { appearances: 1,  bestResult: "בכורה 2026",                     goals: 0   },
+  "Curaçao":            { appearances: 1,  bestResult: "בכורה 2026",                     goals: 0   },
+  "Czechia":            { appearances: 3,  bestResult: "שמינית גמר (1998)",              goals: 10  },
+  "Germany":            { appearances: 20, bestResult: "אלופת העולם (×4)",               goals: 226 },
+  "Algeria":            { appearances: 5,  bestResult: "שמינית גמר (2014)",              goals: 16  },
+  "Ecuador":            { appearances: 4,  bestResult: "שמינית גמר (2006)",              goals: 10  },
+  "Egypt":              { appearances: 3,  bestResult: "שלב הבתים",                      goals: 6   },
+  "Spain":              { appearances: 16, bestResult: "אלופת העולם (2010)",             goals: 99  },
+  "France":             { appearances: 16, bestResult: "אלופת העולם (1998, 2018)",       goals: 120 },
+  "England":            { appearances: 16, bestResult: "אלופת העולם (1966)",             goals: 88  },
+  "Scotland":           { appearances: 8,  bestResult: "שלב הבתים",                      goals: 25  },
+  "Ghana":              { appearances: 4,  bestResult: "רבע גמר (2010)",                 goals: 14  },
+  "Croatia":            { appearances: 7,  bestResult: "סגנית עולם (2018)",              goals: 50  },
+  "Haiti":              { appearances: 1,  bestResult: "שלב הבתים (1974)",               goals: 2   },
+  "Iraq":               { appearances: 2,  bestResult: "שלב הבתים (1986)",               goals: 1   },
+  "IR Iran":            { appearances: 6,  bestResult: "שלב הבתים",                      goals: 14  },
+  "Japan":              { appearances: 8,  bestResult: "שמינית גמר (×4)",                goals: 23  },
+  "Morocco":            { appearances: 7,  bestResult: "חצי גמר (2022)",                 goals: 21  },
+  "Mexico":             { appearances: 17, bestResult: "רבע גמר (1970, 1986)",           goals: 63  },
+  "Netherlands":        { appearances: 11, bestResult: "גמר (1974, 1978, 2010)",         goals: 87  },
+  "Norway":             { appearances: 3,  bestResult: "שמינית גמר (1938, 1994)",        goals: 7   },
+  "New Zealand":        { appearances: 3,  bestResult: "שלב הבתים",                      goals: 4   },
+  "Panama":             { appearances: 2,  bestResult: "שלב הבתים",                      goals: 3   },
+  "Portugal":           { appearances: 9,  bestResult: "מקום שלישי (1966)",              goals: 51  },
+  "Korea Republic":     { appearances: 11, bestResult: "חצי גמר (2002)",                 goals: 66  },
+  "Saudi Arabia":       { appearances: 7,  bestResult: "שמינית גמר (1994)",              goals: 14  },
+  "Sweden":             { appearances: 13, bestResult: "סגנית עולם (1958)",              goals: 80  },
+  "Tunisia":            { appearances: 7,  bestResult: "שלב הבתים",                      goals: 14  },
+  "Turkey":             { appearances: 3,  bestResult: "מקום שלישי (2002)",              goals: 20  },
+  "USA":                { appearances: 12, bestResult: "מקום שלישי (1930)",              goals: 40  },
+  "Uruguay":            { appearances: 15, bestResult: "אלופת העולם (1930, 1950)",       goals: 87  },
+  "Uzbekistan":         { appearances: 1,  bestResult: "בכורה 2026",                     goals: 0   },
+  "South Africa":       { appearances: 4,  bestResult: "שלב הבתים",                      goals: 11  },
+  "Paraguay":           { appearances: 9,  bestResult: "רבע גמר (2010)",                 goals: 30  },
+  "Qatar":              { appearances: 2,  bestResult: "שלב הבתים (2022)",               goals: 1   },
+  "Jordan":             { appearances: 1,  bestResult: "בכורה 2026",                     goals: 0   },
+  "Senegal":            { appearances: 4,  bestResult: "רבע גמר (2002)",                 goals: 11  },
+};
+
 export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
   const dataKey = Object.keys(TEAM_DATA).find(k => k.toLowerCase() === teamName?.toLowerCase());
   const data = dataKey ? TEAM_DATA[dataKey] : null;
+  const stats = dataKey ? TEAM_STATS[dataKey] : null;
 
   const timelineData = data?.historicMoments.map(m => ({
     title: String(m.year),
@@ -997,6 +1050,71 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
               </motion.p>
             )}
           </div>
+
+          {/* Honeycomb Stats */}
+          {data && stats && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55 }}
+              className="flex justify-center items-center gap-3 px-4 pb-4"
+            >
+              {[
+                { label: "הופעות במונדיאל", value: stats.appearances, isText: false },
+                { label: "ההישג הגדול",      value: stats.bestResult,  isText: true  },
+                { label: "שערים במונדיאל",   value: stats.goals,       isText: false },
+              ].map((stat, i) => (
+                <div
+                  key={i}
+                  className="flex-1"
+                  style={{ maxWidth: 112, filter: `drop-shadow(0 0 6px ${data.color}66)` }}
+                >
+                  {/* Outer hex = border colour */}
+                  <div
+                    style={{
+                      position: "relative",
+                      paddingBottom: "115%",
+                      clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+                      background: data.color,
+                    }}
+                  >
+                    {/* Inner hex = dark bg */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: "3px",
+                        clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+                        background: "linear-gradient(135deg, #1e2d3d 0%, #0f1923 100%)",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        textAlign: "center",
+                        padding: "24% 10% 20%",
+                        gap: 3,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: stat.isText ? "0.52rem" : "1.5rem",
+                          fontWeight: 900,
+                          lineHeight: 1.1,
+                          background: `linear-gradient(to bottom, #ffffff, ${data.color})`,
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                        }}
+                      >
+                        {stat.value}
+                      </span>
+                      <span style={{ fontSize: "0.48rem", color: "#94a3b8", lineHeight: 1.3 }}>
+                        {stat.label}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          )}
 
           {data && (
             <div className="px-4 pb-8 space-y-6">
