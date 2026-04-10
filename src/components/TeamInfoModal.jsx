@@ -1077,46 +1077,52 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
                   >
                     {/* Outer hex = border */}
                     <div style={{ position: "relative", paddingBottom: "115%", clipPath: hexClip, background: data.color }}>
-                      {/* Inner hex = dark bg, fully centered flex */}
+                      {/* Inner hex = dark bg */}
                       <div
                         style={{
                           position: "absolute", inset: "3px",
                           clipPath: hexClip,
                           background: "linear-gradient(135deg, #1e2d3d 0%, #0f1923 100%)",
-                          display: "flex", flexDirection: "column",
-                          alignItems: "center", justifyContent: "center",
-                          padding: "18% 10%", textAlign: "center", gap: 6,
                         }}
                       >
-                        {/* Value */}
-                        {stat.isText ? (
-                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                        {/* Content centered via absolute positioning at visual midpoint of hex */}
+                        <div style={{
+                          position: "absolute",
+                          top: "50%", left: "8%", right: "8%",
+                          transform: "translateY(-50%)",
+                          display: "flex", flexDirection: "column",
+                          alignItems: "center", textAlign: "center", gap: 5,
+                        }}>
+                          {/* Value */}
+                          {stat.isText ? (
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                              <span style={{
+                                fontSize: "1rem", fontWeight: 800, lineHeight: 1.2,
+                                background: `linear-gradient(to bottom, #ffffff, ${data.color})`,
+                                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                              }}>
+                                {stat.bestMain}
+                              </span>
+                              {stat.bestYear && (
+                                <span style={{ fontSize: "0.65rem", color: data.color, lineHeight: 1.2 }}>
+                                  {stat.bestYear}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
                             <span style={{
-                              fontSize: "1rem", fontWeight: 800, lineHeight: 1.2,
+                              fontSize: "1.9rem", fontWeight: 900, lineHeight: 1,
                               background: `linear-gradient(to bottom, #ffffff, ${data.color})`,
                               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                             }}>
-                              {stat.bestMain}
+                              {stat.value}
                             </span>
-                            {stat.bestYear && (
-                              <span style={{ fontSize: "0.65rem", color: data.color, lineHeight: 1.2, opacity: 0.9 }}>
-                                {stat.bestYear}
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <span style={{
-                            fontSize: "1.9rem", fontWeight: 900, lineHeight: 1,
-                            background: `linear-gradient(to bottom, #ffffff, ${data.color})`,
-                            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                          }}>
-                            {stat.value}
+                          )}
+                          {/* Label */}
+                          <span style={{ fontSize: "0.75rem", color: "#ffffff", lineHeight: 1.3, fontWeight: 600 }}>
+                            {stat.label}
                           </span>
-                        )}
-                        {/* Label */}
-                        <span style={{ fontSize: "0.72rem", color: "white", lineHeight: 1.3, fontWeight: 500 }}>
-                          {stat.label}
-                        </span>
+                        </div>
                       </div>
                     </div>
                   </div>
