@@ -1057,7 +1057,7 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.55 }}
-              className="flex justify-center items-center gap-3 px-4 pb-4"
+              className="flex justify-center items-start gap-3 px-4 pb-4"
             >
               {[
                 { label: "הופעות במונדיאל", value: stats.appearances, isText: false },
@@ -1067,7 +1067,7 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
                 <div
                   key={i}
                   className="flex-1"
-                  style={{ maxWidth: 112, filter: `drop-shadow(0 0 6px ${data.color}66)` }}
+                  style={{ maxWidth: 120, filter: `drop-shadow(0 0 7px ${data.color}70)` }}
                 >
                   {/* Outer hex = border colour */}
                   <div
@@ -1085,30 +1085,51 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
                         inset: "3px",
                         clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
                         background: "linear-gradient(135deg, #1e2d3d 0%, #0f1923 100%)",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        textAlign: "center",
-                        padding: "24% 10% 20%",
-                        gap: 3,
                       }}
                     >
-                      <span
+                      {/* Value zone — always fills top 62% */}
+                      <div
                         style={{
-                          fontSize: stat.isText ? "0.52rem" : "1.5rem",
-                          fontWeight: 900,
-                          lineHeight: 1.1,
-                          background: `linear-gradient(to bottom, #ffffff, ${data.color})`,
-                          WebkitBackgroundClip: "text",
-                          WebkitTextFillColor: "transparent",
+                          position: "absolute",
+                          top: 0, left: 0, right: 0,
+                          height: "62%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: "0 10%",
+                          textAlign: "center",
                         }}
                       >
-                        {stat.value}
-                      </span>
-                      <span style={{ fontSize: "0.48rem", color: "#94a3b8", lineHeight: 1.3 }}>
-                        {stat.label}
-                      </span>
+                        <span
+                          style={{
+                            fontSize: stat.isText ? "0.72rem" : "1.9rem",
+                            fontWeight: 900,
+                            lineHeight: 1.15,
+                            background: `linear-gradient(to bottom, #ffffff, ${data.color})`,
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                          }}
+                        >
+                          {stat.value}
+                        </span>
+                      </div>
+                      {/* Label zone — always fills bottom 38% */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: 0, left: 0, right: 0,
+                          height: "38%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: "0 8%",
+                          textAlign: "center",
+                        }}
+                      >
+                        <span style={{ fontSize: "0.62rem", color: "#94a3b8", lineHeight: 1.3 }}>
+                          {stat.label}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
