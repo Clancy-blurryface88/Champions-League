@@ -26,7 +26,7 @@ export default function CircleLoader({ size = 80 }) {
           box-shadow:
             inset 4px 4px 4px 0 rgba(255, 255, 255, 0.5),
             inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5);
-          background-image: linear-gradient(-225deg, #e3fdf5 0%, #ffe6fa 100%);
+          background-image: linear-gradient(-225deg, #c0a100 0%, #c0a100 100%);
           animation: circleScaleDelay 1.3s infinite ease-in-out;
           border-radius: 45%;
         }
