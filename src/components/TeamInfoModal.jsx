@@ -1052,90 +1052,88 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
           </div>
 
           {/* Honeycomb Stats */}
-          {data && stats && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.55 }}
-              className="flex justify-center items-start gap-3 px-4 pb-4"
-            >
-              {[
-                { label: "הופעות במונדיאל", value: stats.appearances, isText: false },
-                { label: "ההישג הגדול",      value: stats.bestResult,  isText: true  },
-                { label: "שערים במונדיאל",   value: stats.goals,       isText: false },
-              ].map((stat, i) => (
-                <div
-                  key={i}
-                  className="flex-1"
-                  style={{ maxWidth: 120, filter: `drop-shadow(0 0 7px ${data.color}70)` }}
-                >
-                  {/* Outer hex = border colour */}
+          {data && stats && (() => {
+            const hexClip = "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)";
+            const parenIdx = stats.bestResult.indexOf(' (');
+            const bestMain = parenIdx === -1 ? stats.bestResult : stats.bestResult.slice(0, parenIdx);
+            const bestYear = parenIdx === -1 ? null : stats.bestResult.slice(parenIdx + 2, -1);
+            const statCells = [
+              { label: "הופעות במונדיאל", value: stats.appearances, isText: false },
+              { label: "ההישג הגדול",     bestMain, bestYear,        isText: true  },
+              { label: "שערים במונדיאל",  value: stats.goals,        isText: false },
+            ];
+            return (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.55 }}
+                className="flex justify-center items-start gap-3 px-4 pb-4"
+              >
+                {statCells.map((stat, i) => (
                   <div
-                    style={{
-                      position: "relative",
-                      paddingBottom: "115%",
-                      clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-                      background: data.color,
-                    }}
+                    key={i}
+                    className="flex-1"
+                    style={{ maxWidth: 120, filter: `drop-shadow(0 0 7px ${data.color}70)` }}
                   >
-                    {/* Inner hex = dark bg */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        inset: "3px",
-                        clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-                        background: "linear-gradient(135deg, #1e2d3d 0%, #0f1923 100%)",
-                      }}
-                    >
-                      {/* Value zone — always fills top 62% */}
+                    {/* Outer hex = border */}
+                    <div style={{ position: "relative", paddingBottom: "115%", clipPath: hexClip, background: data.color }}>
+                      {/* Inner hex = dark bg */}
                       <div
                         style={{
-                          position: "absolute",
-                          top: 0, left: 0, right: 0,
-                          height: "62%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          padding: "0 10%",
-                          textAlign: "center",
+                          position: "absolute", inset: "3px",
+                          clipPath: hexClip,
+                          background: "linear-gradient(135deg, #1e2d3d 0%, #0f1923 100%)",
                         }}
                       >
-                        <span
-                          style={{
-                            fontSize: stat.isText ? "0.72rem" : "1.9rem",
-                            fontWeight: 900,
-                            lineHeight: 1.15,
-                            background: `linear-gradient(to bottom, #ffffff, ${data.color})`,
-                            WebkitBackgroundClip: "text",
-                            WebkitTextFillColor: "transparent",
-                          }}
-                        >
-                          {stat.value}
-                        </span>
-                      </div>
-                      {/* Label zone — always fills bottom 38% */}
-                      <div
-                        style={{
-                          position: "absolute",
-                          bottom: 0, left: 0, right: 0,
-                          height: "38%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          padding: "0 8%",
-                          textAlign: "center",
-                        }}
-                      >
-                        <span style={{ fontSize: "0.62rem", color: "#94a3b8", lineHeight: 1.3 }}>
-                          {stat.label}
-                        </span>
+                        {/* Value zone — top 60% */}
+                        <div style={{
+                          position: "absolute", top: 0, left: 0, right: 0, height: "60%",
+                          display: "flex", flexDirection: "column",
+                          alignItems: "center", justifyContent: "center",
+                          padding: "0 10%", textAlign: "center", gap: 2,
+                        }}>
+                          {stat.isText ? (
+                            <>
+                              <span style={{
+                                fontSize: "0.95rem", fontWeight: 800, lineHeight: 1.2,
+                                background: `linear-gradient(to bottom, #ffffff, ${data.color})`,
+                                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                              }}>
+                                {stat.bestMain}
+                              </span>
+                              {stat.bestYear && (
+                                <span style={{ fontSize: "0.62rem", color: data.color, lineHeight: 1.2, opacity: 0.85 }}>
+                                  {stat.bestYear}
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <span style={{
+                              fontSize: "1.9rem", fontWeight: 900, lineHeight: 1,
+                              background: `linear-gradient(to bottom, #ffffff, ${data.color})`,
+                              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                            }}>
+                              {stat.value}
+                            </span>
+                          )}
+                        </div>
+                        {/* Label zone — bottom 40% */}
+                        <div style={{
+                          position: "absolute", bottom: 0, left: 0, right: 0, height: "40%",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          padding: "0 8%", textAlign: "center",
+                        }}>
+                          <span style={{ fontSize: "0.65rem", color: "#94a3b8", lineHeight: 1.3 }}>
+                            {stat.label}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </motion.div>
-          )}
+                ))}
+              </motion.div>
+            );
+          })()}
 
           {data && (
             <div className="px-4 pb-8 space-y-6">
