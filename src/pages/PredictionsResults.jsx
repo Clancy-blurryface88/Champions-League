@@ -1,5 +1,6 @@
 import TeamFlag from "@/components/TeamFlag";
 import LoadingScreen from "@/components/LoadingScreen";
+import CircleLoader from "@/components/CircleLoader";
 import React, { useState, useEffect, useCallback } from "react";
 import { User } from "@/api/entities";
 import { Round } from "@/api/entities";
@@ -494,11 +495,10 @@ export default function PredictionsResults() {
 function LeaderboardView({ roundLeaderboard, loading, user }) {
   if (loading) {
     return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto"></div>
-        <p className="text-slate-400 mt-2">טוען נתונים...</p>
-      </div>);
-
+      <div className="flex justify-center py-8">
+        <CircleLoader size={60} />
+      </div>
+    );
   }
 
   if (!roundLeaderboard || !roundLeaderboard.allParticipants || roundLeaderboard.allParticipants.length === 0) {
@@ -554,13 +554,12 @@ function LeaderboardView({ roundLeaderboard, loading, user }) {
 
 // NEW: Updated MyRoundPredictions WITHOUT leaderboard section
 function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, roundLeaderboard, matches, getUserDisplayName, getOutcomeStatus }) {
-  if (loading || loadingLeaderboard) {// Show loading if either is loading
+  if (loading || loadingLeaderboard) {
     return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto"></div>
-        <p className="text-slate-400 mt-2">טוען נתונים...</p>
-      </div>);
-
+      <div className="flex justify-center py-8">
+        <CircleLoader size={60} />
+      </div>
+    );
   }
 
   // Determine if there's any data to display in this mode

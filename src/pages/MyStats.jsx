@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { UserStats } from "@/api/entities";
-import { LoaderBar } from "../components/ui/LoaderBar";
+import CircleLoader from "@/components/CircleLoader";
 import { Round } from "@/api/entities";
 import { calculateScoreByRound } from "../components/utils/calculateScoreByRound";
 import { calculateMatchMaxPotentialPoints } from "../components/utils/calculateMatchMaxPotentialPoints";
@@ -1198,8 +1198,8 @@ export default function MyStats() {
 
                       {/* Comparison Display */}
                       {comparisonLoading && (
-                        <div className="text-center py-8">
-                          <LoaderBar text="LOADING" />
+                        <div className="flex justify-center py-8">
+                          <CircleLoader size={60} />
                         </div>
                       )}
 
@@ -1427,8 +1427,8 @@ export default function MyStats() {
 
                       {/* Loading State */}
                       {twoPlayerLoading && (
-                        <div className="text-center py-8">
-                          <LoaderBar text="LOADING" />
+                        <div className="flex justify-center py-8">
+                          <CircleLoader size={60} />
                         </div>
                       )}
 
