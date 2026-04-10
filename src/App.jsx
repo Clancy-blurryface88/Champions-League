@@ -1,3 +1,4 @@
+import React from 'react'
 import LoadingScreen from '@/components/LoadingScreen'
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -18,11 +19,19 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
 
+const MIN_LOADING_MS = 2500;
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const [minTimePassed, setMinTimePassed] = React.useState(false);
 
-  // Show loading screen while checking app public settings or auth
-  if (isLoadingPublicSettings || isLoadingAuth) {
+  React.useEffect(() => {
+    const t = setTimeout(() => setMinTimePassed(true), MIN_LOADING_MS);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Show loading screen until auth resolves AND minimum time has passed
+  if (isLoadingPublicSettings || isLoadingAuth || !minTimePassed) {
     return <LoadingScreen />;
   }
 
