@@ -929,54 +929,54 @@ const TEAM_DATA = {
 
 // ========== WORLD CUP STATS ==========
 const TEAM_STATS = {
-  "Argentina":          { appearances: 19, bestResult: "אלופת העולם (1978, 1986, 2022)", goals: 137 },
-  "Austria":            { appearances: 8,  bestResult: "מקום שלישי (1954)",              goals: 43  },
-  "Australia":          { appearances: 6,  bestResult: "שמינית גמר (2006)",              goals: 17  },
-  "Bosnia-Herzegovina": { appearances: 1,  bestResult: "שלב הבתים (2014)",               goals: 4   },
-  "Belgium":            { appearances: 14, bestResult: "מקום שלישי (2018)",              goals: 68  },
-  "Brazil":             { appearances: 22, bestResult: "אלופת העולם (×5)",               goals: 237 },
-  "Canada":             { appearances: 3,  bestResult: "שלב הבתים",                      goals: 1   },
-  "Congo DR":           { appearances: 1,  bestResult: "שלב הבתים (1974)",               goals: 0   },
-  "Switzerland":        { appearances: 13, bestResult: "רבע גמר (1934, 1938, 1954)",     goals: 52  },
-  "Côte d'Ivoire":      { appearances: 3,  bestResult: "שלב הבתים",                      goals: 9   },
-  "Colombia":           { appearances: 7,  bestResult: "רבע גמר (2014)",                 goals: 34  },
-  "Cabo Verde":         { appearances: 1,  bestResult: "בכורה 2026",                     goals: 0   },
-  "Curaçao":            { appearances: 1,  bestResult: "בכורה 2026",                     goals: 0   },
-  "Czechia":            { appearances: 3,  bestResult: "שמינית גמר (1998)",              goals: 10  },
-  "Germany":            { appearances: 20, bestResult: "אלופת העולם (×4)",               goals: 226 },
-  "Algeria":            { appearances: 5,  bestResult: "שמינית גמר (2014)",              goals: 16  },
-  "Ecuador":            { appearances: 4,  bestResult: "שמינית גמר (2006)",              goals: 10  },
-  "Egypt":              { appearances: 3,  bestResult: "שלב הבתים",                      goals: 6   },
-  "Spain":              { appearances: 16, bestResult: "אלופת העולם (2010)",             goals: 99  },
-  "France":             { appearances: 16, bestResult: "אלופת העולם (1998, 2018)",       goals: 120 },
-  "England":            { appearances: 16, bestResult: "אלופת העולם (1966)",             goals: 88  },
-  "Scotland":           { appearances: 8,  bestResult: "שלב הבתים",                      goals: 25  },
-  "Ghana":              { appearances: 4,  bestResult: "רבע גמר (2010)",                 goals: 14  },
-  "Croatia":            { appearances: 7,  bestResult: "סגנית עולם (2018)",              goals: 50  },
-  "Haiti":              { appearances: 1,  bestResult: "שלב הבתים (1974)",               goals: 2   },
-  "Iraq":               { appearances: 2,  bestResult: "שלב הבתים (1986)",               goals: 1   },
-  "IR Iran":            { appearances: 6,  bestResult: "שלב הבתים",                      goals: 14  },
-  "Japan":              { appearances: 8,  bestResult: "שמינית גמר (×4)",                goals: 23  },
-  "Morocco":            { appearances: 7,  bestResult: "חצי גמר (2022)",                 goals: 21  },
-  "Mexico":             { appearances: 17, bestResult: "רבע גמר (1970, 1986)",           goals: 63  },
-  "Netherlands":        { appearances: 11, bestResult: "גמר (1974, 1978, 2010)",         goals: 87  },
-  "Norway":             { appearances: 3,  bestResult: "שמינית גמר (1938, 1994)",        goals: 7   },
-  "New Zealand":        { appearances: 3,  bestResult: "שלב הבתים",                      goals: 4   },
-  "Panama":             { appearances: 2,  bestResult: "שלב הבתים",                      goals: 3   },
-  "Portugal":           { appearances: 9,  bestResult: "מקום שלישי (1966)",              goals: 51  },
-  "Korea Republic":     { appearances: 11, bestResult: "חצי גמר (2002)",                 goals: 66  },
-  "Saudi Arabia":       { appearances: 7,  bestResult: "שמינית גמר (1994)",              goals: 14  },
-  "Sweden":             { appearances: 13, bestResult: "סגנית עולם (1958)",              goals: 80  },
-  "Tunisia":            { appearances: 7,  bestResult: "שלב הבתים",                      goals: 14  },
-  "Turkey":             { appearances: 3,  bestResult: "מקום שלישי (2002)",              goals: 20  },
-  "USA":                { appearances: 12, bestResult: "מקום שלישי (1930)",              goals: 40  },
-  "Uruguay":            { appearances: 15, bestResult: "אלופת העולם (1930, 1950)",       goals: 87  },
-  "Uzbekistan":         { appearances: 1,  bestResult: "בכורה 2026",                     goals: 0   },
-  "South Africa":       { appearances: 4,  bestResult: "שלב הבתים",                      goals: 11  },
-  "Paraguay":           { appearances: 9,  bestResult: "רבע גמר (2010)",                 goals: 30  },
-  "Qatar":              { appearances: 2,  bestResult: "שלב הבתים (2022)",               goals: 1   },
-  "Jordan":             { appearances: 1,  bestResult: "בכורה 2026",                     goals: 0   },
-  "Senegal":            { appearances: 4,  bestResult: "רבע גמר (2002)",                 goals: 11  },
+  "Argentina":          { appearances: 19, bestResult: "אלופת העולם (1978, 1986, 2022)", goals: 137, hexColors: ['#74ACDF', '#F6B40E', '#003082'] },
+  "Austria":            { appearances: 8,  bestResult: "מקום שלישי (1954)",              goals: 43,  hexColors: ['#ED2939', '#FFFFFF', '#CC0000'] },
+  "Australia":          { appearances: 6,  bestResult: "שמינית גמר (2006)",              goals: 17,  hexColors: ['#00008B', '#CC0000', '#FFCC00'] },
+  "Bosnia-Herzegovina": { appearances: 1,  bestResult: "שלב הבתים (2014)",               goals: 4,   hexColors: ['#002395', '#FFCC00', '#1C3F7A'] },
+  "Belgium":            { appearances: 14, bestResult: "מקום שלישי (2018)",              goals: 68,  hexColors: ['#1A1A1A', '#FDDA24', '#EF3340'] },
+  "Brazil":             { appearances: 22, bestResult: "אלופת העולם (×5)",               goals: 237, hexColors: ['#009C3B', '#FFDF00', '#002776'] },
+  "Canada":             { appearances: 3,  bestResult: "שלב הבתים",                      goals: 1,   hexColors: ['#FF0000', '#FFFFFF', '#CC0000'] },
+  "Congo DR":           { appearances: 1,  bestResult: "שלב הבתים (1974)",               goals: 0,   hexColors: ['#007FFF', '#FFCC00', '#CE1126'] },
+  "Switzerland":        { appearances: 13, bestResult: "רבע גמר (1934, 1938, 1954)",     goals: 52,  hexColors: ['#FF0000', '#FFFFFF', '#D40000'] },
+  "Côte d'Ivoire":      { appearances: 3,  bestResult: "שלב הבתים",                      goals: 9,   hexColors: ['#F77F00', '#FFFFFF', '#009A44'] },
+  "Colombia":           { appearances: 7,  bestResult: "רבע גמר (2014)",                 goals: 34,  hexColors: ['#FCD116', '#003087', '#CE1126'] },
+  "Cabo Verde":         { appearances: 1,  bestResult: "בכורה 2026",                     goals: 0,   hexColors: ['#003893', '#CF2027', '#F7D116'] },
+  "Curaçao":            { appearances: 1,  bestResult: "בכורה 2026",                     goals: 0,   hexColors: ['#002B7F', '#F9E814', '#009F6B'] },
+  "Czechia":            { appearances: 3,  bestResult: "שמינית גמר (1998)",              goals: 10,  hexColors: ['#D7141A', '#FFFFFF', '#11457E'] },
+  "Germany":            { appearances: 20, bestResult: "אלופת העולם (×4)",               goals: 226, hexColors: ['#1A1A1A', '#DD0000', '#FFCE00'] },
+  "Algeria":            { appearances: 5,  bestResult: "שמינית גמר (2014)",              goals: 16,  hexColors: ['#006233', '#D21034', '#FFFFFF'] },
+  "Ecuador":            { appearances: 4,  bestResult: "שמינית גמר (2006)",              goals: 10,  hexColors: ['#FFD100', '#003DA5', '#EF3340'] },
+  "Egypt":              { appearances: 3,  bestResult: "שלב הבתים",                      goals: 6,   hexColors: ['#CE1126', '#FFFFFF', '#1A1A1A'] },
+  "Spain":              { appearances: 16, bestResult: "אלופת העולם (2010)",             goals: 99,  hexColors: ['#AA151B', '#F1BF00', '#C60B1E'] },
+  "France":             { appearances: 16, bestResult: "אלופת העולם (1998, 2018)",       goals: 120, hexColors: ['#003189', '#FFFFFF', '#ED2939'] },
+  "England":            { appearances: 16, bestResult: "אלופת העולם (1966)",             goals: 88,  hexColors: ['#CF091B', '#FFFFFF', '#012169'] },
+  "Scotland":           { appearances: 8,  bestResult: "שלב הבתים",                      goals: 25,  hexColors: ['#003078', '#FFFFFF', '#1E3A75'] },
+  "Ghana":              { appearances: 4,  bestResult: "רבע גמר (2010)",                 goals: 14,  hexColors: ['#006B3F', '#FCD116', '#CE1126'] },
+  "Croatia":            { appearances: 7,  bestResult: "סגנית עולם (2018)",              goals: 50,  hexColors: ['#FF0000', '#FFFFFF', '#003DA5'] },
+  "Haiti":              { appearances: 1,  bestResult: "שלב הבתים (1974)",               goals: 2,   hexColors: ['#00209F', '#D21034', '#1A4F9F'] },
+  "Iraq":               { appearances: 2,  bestResult: "שלב הבתים (1986)",               goals: 1,   hexColors: ['#CE1126', '#FFFFFF', '#1A1A1A'] },
+  "IR Iran":            { appearances: 6,  bestResult: "שלב הבתים",                      goals: 14,  hexColors: ['#239F40', '#FFFFFF', '#DA0000'] },
+  "Japan":              { appearances: 8,  bestResult: "שמינית גמר (×4)",                goals: 23,  hexColors: ['#BC002D', '#FFFFFF', '#A00025'] },
+  "Morocco":            { appearances: 7,  bestResult: "חצי גמר (2022)",                 goals: 21,  hexColors: ['#C1272D', '#006233', '#AA1020'] },
+  "Mexico":             { appearances: 17, bestResult: "רבע גמר (1970, 1986)",           goals: 63,  hexColors: ['#006847', '#FFFFFF', '#CE1126'] },
+  "Netherlands":        { appearances: 11, bestResult: "גמר (1974, 1978, 2010)",         goals: 87,  hexColors: ['#AE1C28', '#FFFFFF', '#21468B'] },
+  "Norway":             { appearances: 3,  bestResult: "שמינית גמר (1938, 1994)",        goals: 7,   hexColors: ['#EF2B2D', '#FFFFFF', '#002868'] },
+  "New Zealand":        { appearances: 3,  bestResult: "שלב הבתים",                      goals: 4,   hexColors: ['#00247D', '#CC142B', '#FFFFFF'] },
+  "Panama":             { appearances: 2,  bestResult: "שלב הבתים",                      goals: 3,   hexColors: ['#DA121A', '#FFFFFF', '#1C3F94'] },
+  "Portugal":           { appearances: 9,  bestResult: "מקום שלישי (1966)",              goals: 51,  hexColors: ['#006600', '#FF0000', '#FFD700'] },
+  "Korea Republic":     { appearances: 11, bestResult: "חצי גמר (2002)",                 goals: 66,  hexColors: ['#003478', '#CD2E3A', '#FFFFFF'] },
+  "Saudi Arabia":       { appearances: 7,  bestResult: "שמינית גמר (1994)",              goals: 14,  hexColors: ['#006C35', '#FFCD00', '#004B25'] },
+  "Sweden":             { appearances: 13, bestResult: "סגנית עולם (1958)",              goals: 80,  hexColors: ['#006AA7', '#FECC02', '#003F7F'] },
+  "Tunisia":            { appearances: 7,  bestResult: "שלב הבתים",                      goals: 14,  hexColors: ['#CE1126', '#FFFFFF', '#A0000F'] },
+  "Turkey":             { appearances: 3,  bestResult: "מקום שלישי (2002)",              goals: 20,  hexColors: ['#E30A17', '#FFFFFF', '#C00010'] },
+  "USA":                { appearances: 12, bestResult: "מקום שלישי (1930)",              goals: 40,  hexColors: ['#002868', '#FFFFFF', '#BF0A30'] },
+  "Uruguay":            { appearances: 15, bestResult: "אלופת העולם (1930, 1950)",       goals: 87,  hexColors: ['#5CBFEB', '#FFFFFF', '#0077C0'] },
+  "Uzbekistan":         { appearances: 1,  bestResult: "בכורה 2026",                     goals: 0,   hexColors: ['#1EB53A', '#FFFFFF', '#0099B5'] },
+  "South Africa":       { appearances: 4,  bestResult: "שלב הבתים",                      goals: 11,  hexColors: ['#007A4D', '#FFB81C', '#DE3831'] },
+  "Paraguay":           { appearances: 9,  bestResult: "רבע גמר (2010)",                 goals: 30,  hexColors: ['#DA121A', '#FFFFFF', '#0038A8'] },
+  "Qatar":              { appearances: 2,  bestResult: "שלב הבתים (2022)",               goals: 1,   hexColors: ['#8A1538', '#FFFFFF', '#6D1229'] },
+  "Jordan":             { appearances: 1,  bestResult: "בכורה 2026",                     goals: 0,   hexColors: ['#007A33', '#CE1126', '#1A1A1A'] },
+  "Senegal":            { appearances: 4,  bestResult: "רבע גמר (2002)",                 goals: 11,  hexColors: ['#00853F', '#FDEF42', '#E31B23'] },
 };
 
 export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
@@ -1057,10 +1057,11 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
             const parenIdx = stats.bestResult.indexOf(' (');
             const bestMain = parenIdx === -1 ? stats.bestResult : stats.bestResult.slice(0, parenIdx);
             const bestYear = parenIdx === -1 ? null : stats.bestResult.slice(parenIdx + 2, -1);
+            const hexColors = stats.hexColors || [data.color, data.color, data.color];
             const statCells = [
-              { label: "הופעות במונדיאל", value: stats.appearances, isText: false },
-              { label: "ההישג הגדול",     bestMain, bestYear,        isText: true  },
-              { label: "שערים במונדיאל",  value: stats.goals,        isText: false },
+              { label: "הופעות במונדיאל", value: stats.appearances, isText: false, hexColor: hexColors[0] },
+              { label: "ההישג הגדול",     bestMain, bestYear,        isText: true,  hexColor: hexColors[1] },
+              { label: "שערים במונדיאל",  value: stats.goals,        isText: false, hexColor: hexColors[2] },
             ];
             return (
               <motion.div
@@ -1073,10 +1074,10 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
                   <div
                     key={i}
                     className="flex-1"
-                    style={{ maxWidth: 120, filter: `drop-shadow(0 0 7px ${data.color}70)` }}
+                    style={{ maxWidth: 120, filter: `drop-shadow(0 0 7px ${stat.hexColor}80)` }}
                   >
                     {/* Outer hex = border */}
-                    <div style={{ position: "relative", paddingBottom: "115%", clipPath: hexClip, background: data.color }}>
+                    <div style={{ position: "relative", paddingBottom: "115%", clipPath: hexClip, background: stat.hexColor }}>
                       {/* Inner hex = dark bg */}
                       <div
                         style={{
@@ -1098,8 +1099,8 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
                             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
                               <span style={{
                                 fontFamily: "'Orbitron', sans-serif",
-                                fontSize: "0.9rem", fontWeight: 700, lineHeight: 1.2,
-                                background: `linear-gradient(to bottom, #ffffff, ${data.color})`,
+                                fontSize: "0.85rem", fontWeight: 700, lineHeight: 1.2,
+                                background: "linear-gradient(to bottom, #FFE066, #FFB300)",
                                 WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                               }}>
                                 {stat.bestMain}
@@ -1107,7 +1108,7 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
                               {stat.bestYear && (
                                 <span style={{
                                   fontFamily: "'Orbitron', sans-serif",
-                                  fontSize: "0.58rem", color: data.color, lineHeight: 1.2,
+                                  fontSize: "0.55rem", color: "#FFD700", lineHeight: 1.2,
                                 }}>
                                   {stat.bestYear}
                                 </span>
@@ -1117,14 +1118,17 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
                             <span style={{
                               fontFamily: "'Orbitron', sans-serif",
                               fontSize: "2rem", fontWeight: 900, lineHeight: 1,
-                              background: `linear-gradient(to bottom, #ffffff, ${data.color})`,
+                              background: "linear-gradient(to bottom, #FFE066, #FFB300)",
                               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                             }}>
                               {stat.value}
                             </span>
                           )}
                           {/* Label */}
-                          <span style={{ fontSize: "0.78rem", color: "#ffffff", lineHeight: 1.3, fontWeight: 600 }}>
+                          <span style={{
+                            fontFamily: "'Orbitron', sans-serif",
+                            fontSize: "0.52rem", color: "#ffffff", lineHeight: 1.3, fontWeight: 600,
+                          }}>
                             {stat.label}
                           </span>
                         </div>
