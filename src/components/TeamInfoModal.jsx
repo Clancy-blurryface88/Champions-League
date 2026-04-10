@@ -1126,8 +1126,8 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
                           )}
                           {/* Label */}
                           <span style={{
-                            fontFamily: "'Orbitron', sans-serif",
-                            fontSize: "0.52rem", color: "#ffffff", lineHeight: 1.3, fontWeight: 600,
+                            fontSize: "0.78rem", color: "#ffffff", lineHeight: 1.3,
+                            fontWeight: 700, letterSpacing: "0.02em",
                           }}>
                             {stat.label}
                           </span>
