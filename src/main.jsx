@@ -10,6 +10,8 @@ window.OneSignalDeferred.push(async function(OneSignal) {
     appId: '70be1517-f7b7-40e1-b265-5a023f015bc9',
     safari_web_id: 'web.onesignal.auto.2358eea7-3e97-4fb7-b492-b25c712616ac',
     notifyButton: { enable: false },
+    notificationClickHandlerMatch: 'origin',
+    defaultIcon: '/favicon.png',
   });
 });
 
