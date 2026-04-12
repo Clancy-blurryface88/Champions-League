@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { TextRoll } from '@/components/core/text-roll';
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -164,7 +165,9 @@ export default function LeaderboardPanel({ onClose, user }) {
           <div className="p-6 border-b border-slate-700">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-bold shiny-text">Leaderboard</h2>
+                <h2 className="text-2xl font-bold shiny-text">
+                  <TextRoll>Leaderboard</TextRoll>
+                </h2>
               </div>
               <Button
                 variant="ghost"
