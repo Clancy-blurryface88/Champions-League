@@ -166,7 +166,7 @@ export default function LeaderboardPanel({ onClose, user }) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <h2 className="text-2xl font-bold">
-                  <TextRoll className="text-yellow-400" loop loopInterval={2000}>Leaderboard</TextRoll>
+                  <TextRoll className="text-yellow-400" loop duration={0.6} loopInterval={4500}>Leaderboard</TextRoll>
                 </h2>
               </div>
               <Button
