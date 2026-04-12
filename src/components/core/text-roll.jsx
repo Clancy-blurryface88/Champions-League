@@ -1,38 +1,69 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-export function TextRoll({ children, className, duration = 0.4, stagger = 0.045, delay = 0, loop = false, loopInterval = 2000 }) {
+const DEFAULT_VARIANTS = {
+  enter: {
+    initial: { rotateX: 0, filter: 'blur(0px)' },
+    animate: { rotateX: 90, filter: 'blur(2px)' },
+  },
+  exit: {
+    initial: { rotateX: 90, filter: 'blur(2px)' },
+    animate: { rotateX: 0, filter: 'blur(0px)' },
+  },
+};
+
+export function TextRoll({
+  children,
+  className,
+  duration = 0.3,
+  stagger = 0.045,
+  loop = false,
+  loopInterval = 2000,
+  variants = DEFAULT_VARIANTS,
+}) {
   const text = typeof children === 'string' ? children : '';
-  const [iteration, setIteration] = useState(0);
+  const [phase, setPhase] = useState('exit'); // 'exit' = visible, 'enter' = rolling out
 
   useEffect(() => {
     if (!loop) return;
-    const totalAnimationTime = delay * 1000 + text.length * stagger * 1000 + duration * 1000;
-    const interval = Math.max(loopInterval, totalAnimationTime + 300);
-    const t = setInterval(() => setIteration(i => i + 1), interval);
-    return () => clearInterval(t);
-  }, [loop, loopInterval, text.length, stagger, duration, delay]);
+
+    const totalDuration = text.length * stagger * 1000 + duration * 1000;
+
+    const tick = () => {
+      // Roll out (enter phase)
+      setPhase('enter');
+      setTimeout(() => {
+        // Roll in (exit phase)
+        setPhase('exit');
+      }, totalDuration + 100);
+    };
+
+    const interval = setInterval(tick, loopInterval);
+    return () => clearInterval(interval);
+  }, [loop, loopInterval, text.length, stagger, duration]);
 
   return (
-    <AnimatePresence mode="wait">
-      <span key={iteration} className={cn('inline-flex', className)} aria-label={text}>
-        {text.split('').map((char, i) => (
-          <motion.span
-            key={i}
-            initial={{ rotateX: 90, opacity: 0 }}
-            animate={{ rotateX: 0, opacity: 1 }}
-            transition={{
-              duration,
-              delay: delay + i * stagger,
-              ease: [0.215, 0.61, 0.355, 1],
-            }}
-            style={{ display: 'inline-block', transformOrigin: 'top center', whiteSpace: 'pre' }}
-          >
-            {char}
-          </motion.span>
-        ))}
-      </span>
-    </AnimatePresence>
+    <span className={cn('inline-flex', className)} aria-label={text} style={{ perspective: '500px' }}>
+      {text.split('').map((char, i) => (
+        <motion.span
+          key={`${phase}-${i}`}
+          initial={variants[phase].initial}
+          animate={variants[phase].animate}
+          transition={{
+            duration,
+            delay: i * stagger,
+            ease: 'easeInOut',
+          }}
+          style={{
+            display: 'inline-block',
+            transformOrigin: phase === 'enter' ? 'bottom center' : 'top center',
+            whiteSpace: 'pre',
+          }}
+        >
+          {char}
+        </motion.span>
+      ))}
+    </span>
   );
 }
