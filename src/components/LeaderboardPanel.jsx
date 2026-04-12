@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { TextRoll } from '@/components/core/text-roll';
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -165,9 +164,7 @@ export default function LeaderboardPanel({ onClose, user }) {
           <div className="p-6 border-b border-slate-700">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-bold">
-                  <TextRoll className="text-yellow-400" loop duration={0.6} stagger={0.1} loopInterval={4500}>Leaderboard</TextRoll>
-                </h2>
+                <h2 className="text-2xl font-bold text-yellow-400">Leaderboard</h2>
               </div>
               <Button
                 variant="ghost"
