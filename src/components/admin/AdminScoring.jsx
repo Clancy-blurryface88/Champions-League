@@ -41,7 +41,13 @@ export default function AdminScoring({ onUpdateComplete }) {
 
     // 1. בדיקת תוצאה מדויקת (Exact Score)
     if (predictedA === actualA && predictedB === actualB) {
-      exactScorePoints = match.exact_score_points || 0;
+      if (match.score_odds) {
+        // חיפוש בטבלת האודס הספציפית
+        const key = `${actualA}:${actualB}`;
+        exactScorePoints = match.score_odds[key] ?? match.score_odds['other'] ?? 0;
+      } else {
+        exactScorePoints = match.exact_score_points || 0;
+      }
       totalPoints += exactScorePoints;
       console.log(`  Exact score match! Adding ${exactScorePoints} points. Total: ${totalPoints}`);
     }

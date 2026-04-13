@@ -22,6 +22,8 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
   const [saving, setSaving] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState('');
+  const [oddsTable, setOddsTable] = useState(null);
+  const [showOddsPopup, setShowOddsPopup] = useState(false);
   const imageInputRef = useRef();
 
   const handleAnalyzeImage = async (file) => {
@@ -42,12 +44,18 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'שגיאה בניתוח');
-      setFormData(prev => ({ ...prev, ...data.scoring }));
+      setOddsTable(data.scoring);
+      setShowOddsPopup(true);
     } catch (err) {
       setAnalyzeError(err.message);
     } finally {
       setAnalyzing(false);
     }
+  };
+
+  const saveOddsTable = () => {
+    setFormData(prev => ({ ...prev, score_odds: oddsTable }));
+    setShowOddsPopup(false);
   };
 
   // Helper function to format date to "YYYY-MM-DDTHH:mm" in local timezone
@@ -276,7 +284,24 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
                 <Input id="btts_no_points" type="number" step="0.05" value={formData.btts_no_points || 0} onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
               </div>
               <div>
-                <Label htmlFor="exact_score_points">Exact Score Points</Label>
+                <div className="flex items-center justify-between mb-1">
+                  <Label htmlFor="exact_score_points">Exact Score Points</Label>
+                  <div className="flex items-center gap-1.5">
+                    {formData.score_odds && (
+                      <span className="text-xs text-green-400">
+                        ✓ {Object.keys(formData.score_odds).length - 1} תוצאות
+                      </span>
+                    )}
+                    <input ref={imageInputRef} type="file" accept="image/*" className="hidden"
+                      onChange={(e) => handleAnalyzeImage(e.target.files[0])} />
+                    <Button type="button" size="sm" variant="outline"
+                      className="h-6 text-xs border-yellow-500 text-yellow-400 hover:bg-yellow-500/10 px-2 gap-1"
+                      onClick={() => imageInputRef.current?.click()} disabled={analyzing}>
+                      {analyzing ? <Loader2 className="w-3 h-3 animate-spin" /> : <><Sparkles className="w-3 h-3" /><Upload className="w-3 h-3" /></>}
+                    </Button>
+                  </div>
+                </div>
+                {analyzeError && <p className="text-red-400 text-xs mb-1">{analyzeError}</p>}
                 <Input id="exact_score_points" type="number" step="0.05" value={formData.exact_score_points || 0} onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
               </div>
             </div>
@@ -297,6 +322,35 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
           </div>
         </div>
         
+        {/* Odds Table Popup */}
+        {showOddsPopup && oddsTable && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setShowOddsPopup(false)}>
+            <div className="bg-slate-800 border border-slate-600 rounded-xl p-5 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-yellow-400" />
+                טבלת אודס — בדוק ואשר
+              </h3>
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {Object.entries(oddsTable).map(([score, odds]) => (
+                  <div key={score} className="flex justify-between items-center bg-slate-700 rounded px-2 py-1.5">
+                    <span className="text-slate-300 text-sm font-mono">{score === 'other' ? 'אחר' : score}</span>
+                    <input
+                      type="number" step="0.5"
+                      value={odds}
+                      onChange={e => setOddsTable(prev => ({ ...prev, [score]: parseFloat(e.target.value) || 0 }))}
+                      className="w-16 text-right bg-slate-600 text-yellow-400 font-bold rounded px-1 py-0.5 text-sm"
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" size="sm" className="border-slate-600" onClick={() => setShowOddsPopup(false)}>ביטול</Button>
+                <Button size="sm" className="bg-green-600 hover:bg-green-500" onClick={saveOddsTable}>שמור לטבלה</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} className="border-slate-600">Cancel</Button>
           <Button onClick={handleSaveClick} className="bg-blue-600 hover:bg-blue-700" disabled={saving}>
