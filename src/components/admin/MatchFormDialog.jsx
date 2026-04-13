@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, Sparkles } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
 
 const LogoSelectItem = React.forwardRef(({ children, logoUrl, ...props }, ref) => (
@@ -20,6 +20,35 @@ const LogoSelectItem = React.forwardRef(({ children, logoUrl, ...props }, ref) =
 export default function MatchFormDialog({ open, onOpenChange, match, rounds, logos, onSave }) {
   const [formData, setFormData] = useState({});
   const [saving, setSaving] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analyzeError, setAnalyzeError] = useState('');
+  const imageInputRef = useRef();
+
+  const handleAnalyzeImage = async (file) => {
+    if (!file) return;
+    setAnalyzing(true);
+    setAnalyzeError('');
+    try {
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const res = await fetch('/api/analyze-scoring', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64, mediaType: file.type || 'image/jpeg' }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'שגיאה בניתוח');
+      setFormData(prev => ({ ...prev, ...data.scoring }));
+    } catch (err) {
+      setAnalyzeError(err.message);
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
   // Helper function to format date to "YYYY-MM-DDTHH:mm" in local timezone
   const formatToLocalDatetime = (dateString) => {
@@ -189,7 +218,31 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
 
           {/* Point Values Section */}
           <div className="col-span-1 md:col-span-2 space-y-4 border-t border-slate-600 pt-6 mt-4">
-            <h3 className="text-lg font-semibold mb-2">Point Values</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-semibold">Point Values</h3>
+              <div className="flex items-center gap-2">
+                {analyzeError && <span className="text-red-400 text-xs">{analyzeError}</span>}
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handleAnalyzeImage(e.target.files[0])}
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10 gap-1.5"
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={analyzing}
+                >
+                  {analyzing
+                    ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />מנתח...</>
+                    : <><Sparkles className="w-3.5 h-3.5" /><Upload className="w-3.5 h-3.5" />נתח תמונה עם AI</>}
+                </Button>
+              </div>
+            </div>
              <div>
                 <Label htmlFor="round_id">Round</Label>
                 <Select value={formData.round_id || ''} onValueChange={(value) => setFormData(p => ({...p, round_id: value}))}>
