@@ -37,9 +37,13 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
-      const res = await fetch('/api/analyze-scoring', {
+      const res = await fetch('https://gwosctfnqyulxsnhxfzv.supabase.co/functions/v1/analyze-scoring', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
         body: JSON.stringify({ imageBase64: base64, mediaType: file.type || 'image/jpeg' }),
       });
       const data = await res.json();
