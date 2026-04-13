@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Upload, Sparkles, Eye } from "lucide-react";
+import { Loader2, Upload, Sparkles, Eye, Trash2 } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
 
 const LogoSelectItem = React.forwardRef(({ children, logoUrl, ...props }, ref) => (
@@ -230,31 +230,7 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
 
           {/* Point Values Section */}
           <div className="col-span-1 md:col-span-2 space-y-4 border-t border-slate-600 pt-6 mt-4">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-semibold">Point Values</h3>
-              <div className="flex items-center gap-2">
-                {analyzeError && <span className="text-red-400 text-xs">{analyzeError}</span>}
-                <input
-                  ref={imageInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => handleAnalyzeImage(e.target.files[0])}
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10 gap-1.5"
-                  onClick={() => imageInputRef.current?.click()}
-                  disabled={analyzing}
-                >
-                  {analyzing
-                    ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />מנתח...</>
-                    : <><Sparkles className="w-3.5 h-3.5" /><Upload className="w-3.5 h-3.5" />נתח תמונה עם AI</>}
-                </Button>
-              </div>
-            </div>
+            <h3 className="text-lg font-semibold mb-2">Point Values</h3>
              <div>
                 <Label htmlFor="round_id">Round</Label>
                 <Select value={formData.round_id || ''} onValueChange={(value) => setFormData(p => ({...p, round_id: value}))}>
@@ -300,6 +276,11 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
                           className="h-6 w-6 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-400/10"
                           onClick={() => { setOddsTable(formData.score_odds); setShowOddsPopup(true); }}>
                           <Eye className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button type="button" size="sm" variant="ghost"
+                          className="h-6 w-6 p-0 text-red-400 hover:text-red-300 hover:bg-red-400/10"
+                          onClick={() => { setFormData(prev => ({ ...prev, score_odds: null })); setOddsTable(null); }}>
+                          <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </>
                     )}
