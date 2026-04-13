@@ -12,6 +12,7 @@ import AdminLogos from "../components/admin/AdminLogos";
 import AdminPredictions from "../components/admin/AdminPredictions";
 import AdminUsers from "../components/admin/AdminUsers";
 import AdminScoring from "../components/admin/AdminScoring";
+import AdminScoringImage from "../components/admin/AdminScoringImage";
 import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
@@ -70,7 +71,7 @@ export default function Admin() {
       case 'match-predictions': return <AdminMatchPredictions />;
       case 'users': return <AdminUsers />;
       case 'logos': return <AdminLogos />;
-      case 'scoring': return <AdminScoring />;
+      case 'scoring': return <><AdminScoringImage /><AdminScoring /></>;
       case 'live-data': return <AdminLiveData />;
       case 'import': return <AdminImportMatches />;
       case 'reset': return <AdminReset />;
