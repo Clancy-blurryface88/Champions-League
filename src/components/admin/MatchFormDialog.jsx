@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Loader2, Upload, Sparkles, Eye, Trash2 } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
+import { supabase } from "@/api/supabase";
 
 const LogoSelectItem = React.forwardRef(({ children, logoUrl, ...props }, ref) => (
   <SelectItem ref={ref} {...props}>
@@ -57,9 +59,21 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
     }
   };
 
-  const saveOddsTable = () => {
+  const saveOddsTable = async () => {
     setFormData(prev => ({ ...prev, score_odds: oddsTable }));
     setShowOddsPopup(false);
+    // שמירה מיידית ל-DB אם זהו משחק קיים
+    if (match?.id) {
+      await supabase.from('matches').update({ score_odds: oddsTable }).eq('id', match.id);
+    }
+  };
+
+  const deleteOddsTable = async () => {
+    setFormData(prev => ({ ...prev, score_odds: null }));
+    setOddsTable(null);
+    if (match?.id) {
+      await supabase.from('matches').update({ score_odds: null }).eq('id', match.id);
+    }
   };
 
   // Helper function to format date to "YYYY-MM-DDTHH:mm" in local timezone
@@ -279,7 +293,7 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
                         </Button>
                         <Button type="button" size="sm" variant="ghost"
                           className="h-6 w-6 p-0 text-red-400 hover:text-red-300 hover:bg-red-400/10"
-                          onClick={() => { setFormData(prev => ({ ...prev, score_odds: null })); setOddsTable(null); }}>
+                          onClick={deleteOddsTable}>
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </>
@@ -314,10 +328,10 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
           </div>
         </div>
         
-        {/* Odds Table Popup */}
-        {showOddsPopup && oddsTable && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setShowOddsPopup(false)}>
-            <div className="bg-slate-800 border border-slate-600 rounded-xl p-5 max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        {/* Odds Table Popup - rendered via portal to avoid Dialog overflow/transform interference */}
+        {showOddsPopup && oddsTable && createPortal(
+          <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black/70 p-4" onClick={() => setShowOddsPopup(false)}>
+            <div className="bg-slate-800 border border-slate-600 rounded-xl p-5 max-w-2xl w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
               <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-yellow-400" />
                 טבלת אודס — בדוק ואשר
@@ -395,7 +409,8 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
                 <Button size="sm" className="bg-green-600 hover:bg-green-500" onClick={saveOddsTable}>שמור לטבלה</Button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         <DialogFooter>
