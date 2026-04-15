@@ -450,3 +450,28 @@ export const AppSettings = {
     return data;
   },
 };
+
+// ============================================
+// AI BRIEF ENTITY
+// ============================================
+export const AiBrief = {
+  forMatches: async (matchIds) => {
+    if (!matchIds || matchIds.length === 0) return [];
+    const { data, error } = await supabase
+      .from('ai_briefs')
+      .select('match_id, brief_he, generated_at')
+      .in('match_id', matchIds);
+    if (error) throw error;
+    return data;
+  },
+
+  forMatch: async (matchId) => {
+    const { data, error } = await supabase
+      .from('ai_briefs')
+      .select('match_id, brief_he, generated_at')
+      .eq('match_id', matchId)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+};

@@ -4,7 +4,9 @@ import { Round } from "@/api/entities";
 import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { User } from "@/api/entities";
-import { ArrowLeft, Check, Calendar, Lock, HelpCircle, Eye } from "lucide-react"; // ADDED Eye icon
+import { AiBrief } from "@/api/entities";
+import { ArrowLeft, Check, Calendar, Lock, HelpCircle, Eye, Sparkles } from "lucide-react";
+import AiBriefModal from "@/components/AiBriefModal"; // ADDED Eye icon
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { createPageUrl } from "@/utils";
@@ -42,6 +44,8 @@ export default function Predictions() {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [selectedMatchForPredictions, setSelectedMatchForPredictions] = useState(null);
+  const [briefs, setBriefs] = useState({});
+  const [selectedMatchForBrief, setSelectedMatchForBrief] = useState(null);
   const [shouldAnimate, setShouldAnimate] = useState(false);
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -163,7 +167,16 @@ export default function Predictions() {
       }
 
       setCurrentRound(rounds[0]);
-      setMatches(roundMatches.sort((a, b) => new Date(a.match_date) - new Date(b.match_date)));
+      const sortedMatches = roundMatches.sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
+      setMatches(sortedMatches);
+
+      // Load AI briefs for all matches in this round
+      const matchIds = sortedMatches.map(m => m.id);
+      AiBrief.forMatches(matchIds).then(briefRows => {
+        const briefMap = {};
+        briefRows.forEach(b => { briefMap[b.match_id] = b; });
+        setBriefs(briefMap);
+      }).catch(() => {}); // silent fail - briefs are optional
 
       const userPredictions = await Prediction.filter({
         user_id: currentUser.id
@@ -578,6 +591,18 @@ export default function Predictions() {
                         teamB={match.team_b} />
                       </div>
                     }
+
+                    {/* AI Pre-match Brief Button */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setSelectedMatchForBrief(match); }}
+                      className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-yellow-500/30 bg-yellow-500/5 hover:bg-yellow-500/15 hover:border-yellow-500/60 transition-colors group"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-yellow-400 group-hover:scale-110 transition-transform" />
+                      <span className="text-yellow-400 text-xs font-medium">AI טרום משחק</span>
+                      {briefs[match.id] && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 opacity-70" />
+                      )}
+                    </button>
                   </CardContent>
                 </Card>
               </motion.div>);
@@ -647,6 +672,13 @@ export default function Predictions() {
             teamName={selectedTeam.name}
             teamLogo={selectedTeam.logo}
             onClose={() => setSelectedTeam(null)} />
+        )}
+
+        {selectedMatchForBrief && (
+          <AiBriefModal
+            match={selectedMatchForBrief}
+            brief={briefs[selectedMatchForBrief.id] || null}
+            onClose={() => setSelectedMatchForBrief(null)} />
         )}
 
         {/* --- SUCCESS ANIMATION OVERLAY --- */}
