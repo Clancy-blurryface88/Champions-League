@@ -38,6 +38,7 @@ export default function Admin() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState('rounds');
+  const [contentKey, setContentKey] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -70,7 +71,7 @@ export default function Admin() {
       case 'match-predictions': return <AdminMatchPredictions />;
       case 'users': return <AdminUsers />;
       case 'logos': return <AdminLogos />;
-      case 'scoring': return <AdminScoring />;
+      case 'scoring': return <AdminScoring onUpdateComplete={() => setContentKey(k => k + 1)} />;
       case 'live-data': return <AdminLiveData />;
       case 'import': return <AdminImportMatches />;
       case 'reset': return <AdminReset />;
@@ -128,9 +129,11 @@ export default function Admin() {
             </div>
           </aside>
 
-          {/* Content */}
+          {/* Content — key forces remount when scoring completes */}
           <main className="flex-1">
-            {renderContent()}
+            <div key={`${activeView}-${contentKey}`}>
+              {renderContent()}
+            </div>
           </main>
         </div>
       </div>

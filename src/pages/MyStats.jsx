@@ -208,7 +208,11 @@ export default function MyStats() {
           const max_possible_points = finishedMatches.reduce((sum, m) => sum + calculateMatchMaxPotentialPoints(m), 0);
 
           // Load user stats from UserStats entity
-          const userStatsData = await UserStats.filter({ user_id: userId });
+          const [userStatsData, allUserStats] = await Promise.all([
+            UserStats.filter({ user_id: userId }),
+            UserStats.list(),
+          ]);
+
           if (userStatsData.length > 0) {
               stats = { ...userStatsData[0], max_possible_points };
           } else {
@@ -219,9 +223,8 @@ export default function MyStats() {
                   max_possible_points
               };
           }
-          
+
           // Get rank
-          const allUserStats = await UserStats.list();
           const sortedStats = allUserStats.sort((a, b) => (b.total_points || 0) - (a.total_points || 0));
           const position = sortedStats.findIndex(stat => stat.user_id === userId) + 1;
           rank = position > 0 ? position : null;
@@ -263,19 +266,23 @@ export default function MyStats() {
       }
 
       // Calculate points breakdown
-      const breakdown = {
-        exactScore: 0,
-        correctOutcome: 0,
-        btts: 0,
-        goalsRange: 0
-      };
+      // For "all" rounds: use stored aggregates from user_stats if available (faster)
+      // For specific round: sum from predictions (only way to get per-round breakdown)
+      const breakdown = { exactScore: 0, correctOutcome: 0, btts: 0, goalsRange: 0 };
 
-      uniquePredictions.forEach((prediction) => {
-        breakdown.exactScore += prediction.exact_score_points_earned || 0;
-        breakdown.correctOutcome += prediction.correct_outcome_points_earned || 0;
-        breakdown.btts += prediction.both_teams_scored_points_earned || 0;
-        breakdown.goalsRange += prediction.goals_range_points_earned || 0;
-      });
+      if (roundId === 'all' && stats.total_exact_score_points != null) {
+        breakdown.exactScore    = stats.total_exact_score_points || 0;
+        breakdown.correctOutcome = stats.total_outcome_points     || 0;
+        breakdown.btts          = stats.total_btts_points         || 0;
+        breakdown.goalsRange    = stats.total_goals_range_points  || 0;
+      } else {
+        uniquePredictions.forEach((prediction) => {
+          breakdown.exactScore     += prediction.exact_score_points_earned        || 0;
+          breakdown.correctOutcome += prediction.correct_outcome_points_earned    || 0;
+          breakdown.btts           += prediction.both_teams_scored_points_earned  || 0;
+          breakdown.goalsRange     += prediction.goals_range_points_earned        || 0;
+        });
+      }
 
       const pieData = [];
       if (breakdown.exactScore > 0) {

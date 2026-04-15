@@ -223,53 +223,61 @@ export default function AdminScoring({ onUpdateComplete }) {
       const userTotalPoints = {};
       const userExactHits = {};
       const userTotalPredictions = {};
+      const userExactScorePoints = {};
+      const userOutcomePoints = {};
+      const userBttsPoints = {};
+      const userGoalsRangePoints = {};
 
       // Initialize user counters
       allUsers.forEach(user => {
         userTotalPoints[user.id] = 0;
         userExactHits[user.id] = 0;
         userTotalPredictions[user.id] = 0;
+        userExactScorePoints[user.id] = 0;
+        userOutcomePoints[user.id] = 0;
+        userBttsPoints[user.id] = 0;
+        userGoalsRangePoints[user.id] = 0;
       });
 
       // **חישוב סיכום כללי מכל הניחושים המעודכנים**
       const uniqueAllPredictionsMap = {};
-      
-      refreshedPredictions.forEach(prediction => { // Use refreshedPredictions here
+
+      refreshedPredictions.forEach(prediction => {
         const key = `${prediction.user_id}_${prediction.match_id}`;
-        
-        if (!uniqueAllPredictionsMap[key] || 
+
+        if (!uniqueAllPredictionsMap[key] ||
             new Date(prediction.created_date) > new Date(uniqueAllPredictionsMap[key].created_date)) {
           uniqueAllPredictionsMap[key] = prediction;
         }
       });
-      
+
       const allUniquePredictions = Object.values(uniqueAllPredictionsMap);
 
-      // Count total predictions per user and sum their points
+      // Count total predictions per user and sum their points + category breakdown
       allUniquePredictions.forEach(prediction => {
-        if (userTotalPredictions.hasOwnProperty(prediction.user_id)) {
-          userTotalPredictions[prediction.user_id]++;
-          userTotalPoints[prediction.user_id] = parseFloat((userTotalPoints[prediction.user_id] + (prediction.points_earned || 0)).toFixed(2));
-          
-          // Check if it's an exact score hit
-          const match = allMatches.find(m => m.id === prediction.match_id);
-          if (match && match.is_finished && 
-              prediction.predicted_score_a === match.actual_score_a && 
-              prediction.predicted_score_b === match.actual_score_b) {
-            userExactHits[prediction.user_id]++;
-          }
-        } else {
-          userTotalPredictions[prediction.user_id] = 1;
-          userTotalPoints[prediction.user_id] = prediction.points_earned || 0;
-          userExactHits[prediction.user_id] = 0;
-          
-          // Check if it's an exact score hit for new user
-          const match = allMatches.find(m => m.id === prediction.match_id);
-          if (match && match.is_finished && 
-              prediction.predicted_score_a === match.actual_score_a && 
-              prediction.predicted_score_b === match.actual_score_b) {
-            userExactHits[prediction.user_id] = 1;
-          }
+        const uid = prediction.user_id;
+        if (!userTotalPredictions.hasOwnProperty(uid)) {
+          userTotalPredictions[uid] = 0;
+          userTotalPoints[uid] = 0;
+          userExactHits[uid] = 0;
+          userExactScorePoints[uid] = 0;
+          userOutcomePoints[uid] = 0;
+          userBttsPoints[uid] = 0;
+          userGoalsRangePoints[uid] = 0;
+        }
+
+        userTotalPredictions[uid]++;
+        userTotalPoints[uid] = parseFloat((userTotalPoints[uid] + (prediction.points_earned || 0)).toFixed(2));
+        userExactScorePoints[uid] = parseFloat((userExactScorePoints[uid] + (prediction.exact_score_points_earned || 0)).toFixed(2));
+        userOutcomePoints[uid] = parseFloat((userOutcomePoints[uid] + (prediction.correct_outcome_points_earned || 0)).toFixed(2));
+        userBttsPoints[uid] = parseFloat((userBttsPoints[uid] + (prediction.both_teams_scored_points_earned || 0)).toFixed(2));
+        userGoalsRangePoints[uid] = parseFloat((userGoalsRangePoints[uid] + (prediction.goals_range_points_earned || 0)).toFixed(2));
+
+        const match = allMatches.find(m => m.id === prediction.match_id);
+        if (match && match.is_finished &&
+            prediction.predicted_score_a === match.actual_score_a &&
+            prediction.predicted_score_b === match.actual_score_b) {
+          userExactHits[uid]++;
         }
       });
 
@@ -281,12 +289,16 @@ export default function AdminScoring({ onUpdateComplete }) {
         try {
           // Check if UserStats already exists for this user
           const existingStats = await UserStats.filter({ user_id: userId });
-          
+
           const statsData = {
             user_id: userId,
             total_points: totalPoints,
             exact_hits_count: userExactHits[userId] || 0,
-            total_predictions_count: userTotalPredictions[userId] || 0
+            total_predictions_count: userTotalPredictions[userId] || 0,
+            total_exact_score_points: userExactScorePoints[userId] || 0,
+            total_outcome_points: userOutcomePoints[userId] || 0,
+            total_btts_points: userBttsPoints[userId] || 0,
+            total_goals_range_points: userGoalsRangePoints[userId] || 0,
           };
 
           if (existingStats.length > 0) {
