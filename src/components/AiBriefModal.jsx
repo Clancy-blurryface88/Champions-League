@@ -53,16 +53,29 @@ export default function AiBriefModal({ match, brief, onClose }) {
         </div>
 
         {/* Brief text */}
-        <div className="overflow-y-auto flex-1 min-h-0 px-5 py-4">
+        <div className="overflow-y-auto flex-1 min-h-0 px-5 py-4" dir="rtl">
           {brief ? (
-            <p
-              className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap"
-              dir="rtl"
-            >
-              {brief.brief_he}
-            </p>
+            <div className="space-y-1">
+              {brief.brief_he.split('\n').map((line, i) => {
+                const trimmed = line.trim();
+                if (!trimmed) return <div key={i} className="h-2" />;
+                const isHeader = ['🌍', '⚔️', '📊', '⭐', '🎯'].some(e => trimmed.startsWith(e));
+                if (isHeader) {
+                  return (
+                    <p key={i} className="text-yellow-400 font-bold text-sm pt-3 pb-0.5 first:pt-0">
+                      {trimmed}
+                    </p>
+                  );
+                }
+                return (
+                  <p key={i} className="text-slate-200 text-sm leading-relaxed">
+                    {trimmed}
+                  </p>
+                );
+              })}
+            </div>
           ) : (
-            <p className="text-slate-400 text-sm text-center py-8" dir="rtl">
+            <p className="text-slate-400 text-sm text-center py-8">
               הסיכום עבור משחק זה יהיה זמין בקרוב
             </p>
           )}
