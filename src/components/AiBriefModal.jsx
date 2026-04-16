@@ -19,7 +19,8 @@ export default function AiBriefModal({ match, brief, onClose }) {
       onClick={onClose}
     >
       <div
-        className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden shadow-2xl"
+        className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg flex flex-col shadow-2xl"
+        style={{ maxHeight: '85dvh' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -52,7 +53,7 @@ export default function AiBriefModal({ match, brief, onClose }) {
         </div>
 
         {/* Brief text */}
-        <div className="overflow-y-auto flex-1 px-5 py-4">
+        <div className="overflow-y-auto flex-1 min-h-0 px-5 py-4">
           {brief ? (
             <p
               className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap"
