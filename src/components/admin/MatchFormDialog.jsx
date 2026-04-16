@@ -137,8 +137,6 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
 
   const handleSaveClick = async () => {
     setSaving(true);
-    // Convert scores to numbers before saving, handling empty strings
-    // Convert local datetime back to UTC ISO string for storage
     const matchDateISO = formData.match_date ? new Date(formData.match_date).toISOString() : null;
 
     const dataToSave = {
@@ -149,8 +147,19 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
         previous_match_score_a: (formData.previous_match_score_a === '' || formData.previous_match_score_a === null || formData.previous_match_score_a === undefined) ? null : Number(formData.previous_match_score_a),
         previous_match_score_b: (formData.previous_match_score_b === '' || formData.previous_match_score_b === null || formData.previous_match_score_b === undefined) ? null : Number(formData.previous_match_score_b),
     };
-    await onSave(dataToSave);
+    const savedMatch = await onSave(dataToSave);
     setSaving(false);
+
+    // אם זה משחק חדש — מייצרים ברייף AI ברקע (לא חוסם את האדמין)
+    const savedId = savedMatch?.id || match?.id;
+    const isNewMatch = !match?.id;
+    if (savedId && isNewMatch) {
+      fetch('/api/generate-brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ match_id: savedId }),
+      }).catch(() => {});
+    }
   };
   
   if (!open) return null;

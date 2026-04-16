@@ -66,13 +66,15 @@ export default function AdminMatches() {
 
   const handleSave = async (formData) => {
     try {
+      let savedMatch;
       if (formData.id) {
-        await Match.update(formData.id, formData);
+        savedMatch = await Match.update(formData.id, formData);
       } else {
-        await Match.create(formData);
+        savedMatch = await Match.create(formData);
       }
       setIsDialogOpen(false);
       loadData();
+      return savedMatch;
     } catch (error) {
       console.error("Error saving match:", error);
     }
