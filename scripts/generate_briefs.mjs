@@ -134,7 +134,7 @@ function buildPrompt(match) {
 async function generateBrief(match) {
   const resp = await claude.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 600,
+    max_tokens: 1024,
     system: SYSTEM_PROMPT,
     messages: [{ role: 'user', content: buildPrompt(match) }],
   });
