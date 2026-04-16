@@ -81,7 +81,7 @@ export default async function handler(req, res) {
   const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const response = await claude.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 1024,
+    max_tokens: 1500,
     system: SYSTEM_PROMPT,
     messages: [{ role: 'user', content: buildPrompt(match) }],
   });
