@@ -172,13 +172,12 @@ export default function Layout({ children, currentPageName }) {
 
         setUser(userWithStats);
 
-        // לוגיקה חדשה: הצגת WelcomeModal אם שם התצוגה לא מוגדר
-        // או הצגת IntroVideoModal אם שם התצוגה מוגדר אבל הסרטון לא נצפה
+        // פלואו אונבורדינג: WelcomeModal → סרטון → דשבורד
         if (currentUser) {
-          const hasDisplayName = !!(currentUser.display_name);
+          const hasCompletedWelcome = localStorage.getItem('welcome_completed_' + currentUser.id) === 'true';
           const hasSeenVideo = userWithStats.has_seen_intro_video ||
             localStorage.getItem('intro_seen_' + currentUser.id) === 'true';
-          if (!hasDisplayName) {
+          if (!hasCompletedWelcome) {
             setShowWelcomeModal(true);
           } else if (!hasSeenVideo) {
             setShowIntroVideoModal(true);
@@ -375,8 +374,9 @@ export default function Layout({ children, currentPageName }) {
         }
       }
 
-      setUser((prev) => ({ ...prev, display_name: displayName })); // Update user state with new display name
-      setShowWelcomeModal(false); // Close the welcome modal
+      setUser((prev) => ({ ...prev, display_name: displayName }));
+      try { localStorage.setItem('welcome_completed_' + user.id, 'true'); } catch {}
+      setShowWelcomeModal(false);
 
       // New logic: check if intro video needs to be shown
       const currentUser = await User.me();

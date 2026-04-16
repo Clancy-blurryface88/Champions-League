@@ -1,8 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import TextRotate from "./ui/TextRotate";
-
-const VIDEO_DURATION_SECONDS = 21;
 
 const rotatingTexts = [
   "ברוך הבא לטורניר הגדול בעולם",
@@ -10,44 +8,16 @@ const rotatingTexts = [
   "שיהיה טורניר",
   "מוצלח ומהנה",
   "בהצלחה 🏆",
-  "",
-  ""
 ];
 
 export default function IntroVideoModal({ isOpen, onVideoCompleted }) {
   const videoRef = useRef(null);
-  const [needsTap, setNeedsTap] = useState(false);
-  const timerRef = useRef(null);
 
   useEffect(() => {
-    if (!isOpen) return;
-
-    const tryPlay = async () => {
-      if (!videoRef.current) return;
-      try {
-        await videoRef.current.play();
-        setNeedsTap(false);
-        timerRef.current = setTimeout(onVideoCompleted, VIDEO_DURATION_SECONDS * 1000);
-      } catch {
-        setNeedsTap(true);
-      }
-    };
-
-    tryPlay();
-
-    return () => {
-      clearTimeout(timerRef.current);
-    };
-  }, [isOpen, onVideoCompleted]);
-
-  const handleTap = async () => {
-    if (!videoRef.current) return;
-    try {
-      await videoRef.current.play();
-      setNeedsTap(false);
-      timerRef.current = setTimeout(onVideoCompleted, VIDEO_DURATION_SECONDS * 1000);
-    } catch {}
-  };
+    if (!isOpen || !videoRef.current) return;
+    videoRef.current.currentTime = 0;
+    videoRef.current.play().catch(() => {});
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -64,32 +34,28 @@ export default function IntroVideoModal({ isOpen, onVideoCompleted }) {
             ref={videoRef}
             className="w-full block"
             playsInline
+            muted
             onEnded={onVideoCompleted}
             style={{ maxHeight: '70vh' }}
           >
             <source src="/VIDEO.mp4" type="video/mp4" />
           </video>
-
-          {needsTap && (
-            <div
-              className="absolute inset-0 flex items-center justify-center bg-black/60 cursor-pointer"
-              onClick={handleTap}
-            >
-              <div className="text-center">
-                <div className="text-6xl mb-4">▶️</div>
-                <p className="text-white text-lg font-bold">לחץ לצפייה בסרטון</p>
-              </div>
-            </div>
-          )}
         </div>
 
-        <div className="p-4 text-center">
+        <div className="p-4 text-center w-full">
           <TextRotate
             texts={rotatingTexts}
             className="text-xl font-bold text-white"
             interval={3000}
           />
         </div>
+
+        <button
+          onClick={onVideoCompleted}
+          className="absolute bottom-6 left-6 text-white/50 hover:text-white text-sm transition-colors"
+        >
+          דלג ←
+        </button>
       </motion.div>
     </AnimatePresence>
   );
