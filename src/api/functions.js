@@ -30,32 +30,33 @@ export const updateUserName = async ({ userId, newName }) => {
     .update({ display_name: newName, updated_at: new Date().toISOString() })
     .eq('id', userId);
 
-  if (profileError) throw profileError;
+  if (profileError) return { data: { success: false, error: profileError.message } };
 
-  const { error: publicError } = await supabase
+  await supabase
     .from('public_profiles')
     .update({ display_name: newName, updated_at: new Date().toISOString() })
     .eq('user_id', userId);
 
-  if (publicError) throw publicError;
-
-  return { success: true };
+  return { data: { success: true } };
 };
 
 // ============================================
 // DELETE USER AND DATA — מחיקת משתמש וכל הנתונים שלו
 // ============================================
 export const deleteUserAndData = async ({ userId }) => {
-  // מחיקת ניחושים
-  await supabase.from('predictions').delete().eq('user_id', userId);
-  // מחיקת סטטיסטיקות
-  await supabase.from('user_stats').delete().eq('user_id', userId);
-  // מחיקת פרופיל ציבורי
-  await supabase.from('public_profiles').delete().eq('user_id', userId);
-  // מחיקת פרופיל
-  await supabase.from('profiles').delete().eq('id', userId);
+  const { error: e1 } = await supabase.from('predictions').delete().eq('user_id', userId);
+  if (e1) return { data: { success: false, error: e1.message } };
 
-  return { success: true };
+  const { error: e2 } = await supabase.from('user_stats').delete().eq('user_id', userId);
+  if (e2) return { data: { success: false, error: e2.message } };
+
+  const { error: e3 } = await supabase.from('public_profiles').delete().eq('user_id', userId);
+  if (e3) return { data: { success: false, error: e3.message } };
+
+  const { error: e4 } = await supabase.from('profiles').delete().eq('id', userId);
+  if (e4) return { data: { success: false, error: e4.message } };
+
+  return { data: { success: true } };
 };
 
 // ============================================

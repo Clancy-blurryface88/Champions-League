@@ -27,6 +27,32 @@ const getCurrentUser = async () => {
 };
 
 // ============================================
+// HELPER - מסנכרן public_profiles מ-profiles
+// ============================================
+const syncPublicProfile = async (userId, displayName, avatarUrl) => {
+  try {
+    const { data: existing } = await supabase
+      .from('public_profiles')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase
+        .from('public_profiles')
+        .update({ display_name: displayName, avatar_url: avatarUrl, updated_at: new Date().toISOString() })
+        .eq('user_id', userId);
+    } else {
+      await supabase
+        .from('public_profiles')
+        .insert({ user_id: userId, display_name: displayName, avatar_url: avatarUrl });
+    }
+  } catch (err) {
+    console.warn('syncPublicProfile failed (non-critical):', err?.message);
+  }
+};
+
+// ============================================
 // USER ENTITY
 // ============================================
 export const User = {
@@ -44,27 +70,32 @@ export const User = {
 
     // אם הפרופיל לא נוצר עדיין — ניצור אותו
     if (!data) {
+      const display_name = authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email?.split('@')[0];
+      const avatar_url = authUser.user_metadata?.avatar_url;
+
+      // ניקוי localStorage כדי לאפס את זרימת האונבורדינג
+      try {
+        localStorage.removeItem('welcome_completed_' + authUser.id);
+        localStorage.removeItem('intro_seen_' + authUser.id);
+      } catch {}
+
       const { data: newProfile, error: insertError } = await supabase
         .from('profiles')
-        .insert({
-          id: authUser.id,
-          email: authUser.email,
-          display_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email?.split('@')[0],
-          avatar_url: authUser.user_metadata?.avatar_url,
-        })
+        .insert({ id: authUser.id, email: authUser.email, display_name, avatar_url })
         .select()
         .single();
-      // אם ה-INSERT נכשל (למשל RLS) — מחזירים מידע בסיסי מה-auth user
+
       if (insertError) {
         return {
           id: authUser.id,
           email: authUser.email,
-          display_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email?.split('@')[0],
-          avatar_url: authUser.user_metadata?.avatar_url,
+          display_name,
+          avatar_url,
           is_admin: false,
           has_seen_intro_video: false,
         };
       }
+      await syncPublicProfile(authUser.id, display_name, avatar_url);
       return newProfile;
     }
 
@@ -89,6 +120,9 @@ export const User = {
       .select()
       .single();
     if (error) throw error;
+    if (updates.display_name !== undefined || updates.avatar_url !== undefined) {
+      await syncPublicProfile(id, data.display_name, data.avatar_url);
+    }
     return data;
   },
 
@@ -103,6 +137,9 @@ export const User = {
       .select()
       .single();
     if (error) throw error;
+    if (updates.display_name !== undefined || updates.avatar_url !== undefined) {
+      await syncPublicProfile(authUser.id, data.display_name, data.avatar_url);
+    }
     return data;
   },
 
