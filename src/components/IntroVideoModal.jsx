@@ -1,22 +1,15 @@
 import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import TextRotate from "./ui/TextRotate";
-
-const rotatingTexts = [
-  "ברוך הבא לטורניר הגדול בעולם",
-  "מונדיאל 2026",
-  "שיהיה טורניר",
-  "מוצלח ומהנה",
-  "בהצלחה 🏆",
-];
 
 export default function IntroVideoModal({ isOpen, onVideoCompleted }) {
   const videoRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen || !videoRef.current) return;
-    videoRef.current.currentTime = 0;
-    videoRef.current.play().catch(() => {});
+    const video = videoRef.current;
+    video.currentTime = 0;
+    video.muted = true;
+    video.play().catch(() => {});
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -24,31 +17,21 @@ export default function IntroVideoModal({ isOpen, onVideoCompleted }) {
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center"
+        className="fixed inset-0 bg-black z-[100] flex items-center justify-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
-        <div className="relative w-full max-w-2xl">
-          <video
-            ref={videoRef}
-            className="w-full block"
-            playsInline
-            muted
-            onEnded={onVideoCompleted}
-            style={{ maxHeight: '70vh' }}
-          >
-            <source src="/VIDEO2.mp4" type="video/mp4" />
-          </video>
-        </div>
-
-        <div className="p-4 text-center w-full">
-          <TextRotate
-            texts={rotatingTexts}
-            className="text-xl font-bold text-white"
-            interval={3000}
-          />
-        </div>
+        <video
+          ref={videoRef}
+          className="w-full max-w-2xl block"
+          playsInline
+          muted
+          onEnded={onVideoCompleted}
+          style={{ maxHeight: '70vh' }}
+        >
+          <source src="/VIDEO2.mp4" type="video/mp4" />
+        </video>
 
         <button
           onClick={onVideoCompleted}
