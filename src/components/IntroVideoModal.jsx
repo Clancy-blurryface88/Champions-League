@@ -28,7 +28,7 @@ export default function IntroVideoModal({ isOpen, onVideoCompleted }) {
           onEnded={onVideoCompleted}
           style={{ maxHeight: '70vh' }}
         >
-          <source src="/VIDEO.mp4" type="video/mp4" />
+          <source src="/FIFA2026.mp4" type="video/mp4" />
         </video>
 
         <button
