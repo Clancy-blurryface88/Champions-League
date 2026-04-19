@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -337,90 +336,91 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
           </div>
         </div>
         
-        {/* Odds Table Popup - rendered via portal to avoid Dialog overflow/transform interference */}
-        {showOddsPopup && oddsTable && createPortal(
-          <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black/70 p-4" onClick={() => setShowOddsPopup(false)}>
-            <div className="bg-slate-800 border border-slate-600 rounded-xl p-5 max-w-2xl w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-              <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+        {/* Odds Table Popup - nested Dialog to avoid Radix pointer-events blocking */}
+        <Dialog open={showOddsPopup} onOpenChange={setShowOddsPopup}>
+          <DialogContent className="bg-slate-800 border-slate-600 text-white sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-yellow-400" />
                 טבלת אודס — בדוק ואשר
-              </h3>
+              </DialogTitle>
+            </DialogHeader>
 
-              {/* 3-column layout: 1 / X / 2 */}
-              <div className="grid grid-cols-3 gap-3 mb-4">
-                {/* Column 1: Home wins */}
-                <div>
-                  <div className="text-center font-bold text-white bg-slate-600 rounded py-1.5 mb-2 text-sm tracking-wider">1</div>
-                  <div className="space-y-1">
-                    {Object.entries(oddsTable)
-                      .filter(([score]) => { if (score === 'other') return false; const [h, a] = score.split(':').map(Number); return h > a; })
-                      .sort(([ka], [kb]) => { const [ah, aa] = ka.split(':').map(Number); const [bh, ba] = kb.split(':').map(Number); return (ah + aa) - (bh + ba) || ah - bh; })
-                      .map(([score, odds]) => (
-                        <div key={score} className="flex justify-between items-center bg-slate-700 rounded px-2 py-1.5">
-                          <span className="text-slate-300 text-sm font-mono">{score}</span>
-                          <input type="number" step="0.5" value={odds}
-                            onChange={e => setOddsTable(prev => ({ ...prev, [score]: parseFloat(e.target.value) || 0 }))}
-                            className="w-14 text-right bg-slate-600 text-yellow-400 font-bold rounded px-1 py-0.5 text-sm" />
-                        </div>
-                      ))}
+            {oddsTable && (
+              <>
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  {/* Column 1: Home wins */}
+                  <div>
+                    <div className="text-center font-bold text-white bg-slate-600 rounded py-1.5 mb-2 text-sm tracking-wider">1</div>
+                    <div className="space-y-1">
+                      {Object.entries(oddsTable)
+                        .filter(([score]) => { if (score === 'other') return false; const [h, a] = score.split(':').map(Number); return h > a; })
+                        .sort(([ka], [kb]) => { const [ah, aa] = ka.split(':').map(Number); const [bh, ba] = kb.split(':').map(Number); return (ah + aa) - (bh + ba) || ah - bh; })
+                        .map(([score, odds]) => (
+                          <div key={score} className="flex justify-between items-center bg-slate-700 rounded px-2 py-1.5">
+                            <span className="text-slate-300 text-sm font-mono">{score}</span>
+                            <input type="number" step="0.5" value={odds}
+                              onChange={e => setOddsTable(prev => ({ ...prev, [score]: parseFloat(e.target.value) || 0 }))}
+                              className="w-14 text-right bg-slate-600 text-yellow-400 font-bold rounded px-1 py-0.5 text-sm" />
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* Column X: Draws */}
+                  <div>
+                    <div className="text-center font-bold text-white bg-slate-600 rounded py-1.5 mb-2 text-sm tracking-wider">X</div>
+                    <div className="space-y-1">
+                      {Object.entries(oddsTable)
+                        .filter(([score]) => { if (score === 'other') return false; const [h, a] = score.split(':').map(Number); return h === a; })
+                        .sort(([ka], [kb]) => { const [ah] = ka.split(':').map(Number); const [bh] = kb.split(':').map(Number); return ah - bh; })
+                        .map(([score, odds]) => (
+                          <div key={score} className="flex justify-between items-center bg-slate-700 rounded px-2 py-1.5">
+                            <span className="text-slate-300 text-sm font-mono">{score}</span>
+                            <input type="number" step="0.5" value={odds}
+                              onChange={e => setOddsTable(prev => ({ ...prev, [score]: parseFloat(e.target.value) || 0 }))}
+                              className="w-14 text-right bg-slate-600 text-yellow-400 font-bold rounded px-1 py-0.5 text-sm" />
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* Column 2: Away wins */}
+                  <div>
+                    <div className="text-center font-bold text-white bg-slate-600 rounded py-1.5 mb-2 text-sm tracking-wider">2</div>
+                    <div className="space-y-1">
+                      {Object.entries(oddsTable)
+                        .filter(([score]) => { if (score === 'other') return false; const [h, a] = score.split(':').map(Number); return h < a; })
+                        .sort(([ka], [kb]) => { const [ah, aa] = ka.split(':').map(Number); const [bh, ba] = kb.split(':').map(Number); return (ah + aa) - (bh + ba) || aa - ba; })
+                        .map(([score, odds]) => (
+                          <div key={score} className="flex justify-between items-center bg-slate-700 rounded px-2 py-1.5">
+                            <span className="text-slate-300 text-sm font-mono">{score}</span>
+                            <input type="number" step="0.5" value={odds}
+                              onChange={e => setOddsTable(prev => ({ ...prev, [score]: parseFloat(e.target.value) || 0 }))}
+                              className="w-14 text-right bg-slate-600 text-yellow-400 font-bold rounded px-1 py-0.5 text-sm" />
+                          </div>
+                        ))}
+                    </div>
                   </div>
                 </div>
 
-                {/* Column X: Draws */}
-                <div>
-                  <div className="text-center font-bold text-white bg-slate-600 rounded py-1.5 mb-2 text-sm tracking-wider">X</div>
-                  <div className="space-y-1">
-                    {Object.entries(oddsTable)
-                      .filter(([score]) => { if (score === 'other') return false; const [h, a] = score.split(':').map(Number); return h === a; })
-                      .sort(([ka], [kb]) => { const [ah] = ka.split(':').map(Number); const [bh] = kb.split(':').map(Number); return ah - bh; })
-                      .map(([score, odds]) => (
-                        <div key={score} className="flex justify-between items-center bg-slate-700 rounded px-2 py-1.5">
-                          <span className="text-slate-300 text-sm font-mono">{score}</span>
-                          <input type="number" step="0.5" value={odds}
-                            onChange={e => setOddsTable(prev => ({ ...prev, [score]: parseFloat(e.target.value) || 0 }))}
-                            className="w-14 text-right bg-slate-600 text-yellow-400 font-bold rounded px-1 py-0.5 text-sm" />
-                        </div>
-                      ))}
+                {'other' in oddsTable && (
+                  <div className="flex justify-between items-center bg-slate-700 rounded px-3 py-2 mb-4">
+                    <span className="text-slate-300 text-sm font-mono">אחר (Any other score)</span>
+                    <input type="number" step="0.5" value={oddsTable['other']}
+                      onChange={e => setOddsTable(prev => ({ ...prev, other: parseFloat(e.target.value) || 0 }))}
+                      className="w-14 text-right bg-slate-600 text-yellow-400 font-bold rounded px-1 py-0.5 text-sm" />
                   </div>
-                </div>
+                )}
+              </>
+            )}
 
-                {/* Column 2: Away wins */}
-                <div>
-                  <div className="text-center font-bold text-white bg-slate-600 rounded py-1.5 mb-2 text-sm tracking-wider">2</div>
-                  <div className="space-y-1">
-                    {Object.entries(oddsTable)
-                      .filter(([score]) => { if (score === 'other') return false; const [h, a] = score.split(':').map(Number); return h < a; })
-                      .sort(([ka], [kb]) => { const [ah, aa] = ka.split(':').map(Number); const [bh, ba] = kb.split(':').map(Number); return (ah + aa) - (bh + ba) || aa - ba; })
-                      .map(([score, odds]) => (
-                        <div key={score} className="flex justify-between items-center bg-slate-700 rounded px-2 py-1.5">
-                          <span className="text-slate-300 text-sm font-mono">{score}</span>
-                          <input type="number" step="0.5" value={odds}
-                            onChange={e => setOddsTable(prev => ({ ...prev, [score]: parseFloat(e.target.value) || 0 }))}
-                            className="w-14 text-right bg-slate-600 text-yellow-400 font-bold rounded px-1 py-0.5 text-sm" />
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* "Other" at the bottom full-width */}
-              {'other' in oddsTable && (
-                <div className="flex justify-between items-center bg-slate-700 rounded px-3 py-2 mb-4">
-                  <span className="text-slate-300 text-sm font-mono">אחר (Any other score)</span>
-                  <input type="number" step="0.5" value={oddsTable['other']}
-                    onChange={e => setOddsTable(prev => ({ ...prev, other: parseFloat(e.target.value) || 0 }))}
-                    className="w-14 text-right bg-slate-600 text-yellow-400 font-bold rounded px-1 py-0.5 text-sm" />
-                </div>
-              )}
-
-              <div className="flex gap-2 justify-end">
-                <Button variant="outline" size="sm" className="border-slate-600" onClick={() => setShowOddsPopup(false)}>ביטול</Button>
-                <Button size="sm" className="bg-green-600 hover:bg-green-500" onClick={saveOddsTable}>שמור לטבלה</Button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
+            <DialogFooter>
+              <Button variant="outline" size="sm" className="border-slate-600" onClick={() => setShowOddsPopup(false)}>ביטול</Button>
+              <Button size="sm" className="bg-green-600 hover:bg-green-500" onClick={saveOddsTable}>שמור לטבלה</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} className="border-slate-600">Cancel</Button>
