@@ -47,9 +47,8 @@ export default function LeaderboardPanel({ onClose, user }) {
       let publicProfiles = [];
       try {
         if (userIdsWithStats.length > 0) {
-          publicProfiles = await PublicProfile.filter({
-            user_id: { '$in': userIdsWithStats }
-          });
+          const allProfiles = await PublicProfile.list();
+          publicProfiles = allProfiles.filter(p => userIdsWithStats.includes(p.user_id));
           console.log(`🔄 LeaderboardPanel: Loaded ${publicProfiles.length} profiles for users with stats`);
         }
       } catch (error) {

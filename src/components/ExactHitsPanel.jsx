@@ -41,9 +41,8 @@ export default function ExactHitsPanel({ onClose, user }) {
 
       if (userIdsWithHits.length > 0) {
         try {
-          publicProfiles = await PublicProfile.filter({
-            user_id: { '$in': userIdsWithHits }
-          });
+          const allProfiles = await PublicProfile.list();
+          publicProfiles = allProfiles.filter(p => userIdsWithHits.includes(p.user_id));
         } catch (error) {
           console.log("Error loading profiles:", error.message);
         }
