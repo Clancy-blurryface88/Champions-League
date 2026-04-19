@@ -68,7 +68,8 @@ export default function AdminMatches() {
     try {
       let savedMatch;
       if (formData.id) {
-        savedMatch = await Match.update(formData.id, formData);
+        const { id, created_at, ...updates } = formData;
+        savedMatch = await Match.update(id, updates);
       } else {
         savedMatch = await Match.create(formData);
       }
@@ -77,6 +78,7 @@ export default function AdminMatches() {
       return savedMatch;
     } catch (error) {
       console.error("Error saving match:", error);
+      alert("שגיאה בשמירת המשחק: " + (error?.message || JSON.stringify(error)));
     }
   };
 
