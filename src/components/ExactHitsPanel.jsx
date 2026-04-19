@@ -54,10 +54,20 @@ export default function ExactHitsPanel({ onClose, user }) {
         profileMap[profile.user_id] = profile.display_name;
       });
 
+      // Deduplicate UserStats by user_id — keep the record with highest exact_hits_count
+      const uniqueExactHitsMap = {};
+      usersWithExactHits.forEach(stat => {
+        const uid = stat.user_id;
+        if (!uniqueExactHitsMap[uid] || (stat.exact_hits_count || 0) > (uniqueExactHitsMap[uid].exact_hits_count || 0)) {
+          uniqueExactHitsMap[uid] = stat;
+        }
+      });
+      const uniqueUsersWithExactHits = Object.values(uniqueExactHitsMap);
+
       // NEW LOGIC: Build leaderboard directly from UserStats
       const leaderboardData = [];
 
-      for (const userStats of usersWithExactHits) {
+      for (const userStats of uniqueUsersWithExactHits) {
         const displayName = profileMap[userStats.user_id];
 
         // Only include users who have a proper display name (from PublicProfile)

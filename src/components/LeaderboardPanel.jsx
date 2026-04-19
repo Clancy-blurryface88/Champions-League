@@ -61,10 +61,20 @@ export default function LeaderboardPanel({ onClose, user }) {
         profileMap[profile.user_id] = profile.display_name;
       });
 
+      // Deduplicate UserStats by user_id — keep the record with highest total_points
+      const uniqueUserStatsMap = {};
+      userStats.forEach(stat => {
+        const uid = stat.user_id;
+        if (!uniqueUserStatsMap[uid] || (stat.total_points || 0) > (uniqueUserStatsMap[uid].total_points || 0)) {
+          uniqueUserStatsMap[uid] = stat;
+        }
+      });
+      const uniqueUserStats = Object.values(uniqueUserStatsMap);
+
       // NEW LOGIC: Build leaderboard directly from UserStats
       const leaderboardData = [];
 
-      for (const userStat of userStats) {
+      for (const userStat of uniqueUserStats) {
         const displayName = profileMap[userStat.user_id];
 
         // Only include users who have a proper display name (from PublicProfile)

@@ -265,24 +265,15 @@ export default function MyStats() {
           rank = position > 0 ? position : null;
       }
 
-      // Calculate points breakdown
-      // For "all" rounds: use stored aggregates from user_stats if available (faster)
-      // For specific round: sum from predictions (only way to get per-round breakdown)
+      // Always calculate breakdown from actual predictions for accuracy
+      // (stored user_stats aggregate fields can be stale or missing for older matches)
       const breakdown = { exactScore: 0, correctOutcome: 0, btts: 0, goalsRange: 0 };
-
-      if (roundId === 'all' && stats.total_exact_score_points != null) {
-        breakdown.exactScore    = stats.total_exact_score_points || 0;
-        breakdown.correctOutcome = stats.total_outcome_points     || 0;
-        breakdown.btts          = stats.total_btts_points         || 0;
-        breakdown.goalsRange    = stats.total_goals_range_points  || 0;
-      } else {
-        uniquePredictions.forEach((prediction) => {
-          breakdown.exactScore     += prediction.exact_score_points_earned        || 0;
-          breakdown.correctOutcome += prediction.correct_outcome_points_earned    || 0;
-          breakdown.btts           += prediction.both_teams_scored_points_earned  || 0;
-          breakdown.goalsRange     += prediction.goals_range_points_earned        || 0;
-        });
-      }
+      uniquePredictions.forEach((prediction) => {
+        breakdown.exactScore     += prediction.exact_score_points_earned        || 0;
+        breakdown.correctOutcome += prediction.correct_outcome_points_earned    || 0;
+        breakdown.btts           += prediction.both_teams_scored_points_earned  || 0;
+        breakdown.goalsRange     += prediction.goals_range_points_earned        || 0;
+      });
 
       const pieData = [];
       if (breakdown.exactScore > 0) {
