@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Calculator, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { createClient } from "@supabase/supabase-js";
+
+// Service client bypasses RLS — needed to write other users' UserStats
+const adminSupabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_SERVICE_KEY
+);
 
 export default function AdminScoring({ onUpdateComplete }) {
   const [loading, setLoading] = useState(false);
@@ -283,34 +290,31 @@ export default function AdminScoring({ onUpdateComplete }) {
 
       console.log("Aggregated all user totals (including existing + new):", userTotalPoints);
 
-      // Update user stats using UserStats entity directly
+      // Update user stats using service-role client to bypass RLS
+      // (regular user can only write their own row; admin needs to update all users)
       let updatedUsersCount = 0;
       for (const [userId, totalPoints] of Object.entries(userTotalPoints)) {
         try {
-          // Check if UserStats already exists for this user
-          const existingStats = await UserStats.filter({ user_id: userId });
-
           const statsData = {
             user_id: userId,
             total_points: totalPoints,
             exact_hits_count: userExactHits[userId] || 0,
             total_predictions_count: userTotalPredictions[userId] || 0,
-            total_exact_score_points: userExactScorePoints[userId] || 0,
-            total_outcome_points: userOutcomePoints[userId] || 0,
-            total_btts_points: userBttsPoints[userId] || 0,
-            total_goals_range_points: userGoalsRangePoints[userId] || 0,
+            total_exact_score_points: Math.round(userExactScorePoints[userId] || 0),
+            total_outcome_points: Math.round(userOutcomePoints[userId] || 0),
+            total_btts_points: Math.round(userBttsPoints[userId] || 0),
+            total_goals_range_points: Math.round(userGoalsRangePoints[userId] || 0),
+            updated_at: new Date().toISOString(),
           };
 
-          if (existingStats.length > 0) {
-            // Update existing stats
-            await UserStats.update(existingStats[0].id, statsData);
-            console.log(`  UPDATED UserStats for user ${userId}: Total points ${totalPoints}, Exact hits ${userExactHits[userId] || 0}, Total predictions ${userTotalPredictions[userId] || 0}.`);
-          } else {
-            // Create new stats record
-            await UserStats.create(statsData);
-            console.log(`  CREATED UserStats for user ${userId}: Total points ${totalPoints}, Exact hits ${userExactHits[userId] || 0}, Total predictions ${userTotalPredictions[userId] || 0}.`);
-          }
+          // Upsert via service client — bypasses RLS, works for all users
+          const { error } = await adminSupabase
+            .from('user_stats')
+            .upsert(statsData, { onConflict: 'user_id' });
 
+          if (error) throw error;
+
+          console.log(`  UPSERTED UserStats for user ${userId}: Total points ${totalPoints}, Exact hits ${userExactHits[userId] || 0}`);
           updatedUsersCount++;
         } catch (error) {
           console.error(`  Failed to update UserStats for user ${userId}:`, error);
