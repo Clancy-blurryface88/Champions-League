@@ -152,7 +152,7 @@ export default function AdminScoring({ onUpdateComplete }) {
         User.list()
       ]);
 
-      // STEP 1: Process only new unprocessed finished matches
+      // Only process matches that finished and haven't been calculated yet
       const unprocessedFinishedMatches = allMatches.filter(m =>
         m.is_finished &&
         m.actual_score_a !== null &&
@@ -160,51 +160,54 @@ export default function AdminScoring({ onUpdateComplete }) {
         !m.is_score_calculated
       );
 
-      let updatedPredictionsCount = 0;
-
-      if (unprocessedFinishedMatches.length > 0) {
-        console.log(`Found ${unprocessedFinishedMatches.length} unprocessed finished matches.`);
-
-        const matchIdsToProcess = unprocessedFinishedMatches.map(m => m.id);
-        const predictionsToProcess = initialPredictions.filter(p =>
-          matchIdsToProcess.includes(p.match_id)
-        );
-
-        const uniquePredictionsMap = {};
-        predictionsToProcess.forEach(prediction => {
-          const key = `${prediction.user_id}_${prediction.match_id}`;
-          if (!uniquePredictionsMap[key] ||
-              new Date(prediction.created_date) > new Date(uniquePredictionsMap[key].created_date)) {
-            uniquePredictionsMap[key] = prediction;
-          }
-        });
-        const uniquePredictions = Object.values(uniquePredictionsMap);
-
-        for (const prediction of uniquePredictions) {
-          const match = unprocessedFinishedMatches.find(m => m.id === prediction.match_id);
-          if (match) {
-            const scoreBreakdown = calculateScore(prediction, match);
-            await Prediction.update(prediction.id, {
-              points_earned: scoreBreakdown.totalPoints,
-              exact_score_points_earned: scoreBreakdown.exactScorePoints,
-              correct_outcome_points_earned: scoreBreakdown.outcomePoints,
-              both_teams_scored_points_earned: scoreBreakdown.bttsPoints,
-              goals_range_points_earned: scoreBreakdown.goalRangePoints
-            });
-            updatedPredictionsCount++;
-          }
-        }
-
-        for (const match of unprocessedFinishedMatches) {
-          await Match.update(match.id, { is_score_calculated: true });
-        }
-        console.log(`Processed ${updatedPredictionsCount} predictions for ${unprocessedFinishedMatches.length} new matches.`);
-      } else {
-        console.log('No new matches to process. Proceeding to sync UserStats from all predictions.');
+      if (unprocessedFinishedMatches.length === 0) {
+        setStatus({ type: 'info', message: 'All finished matches have already been calculated. No new calculations needed.' });
+        setLoading(false);
+        return;
       }
 
-      // STEP 2: Always rebuild UserStats from ALL predictions (new + old)
-      // This ensures UserStats is always in sync regardless of when scoring ran.
+      console.log(`Found ${unprocessedFinishedMatches.length} unprocessed finished matches.`);
+
+      const matchIdsToProcess = unprocessedFinishedMatches.map(m => m.id);
+      const predictionsToProcess = initialPredictions.filter(p =>
+        matchIdsToProcess.includes(p.match_id)
+      );
+
+      const uniquePredictionsMap = {};
+      predictionsToProcess.forEach(prediction => {
+        const key = `${prediction.user_id}_${prediction.match_id}`;
+        if (!uniquePredictionsMap[key] ||
+            new Date(prediction.created_date) > new Date(uniquePredictionsMap[key].created_date)) {
+          uniquePredictionsMap[key] = prediction;
+        }
+      });
+      const uniquePredictions = Object.values(uniquePredictionsMap);
+      console.log(`After filtering duplicates: ${uniquePredictions.length} unique predictions to process.`);
+
+      let updatedPredictionsCount = 0;
+
+      for (const prediction of uniquePredictions) {
+        const match = unprocessedFinishedMatches.find(m => m.id === prediction.match_id);
+        if (match) {
+          const scoreBreakdown = calculateScore(prediction, match);
+          await Prediction.update(prediction.id, {
+            points_earned: scoreBreakdown.totalPoints,
+            exact_score_points_earned: scoreBreakdown.exactScorePoints,
+            correct_outcome_points_earned: scoreBreakdown.outcomePoints,
+            both_teams_scored_points_earned: scoreBreakdown.bttsPoints,
+            goals_range_points_earned: scoreBreakdown.goalRangePoints
+          });
+          updatedPredictionsCount++;
+          console.log(`  Processed prediction ${prediction.id}: Total=${scoreBreakdown.totalPoints}`);
+        }
+      }
+
+      for (const match of unprocessedFinishedMatches) {
+        await Match.update(match.id, { is_score_calculated: true });
+        console.log(`  Marked match ${match.id} (${match.team_a} vs ${match.team_b}) as calculated`);
+      }
+
+      console.log("Finished processing new matches. Now updating UserStats for all users...");
 
       // **עדכון UserStats - מחשבים מחדש סכום כללי מכל הניחושים (כולל הישנים והחדשים)**
       // קודם נטען מחדש את כל הניחושים (כולל העדכונים החדשים)
