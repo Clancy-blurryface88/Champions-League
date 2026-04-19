@@ -69,7 +69,7 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                   World Cup 2026
                 </h2>
                 <p className="text-white/40 text-sm mt-1">
-                  בחר שם שיופיע בטבלה
+                  שמך בטורניר
                 </p>
               </div>
 
