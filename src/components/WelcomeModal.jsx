@@ -1,20 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { HyperText } from "./magicui/hyper-text";
-
-const WORLD_CUP_TROPHY = "/trophy.png";
-const FOOTBALL_PLAYER_AVATAR = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/bae5d8a0c_football-player_5281682.png";
 
 export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser }) {
   const [displayName, setDisplayName] = useState('');
   const [saving, setSaving] = useState(false);
-  const [showAnimation, setShowAnimation] = useState(false);
 
-  // Initialize display name from current user data
   useEffect(() => {
     if (currentUser) {
       setDisplayName(currentUser.display_name || currentUser.full_name || '');
@@ -23,18 +13,14 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
 
   const handleSave = async () => {
     if (!displayName.trim()) return;
-    
     setSaving(true);
-    setShowAnimation(true);
-    
     try {
       const { User } = await import('@/api/entities');
       await User.updateMyUserData({ display_name: displayName.trim() });
-
       setTimeout(() => {
         onSave(displayName.trim());
         setSaving(false);
-      }, 1000);
+      }, 600);
     } catch (error) {
       console.error("Error saving display name:", error);
       setSaving(false);
@@ -42,14 +28,8 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
     }
   };
 
-  const handleInputChange = (e) => {
-    setDisplayName(e.target.value);
-  };
-
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && displayName.trim()) {
-      handleSave();
-    }
+    if (e.key === 'Enter' && displayName.trim()) handleSave();
   };
 
   if (!isOpen) return null;
@@ -58,183 +38,78 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/60 backdrop-blur-md z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
           />
-          
-          {/* Modal */}
+
           <motion.div
             className="fixed inset-0 flex items-center justify-center z-50 p-4"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            initial={{ opacity: 0, y: 16, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
           >
-            <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-blue-900/50 shadow-2xl max-w-md w-full overflow-hidden">
-              
-              {/* Header with animated background */}
-              <div className="relative bg-gradient-to-r from-blue-900 via-blue-800 to-slate-800 p-6 text-center">
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-blue-800/20 to-blue-900/20"
-                  animate={{ 
-                    backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                  }}
-                  transition={{ duration: 3, repeat: Infinity }}
+            <div className="w-full max-w-sm bg-[#111] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+
+              {/* Header */}
+              <div className="px-8 pt-8 pb-6 text-center border-b border-white/[0.06]">
+                <motion.img
+                  src="/trophy.png"
+                  alt="Trophy"
+                  className="w-16 h-auto mx-auto mb-5 drop-shadow-lg"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.15, type: "spring", stiffness: 300, damping: 20 }}
                 />
-                
-                <motion.div
-                  initial={{ y: -20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="relative z-10"
-                >
-                  <div className="flex justify-center mb-4">
-                    <img
-                      src={WORLD_CUP_TROPHY}
-                      alt="FIFA World Cup Trophy"
-                      className="w-28 h-auto object-contain mx-auto drop-shadow-2xl"
-                    />
-                  </div>
-
-                  <HyperText
-                    className="text-2xl font-bold text-white mb-2 block"
-                    animateOnMount={true}
-                    duration={1.2}
-                  >
-                    World Cup
-                  </HyperText>
-
-                  <span className="text-blue-100 text-xl font-bold block">
-                    2026
-                  </span>
-                </motion.div>
+                <h2 className="text-white text-xl font-semibold tracking-tight">
+                  World Cup 2026
+                </h2>
+                <p className="text-white/40 text-sm mt-1">
+                  בחר שם שיופיע בטבלה
+                </p>
               </div>
 
-              <CardContent className="p-6 space-y-6">
-                
-                {/* User Icon Section */}
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
-                  className="flex justify-center"
-                >
-                  <div className="relative">
-                    <motion.div
-                      className="w-20 h-20 bg-gradient-to-br from-blue-700 to-blue-900 rounded-full flex items-center justify-center shadow-lg overflow-hidden"
-                      whileHover={{ scale: 1.1 }}
-                      animate={showAnimation ? { 
-                        boxShadow: ["0 0 0 0 rgba(30, 64, 175, 0.4)", "0 0 0 20px rgba(30, 64, 175, 0)"],
-                        scale: [1, 1.1, 1]
-                      } : {}}
-                      transition={{ duration: 1 }}
-                    >
-                      <img 
-                        src={FOOTBALL_PLAYER_AVATAR} 
-                        alt="Football Player" 
-                        className="w-14 h-14 object-contain"
-                      />
-                    </motion.div>
-                    
-                    {/* Floating stars animation - שינוי צבע הכוכבים לכחול */}
-                    <motion.div
-                      className="absolute -top-2 -right-2"
-                      animate={{ 
-                        y: [-5, -15, -5],
-                        opacity: [0.5, 1, 0.5]
-                      }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      <Star className="w-4 h-4 text-blue-400 fill-current" />
-                    </motion.div>
-                    
-                    <motion.div
-                      className="absolute -bottom-1 -left-2"
-                      animate={{ 
-                        y: [-3, -8, -3],
-                        opacity: [0.7, 1, 0.7]
-                      }}
-                      transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
-                    >
-                      <Star className="w-3 h-3 text-blue-400 fill-current" />
-                    </motion.div>
-                  </div>
-                </motion.div>
+              {/* Body */}
+              <div className="px-8 py-6 space-y-4">
+                <div className="space-y-2">
+                  <input
+                    value={displayName}
+                    onChange={e => setDisplayName(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="השם שלך..."
+                    maxLength={20}
+                    disabled={saving}
+                    autoFocus
+                    className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none text-center transition-all duration-200 focus:border-white/25 focus:bg-white/[0.08]"
+                    dir="rtl"
+                  />
+                  {userEmail && (
+                    <p className="text-white/25 text-xs text-center">{userEmail}</p>
+                  )}
+                </div>
 
-                {/* Input Section */}
-                <motion.div
-                  initial={{ x: -50, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.6 }}
-                  className="space-y-3"
+                <motion.button
+                  onClick={handleSave}
+                  disabled={!displayName.trim() || saving}
+                  className="w-full bg-white text-black text-sm font-semibold py-3 rounded-xl transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/90 active:scale-[0.98]"
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <label className="block text-sm font-medium text-slate-300 text-center">
-                    שמך בטורניר
-                  </label>
-                  
-                  <div className="relative">
-                    <input
-                      value={displayName}
-                      onChange={handleInputChange}
-                      onKeyPress={handleKeyPress}
-                      placeholder="הכנס את השם שלך..."
-                      maxLength={20}
-                      disabled={saving}
-                      style={{
-                        fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI","Roboto","Oxygen","Ubuntu","Cantarell","Fira Sans","Droid Sans","Helvetica Neue",sans-serif',
-                        fontWeight: 500,
-                        fontSize: '1rem',
-                        color: '#fff',
-                        backgroundColor: 'rgb(28,28,30)',
-                        boxShadow: '0 0 8px rgba(0,0,0,0.5), 0 0 0 2px transparent',
-                        borderRadius: '8px',
-                        border: 'none',
-                        outline: 'none',
-                        padding: '10px 14px',
-                        width: '100%',
-                        transition: '.4s',
-                        textAlign: 'center',
-                      }}
-                      onMouseEnter={e => e.target.style.boxShadow = '0 0 0 2px #60a5fa'}
-                      onMouseLeave={e => e.target.style.boxShadow = document.activeElement === e.target ? '0 0 0 2px #3b82f6' : '0 0 8px rgba(0,0,0,0.5), 0 0 0 2px transparent'}
-                      onFocus={e => e.target.style.boxShadow = '0 0 0 2px skyblue'}
-                      onBlur={e => e.target.style.boxShadow = '0 0 8px rgba(0,0,0,0.5), 0 0 0 2px transparent'}
-                    />
-                  </div>
-                  
-                  <p className="text-xs text-slate-400 text-center">
-                    {userEmail}
-                  </p>
-                </motion.div>
+                  {saving ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                      <span>שומר...</span>
+                    </div>
+                  ) : (
+                    "התחל לשחק"
+                  )}
+                </motion.button>
+              </div>
 
-                {/* Action Button */}
-                <motion.div
-                  initial={{ y: 50, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.8 }}
-                  className="flex justify-center"
-                >
-                  <Button
-                    onClick={handleSave}
-                    disabled={!displayName.trim() || saving}
-                    className="w-full bg-gradient-to-r from-blue-700 to-blue-900 hover:from-blue-800 hover:to-blue-950 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:transform-none"
-                  >
-                    {saving ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        שומר...
-                      </div>
-                    ) : (
-                      <span>התחל לשחק</span>
-                    )}
-                  </Button>
-                </motion.div>
-              </CardContent>
-            </Card>
+            </div>
           </motion.div>
         </>
       )}
