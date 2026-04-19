@@ -152,74 +152,59 @@ export default function AdminScoring({ onUpdateComplete }) {
         User.list()
       ]);
 
-      // **חישוב מצטבר: מחפשים רק משחקים שהסתיימו אבל טרם חושבו**
-      const unprocessedFinishedMatches = allMatches.filter(m => 
-        m.is_finished && 
-        m.actual_score_a !== null && 
+      // STEP 1: Process only new unprocessed finished matches
+      const unprocessedFinishedMatches = allMatches.filter(m =>
+        m.is_finished &&
+        m.actual_score_a !== null &&
         m.actual_score_b !== null &&
-        !m.is_score_calculated  // **השדה החדש - רק משחקים שלא חושבו**
+        !m.is_score_calculated
       );
-      
-      if (unprocessedFinishedMatches.length === 0) {
-        setStatus({ type: 'info', message: 'All finished matches have already been calculated. No new calculations needed.' });
-        setLoading(false);
-        return;
-      }
-
-      console.log(`Found ${unprocessedFinishedMatches.length} unprocessed finished matches with actual scores.`);
-
-      // **סינון ניחושים רק למשחקים החדשים**
-      const matchIdsToProcess = unprocessedFinishedMatches.map(m => m.id);
-      const predictionsToProcess = initialPredictions.filter(p => // Use initialPredictions here
-        matchIdsToProcess.includes(p.match_id)
-      );
-
-      const uniquePredictionsMap = {};
-      
-      predictionsToProcess.forEach(prediction => {
-        const key = `${prediction.user_id}_${prediction.match_id}`;
-        
-        if (!uniquePredictionsMap[key] || 
-            new Date(prediction.created_date) > new Date(uniquePredictionsMap[key].created_date)) {
-          uniquePredictionsMap[key] = prediction;
-        }
-      });
-      
-      const uniquePredictions = Object.values(uniquePredictionsMap);
-      console.log(`After filtering duplicates: ${uniquePredictions.length} unique predictions to process (was ${predictionsToProcess.length})`);
 
       let updatedPredictionsCount = 0;
 
-      console.log("Starting to calculate scores for NEW matches only...");
+      if (unprocessedFinishedMatches.length > 0) {
+        console.log(`Found ${unprocessedFinishedMatches.length} unprocessed finished matches.`);
 
-      // **עיבוד רק הניחושים החדשים**
-      for (const prediction of uniquePredictions) {
-        const match = unprocessedFinishedMatches.find(m => m.id === prediction.match_id);
-        
-        if (match) {
-          const scoreBreakdown = calculateScore(prediction, match);
-          
-          // עדכון ניחוש עם פירוט נקודות בDatabase
-          await Prediction.update(prediction.id, {
-            points_earned: scoreBreakdown.totalPoints,
-            exact_score_points_earned: scoreBreakdown.exactScorePoints,
-            correct_outcome_points_earned: scoreBreakdown.outcomePoints,
-            both_teams_scored_points_earned: scoreBreakdown.bttsPoints,
-            goals_range_points_earned: scoreBreakdown.goalRangePoints
-          });
-          
-          updatedPredictionsCount++;
-          console.log(`  Processed prediction ${prediction.id} with detailed breakdown: Total=${scoreBreakdown.totalPoints}, Exact=${scoreBreakdown.exactScorePoints}, Outcome=${scoreBreakdown.outcomePoints}, BTTS=${scoreBreakdown.bttsPoints}, Range=${scoreBreakdown.goalRangePoints}`);
+        const matchIdsToProcess = unprocessedFinishedMatches.map(m => m.id);
+        const predictionsToProcess = initialPredictions.filter(p =>
+          matchIdsToProcess.includes(p.match_id)
+        );
+
+        const uniquePredictionsMap = {};
+        predictionsToProcess.forEach(prediction => {
+          const key = `${prediction.user_id}_${prediction.match_id}`;
+          if (!uniquePredictionsMap[key] ||
+              new Date(prediction.created_date) > new Date(uniquePredictionsMap[key].created_date)) {
+            uniquePredictionsMap[key] = prediction;
+          }
+        });
+        const uniquePredictions = Object.values(uniquePredictionsMap);
+
+        for (const prediction of uniquePredictions) {
+          const match = unprocessedFinishedMatches.find(m => m.id === prediction.match_id);
+          if (match) {
+            const scoreBreakdown = calculateScore(prediction, match);
+            await Prediction.update(prediction.id, {
+              points_earned: scoreBreakdown.totalPoints,
+              exact_score_points_earned: scoreBreakdown.exactScorePoints,
+              correct_outcome_points_earned: scoreBreakdown.outcomePoints,
+              both_teams_scored_points_earned: scoreBreakdown.bttsPoints,
+              goals_range_points_earned: scoreBreakdown.goalRangePoints
+            });
+            updatedPredictionsCount++;
+          }
         }
+
+        for (const match of unprocessedFinishedMatches) {
+          await Match.update(match.id, { is_score_calculated: true });
+        }
+        console.log(`Processed ${updatedPredictionsCount} predictions for ${unprocessedFinishedMatches.length} new matches.`);
+      } else {
+        console.log('No new matches to process. Proceeding to sync UserStats from all predictions.');
       }
 
-      // **סימון המשחקים החדשים כמחושבים**
-      for (const match of unprocessedFinishedMatches) {
-        await Match.update(match.id, { is_score_calculated: true });
-        console.log(`  Marked match ${match.id} (${match.team_a} vs ${match.team_b}) as calculated`);
-      }
-
-      console.log("Finished calculating scores for new matches. Now updating user stats...");
+      // STEP 2: Always rebuild UserStats from ALL predictions (new + old)
+      // This ensures UserStats is always in sync regardless of when scoring ran.
 
       // **עדכון UserStats - מחשבים מחדש סכום כללי מכל הניחושים (כולל הישנים והחדשים)**
       // קודם נטען מחדש את כל הניחושים (כולל העדכונים החדשים)
@@ -333,9 +318,9 @@ export default function AdminScoring({ onUpdateComplete }) {
         }
       }
 
-      setStatus({ 
-        type: 'success', 
-        message: `INCREMENTAL calculation completed! Processed ${updatedPredictionsCount} new predictions from ${unprocessedFinishedMatches.length} new matches and updated UserStats for ${updatedUsersCount} users.` 
+      setStatus({
+        type: 'success',
+        message: `Done! Processed ${updatedPredictionsCount} new predictions. Updated UserStats for ${updatedUsersCount} users.`
       });
       
       if (onUpdateComplete) onUpdateComplete();
