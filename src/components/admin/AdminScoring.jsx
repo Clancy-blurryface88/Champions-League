@@ -293,8 +293,8 @@ export default function AdminScoring({ onUpdateComplete }) {
       let updatedUsersCount = 0;
       for (const [userId, totalPoints] of Object.entries(userTotalPoints)) {
         try {
+          const now = new Date().toISOString();
           const statsData = {
-            user_id: userId,
             total_points: totalPoints,
             exact_hits_count: userExactHits[userId] || 0,
             total_predictions_count: userTotalPredictions[userId] || 0,
@@ -302,17 +302,31 @@ export default function AdminScoring({ onUpdateComplete }) {
             total_outcome_points: Math.round(userOutcomePoints[userId] || 0),
             total_btts_points: Math.round(userBttsPoints[userId] || 0),
             total_goals_range_points: Math.round(userGoalsRangePoints[userId] || 0),
-            updated_at: new Date().toISOString(),
+            updated_at: now,
           };
 
-          // Upsert via service client — bypasses RLS, works for all users
-          const { error } = await adminSupabase
+          // Check if row exists via service client (bypasses RLS)
+          const { data: existing } = await adminSupabase
             .from('user_stats')
-            .upsert(statsData, { onConflict: 'user_id' });
+            .select('id')
+            .eq('user_id', userId)
+            .maybeSingle();
 
-          if (error) throw error;
+          if (existing) {
+            const { error } = await adminSupabase
+              .from('user_stats')
+              .update(statsData)
+              .eq('id', existing.id);
+            if (error) throw error;
+            console.log(`  UPDATED UserStats for ${userId}: ${totalPoints} pts`);
+          } else {
+            const { error } = await adminSupabase
+              .from('user_stats')
+              .insert({ user_id: userId, ...statsData });
+            if (error) throw error;
+            console.log(`  CREATED UserStats for ${userId}: ${totalPoints} pts`);
+          }
 
-          console.log(`  UPSERTED UserStats for user ${userId}: Total points ${totalPoints}, Exact hits ${userExactHits[userId] || 0}`);
           updatedUsersCount++;
         } catch (error) {
           console.error(`  Failed to update UserStats for user ${userId}:`, error);
