@@ -8,7 +8,6 @@ export default function IntroVideoModal({ isOpen, onVideoCompleted }) {
     if (!isOpen || !videoRef.current) return;
     const video = videoRef.current;
     video.currentTime = 0;
-    video.muted = true;
     video.play().catch(() => {});
   }, [isOpen]);
 
@@ -26,7 +25,6 @@ export default function IntroVideoModal({ isOpen, onVideoCompleted }) {
           ref={videoRef}
           className="w-full max-w-2xl block"
           playsInline
-          muted
           onEnded={onVideoCompleted}
           style={{ maxHeight: '70vh' }}
         >
