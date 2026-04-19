@@ -11,10 +11,8 @@ import { Calculator, Loader2, CheckCircle, XCircle } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
 // Service client bypasses RLS — needed to write other users' UserStats
-const adminSupabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_SERVICE_KEY
-);
+const _svcKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+const adminSupabase = createClient(import.meta.env.VITE_SUPABASE_URL, _svcKey);
 
 export default function AdminScoring({ onUpdateComplete }) {
   const [loading, setLoading] = useState(false);
