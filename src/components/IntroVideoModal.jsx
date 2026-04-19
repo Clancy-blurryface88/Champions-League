@@ -31,12 +31,6 @@ export default function IntroVideoModal({ isOpen, onVideoCompleted }) {
           <source src="/FIFA2026.mp4" type="video/mp4" />
         </video>
 
-        <button
-          onClick={onVideoCompleted}
-          className="absolute bottom-6 left-6 text-white/50 hover:text-white text-sm transition-colors"
-        >
-          דלג ←
-        </button>
       </motion.div>
     </AnimatePresence>
   );
