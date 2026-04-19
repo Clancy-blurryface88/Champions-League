@@ -138,13 +138,26 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
     setSaving(true);
     const matchDateISO = formData.match_date ? new Date(formData.match_date).toISOString() : null;
 
+    const toNum = (v) => (v === '' || v === null || v === undefined) ? null : Number(v);
+    const toFloat = (v) => (v === '' || v === null || v === undefined) ? 0 : parseFloat(v) || 0;
+
     const dataToSave = {
         ...formData,
         match_date: matchDateISO,
-        actual_score_a: (formData.actual_score_a === '' || formData.actual_score_a === null || formData.actual_score_a === undefined) ? null : Number(formData.actual_score_a),
-        actual_score_b: (formData.actual_score_b === '' || formData.actual_score_b === null || formData.actual_score_b === undefined) ? null : Number(formData.actual_score_b),
-        previous_match_score_a: (formData.previous_match_score_a === '' || formData.previous_match_score_a === null || formData.previous_match_score_a === undefined) ? null : Number(formData.previous_match_score_a),
-        previous_match_score_b: (formData.previous_match_score_b === '' || formData.previous_match_score_b === null || formData.previous_match_score_b === undefined) ? null : Number(formData.previous_match_score_b),
+        actual_score_a: toNum(formData.actual_score_a),
+        actual_score_b: toNum(formData.actual_score_b),
+        previous_match_score_a: toNum(formData.previous_match_score_a),
+        previous_match_score_b: toNum(formData.previous_match_score_b),
+        order: toNum(formData.order),
+        home_win_points: toFloat(formData.home_win_points),
+        away_win_points: toFloat(formData.away_win_points),
+        draw_points: toFloat(formData.draw_points),
+        btts_yes_points: toFloat(formData.btts_yes_points),
+        btts_no_points: toFloat(formData.btts_no_points),
+        exact_score_points: toFloat(formData.exact_score_points),
+        goals_0_2_points: toFloat(formData.goals_0_2_points),
+        goals_3_4_points: toFloat(formData.goals_3_4_points),
+        goals_5_plus_points: toFloat(formData.goals_5_plus_points),
     };
     const savedMatch = await onSave(dataToSave);
     setSaving(false);
