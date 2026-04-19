@@ -456,10 +456,11 @@ export default function MyStats() {
         setBestMatch(myPlayerData.bestMatch);
         setMyRank(myPlayerData.rank);
 
-        // Calculate average points per match
+        // Calculate average points per match — רק משחקים שהסתיימו
         const totalPoints = myPlayerData.stats.total_points || 0;
-        const uniquePredictionsCount = myPlayerData.uniquePredictions?.length || 0;
-        const avgPointsPerMatch = uniquePredictionsCount > 0 ? totalPoints / uniquePredictionsCount : 0;
+        const finishedMatchIds = new Set(allMatches.filter(m => m.is_finished).map(m => m.id));
+        const finishedPredictionsCount = (myPlayerData.uniquePredictions || []).filter(p => finishedMatchIds.has(p.match_id)).length;
+        const avgPointsPerMatch = finishedPredictionsCount > 0 ? totalPoints / finishedPredictionsCount : 0;
         setAveragePointsPerMatch(parseFloat(avgPointsPerMatch.toFixed(2)));
 
         // Load rounds for the dropdown and generate chart data

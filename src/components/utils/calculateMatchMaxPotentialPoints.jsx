@@ -1,7 +1,17 @@
 export const calculateMatchMaxPotentialPoints = (match) => {
   if (!match || match.actual_score_a === null || match.actual_score_b === null) return 0;
   
-  let points = match.exact_score_points || 0;
+  // אם יש score_odds — המקסימום הוא הערך הגבוה ביותר בטבלה
+  let exactPoints = 0;
+  if (match.score_odds) {
+    const oddsValues = Object.entries(match.score_odds)
+      .filter(([key]) => key !== 'other')
+      .map(([, val]) => parseFloat(val) || 0);
+    exactPoints = oddsValues.length > 0 ? Math.max(...oddsValues) : 0;
+  } else {
+    exactPoints = match.exact_score_points || 0;
+  }
+  let points = exactPoints;
   
   // Outcome points
   if (match.actual_score_a > match.actual_score_b) points += match.home_win_points || 0;
