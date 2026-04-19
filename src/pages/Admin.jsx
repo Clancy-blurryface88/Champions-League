@@ -71,7 +71,7 @@ export default function Admin() {
       case 'match-predictions': return <AdminMatchPredictions />;
       case 'users': return <AdminUsers />;
       case 'logos': return <AdminLogos />;
-      case 'scoring': return <AdminScoring onUpdateComplete={() => setContentKey(k => k + 1)} />;
+      case 'scoring': return <AdminScoring onUpdateComplete={() => {}} />;
       case 'live-data': return <AdminLiveData />;
       case 'import': return <AdminImportMatches />;
       case 'reset': return <AdminReset />;

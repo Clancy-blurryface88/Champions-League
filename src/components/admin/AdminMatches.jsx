@@ -69,6 +69,8 @@ export default function AdminMatches() {
       let savedMatch;
       if (formData.id) {
         const { id, created_at, ...updates } = formData;
+        // אם ערכי התוצאה השתנו — אפס את דגל החישוב כדי שיחושב מחדש
+        updates.is_score_calculated = false;
         savedMatch = await Match.update(id, updates);
       } else {
         savedMatch = await Match.create(formData);

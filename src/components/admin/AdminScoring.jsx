@@ -326,7 +326,7 @@ export default function AdminScoring({ onUpdateComplete }) {
 
     } catch (error) {
       console.error("Error during score calculation:", error);
-      setStatus({ type: 'error', message: 'An error occurred during score calculation. Check console for details.' });
+      setStatus({ type: 'error', message: `שגיאה בחישוב: ${error?.message || JSON.stringify(error)}` });
     }
 
     setLoading(false);
