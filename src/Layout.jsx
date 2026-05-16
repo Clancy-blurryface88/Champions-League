@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, UserStats } from "@/api/entities";
-import { Settings, LogOut, PlayCircle, CalendarDays } from "lucide-react";
+import { Settings, LogOut, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MatchesByDateSheet from "./components/MatchesByDateSheet";
 import {
@@ -772,19 +772,6 @@ export default function Layout({ children, currentPageName }) {
 
           }
         </AnimatePresence>
-
-        {/* Date Sheet Swipe Indicator */}
-        <motion.button
-          onClick={() => setShowDateSheet(true)}
-          className="fixed left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-1.5 touch-none"
-          style={{ bottom: "13vh" }}
-          animate={{ y: [0, -3, 0] }}
-          transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-          aria-label="פתח לוח משחקים לפי תאריך"
-        >
-          <CalendarDays className="w-4 h-4 text-amber-400/40" />
-          <div className="w-8 h-0.5 rounded-full bg-white/15" />
-        </motion.button>
 
         <MatchesByDateSheet isOpen={showDateSheet} onClose={() => setShowDateSheet(false)} />
 
