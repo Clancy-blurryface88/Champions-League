@@ -293,27 +293,18 @@ export default function AdminScoring({ onUpdateComplete }) {
             updated_at: now,
           };
 
-          // Check if row exists via service client (bypasses RLS)
-          const { data: existing } = await adminSupabase
+          // Delete all existing rows for user (handles duplicates), then insert fresh
+          const { error: delError } = await adminSupabase
             .from('user_stats')
-            .select('id')
-            .eq('user_id', userId)
-            .maybeSingle();
+            .delete()
+            .eq('user_id', userId);
+          if (delError) throw delError;
 
-          if (existing) {
-            const { error } = await adminSupabase
-              .from('user_stats')
-              .update(statsData)
-              .eq('id', existing.id);
-            if (error) throw error;
-            console.log(`  UPDATED UserStats for ${userId}: ${totalPoints} pts`);
-          } else {
-            const { error } = await adminSupabase
-              .from('user_stats')
-              .insert({ user_id: userId, ...statsData });
-            if (error) throw error;
-            console.log(`  CREATED UserStats for ${userId}: ${totalPoints} pts`);
-          }
+          const { error: insError } = await adminSupabase
+            .from('user_stats')
+            .insert({ user_id: userId, ...statsData });
+          if (insError) throw insError;
+          console.log(`  UPSERTED UserStats for ${userId}: ${totalPoints} pts`);
 
           updatedUsersCount++;
         } catch (error) {
@@ -321,12 +312,13 @@ export default function AdminScoring({ onUpdateComplete }) {
         }
       }
 
-      const svcKeyOk = !!import.meta.env.VITE_SUPABASE_SERVICE_KEY;
+      const totalUsers = Object.keys(userTotalPoints).length;
+      const failedUsers = totalUsers - updatedUsersCount;
       setStatus({
-        type: svcKeyOk ? 'success' : 'error',
-        message: svcKeyOk
-          ? `Done! Processed ${updatedPredictionsCount} predictions. Updated UserStats for ${updatedUsersCount} users.`
-          : `⚠️ Predictions updated (${updatedPredictionsCount}), but UserStats FAILED — VITE_SUPABASE_SERVICE_KEY missing in Vercel env vars. Leaderboard/stats will NOT update until this is fixed.`
+        type: failedUsers > 0 ? 'error' : 'success',
+        message: failedUsers > 0
+          ? `⚠️ Predictions updated (${updatedPredictionsCount}), but ${failedUsers}/${totalUsers} UserStats updates FAILED. Check console for details.`
+          : `✅ Done! ${updatedPredictionsCount} predictions processed. All ${updatedUsersCount} users' stats updated — leaderboard & stats are now current.`
       });
       
       if (onUpdateComplete) onUpdateComplete();
