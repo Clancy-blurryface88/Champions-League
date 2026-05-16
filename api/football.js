@@ -1,6 +1,6 @@
 // Vercel Serverless Function — proxies football-data.org API
 export default async function handler(req, res) {
-  const { competition = 'CL', filter = 'LIVE' } = req.query;
+  const { competition = 'WC', filter = 'LIVE' } = req.query;
 
   const apiKey = process.env.FOOTBALL_DATA_API_KEY;
   if (!apiKey) {

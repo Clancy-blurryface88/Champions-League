@@ -90,7 +90,7 @@ export default function LiveDataPanel({ onClose }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/football?competition=CL&filter=${filter}`);
+      const res = await fetch(`/api/football?competition=WC&filter=${filter}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'שגיאה');
       setMatches(json.matches || []);
@@ -154,7 +154,7 @@ export default function LiveDataPanel({ onClose }) {
           <div className="flex items-center justify-between mt-2 text-xs text-slate-500">
             <div className="flex items-center gap-1">
               {error ? <WifiOff className="w-3 h-3 text-red-400" /> : <Wifi className="w-3 h-3 text-green-400" />}
-              <span>UEFA Champions League</span>
+              <span>FIFA World Cup 2026</span>
             </div>
             {lastUpdate && (
               <div className="flex items-center gap-1">
