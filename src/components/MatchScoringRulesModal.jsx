@@ -78,9 +78,6 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
             </button>
           </div>
 
-          {/* Separator */}
-          <div className="h-px bg-white/5 mx-5" />
-
           {/* Teams */}
           <div className="flex items-center justify-between px-7 py-3">
             <div className="flex flex-col items-center gap-1.5 flex-1">
