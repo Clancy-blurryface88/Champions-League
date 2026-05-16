@@ -60,7 +60,7 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
   // Check if match is locked or finished
   const now = new Date();
   const matchTime = new Date(match.match_date);
-  const lockTime = new Date(matchTime.getTime() - 30 * 60 * 1000);
+  const lockTime = new Date(matchTime.getTime() - 15 * 60 * 1000);
   const isLocked = now >= lockTime || match.is_finished;
 
   const uniquePredictions = getUniquePredictions();
