@@ -4,11 +4,17 @@ import { X, Clock, CheckCircle } from "lucide-react";
 import { Match } from "@/api/entities";
 import TeamFlag from "@/components/TeamFlag";
 
+function localDateKey(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 function groupMatchesByDate(matches) {
   const groups = {};
   matches.forEach((m) => {
-    const date = new Date(m.match_date);
-    const key = date.toISOString().slice(0, 10); // YYYY-MM-DD
+    const key = localDateKey(new Date(m.match_date));
     if (!groups[key]) groups[key] = [];
     groups[key].push(m);
   });
@@ -18,10 +24,10 @@ function groupMatchesByDate(matches) {
 function formatDateTab(dateStr) {
   const date = new Date(dateStr + "T00:00:00");
   const today = new Date();
-  const todayStr = today.toISOString().slice(0, 10);
+  const todayStr = localDateKey(today);
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
-  const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+  const tomorrowStr = localDateKey(tomorrow);
 
   if (dateStr === todayStr) return { label: "היום", sub: formatShortDate(date), isToday: true };
   if (dateStr === tomorrowStr) return { label: "מחר", sub: formatShortDate(date), isToday: false };
@@ -103,7 +109,7 @@ export default function MatchesByDateSheet({ isOpen, onClose }) {
     Match.list("match_date").then((data) => {
       setMatches(data);
       // Auto-select today or nearest date
-      const today = new Date().toISOString().slice(0, 10);
+      const today = localDateKey(new Date());
       const grouped = groupMatchesByDate(data);
       const dates = Object.keys(grouped).sort();
       const todayOrNearest = dates.includes(today)
