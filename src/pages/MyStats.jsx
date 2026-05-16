@@ -447,19 +447,17 @@ export default function MyStats() {
         setBestMatch(myPlayerData.bestMatch);
         setMyRank(myPlayerData.rank);
 
+        // Load rounds and matches first
+        const roundsData = await Round.list('order');
+        setRounds(roundsData);
+        const allMatches = await Match.list();
+
         // Calculate average points per match — רק משחקים שהסתיימו
         const totalPoints = myPlayerData.stats.total_points || 0;
         const finishedMatchIds = new Set(allMatches.filter(m => m.is_finished).map(m => m.id));
         const finishedPredictionsCount = (myPlayerData.uniquePredictions || []).filter(p => finishedMatchIds.has(p.match_id)).length;
         const avgPointsPerMatch = finishedPredictionsCount > 0 ? totalPoints / finishedPredictionsCount : 0;
         setAveragePointsPerMatch(parseFloat(avgPointsPerMatch.toFixed(2)));
-
-        // Load rounds for the dropdown and generate chart data
-        const roundsData = await Round.list('order');
-        setRounds(roundsData);
-        
-        // NEW: Fetch matches for exact hits list and chart data
-        const allMatches = await Match.list();
         
         // Process exact hits list
         const exactHits = myPlayerData.uniquePredictions.filter(p => (p.exact_score_points_earned || 0) > 0);
