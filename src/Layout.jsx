@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, UserStats } from "@/api/entities";
-import { Settings, LogOut, PlayCircle } from "lucide-react";
+import { Settings, LogOut, PlayCircle, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import MatchesByDateSheet from "./components/MatchesByDateSheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +36,8 @@ export default function Layout({ children, currentPageName }) {
   const [showSidebar, setShowSidebar] = useState(false);
   const [showYearlySummary, setShowYearlySummary] = useState(false); // NEW: State for YearlySummaryPanel
   const [showPushBanner, setShowPushBanner] = useState(false);
+  const [showDateSheet, setShowDateSheet] = useState(false);
+  const [touchEndY, setTouchEndY] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -294,14 +297,33 @@ export default function Layout({ children, currentPageName }) {
 
   const handleTouchMove = (e) => {
     setTouchEnd(e.targetTouches[0].clientX);
+    setTouchEndY(e.targetTouches[0].clientY);
   };
 
   const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd || !touchStartY) return;
+    if (!touchStart || !touchStartY) return;
+
+    const screenHeight = window.innerHeight;
+
+    // Upward swipe from 70–90% zone → open date sheet
+    if (
+      touchStartY >= screenHeight * 0.7 &&
+      touchStartY <= screenHeight * 0.9 &&
+      touchEndY !== null
+    ) {
+      const verticalDistance = touchStartY - touchEndY;
+      const horizontalDistance = Math.abs((touchStart || 0) - (touchEnd || 0));
+      if (verticalDistance > 50 && verticalDistance > horizontalDistance) {
+        setShowDateSheet(true);
+        setTouchStart(null); setTouchEnd(null); setTouchStartY(null); setTouchEndY(null);
+        return;
+      }
+    }
+
+    if (!touchEnd) return;
 
     const isDashboardPage = location.pathname === '/' || location.pathname.includes('Dashboard');
-    const screenHeight = window.innerHeight;
-    const isUpperHalf = touchStartY < screenHeight * 0.5; // 50% of screen height
+    const isUpperHalf = touchStartY < screenHeight * 0.5;
 
     // CORRECTED LOGIC: Keep Dashboard logic exactly as it was
     // Dashboard: Upper half = YES SWIPE, Lower half = NO SWIPE (to protect rounds marquee)
@@ -750,6 +772,21 @@ export default function Layout({ children, currentPageName }) {
 
           }
         </AnimatePresence>
+
+        {/* Date Sheet Swipe Indicator */}
+        <motion.button
+          onClick={() => setShowDateSheet(true)}
+          className="fixed left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-1.5 touch-none"
+          style={{ bottom: "13vh" }}
+          animate={{ y: [0, -3, 0] }}
+          transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+          aria-label="פתח לוח משחקים לפי תאריך"
+        >
+          <CalendarDays className="w-4 h-4 text-amber-400/40" />
+          <div className="w-8 h-0.5 rounded-full bg-white/15" />
+        </motion.button>
+
+        <MatchesByDateSheet isOpen={showDateSheet} onClose={() => setShowDateSheet(false)} />
 
         {/* Push Notification Banner */}
         <AnimatePresence>
