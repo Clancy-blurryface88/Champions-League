@@ -3,7 +3,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Settings } from "lucide-react";
+import { Settings, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TournamentHeader from "../components/TournamentHeader";
 import AppBackground from "../components/AppBackground";
@@ -14,12 +14,14 @@ import { Round } from "@/api/entities"; // NEW: Import Round entity
 import { motion, AnimatePresence } from "framer-motion";
 import LottieAnimation from "@/components/ui/LottieAnimation";
 import RoundInsightsTicker from "../components/RoundInsightsTicker";
+import MatchesByDateSheet from "../components/MatchesByDateSheet";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [rounds, setRounds] = useState([]); // NEW: Add rounds state
+  const [rounds, setRounds] = useState([]);
+  const [dateSheetOpen, setDateSheetOpen] = useState(false);
   const navigate = useNavigate();
 
   // Simple data load function
@@ -131,10 +133,18 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Admin Panel Button */}
-        {user?.is_admin && (
-          <div className="w-full max-w-4xl mx-auto px-4">
-            <div className="flex justify-center">
+        {/* Date Sheet Button */}
+        <div className="w-full max-w-4xl mx-auto px-4">
+          <div className="flex justify-center gap-3">
+            <Button
+              onClick={() => setDateSheetOpen(true)}
+              className="bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/30 text-amber-400 hover:text-amber-300"
+              variant="outline">
+              <CalendarDays className="w-4 h-4 mr-2" />
+              משחקים לפי תאריך
+            </Button>
+
+            {user?.is_admin && (
               <Button
                 onClick={handleAdminPanel}
                 className="bg-slate-800 hover:bg-slate-700 border border-slate-600"
@@ -142,11 +152,13 @@ export default function Dashboard() {
                 <Settings className="w-4 h-4 mr-2" />
                 Admin Panel
               </Button>
-            </div>
+            )}
           </div>
-        )}
+        </div>
 
       </div>
+
+      <MatchesByDateSheet isOpen={dateSheetOpen} onClose={() => setDateSheetOpen(false)} />
       
       <div className="relative z-[1] mt-auto w-full">
         <RoundInsightsTicker user={user} />
