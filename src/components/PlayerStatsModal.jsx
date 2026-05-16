@@ -52,8 +52,8 @@ export default function PlayerStatsModal({ isOpen, onClose, selectedPlayer: init
                             
                             <div className="flex justify-center mb-2">
                                 <img 
-                                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/da6c3aa2b_trophy_2040152.png" 
-                                    alt="Trophy" 
+                                    src="/wc-trophy.png"
+                                    alt="Trophy"
                                     className="w-12 h-12 object-contain drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]"
                                 />
                             </div>
