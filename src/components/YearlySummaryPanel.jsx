@@ -251,11 +251,14 @@ export default function YearlySummaryPanel({ onClose, user }) {
         })).
         sort((a, b) => b.count - a.count);
 
-        const averagePoints = currentUserStats.total_predictions_count > 0 ?
-        (currentUserStats.total_points / currentUserStats.total_predictions_count).toFixed(2) :
+        const finishedMatchIds = new Set(allMatches.filter(m => m.is_finished).map(m => m.id));
+        const myFinishedPredictions = myPredictions.filter(p => finishedMatchIds.has(p.match_id));
+        const averagePoints = myFinishedPredictions.length > 0 ?
+        (currentUserStats.total_points / myFinishedPredictions.length).toFixed(2) :
         0;
 
-        const roundsParticipated = new Set(myPredictions.map((p) => matchesMap.get(p.match_id)?.round_id).filter(Boolean)).size;
+        const finishedRoundIds = new Set(myFinishedPredictions.map(p => matchesMap.get(p.match_id)?.round_id).filter(Boolean));
+        const roundsParticipated = finishedRoundIds.size;
         const averagePointsPerRound = roundsParticipated > 0 ? (currentUserStats.total_points / roundsParticipated).toFixed(2) : 0;
 
         // --- NEW CALCULATIONS ---
