@@ -165,7 +165,7 @@ export default function UserRankingsSummary() {
                 <CardHeader className="text-center pb-4 border-b border-slate-700/50">
                     <CardTitle className="text-white flex items-center justify-center gap-2">
                         <FlexibleIcon
-                            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/da6c3aa2b_trophy_2040152.png"
+                            src="/wc-trophy.png"
                             alt="סיכום מיקומים"
                             size="medium"
                         />
