@@ -9,7 +9,7 @@ const CARD_THEMES = {
   rose:    { text: "text-rose-400",    bg: "bg-rose-500/8",    border: "border-rose-500/20" },
   sky:     { text: "text-sky-400",     bg: "bg-sky-500/8",     border: "border-sky-500/20" },
   amber:   { text: "text-amber-400",   bg: "bg-amber-500/8",   border: "border-amber-500/20" },
-  muted:   { text: "text-slate-300",   bg: "bg-white/4",       border: "border-white/8" },
+  muted:   { text: "text-slate-300",   bg: "bg-white/2",       border: "border-white/5" },
 };
 
 function PtsCard({ label, pts, theme = "muted", delay = 0 }) {
