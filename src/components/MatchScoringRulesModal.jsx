@@ -76,17 +76,19 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
 
           {/* Teams */}
           <div
-            className="flex items-center justify-between px-2 py-2 animate-in fade-in slide-in-from-bottom-2"
+            className="flex items-center justify-between px-2 py-1 animate-in fade-in slide-in-from-bottom-2"
             style={{ animationDuration: "200ms", animationFillMode: "both", animationTimingFunction: "cubic-bezier(0.23,1,0.32,1)" }}
           >
-            <div className="flex items-center gap-2.5 flex-1">
-              <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-8 h-8" />
-              <span className="text-xs text-white/75 font-medium leading-tight">{match.team_a}</span>
+            <div className="flex flex-col items-center gap-1.5 flex-1">
+              <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" />
+              <span className="text-xs text-white font-semibold leading-tight text-center">{match.team_a}</span>
+              <span className="text-[10px] text-slate-400 leading-none">(בית)</span>
             </div>
-            <span className="text-[10px] font-bold text-amber-400 tracking-widest mx-2">VS</span>
-            <div className="flex items-center gap-2.5 flex-1 justify-end">
-              <span className="text-xs text-white/75 font-medium leading-tight text-right">{match.team_b}</span>
-              <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-8 h-8" />
+            <span className="text-sm font-bold text-amber-400 tracking-widest mx-3 pb-5">VS</span>
+            <div className="flex flex-col items-center gap-1.5 flex-1">
+              <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" />
+              <span className="text-xs text-white font-semibold leading-tight text-center">{match.team_b}</span>
+              <span className="text-[10px] text-slate-400 leading-none">(חוץ)</span>
             </div>
           </div>
 
