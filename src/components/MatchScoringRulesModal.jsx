@@ -66,10 +66,23 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-[#0d1526] text-white p-0 fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-2xl border border-white/8 max-w-sm w-full max-h-[85vh] overflow-hidden flex flex-col">
 
-        {/* Sticky header: teams + close button */}
-        <div className="flex-shrink-0 px-5 pt-5 pb-4 border-b border-white/6 space-y-4">
+        {/* Sticky header: close button + teams */}
+        <div className="flex-shrink-0 border-b border-white/6">
+          {/* Close button */}
+          <div className="px-5 pt-4 pb-3">
+            <button
+              onClick={onClose}
+              className="w-full py-2.5 rounded-xl bg-white/6 hover:bg-white/10 active:scale-[0.97] transition-all text-sm font-semibold text-white/80 border border-white/10"
+            >
+              חזרה לדף הקודם
+            </button>
+          </div>
+
+          {/* Separator */}
+          <div className="h-px bg-white/5 mx-5" />
+
           {/* Teams */}
-          <div className="flex items-center justify-between px-2 py-1">
+          <div className="flex items-center justify-between px-7 py-3">
             <div className="flex flex-col items-center gap-1.5 flex-1">
               <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" />
               <span className="text-xs text-white font-semibold leading-tight text-center">{match.team_a}</span>
@@ -82,14 +95,6 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
               <span className="text-[10px] text-slate-400 leading-none">(חוץ)</span>
             </div>
           </div>
-
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="w-full py-2.5 rounded-xl bg-white/6 hover:bg-white/10 active:scale-[0.97] transition-all text-sm font-semibold text-white/80 border border-white/10"
-          >
-            חזרה לדף הקודם
-          </button>
         </div>
 
         {/* Scrollable content */}
