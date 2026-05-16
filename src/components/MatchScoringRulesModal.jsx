@@ -4,12 +4,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Target, Trophy, Zap, Goal } from "lucide-react";
 
 const CARD_THEMES = {
-  emerald: { text: "text-emerald-400", bg: "bg-emerald-500/8", border: "border-emerald-500/20" },
-  blue:    { text: "text-blue-400",    bg: "bg-blue-500/8",    border: "border-blue-500/20" },
-  rose:    { text: "text-rose-400",    bg: "bg-rose-500/8",    border: "border-rose-500/20" },
-  sky:     { text: "text-sky-400",     bg: "bg-sky-500/8",     border: "border-sky-500/20" },
-  amber:   { text: "text-amber-400",   bg: "bg-amber-500/8",   border: "border-amber-500/20" },
-  muted:   { text: "text-slate-300",   bg: "bg-white/2",       border: "border-white/5" },
+  emerald: { text: "text-emerald-400", bg: "bg-emerald-500/8", border: "border-amber-400/30" },
+  blue:    { text: "text-blue-400",    bg: "bg-blue-500/8",    border: "border-amber-400/30" },
+  rose:    { text: "text-rose-400",    bg: "bg-rose-500/8",    border: "border-amber-400/30" },
+  sky:     { text: "text-sky-400",     bg: "bg-sky-500/8",     border: "border-amber-400/30" },
+  amber:   { text: "text-amber-400",   bg: "bg-amber-500/8",   border: "border-amber-400/30" },
+  muted:   { text: "text-slate-300",   bg: "bg-white/2",       border: "border-amber-400/20" },
 };
 
 function PtsCard({ label, pts, theme = "muted", delay = 0 }) {
