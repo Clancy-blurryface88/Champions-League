@@ -321,9 +321,12 @@ export default function AdminScoring({ onUpdateComplete }) {
         }
       }
 
+      const svcKeyOk = !!import.meta.env.VITE_SUPABASE_SERVICE_KEY;
       setStatus({
-        type: 'success',
-        message: `Done! Processed ${updatedPredictionsCount} new predictions. Updated UserStats for ${updatedUsersCount} users.`
+        type: svcKeyOk ? 'success' : 'error',
+        message: svcKeyOk
+          ? `Done! Processed ${updatedPredictionsCount} predictions. Updated UserStats for ${updatedUsersCount} users.`
+          : `⚠️ Predictions updated (${updatedPredictionsCount}), but UserStats FAILED — VITE_SUPABASE_SERVICE_KEY missing in Vercel env vars. Leaderboard/stats will NOT update until this is fixed.`
       });
       
       if (onUpdateComplete) onUpdateComplete();
