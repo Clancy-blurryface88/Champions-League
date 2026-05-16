@@ -76,14 +76,14 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
 
           {/* Teams */}
           <div
-            className="flex items-center justify-between rounded-2xl bg-white/4 border border-white/6 px-4 py-3 animate-in fade-in slide-in-from-bottom-2"
+            className="flex items-center justify-between px-2 py-2 animate-in fade-in slide-in-from-bottom-2"
             style={{ animationDuration: "200ms", animationFillMode: "both", animationTimingFunction: "cubic-bezier(0.23,1,0.32,1)" }}
           >
             <div className="flex items-center gap-2.5 flex-1">
               <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-8 h-8" />
               <span className="text-xs text-white/75 font-medium leading-tight">{match.team_a}</span>
             </div>
-            <span className="text-[10px] font-bold text-white/20 tracking-widest mx-2">VS</span>
+            <span className="text-[10px] font-bold text-amber-400 tracking-widest mx-2">VS</span>
             <div className="flex items-center gap-2.5 flex-1 justify-end">
               <span className="text-xs text-white/75 font-medium leading-tight text-right">{match.team_b}</span>
               <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-8 h-8" />
