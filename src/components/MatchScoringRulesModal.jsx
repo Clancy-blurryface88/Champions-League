@@ -20,7 +20,7 @@ function PtsCard({ label, pts, theme = "muted", delay = 0 }) {
       style={{ animationDuration: "220ms", animationFillMode: "both", animationTimingFunction: "cubic-bezier(0.23,1,0.32,1)", animationDelay: `${delay}ms` }}
     >
       <span className={`text-2xl font-bold tabular-nums leading-none ${t.text}`}>{pts}</span>
-      <span className="text-[9px] text-slate-600 uppercase tracking-widest font-semibold mt-0.5">נקודות</span>
+      <span className="text-[9px] text-slate-400 uppercase tracking-widest font-semibold mt-0.5">נקודות</span>
       <span className={`text-[11px] font-medium text-center leading-tight mt-0.5 ${t.text}`}>{label}</span>
     </div>
   );
@@ -94,7 +94,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
 
           {/* כיוון משחק */}
           <div className="space-y-3">
-            <SectionLabel title="כיוון משחק" icon={Trophy} color="text-blue-400/80" />
+            <SectionLabel title="כיוון משחק" icon={Trophy} color="text-amber-400" />
             <div className="flex gap-2">
               <PtsCard label="ניצחון ביתי" pts={match.home_win_points || 0} theme="emerald" delay={60} />
               <PtsCard label="תיקו" pts={match.draw_points || 0} theme="muted" delay={90} />
@@ -106,7 +106,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
 
           {/* שתי קבוצות כובשות */}
           <div className="space-y-3">
-            <SectionLabel title="שתי קבוצות כובשות" icon={Zap} color="text-emerald-400/80" />
+            <SectionLabel title="שתי קבוצות כובשות" icon={Zap} color="text-amber-400" />
             <div className="flex gap-2">
               <PtsCard label="כן" pts={match.btts_yes_points || 0} theme="emerald" delay={80} />
               <PtsCard label="לא" pts={match.btts_no_points || 0} theme="rose" delay={110} />
@@ -117,7 +117,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
 
           {/* טווח שערים */}
           <div className="space-y-3">
-            <SectionLabel title="טווח שערים" icon={Goal} color="text-sky-400/80" />
+            <SectionLabel title="טווח שערים" icon={Goal} color="text-amber-400" />
             <div className="flex gap-2">
               <PtsCard label="0–2 שערים" pts={match.goals_0_2_points || 0} theme="sky" delay={100} />
               <PtsCard label="3–4 שערים" pts={match.goals_3_4_points || 0} theme="sky" delay={130} />
