@@ -1,168 +1,149 @@
 import TeamFlag from "@/components/TeamFlag";
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Trophy, Target } from "lucide-react";
+import { Target, Trophy, Zap, Goal } from "lucide-react";
+
+function PtsCard({ label, pts, color = "text-white", delay = 0 }) {
+  return (
+    <div
+      className="flex flex-col items-center gap-1 rounded-xl border border-white/8 bg-white/5 px-2 py-3 flex-1 animate-in fade-in slide-in-from-bottom-2"
+      style={{ animationDuration: "220ms", animationFillMode: "both", animationTimingFunction: "cubic-bezier(0.23,1,0.32,1)", animationDelay: `${delay}ms` }}
+    >
+      <span className={`text-xl font-bold tabular-nums leading-none ${color}`}>{pts}</span>
+      <span className="text-[9px] text-slate-500 uppercase tracking-widest font-semibold">נקודות</span>
+      <span className="text-[11px] text-slate-300 text-center leading-tight mt-0.5">{label}</span>
+    </div>
+  );
+}
+
+function Section({ title, icon: Icon, color, children, delay = 0 }) {
+  return (
+    <div
+      className="space-y-2.5 animate-in fade-in"
+      style={{ animationDuration: "200ms", animationFillMode: "both", animationDelay: `${delay}ms` }}
+    >
+      <div className={`flex items-center justify-center gap-1.5 ${color}`}>
+        {Icon && <Icon className="w-3.5 h-3.5" />}
+        <span className="text-[11px] uppercase tracking-widest font-semibold">{title}</span>
+      </div>
+      <div className="flex gap-2 dir-rtl">
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
   if (!match) return null;
 
+  const hasOdds = match.score_odds && Object.keys(match.score_odds).length > 0;
+
+  const oddsColumns = [
+    {
+      label: '1',
+      filter: ([s]) => { if (s === 'other') return false; const [h, a] = s.split(':').map(Number); return h > a; },
+      sort: ([ka], [kb]) => { const [ah, aa] = ka.split(':').map(Number); const [bh, ba] = kb.split(':').map(Number); return (ah + aa) - (bh + ba) || ah - bh; },
+    },
+    {
+      label: 'X',
+      filter: ([s]) => { if (s === 'other') return false; const [h, a] = s.split(':').map(Number); return h === a; },
+      sort: ([ka], [kb]) => ka.split(':').map(Number)[0] - kb.split(':').map(Number)[0],
+    },
+    {
+      label: '2',
+      filter: ([s]) => { if (s === 'other') return false; const [h, a] = s.split(':').map(Number); return h < a; },
+      sort: ([ka], [kb]) => { const [ah, aa] = ka.split(':').map(Number); const [bh, ba] = kb.split(':').map(Number); return (ah + aa) - (bh + ba) || aa - ba; },
+    },
+  ];
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-800 text-white p-6 fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] gap-4 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg border border-slate-700 max-w-lg w-full max-h-[80vh] overflow-hidden flex flex-col">
-        <DialogHeader className="flex-shrink-0 pb-4">
-          <DialogTitle className="tracking-tight text-center text-xl font-bold text-white flex items-center justify-center gap-2">ניקוד
+      <DialogContent className="bg-[#0f172a] text-white p-0 fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-2xl border border-white/8 max-w-sm w-full max-h-[85vh] overflow-hidden flex flex-col">
 
-
-          </DialogTitle>
+        {/* Header */}
+        <DialogHeader className="flex-shrink-0 px-5 pt-5 pb-4 border-b border-white/6">
+          <DialogTitle className="text-sm font-semibold text-slate-200 text-center tracking-wide">ניקוד</DialogTitle>
         </DialogHeader>
-        
-        {/* Scrollable content area */}
-        <div className="flex-1 overflow-y-auto px-2">
-          <div className="space-y-6">
-            {/* Match teams display */}
-            <div className="flex items-start justify-center w-full p-4 bg-slate-700/50 rounded-lg">
-              <div className="flex items-start gap-3 flex-1 justify-end">
-                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-10 h-10 " />
-                <div className="text-slate-50 text-sm font-medium text-left leading-tight pt-2.5">
-                  {match.team_a.split(' ').map((word, i) => (
-                    <div key={i}>{word}</div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="text-white font-bold text-lg mx-6 pt-1.5">VS</div>
-              
-              <div className="flex items-start gap-3 flex-1 justify-start">
-                <div className="text-slate-50 text-sm font-medium text-right leading-tight pt-2.5">
-                  {match.team_b.split(' ').map((word, i) => (
-                    <div key={i}>{word}</div>
-                  ))}
-                </div>
-                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-10 h-10 " />
-              </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+
+          {/* Teams */}
+          <div
+            className="flex items-center justify-between bg-white/4 rounded-xl px-4 py-3 border border-white/6 animate-in fade-in slide-in-from-bottom-2"
+            style={{ animationDuration: "200ms", animationFillMode: "both", animationTimingFunction: "cubic-bezier(0.23,1,0.32,1)" }}
+          >
+            <div className="flex items-center gap-2 flex-1">
+              <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-8 h-8" />
+              <span className="text-xs text-slate-200 font-medium leading-tight">{match.team_a}</span>
             </div>
-
-            {/* Match outcome points */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-blue-400 flex items-center justify-center gap-2 border-b border-slate-600 pb-2">
-                <Trophy className="w-5 h-5" />
-                תוצאת המשחק
-              </h3>
-              <div className="grid grid-cols-1 gap-3">
-                <div className="flex justify-between items-center bg-slate-700/40 p-3 rounded-lg flex-row-reverse">
-                  <span className="font-medium">ניצחון ביתי</span>
-                  <Badge className="bg-green-600/30 text-green-300 px-3 py-1 text-sm font-bold">
-                    {match.home_win_points || 0} נקודות
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center bg-slate-700/40 p-3 rounded-lg flex-row-reverse">
-                  <span className="font-medium">תיקו</span>
-                  <Badge className="bg-slate-700 text-slate-50 px-3 py-1 text-sm font-bold inline-flex items-center rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-primary/80">
-                    {match.draw_points || 0} נקודות
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center bg-slate-700/40 p-3 rounded-lg flex-row-reverse">
-                  <span className="font-medium">ניצחון חוץ</span>
-                  <Badge className="bg-blue-600/30 text-blue-300 px-3 py-1 text-sm font-bold">
-                    {match.away_win_points || 0} נקודות
-                  </Badge>
-                </div>
-              </div>
-            </div>
-
-            {/* BTTS points */}
-            <div className="space-y-4">
-              <h3 className="text-green-400 pb-2 text-lg font-semibold flex items-center justify-center gap-2 border-b border-slate-600">שתי קבוצות כובשות
-
-
-              </h3>
-              <div className="grid grid-cols-1 gap-3">
-                <div className="flex justify-between items-center bg-slate-700/40 p-3 rounded-lg flex-row-reverse">
-                  <span className="text-green-400 font-medium">כן </span>
-                  <Badge className="bg-slate-700 text-green-400 px-3 py-1 text-sm font-bold inline-flex items-center rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-primary/80">
-                    {match.btts_yes_points || 0} נקודות
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center bg-slate-700/40 p-3 rounded-lg flex-row-reverse">
-                  <span className="text-rose-500 font-medium">לא </span>
-                  <Badge className="bg-gray-600/30 text-rose-500 px-3 py-1 text-sm font-bold inline-flex items-center rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-primary/80">
-                    {match.btts_no_points || 0} נקודות
-                  </Badge>
-                </div>
-              </div>
-            </div>
-
-            {/* Goals range points */}
-            <div className="space-y-4">
-              <h3 className="text-sky-400 pb-2 text-lg font-semibold flex items-center justify-center gap-2 border-b border-slate-600">טווח שערים במשחק
-
-
-              </h3>
-              <div className="grid grid-cols-1 gap-3">
-                <div className="flex justify-between items-center bg-slate-700/40 p-3 rounded-lg flex-row-reverse">
-                  <span className="font-medium">0-2 שערים סה"כ</span>
-                  <Badge className="bg-gray-700 text-blue-400 px-3 py-1 text-sm font-bold inline-flex items-center rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-primary/80">
-                    {match.goals_0_2_points || 0} נקודות
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center bg-slate-700/40 p-3 rounded-lg flex-row-reverse">
-                  <span className="font-medium">3-4 שערים סה"כ</span>
-                  <Badge className="bg-gray-700 text-blue-400 px-3 py-1 text-sm font-bold inline-flex items-center rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-primary/80">
-                    {match.goals_3_4_points || 0} נקודות
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center bg-slate-700/40 p-3 rounded-lg flex-row-reverse">
-                  <span className="font-medium">5+ שערים סה"כ</span>
-                  <Badge className="bg-gray-700 text-blue-400 px-3 py-1 text-sm font-bold inline-flex items-center rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-primary/80">
-                    {match.goals_5_plus_points || 0} נקודות
-                  </Badge>
-                </div>
-              </div>
-            </div>
-
-            {/* Exact score odds table */}
-            {match.score_odds && Object.keys(match.score_odds).length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-yellow-400 pb-2 text-lg font-semibold flex items-center justify-center gap-2 border-b border-slate-600">
-                  <Target className="w-5 h-5" />
-                  פגיעה מדויקת
-                </h3>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { label: '1', filter: ([s]) => { if (s === 'other') return false; const [h,a] = s.split(':').map(Number); return h > a; }, sort: ([ka],[kb]) => { const [ah,aa]=ka.split(':').map(Number); const [bh,ba]=kb.split(':').map(Number); return (ah+aa)-(bh+ba)||ah-bh; } },
-                    { label: 'X', filter: ([s]) => { if (s === 'other') return false; const [h,a] = s.split(':').map(Number); return h === a; }, sort: ([ka],[kb]) => ka.split(':').map(Number)[0]-kb.split(':').map(Number)[0] },
-                    { label: '2', filter: ([s]) => { if (s === 'other') return false; const [h,a] = s.split(':').map(Number); return h < a; }, sort: ([ka],[kb]) => { const [ah,aa]=ka.split(':').map(Number); const [bh,ba]=kb.split(':').map(Number); return (ah+aa)-(bh+ba)||aa-ba; } },
-                  ].map(({ label, filter, sort }) => (
-                    <div key={label}>
-                      <div className="text-center font-bold text-white bg-slate-600 rounded py-1 mb-1.5 text-sm">{label}</div>
-                      <div className="space-y-1">
-                        {Object.entries(match.score_odds).filter(filter).sort(sort).map(([score, pts]) => (
-                          <div key={score} className="flex justify-between items-center bg-slate-700/40 rounded px-2 py-1">
-                            <span className="text-yellow-400 font-bold text-xs">{pts}</span>
-                            <span className="text-slate-300 text-xs font-mono">{score}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                {'other' in match.score_odds && (
-                  <div className="flex justify-between items-center bg-slate-700/40 rounded px-3 py-2">
-                    <span className="text-yellow-400 font-bold text-sm">{match.score_odds['other']}</span>
-                    <span className="text-slate-300 text-sm">כל תוצאה אחרת</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Footer note with extra spacing */}
-            <div className="text-slate-800 pt-4 pb-2 text-sm border-t border-slate-600">
-              ניקוד זה נקבע על ידי מנהל הטורניר
+            <span className="text-[10px] font-bold text-slate-500 mx-2">VS</span>
+            <div className="flex items-center gap-2 flex-1 justify-end">
+              <span className="text-xs text-slate-200 font-medium leading-tight text-right">{match.team_b}</span>
+              <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-8 h-8" />
             </div>
           </div>
+
+          {/* Match outcome */}
+          <Section title="תוצאת המשחק" icon={Trophy} color="text-blue-400" delay={60}>
+            <PtsCard label="ניצחון ביתי" pts={match.home_win_points || 0} color="text-emerald-400" delay={80} />
+            <PtsCard label="תיקו" pts={match.draw_points || 0} color="text-slate-300" delay={110} />
+            <PtsCard label="ניצחון חוץ" pts={match.away_win_points || 0} color="text-blue-400" delay={140} />
+          </Section>
+
+          {/* BTTS */}
+          <Section title="שתי קבוצות כובשות" icon={Zap} color="text-emerald-400" delay={100}>
+            <PtsCard label="כן" pts={match.btts_yes_points || 0} color="text-emerald-400" delay={120} />
+            <PtsCard label="לא" pts={match.btts_no_points || 0} color="text-rose-400" delay={150} />
+          </Section>
+
+          {/* Goals range */}
+          <Section title="טווח שערים" icon={Goal} color="text-sky-400" delay={140}>
+            <PtsCard label='0–2 שערים' pts={match.goals_0_2_points || 0} color="text-sky-400" delay={160} />
+            <PtsCard label='3–4 שערים' pts={match.goals_3_4_points || 0} color="text-sky-400" delay={190} />
+            <PtsCard label='5+ שערים' pts={match.goals_5_plus_points || 0} color="text-sky-400" delay={220} />
+          </Section>
+
+          {/* Exact score odds */}
+          {hasOdds && (
+            <div
+              className="space-y-3 animate-in fade-in"
+              style={{ animationDuration: "200ms", animationFillMode: "both", animationDelay: "180ms" }}
+            >
+              <div className="flex items-center justify-center gap-1.5 text-yellow-400">
+                <Target className="w-3.5 h-3.5" />
+                <span className="text-[11px] uppercase tracking-widest font-semibold">פגיעה מדויקת</span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                {oddsColumns.map(({ label, filter, sort }) => (
+                  <div key={label}>
+                    <div className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">{label}</div>
+                    <div className="space-y-1">
+                      {Object.entries(match.score_odds).filter(filter).sort(sort).map(([score, pts]) => (
+                        <div key={score} className="flex justify-between items-center rounded-lg bg-white/4 border border-white/6 px-2 py-1.5">
+                          <span className="text-yellow-400 font-bold text-xs tabular-nums">{pts}</span>
+                          <span className="text-slate-400 text-xs font-mono">{score}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {'other' in match.score_odds && (
+                <div className="flex justify-between items-center rounded-lg bg-white/4 border border-white/6 px-3 py-2">
+                  <span className="text-yellow-400 font-bold text-sm tabular-nums">{match.score_odds['other']}</span>
+                  <span className="text-slate-400 text-xs">כל תוצאה אחרת</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Footer */}
+          <p className="text-center text-[10px] text-slate-600 pb-1">ניקוד נקבע על ידי מנהל הטורניר</p>
         </div>
       </DialogContent>
-    </Dialog>);
-
+    </Dialog>
+  );
 }
