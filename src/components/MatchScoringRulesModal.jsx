@@ -2,7 +2,7 @@ import TeamFlag from "@/components/TeamFlag";
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Trophy } from "lucide-react";
+import { Trophy, Target } from "lucide-react";
 
 export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
   if (!match) return null;
@@ -120,6 +120,41 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
                 </div>
               </div>
             </div>
+
+            {/* Exact score odds table */}
+            {match.score_odds && Object.keys(match.score_odds).length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-yellow-400 pb-2 text-lg font-semibold flex items-center justify-center gap-2 border-b border-slate-600">
+                  <Target className="w-5 h-5" />
+                  פגיעה מדויקת
+                </h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: '1', filter: ([s]) => { if (s === 'other') return false; const [h,a] = s.split(':').map(Number); return h > a; }, sort: ([ka],[kb]) => { const [ah,aa]=ka.split(':').map(Number); const [bh,ba]=kb.split(':').map(Number); return (ah+aa)-(bh+ba)||ah-bh; } },
+                    { label: 'X', filter: ([s]) => { if (s === 'other') return false; const [h,a] = s.split(':').map(Number); return h === a; }, sort: ([ka],[kb]) => ka.split(':').map(Number)[0]-kb.split(':').map(Number)[0] },
+                    { label: '2', filter: ([s]) => { if (s === 'other') return false; const [h,a] = s.split(':').map(Number); return h < a; }, sort: ([ka],[kb]) => { const [ah,aa]=ka.split(':').map(Number); const [bh,ba]=kb.split(':').map(Number); return (ah+aa)-(bh+ba)||aa-ba; } },
+                  ].map(({ label, filter, sort }) => (
+                    <div key={label}>
+                      <div className="text-center font-bold text-white bg-slate-600 rounded py-1 mb-1.5 text-sm">{label}</div>
+                      <div className="space-y-1">
+                        {Object.entries(match.score_odds).filter(filter).sort(sort).map(([score, pts]) => (
+                          <div key={score} className="flex justify-between items-center bg-slate-700/40 rounded px-2 py-1">
+                            <span className="text-yellow-400 font-bold text-xs">{pts}</span>
+                            <span className="text-slate-300 text-xs font-mono">{score}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {'other' in match.score_odds && (
+                  <div className="flex justify-between items-center bg-slate-700/40 rounded px-3 py-2">
+                    <span className="text-yellow-400 font-bold text-sm">{match.score_odds['other']}</span>
+                    <span className="text-slate-300 text-sm">כל תוצאה אחרת</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Footer note with extra spacing */}
             <div className="text-slate-800 pt-4 pb-2 text-sm border-t border-slate-600">
