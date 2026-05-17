@@ -94,15 +94,15 @@ function ScoreBreakdownAnimated({ prediction, match }) {
   const [visibleRows, setVisibleRows] = useState(0);
   const [showTotal, setShowTotal] = useState(false);
   const [showDonut, setShowDonut] = useState(false);
-  const rowDelay = 500;
+  const rowDelay = 700;
 
   useEffect(() => {
     setVisibleRows(0); setShowTotal(false); setShowDonut(false);
     BREAKDOWN_ROWS.forEach((_, i) => {
       setTimeout(() => setVisibleRows(v => Math.max(v, i + 1)), i * rowDelay);
     });
-    setTimeout(() => setShowTotal(true), BREAKDOWN_ROWS.length * rowDelay + 300);
-    setTimeout(() => setShowDonut(true), BREAKDOWN_ROWS.length * rowDelay + 800);
+    setTimeout(() => setShowTotal(true), BREAKDOWN_ROWS.length * rowDelay + 400);
+    setTimeout(() => setShowDonut(true), BREAKDOWN_ROWS.length * rowDelay + 900);
   }, [prediction.id]);
 
   const maxPoints = calculateMatchMaxPotentialPoints(match);
@@ -122,9 +122,9 @@ function ScoreBreakdownAnimated({ prediction, match }) {
             transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
             className="flex justify-between items-center py-1.5 px-2 rounded-lg"
           >
-            <span className="text-slate-400 text-xs">{row.label}</span>
+            <span className="text-white text-xs">{row.label}</span>
             <span className={`text-xs font-bold tabular-nums ${pts > 0 ? 'text-green-400' : 'text-slate-600'}`}>
-              {pts > 0 ? <>+<AnimatedCounter value={pts} duration={1100} /></> : '+0.00'}
+              {pts > 0 ? <>+<AnimatedCounter value={pts} duration={1400} /></> : '+0.00'}
             </span>
           </motion.div>
         );
@@ -161,12 +161,12 @@ function ScoreBreakdownAnimated({ prediction, match }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
             >
-              <span className="text-slate-400 text-xs mb-1">ניקוד שנצבר</span>
+              <span className="text-white text-xs mb-1">ניקוד שנצבר</span>
               <div className="flex items-baseline gap-1">
-                <span className="text-blue-400 text-xl font-bold tabular-nums">
-                  <AnimatedCounter value={prediction.points_earned || 0} duration={1400} />
+                <span className="text-amber-400 text-xl font-bold tabular-nums">
+                  <AnimatedCounter value={prediction.points_earned || 0} duration={1800} />
                 </span>
-                <span className="text-slate-400 text-sm">/ {maxPoints.toFixed(2)}</span>
+                <span className="text-blue-400 text-sm font-semibold">/ {maxPoints.toFixed(2)}</span>
               </div>
             </motion.div>
           </motion.div>
