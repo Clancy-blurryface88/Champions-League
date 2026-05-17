@@ -31,6 +31,101 @@ import { AnimatedList } from "@/components/magicui/animated-list";
 import ScoreAccuracyVisuals from "@/components/predictions/ScoreAccuracyVisuals";
 import { calculateMatchMaxPotentialPoints } from "../components/utils/calculateMatchMaxPotentialPoints";
 
+function AnimatedCounter({ value, duration = 600 }) {
+  const [display, setDisplay] = useState(0);
+  useEffect(() => {
+    let start = 0;
+    const steps = 30;
+    const increment = value / steps;
+    const interval = duration / steps;
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= value) { setDisplay(value); clearInterval(timer); }
+      else setDisplay(start);
+    }, interval);
+    return () => clearInterval(timer);
+  }, [value, duration]);
+  return <span>{display.toFixed(2)}</span>;
+}
+
+const BREAKDOWN_ROWS = [
+  { key: 'exact_score_points_earned',         label: 'תוצאה מדויקת', icon: '🎯', color: 'text-amber-400' },
+  { key: 'correct_outcome_points_earned',      label: 'כיוון נכון',    icon: '✅', color: 'text-emerald-400' },
+  { key: 'both_teams_scored_points_earned',    label: 'BTTS',          icon: '⚽', color: 'text-blue-400' },
+  { key: 'goals_range_points_earned',          label: 'טווח שערים',   icon: '📊', color: 'text-sky-400' },
+];
+
+function ScoreBreakdownAnimated({ prediction, match }) {
+  const [visibleRows, setVisibleRows] = useState(0);
+  const [showTotal, setShowTotal] = useState(false);
+  const [showAccuracy, setShowAccuracy] = useState(false);
+
+  useEffect(() => {
+    setVisibleRows(0); setShowTotal(false); setShowAccuracy(false);
+    BREAKDOWN_ROWS.forEach((_, i) => {
+      setTimeout(() => setVisibleRows(v => Math.max(v, i + 1)), i * 180);
+    });
+    setTimeout(() => setShowTotal(true), BREAKDOWN_ROWS.length * 180 + 100);
+    setTimeout(() => setShowAccuracy(true), BREAKDOWN_ROWS.length * 180 + 400);
+  }, [prediction.id]);
+
+  return (
+    <div className="p-4 space-y-1" dir="rtl">
+      {BREAKDOWN_ROWS.map((row, i) => {
+        const pts = prediction[row.key] || 0;
+        return (
+          <motion.div
+            key={row.key}
+            initial={{ opacity: 0, x: 12 }}
+            animate={visibleRows > i ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
+            className="flex justify-between items-center py-1.5 px-2 rounded-lg"
+          >
+            <span className="text-slate-400 text-xs flex items-center gap-1.5">
+              <span>{row.icon}</span>{row.label}
+            </span>
+            <span className={`text-xs font-bold tabular-nums ${pts > 0 ? row.color : 'text-slate-600'}`}>
+              {pts > 0 ? <>+<AnimatedCounter value={pts} duration={400} /></> : '+0.00'}
+            </span>
+          </motion.div>
+        );
+      })}
+
+      <AnimatePresence>
+        {showTotal && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+            className="border-t border-slate-600/50 mt-1 pt-2 flex justify-between items-center px-2"
+          >
+            <span className="text-white text-xs font-semibold">סה"כ</span>
+            <span className="text-blue-400 text-sm font-bold tabular-nums">
+              <AnimatedCounter value={prediction.points_earned || 0} duration={600} />
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showAccuracy && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4 }}
+            className="pt-1"
+          >
+            <ScoreAccuracyVisuals
+              earnedPoints={prediction.points_earned || 0}
+              maxPoints={calculateMatchMaxPotentialPoints(match)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export default function PredictionsResults() {
   const [user, setUser] = useState(null);
   const [rounds, setRounds] = useState([]);
@@ -761,38 +856,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                 transition={{ duration: 0.3 }}
                 className="border-t border-slate-600 bg-slate-800/50">
 
-                  <div className="p-3 space-y-2">
-                    <h4 className="text-white text-sm font-semibold mb-2">פירוט ניקוד</h4>
-
-                    <div className="space-y-1 text-xs">
-                      <div className="flex justify-between text-slate-300">
-                        <span>תוצאה מדויקת -</span>
-                        <span>+{(prediction.exact_score_points_earned || 0).toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between text-slate-300">
-                        <span>כיוון נכון -</span>
-                        <span>+{(prediction.correct_outcome_points_earned || 0).toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between text-slate-300">
-                        <span>BTTS -</span>
-                        <span>+{(prediction.both_teams_scored_points_earned || 0).toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between text-slate-300">
-                        <span>טווח שערים -</span>
-                        <span>+{(prediction.goals_range_points_earned || 0).toFixed(2)}</span>
-                      </div>
-                      <div className="border-t border-slate-600 mt-2 pt-2 flex justify-between text-white font-semibold">
-                      <span>סה"כ</span>
-                      <span className="text-blue-400 text-sm font-bold">{(prediction.points_earned || 0).toFixed(2)}</span>
-                      </div>
-
-                      {/* תצוגת דיוק וניקוד מקסימלי */}
-                      <ScoreAccuracyVisuals 
-                        earnedPoints={prediction.points_earned || 0} 
-                        maxPoints={calculateMatchMaxPotentialPoints(match)} 
-                      />
-                      </div>
-                      </div>
+                  <ScoreBreakdownAnimated prediction={prediction} match={match} />
                       </motion.div>
                       }
             </AnimatePresence>
