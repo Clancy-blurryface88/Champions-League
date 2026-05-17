@@ -31,11 +31,12 @@ import { AnimatedList } from "@/components/magicui/animated-list";
 import ScoreAccuracyVisuals from "@/components/predictions/ScoreAccuracyVisuals";
 import { calculateMatchMaxPotentialPoints } from "../components/utils/calculateMatchMaxPotentialPoints";
 
-function AnimatedCounter({ value, duration = 600 }) {
+function AnimatedCounter({ value, duration = 1200 }) {
   const [display, setDisplay] = useState(0);
   useEffect(() => {
+    setDisplay(0);
     let start = 0;
-    const steps = 30;
+    const steps = 40;
     const increment = value / steps;
     const interval = duration / steps;
     const timer = setInterval(() => {
@@ -48,44 +49,84 @@ function AnimatedCounter({ value, duration = 600 }) {
   return <span>{display.toFixed(2)}</span>;
 }
 
+function AnimatedDonut({ percentage, size = 64 }) {
+  const [animPct, setAnimPct] = useState(0);
+  const radius = 24;
+  const circumference = 2 * Math.PI * radius;
+
+  useEffect(() => {
+    setAnimPct(0);
+    const timer = setTimeout(() => setAnimPct(percentage), 80);
+    return () => clearTimeout(timer);
+  }, [percentage]);
+
+  const offset = circumference - (animPct / 100) * circumference;
+  const color = percentage >= 100 ? '#22c55e' : percentage >= 60 ? '#f59e0b' : '#3b82f6';
+
+  return (
+    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+      <svg className="w-full h-full -rotate-90" viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r={radius} fill="none" stroke="#334155" strokeWidth="6" />
+        <circle
+          cx="32" cy="32" r={radius} fill="none"
+          stroke={color} strokeWidth="6"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.23,1,0.32,1)' }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-xs font-bold" style={{ color }}>{percentage}%</span>
+      </div>
+    </div>
+  );
+}
+
 const BREAKDOWN_ROWS = [
-  { key: 'exact_score_points_earned',         label: 'תוצאה מדויקת', icon: '🎯', color: 'text-amber-400' },
-  { key: 'correct_outcome_points_earned',      label: 'כיוון נכון',    icon: '✅', color: 'text-emerald-400' },
-  { key: 'both_teams_scored_points_earned',    label: 'BTTS',          icon: '⚽', color: 'text-blue-400' },
-  { key: 'goals_range_points_earned',          label: 'טווח שערים',   icon: '📊', color: 'text-sky-400' },
+  { key: 'exact_score_points_earned',         label: 'תוצאה מדויקת', icon: '🎯' },
+  { key: 'correct_outcome_points_earned',      label: 'כיוון נכון',    icon: '✅' },
+  { key: 'both_teams_scored_points_earned',    label: 'BTTS',          icon: '⚽' },
+  { key: 'goals_range_points_earned',          label: 'טווח שערים',   icon: '📊' },
 ];
 
 function ScoreBreakdownAnimated({ prediction, match }) {
   const [visibleRows, setVisibleRows] = useState(0);
   const [showTotal, setShowTotal] = useState(false);
-  const [showAccuracy, setShowAccuracy] = useState(false);
+  const [showDonut, setShowDonut] = useState(false);
+  const rowDelay = 360;
 
   useEffect(() => {
-    setVisibleRows(0); setShowTotal(false); setShowAccuracy(false);
+    setVisibleRows(0); setShowTotal(false); setShowDonut(false);
     BREAKDOWN_ROWS.forEach((_, i) => {
-      setTimeout(() => setVisibleRows(v => Math.max(v, i + 1)), i * 180);
+      setTimeout(() => setVisibleRows(v => Math.max(v, i + 1)), i * rowDelay);
     });
-    setTimeout(() => setShowTotal(true), BREAKDOWN_ROWS.length * 180 + 100);
-    setTimeout(() => setShowAccuracy(true), BREAKDOWN_ROWS.length * 180 + 400);
+    setTimeout(() => setShowTotal(true), BREAKDOWN_ROWS.length * rowDelay + 200);
+    setTimeout(() => setShowDonut(true), BREAKDOWN_ROWS.length * rowDelay + 600);
   }, [prediction.id]);
 
+  const maxPoints = calculateMatchMaxPotentialPoints(match);
+  const percentage = maxPoints > 0
+    ? Math.min(100, Math.round((prediction.points_earned || 0) / maxPoints * 100))
+    : 0;
+
   return (
-    <div className="p-4 space-y-1" dir="rtl">
+    <div className="p-4 space-y-1">
       {BREAKDOWN_ROWS.map((row, i) => {
         const pts = prediction[row.key] || 0;
         return (
           <motion.div
             key={row.key}
-            initial={{ opacity: 0, x: 12 }}
+            initial={{ opacity: 0, x: -12 }}
             animate={visibleRows > i ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
+            transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
             className="flex justify-between items-center py-1.5 px-2 rounded-lg"
           >
-            <span className="text-slate-400 text-xs flex items-center gap-1.5">
-              <span>{row.icon}</span>{row.label}
+            <span className={`text-xs font-bold tabular-nums ${pts > 0 ? 'text-green-400' : 'text-slate-600'}`}>
+              {pts > 0 ? <>+<AnimatedCounter value={pts} duration={800} /></> : '+0.00'}
             </span>
-            <span className={`text-xs font-bold tabular-nums ${pts > 0 ? row.color : 'text-slate-600'}`}>
-              {pts > 0 ? <>+<AnimatedCounter value={pts} duration={400} /></> : '+0.00'}
+            <span className="text-slate-400 text-xs flex items-center gap-1.5">
+              {row.label}<span>{row.icon}</span>
             </span>
           </motion.div>
         );
@@ -96,29 +137,26 @@ function ScoreBreakdownAnimated({ prediction, match }) {
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
             className="border-t border-slate-600/50 mt-1 pt-2 flex justify-between items-center px-2"
           >
-            <span className="text-white text-xs font-semibold">סה"כ</span>
             <span className="text-blue-400 text-sm font-bold tabular-nums">
-              <AnimatedCounter value={prediction.points_earned || 0} duration={600} />
+              <AnimatedCounter value={prediction.points_earned || 0} duration={1200} />
             </span>
+            <span className="text-white text-xs font-semibold">סה"כ</span>
           </motion.div>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
-        {showAccuracy && (
+        {showDonut && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4 }}
-            className="pt-1"
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+            className="flex justify-center pt-3"
           >
-            <ScoreAccuracyVisuals
-              earnedPoints={prediction.points_earned || 0}
-              maxPoints={calculateMatchMaxPotentialPoints(match)}
-            />
+            <AnimatedDonut percentage={percentage} size={72} />
           </motion.div>
         )}
       </AnimatePresence>
