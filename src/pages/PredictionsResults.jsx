@@ -122,11 +122,9 @@ function ScoreBreakdownAnimated({ prediction, match }) {
             transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
             className="flex justify-between items-center py-1.5 px-2 rounded-lg"
           >
+            <span className="text-slate-400 text-xs">{row.label}</span>
             <span className={`text-xs font-bold tabular-nums ${pts > 0 ? 'text-green-400' : 'text-slate-600'}`}>
               {pts > 0 ? <>+<AnimatedCounter value={pts} duration={800} /></> : '+0.00'}
-            </span>
-            <span className="text-slate-400 text-xs flex items-center gap-1.5">
-              {row.label}<span>{row.icon}</span>
             </span>
           </motion.div>
         );
@@ -154,9 +152,18 @@ function ScoreBreakdownAnimated({ prediction, match }) {
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-            className="flex justify-center pt-3"
+            className="flex items-center gap-4 pt-3 px-2"
           >
             <AnimatedDonut percentage={percentage} size={72} />
+            <div className="flex flex-col items-end flex-1">
+              <span className="text-slate-400 text-xs mb-1">ניקוד שנצבר</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-blue-400 text-xl font-bold tabular-nums">
+                  {(prediction.points_earned || 0).toFixed(2)}
+                </span>
+                <span className="text-slate-400 text-sm">/ {maxPoints.toFixed(2)}</span>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
