@@ -136,7 +136,7 @@ function ScoreBreakdownAnimated({ prediction, match }) {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-            className="border-t border-slate-600/50 mt-1 pt-2 flex justify-end items-center gap-2 px-2"
+            className="border-t border-slate-600/50 mt-1 pt-2 flex justify-between items-center px-2"
           >
             <span className="text-white text-xs font-semibold">סה"כ</span>
             <span className="text-green-400 text-sm font-bold tabular-nums">
