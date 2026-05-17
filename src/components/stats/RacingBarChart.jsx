@@ -18,6 +18,7 @@ export default function RacingBarChart() {
   const [nameMap, setNameMap] = useState({});
   const [frameIndex, setFrameIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [animated, setAnimated] = useState(false);
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -74,6 +75,8 @@ export default function RacingBarChart() {
         }
 
         setFrames(built);
+        // trigger initial bar animation after a short delay
+        setTimeout(() => setAnimated(true), 100);
       } catch (e) {
         console.error(e);
       } finally {
@@ -154,7 +157,7 @@ export default function RacingBarChart() {
                 <div className="flex-1 bg-slate-700/40 rounded-full h-6 overflow-hidden">
                   <div
                     style={{
-                      width: `${pct}%`,
+                      width: animated ? `${pct}%` : '0%',
                       backgroundColor: color,
                       transition: 'width 0.8s cubic-bezier(0.23,1,0.32,1)',
                       height: '100%',
@@ -227,7 +230,7 @@ export default function RacingBarChart() {
         </div>
 
         <p style={{ textAlign: 'center', color: '#64748b', fontSize: '10px', marginTop: '8px' }}>
-          מחזור {frameIndex + 1} מתוך {frames.length}
+          מחזור {frameIndex + 1} מתוך {frames.length} | משתתפים: {rankedUsers.length}
         </p>
 
       </CardContent>
