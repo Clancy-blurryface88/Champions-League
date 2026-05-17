@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import OrbitSpinner from "@/components/OrbitSpinner";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser }) {
@@ -100,7 +101,7 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                 >
                   {saving ? (
                     <div className="flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                      <OrbitSpinner size={18} />
                       <span>שומר...</span>
                     </div>
                   ) : (

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import LoadingScreen from "@/components/LoadingScreen";
+import OrbitSpinner from "@/components/OrbitSpinner";
 import { Round } from "@/api/entities";
 import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
@@ -624,7 +625,7 @@ export default function Predictions() {
 
               {saving ?
             <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <OrbitSpinner size={22} />
                   <span>שולח...</span>
                 </div> :
 

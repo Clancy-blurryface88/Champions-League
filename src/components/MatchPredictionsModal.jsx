@@ -1,4 +1,5 @@
 import TeamFlag from "@/components/TeamFlag";
+import OrbitSpinner from "@/components/OrbitSpinner";
 import React, { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Prediction } from "@/api/entities";
@@ -119,9 +120,8 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-2">
           {loading ? (
-            <div className="text-center py-8">
-              <div className="w-8 h-8 border-4 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
-              <p className="text-slate-400 mt-2">טוען...</p>
+            <div className="flex flex-col items-center py-8 gap-3">
+              <OrbitSpinner size={40} />
             </div>
           ) : !isLocked ? (
             <div className="text-center py-8">

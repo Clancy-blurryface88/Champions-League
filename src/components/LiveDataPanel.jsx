@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Wifi, WifiOff, Clock, RefreshCw } from "lucide-react";
+import OrbitSpinner from "@/components/OrbitSpinner";
 import { Button } from "@/components/ui/button";
 
 const STATUS_MAP = {
@@ -169,7 +170,7 @@ export default function LiveDataPanel({ onClose }) {
         <div className="flex-1 overflow-y-auto p-3">
           {loading && matches.length === 0 ? (
             <div className="flex items-center justify-center py-16">
-              <div className="w-8 h-8 border-2 border-yellow-400/30 border-t-yellow-400 rounded-full animate-spin" />
+              <OrbitSpinner size={40} />
             </div>
           ) : error ? (
             <div className="text-center py-10">

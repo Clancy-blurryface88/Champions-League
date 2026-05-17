@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import OrbitSpinner from "@/components/OrbitSpinner";
 import { Match } from "@/api/entities";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Calendar, MapPin } from "lucide-react";
@@ -189,7 +190,7 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
           <div className="p-4 space-y-6">
             {loading ? (
               <div className="py-16 flex items-center justify-center">
-                <div className="w-8 h-8 border-2 border-yellow-400/30 border-t-yellow-400 rounded-full animate-spin" />
+                <OrbitSpinner size={40} />
               </div>
             ) : (
               <>

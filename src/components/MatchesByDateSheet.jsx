@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import OrbitSpinner from "@/components/OrbitSpinner";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Clock, CheckCircle } from "lucide-react";
 import { Match } from "@/api/entities";
@@ -210,7 +211,7 @@ export default function MatchesByDateSheet({ isOpen, onClose }) {
             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
               {loading ? (
                 <div className="flex items-center justify-center py-12">
-                  <div className="w-6 h-6 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+                  <OrbitSpinner size={36} />
                 </div>
               ) : dayMatches.length === 0 ? (
                 <p className="text-white/30 text-sm text-center py-10">אין משחקים בתאריך זה</p>

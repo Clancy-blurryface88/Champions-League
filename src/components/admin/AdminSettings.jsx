@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import OrbitSpinner from "@/components/OrbitSpinner";
 import { AppSettings } from "@/api/entities";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,7 +51,7 @@ export default function AdminSettings() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+        <OrbitSpinner size={40} />
       </div>
     );
   }
@@ -127,7 +128,7 @@ export default function AdminSettings() {
           >
             {saving ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                <OrbitSpinner size={18} />
                 Saving...
               </>
             ) : (

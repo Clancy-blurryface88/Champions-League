@@ -1,5 +1,6 @@
 
 import TeamFlag from "@/components/TeamFlag";
+import OrbitSpinner from "@/components/OrbitSpinner";
 import React, { useState, useEffect } from "react";
 import { User } from "@/api/entities";
 import { Round } from "@/api/entities";
@@ -134,7 +135,7 @@ export default function AdminMatchPredictions() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+        <OrbitSpinner size={40} />
       </div>
     );
   }

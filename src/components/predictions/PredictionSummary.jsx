@@ -1,5 +1,6 @@
 
 import TeamFlag from "@/components/TeamFlag";
+import OrbitSpinner from "@/components/OrbitSpinner";
 import React from "react";
 import { motion } from "framer-motion";
 // Check import removed as it's replaced with inline SVG
@@ -124,7 +125,7 @@ export default function PredictionSummary({ predictions, matches, onConfirm, onC
               >
                 {saving ?
                 <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    <OrbitSpinner size={18} />
                     שומר...
                   </> :
 
