@@ -28,6 +28,7 @@ import RankingHistoryCharts from "../components/stats/RankingHistoryCharts";
 import CategoryLeaderboards from "../components/stats/CategoryLeaderboards";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ComparisonBar from "../components/stats/ComparisonBar";
+import RacingBarChart from "../components/stats/RacingBarChart";
 
 export default function MyStats() {
   const navigate = useNavigate();
@@ -766,6 +767,9 @@ export default function MyStats() {
 
             {/* היסטוריית פגיעות */}
             <ExactHitsHistoryTable />
+
+            {/* מירוץ הדירוג */}
+            <RacingBarChart />
 
           </TabsContent>
 
