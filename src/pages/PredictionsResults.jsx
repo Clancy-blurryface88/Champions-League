@@ -166,7 +166,7 @@ function ScoreBreakdownAnimated({ prediction, match }) {
                 <span className="text-amber-400 text-xl font-bold tabular-nums">
                   <AnimatedCounter value={prediction.points_earned || 0} duration={1800} />
                 </span>
-                <span className="text-blue-400 text-sm font-semibold">/ {maxPoints.toFixed(2)}</span>
+                <span className="text-blue-400 text-sm font-semibold">/ <AnimatedCounter value={maxPoints} duration={1800} /></span>
               </div>
             </motion.div>
           </motion.div>
