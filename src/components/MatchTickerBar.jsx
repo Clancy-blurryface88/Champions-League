@@ -33,8 +33,8 @@ export default function MatchTickerBar({ onClick }) {
   return (
     <div
       onClick={onClick}
-      className="fixed top-0 left-0 right-0 z-30 cursor-pointer overflow-hidden"
-      style={{ height: '36px', background: 'rgba(2,8,23,0.92)', backdropFilter: 'blur(8px)', borderBottom: '1px solid rgba(245,197,24,0.2)' }}
+      className="fixed left-0 right-0 z-30 cursor-pointer overflow-hidden"
+      style={{ top: '72px', height: '36px', background: 'rgba(2,8,23,0.92)', backdropFilter: 'blur(8px)', borderBottom: '1px solid rgba(245,197,24,0.2)', borderTop: '1px solid rgba(245,197,24,0.1)' }}
     >
       <div className="ticker-track flex items-center h-full gap-6 px-4" style={{ width: 'max-content' }}>
         {items.map((match, i) => {
