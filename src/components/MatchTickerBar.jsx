@@ -7,7 +7,10 @@ function localDateKey(date) {
 }
 
 function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric' });
+  const d = new Date(dateStr);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  return `${day}/${month}`;
 }
 
 export default function MatchTickerBar({ onClick }) {
@@ -23,7 +26,7 @@ export default function MatchTickerBar({ onClick }) {
 
       if (todays.length > 0) {
         setMatches(todays);
-        setDateLabel('משחקי היום · ' + formatDate(todays[0].match_date));
+        setDateLabel('משחקי היום ' + formatDate(todays[0].match_date) + ' -');
       } else {
         const future = all
           .filter(m => new Date(m.match_date) > new Date())
@@ -32,7 +35,7 @@ export default function MatchTickerBar({ onClick }) {
         const nearestKey = localDateKey(new Date(future[0].match_date));
         const nearest = future.filter(m => localDateKey(new Date(m.match_date)) === nearestKey);
         setMatches(nearest);
-        setDateLabel('משחקים קרובים · ' + formatDate(nearest[0].match_date));
+        setDateLabel('משחקי היום ' + formatDate(nearest[0].match_date) + ' -');
       }
     }).catch(() => {});
   }, []);
