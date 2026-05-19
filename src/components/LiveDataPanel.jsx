@@ -111,7 +111,7 @@ export default function LiveDataPanel({ onClose }) {
   return (
     <>
       <motion.div
-        className="fixed inset-0 bg-black/60 z-40"
+        className="fixed inset-0 bg-black/60 z-[45]"
         onClick={onClose}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

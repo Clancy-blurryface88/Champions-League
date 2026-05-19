@@ -719,7 +719,7 @@ export default function Layout({ children, currentPageName }) {
 
         <MatchTickerBar onClick={() => setShowDateSheet(true)} />
 
-        <main className="relative z-10 pt-28 pb-20">
+        <main className="relative pt-28 pb-20">
           {children}
         </main>
 
