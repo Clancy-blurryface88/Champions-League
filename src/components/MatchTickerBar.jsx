@@ -26,16 +26,7 @@ export default function MatchTickerBar({ onClick }) {
 
       if (todays.length > 0) {
         setMatches(todays);
-        setDateLabel('משחקי היום ' + formatDate(todays[0].match_date) + ' -');
-      } else {
-        const future = all
-          .filter(m => new Date(m.match_date) > new Date())
-          .sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
-        if (future.length === 0) return;
-        const nearestKey = localDateKey(new Date(future[0].match_date));
-        const nearest = future.filter(m => localDateKey(new Date(m.match_date)) === nearestKey);
-        setMatches(nearest);
-        setDateLabel('משחקי היום ' + formatDate(nearest[0].match_date) + ' -');
+        setDateLabel('משחקי היום ' + formatDate(todays[0].match_date));
       }
     }).catch(() => {});
   }, []);
