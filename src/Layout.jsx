@@ -470,7 +470,7 @@ export default function Layout({ children, currentPageName }) {
       `}</style>
       <div
         className="min-h-screen text-white relative overflow-hidden"
-        style={{ background: '#030d0a' }}
+        style={{ background: '#030d1a', fontFamily: "'Outfit', sans-serif" }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}>
@@ -647,21 +647,32 @@ export default function Layout({ children, currentPageName }) {
                 className="cursor-pointer bg-transparent border-none p-0">
 
                   {/* Replaced AnimatedBorderButton with a simple div as per outline */}
-                  <div className="flex items-center gap-3 bg-slate-800/80 backdrop-blur-sm rounded-full px-3 py-1.5 border border-slate-600 hover:bg-slate-700/80 transition-colors">
+                  <div
+                    className="flex items-center gap-2.5 rounded-full px-3 py-1.5 transition-all duration-200"
+                    style={{
+                      background: 'rgba(8,22,45,0.85)',
+                      border: '1px solid rgba(245,197,24,0.30)',
+                      backdropFilter: 'blur(14px)',
+                    }}
+                  >
                     <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/8e94debbc_ssmvtnogc7ue0jufjd03h6mj89.png"
-                    alt="User Profile" className="mr-1 w-7 h-7 rounded-full object-cover flex-shrink-0 ring-2 ring-yellow-400" />
-
-                    <div className="text-center">
-                      <div className="text-yellow-400 mr-1 text-base font-medium">
-                        {user.display_name || user.full_name}
-                      </div>
-                    </div>
+                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/8e94debbc_ssmvtnogc7ue0jufjd03h6mj89.png"
+                      alt="User Profile"
+                      className="w-7 h-7 rounded-full object-cover flex-shrink-0"
+                      style={{ boxShadow: '0 0 0 2px #f5c518' }}
+                    />
+                    <span
+                      className="text-amber-400 text-sm font-semibold"
+                      style={{ fontFamily: "'Outfit', sans-serif" }}
+                    >
+                      {user.display_name || user.full_name}
+                    </span>
                   </div>
                 </motion.button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-              className="bg-slate-800/95 backdrop-blur-md border-slate-600 shadow-2xl rounded-lg min-w-[180px]">
+              className="shadow-2xl rounded-2xl min-w-[180px]"
+              style={{ background: 'rgba(8,22,45,0.96)', border: '1px solid rgba(245,197,24,0.25)', backdropFilter: 'blur(20px)' }}>
 
                 <motion.div
                 variants={dropdownVariants}

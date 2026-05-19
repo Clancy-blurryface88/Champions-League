@@ -41,7 +41,7 @@ export default function MatchTickerBar({ onClick }) {
       onClick={onClick}
       dir="rtl"
       className="fixed top-0 left-0 right-0 z-50 cursor-pointer overflow-hidden flex items-center"
-      style={{ height: '36px', background: 'rgba(2,8,23,0.95)', backdropFilter: 'blur(8px)', borderBottom: '1px solid rgba(245,197,24,0.25)' }}
+      style={{ height: '36px', background: 'rgba(3,13,26,0.97)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(245,197,24,0.22)', boxShadow: '0 1px 20px rgba(245,197,24,0.06)' }}
     >
       {/* Fixed label — appears on the right in RTL */}
       <div className="flex-shrink-0 flex items-center gap-1.5 px-3 border-l border-amber-400/30 h-full">

@@ -1,30 +1,42 @@
-css
 /* Tailwind CSS imports */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Base styles */
-html {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 210 40% 98%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
+/* ── WC2026 Design Tokens ─────────────────────────────────── */
+:root {
+  --gold:        #f5c518;
+  --gold-dim:    rgba(245,197,24,0.15);
+  --gold-glow:   rgba(245,197,24,0.35);
+  --teal:        #00c2a8;
+  --red:         #e63946;
+  --bg:          #030d1a;
+  --surface:     rgba(8,22,45,0.82);
+  --surface-hi:  rgba(14,30,58,0.90);
+  --border:      rgba(245,197,24,0.18);
+  --text:        #f1f5f9;
+  --text-muted:  #64748b;
+
+  /* shadcn/radix tokens */
+  --background:        222.2 84% 4.9%;
+  --foreground:        210 40% 98%;
+  --card:              222.2 84% 4.9%;
+  --card-foreground:   210 40% 98%;
+  --popover:           222.2 84% 4.9%;
+  --popover-foreground:210 40% 98%;
+  --primary:           210 40% 98%;
+  --primary-foreground:222.2 47.4% 11.2%;
+  --secondary:         217.2 32.6% 17.5%;
+  --secondary-foreground:210 40% 98%;
+  --muted:             217.2 32.6% 17.5%;
+  --muted-foreground:  215 20.2% 65.1%;
+  --accent:            217.2 32.6% 17.5%;
   --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 212.7 26.8% 83.9%;
+  --destructive:       0 62.8% 30.6%;
+  --destructive-foreground:210 40% 98%;
+  --border-ui:         217.2 32.6% 17.5%;
+  --input:             217.2 32.6% 17.5%;
+  --ring:              212.7 26.8% 83.9%;
   --chart-1: 220 70% 50%;
   --chart-2: 160 60% 45%;
   --chart-3: 30 80% 55%;
@@ -32,59 +44,83 @@ html {
   --chart-5: 340 75% 55%;
 }
 
-* {
-  border-color: hsl(var(--border));
-}
+* { border-color: hsl(var(--border-ui)); }
 
 body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
+  background-color: #030d1a;
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Keyframes for marquee animations */
+/* ── Typography ────────────────────────────────────────────── */
+.font-display { font-family: 'Syne', 'Orbitron', sans-serif; }
+
+/* ── WC2026 Card ────────────────────────────────────────────── */
+.wc-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+}
+
+.wc-card-hi {
+  background: var(--surface-hi);
+  border: 1px solid rgba(245,197,24,0.28);
+  border-radius: 16px;
+  backdrop-filter: blur(16px);
+}
+
+/* ── Gold text ─────────────────────────────────────────────── */
+.text-gold { color: var(--gold); }
+
+/* ── Gold glow button ──────────────────────────────────────── */
+.btn-gold {
+  background: var(--gold);
+  color: #000;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 10px 28px;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.04em;
+  transition: filter 0.2s, transform 0.15s;
+}
+.btn-gold:hover  { filter: brightness(1.12); }
+.btn-gold:active { transform: scale(0.97); }
+
+/* ── Marquee animations ────────────────────────────────────── */
 @keyframes marquee {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
+  0%   { transform: translateX(0%); }
+  100% { transform: translateX(-100%); }
 }
-
 @keyframes marquee-vertical {
-  0% {
-    transform: translateY(0%);
-  }
-  100% {
-    transform: translateY(-100%);
-  }
+  0%   { transform: translateY(0%); }
+  100% { transform: translateY(-100%); }
 }
+.animate-marquee          { animation: marquee 20s linear infinite; }
+.animate-marquee-vertical { animation: marquee-vertical 20s linear infinite; }
+.animate-marquee:hover,
+.animate-marquee-vertical:hover       { animation-play-state: paused; }
+.group:hover .animate-marquee         { animation-play-state: paused; }
+.group:hover .animate-marquee-vertical{ animation-play-state: paused; }
 
-/* Animation classes */
-.animate-marquee {
-  animation: marquee 20s linear infinite;
+/* ── Gold pulse glow ───────────────────────────────────────── */
+@keyframes gold-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--gold-glow); }
+  50%       { box-shadow: 0 0 22px 6px var(--gold-glow); }
 }
+.animate-gold-pulse { animation: gold-pulse 2.8s ease-in-out infinite; }
 
-.animate-marquee-vertical {
-  animation: marquee-vertical 20s linear infinite;
+/* ── Shine sweep ───────────────────────────────────────────── */
+@keyframes shine {
+  from { background-position: 0 0; }
+  to   { background-position: -200% 0; }
 }
+.animate-shine { animation: shine 2s linear infinite; }
 
-.animate-marquee:hover {
-  animation-play-state: paused;
+/* ── Slide-in ──────────────────────────────────────────────── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
-.animate-marquee-vertical:hover {
-  animation-play-state: paused;
-}
-
-.group:hover .animate-marquee {
-  animation-play-state: paused;
-}
-
-.group:hover .animate-marquee-vertical {
-  animation-play-state: paused;
-}
-
-.group:hover [class*="group-hover"]:hover {
-  animation-play-state: paused;
-}
+.animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.23,1,0.32,1) both; }

@@ -7,27 +7,35 @@ import { ShineBorder } from "@/components/magicui/shine-border";
 
 const RoundCard = ({ round, onClick }) => {
   return (
-    <div className="relative group cursor-pointer mx-3 flex-shrink-0" onClick={() => onClick(round)}>
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-white rounded-xl blur opacity-40 group-hover:opacity-100 transition duration-500 group-hover:duration-200"></div>
+    <div
+      className="relative group cursor-pointer mx-3 flex-shrink-0"
+      onClick={() => onClick(round)}
+    >
+      {/* Glow halo */}
+      <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-amber-400/60 via-white/20 to-amber-400/60 blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
       <figure
-        className={cn(
-          "relative h-16 w-60 overflow-hidden rounded-xl border p-3 transition-all duration-300 flex items-center",
-          "border-slate-700 bg-slate-900 backdrop-blur-sm",
-        )}
+        className="relative h-16 w-60 overflow-hidden rounded-2xl flex items-center px-3 gap-3"
+        style={{
+          background: 'rgba(8,22,45,0.88)',
+          border: '1px solid rgba(245,197,24,0.28)',
+          backdropFilter: 'blur(14px)',
+          transition: 'border-color 0.2s',
+        }}
       >
-        <ShineBorder shineColor={["#F59E0B", "#FBBF24", "#FFFFFF"]} borderRadius={12} borderWidth={1.5} />
-        {/* FIFA World Cup Logo - Left */}
-        <div className="flex-shrink-0 ml-2">
-          <img
-            src="/trophy-marquee.png"
-            alt="FIFA World Cup 2026"
-            className="h-10 w-auto object-contain"
-          />
+        <ShineBorder shineColor={["#f5c518", "#ffffff", "#f5c518"]} borderRadius={16} borderWidth={1} />
+
+        <div className="flex-shrink-0">
+          <img src="/trophy-marquee.png" alt="WC2026" className="h-9 w-auto object-contain" />
         </div>
-        
-        {/* Round Name - Center */}
-        <div className="text-center ml-3 flex-1">
-          <h3 className="text-white font-semibold text-lg">{round.name}</h3>
+
+        <div className="flex-1 text-center">
+          <h3
+            className="text-white font-semibold text-base tracking-wide"
+            style={{ fontFamily: "'Outfit', sans-serif" }}
+          >
+            {round.name}
+          </h3>
         </div>
       </figure>
     </div>
