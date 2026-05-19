@@ -12,16 +12,20 @@ export default function MatchTickerBar({ onClick }) {
   useEffect(() => {
     Match.list().then(all => {
       const todayKey = localDateKey(new Date());
-      const todays = all.filter(m => localDateKey(new Date(m.match_date)) === todayKey);
+      const todays = all
+        .filter(m => localDateKey(new Date(m.match_date)) === todayKey)
+        .sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
+
       if (todays.length > 0) {
         setMatches(todays);
       } else {
-        // fallback: next 8 upcoming matches
-        const upcoming = all
-          .filter(m => !m.is_finished && new Date(m.match_date) > new Date())
-          .sort((a, b) => new Date(a.match_date) - new Date(b.match_date))
-          .slice(0, 8);
-        setMatches(upcoming);
+        // find nearest upcoming date
+        const future = all
+          .filter(m => new Date(m.match_date) > new Date())
+          .sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
+        if (future.length === 0) return;
+        const nearestKey = localDateKey(new Date(future[0].match_date));
+        setMatches(future.filter(m => localDateKey(new Date(m.match_date)) === nearestKey));
       }
     }).catch(() => {});
   }, []);
@@ -33,8 +37,8 @@ export default function MatchTickerBar({ onClick }) {
   return (
     <div
       onClick={onClick}
-      className="fixed left-0 right-0 z-30 cursor-pointer overflow-hidden"
-      style={{ top: '72px', height: '36px', background: 'rgba(2,8,23,0.92)', backdropFilter: 'blur(8px)', borderBottom: '1px solid rgba(245,197,24,0.2)', borderTop: '1px solid rgba(245,197,24,0.1)' }}
+      className="fixed top-0 left-0 right-0 z-50 cursor-pointer overflow-hidden"
+      style={{ height: '36px', background: 'rgba(2,8,23,0.95)', backdropFilter: 'blur(8px)', borderBottom: '1px solid rgba(245,197,24,0.25)' }}
     >
       <div className="ticker-track flex items-center h-full gap-6 px-4" style={{ width: 'max-content' }}>
         {items.map((match, i) => {

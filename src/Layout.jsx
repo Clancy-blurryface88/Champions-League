@@ -476,7 +476,7 @@ export default function Layout({ children, currentPageName }) {
         onTouchEnd={handleTouchEnd}>
 
         {/* כפתור המבורגר עם אייקון אסטרטגיה */}
-        <div className="fixed top-4 left-4 z-40">
+        <div className="fixed top-[44px] left-4 z-40">
           <Button
             variant="ghost"
             onClick={() => setShowSidebar(true)}
@@ -627,7 +627,7 @@ export default function Layout({ children, currentPageName }) {
 
         {/* כפתור כניסה כשאין משתמש מחובר */}
         {!user && !authLoading &&
-        <div className="fixed top-4 right-4 z-40">
+        <div className="fixed top-[44px] right-4 z-40">
           <Button
             onClick={handleLogin}
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-2 text-sm font-medium backdrop-blur-sm shadow-lg"
@@ -639,7 +639,7 @@ export default function Layout({ children, currentPageName }) {
 
         {/* User Info & Admin Button */}
         {user &&
-        <div className="fixed top-4 right-4 z-40 flex items-center gap-3">
+        <div className="fixed top-[44px] right-4 z-40 flex items-center gap-3">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <motion.button
