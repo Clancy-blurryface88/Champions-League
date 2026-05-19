@@ -48,7 +48,7 @@ export default function MatchTickerBar({ onClick }) {
               <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-4 h-4" />
               <span className="text-white text-xs font-medium">{match.team_a}</span>
               {match.is_finished ? (
-                <span className="text-amber-400 text-xs font-bold mx-0.5">{match.score_a ?? '-'} - {match.score_b ?? '-'}</span>
+                <span className="text-amber-400 text-xs font-bold mx-0.5">{match.actual_score_a ?? '-'} - {match.actual_score_b ?? '-'}</span>
               ) : (
                 <span className="text-slate-400 text-xs mx-0.5">{time}</span>
               )}
