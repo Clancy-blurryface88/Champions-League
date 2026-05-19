@@ -13,7 +13,16 @@ export default function MatchTickerBar({ onClick }) {
     Match.list().then(all => {
       const todayKey = localDateKey(new Date());
       const todays = all.filter(m => localDateKey(new Date(m.match_date)) === todayKey);
-      setMatches(todays);
+      if (todays.length > 0) {
+        setMatches(todays);
+      } else {
+        // fallback: next 8 upcoming matches
+        const upcoming = all
+          .filter(m => !m.is_finished && new Date(m.match_date) > new Date())
+          .sort((a, b) => new Date(a.match_date) - new Date(b.match_date))
+          .slice(0, 8);
+        setMatches(upcoming);
+      }
     }).catch(() => {});
   }, []);
 
