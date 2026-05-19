@@ -138,7 +138,7 @@ export default function MatchesByDateSheet({ isOpen, onClose }) {
         <>
           {/* Overlay */}
           <motion.div
-            className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/60 z-[55] backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -147,7 +147,7 @@ export default function MatchesByDateSheet({ isOpen, onClose }) {
 
           {/* Sheet */}
           <motion.div
-            className="fixed inset-x-0 bottom-0 z-50 bg-[#0d1526] rounded-t-3xl flex flex-col max-h-[85vh] shadow-2xl border-t border-white/8"
+            className="fixed inset-x-0 bottom-0 z-[60] bg-[#0d1526] rounded-t-3xl flex flex-col max-h-[85vh] shadow-2xl border-t border-white/8"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
