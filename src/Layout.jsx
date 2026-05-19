@@ -20,6 +20,7 @@ import { createPageUrl } from "@/utils";
 import { LoaderBar } from "./components/ui/LoaderBar";
 import AppBackground from "./components/AppBackground";
 import LiveDataPanel from "./components/LiveDataPanel"; // Added: Import LiveDataPanel
+import MatchTickerBar from "./components/MatchTickerBar";
 import YearlySummaryPanel from "./components/YearlySummaryPanel"; // NEW: YearlySummaryPanel
 
 export default function Layout({ children, currentPageName }) {
@@ -304,21 +305,6 @@ export default function Layout({ children, currentPageName }) {
     if (!touchStart || !touchStartY) return;
 
     const screenHeight = window.innerHeight;
-
-    // Upward swipe from 70–90% zone → open date sheet
-    if (
-      touchStartY >= screenHeight * 0.7 &&
-      touchStartY <= screenHeight * 0.9 &&
-      touchEndY !== null
-    ) {
-      const verticalDistance = touchStartY - touchEndY;
-      const horizontalDistance = Math.abs((touchStart || 0) - (touchEnd || 0));
-      if (verticalDistance > 50 && verticalDistance > horizontalDistance) {
-        setShowDateSheet(true);
-        setTouchStart(null); setTouchEnd(null); setTouchStartY(null); setTouchEndY(null);
-        return;
-      }
-    }
 
     if (!touchEnd) return;
 
@@ -720,7 +706,9 @@ export default function Layout({ children, currentPageName }) {
           </div>
         }
 
-        <main className="relative z-10 pt-8 pb-20">
+        <MatchTickerBar onClick={() => setShowDateSheet(true)} />
+
+        <main className="relative z-10 pt-14 pb-20">
           {children}
         </main>
 
