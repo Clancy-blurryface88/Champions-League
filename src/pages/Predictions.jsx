@@ -432,31 +432,6 @@ export default function Predictions() {
                     animation: 'shine 8s linear infinite',
                   }}
                 >
-                  {/* Buttons */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleShowScoringRules(match);
-                    }}
-                    className="absolute top-2 right-2 w-8 h-8 bg-slate-700/50 hover:bg-slate-600/70 text-slate-300 hover:text-blue-400 transition-colors z-10"
-                    title="כללי ניקוד">
-                    <HelpCircle className="w-4 h-4" />
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleShowPredictions(match);
-                    }}
-                    className="absolute top-2 left-2 w-8 h-8 bg-slate-700/50 hover:bg-slate-600/70 text-slate-300 hover:text-green-400 transition-colors z-10"
-                    title="צפה בניחושים">
-                    <Eye className="w-4 h-4" />
-                  </Button>
-
                   <CardContent className="p-5 pt-2 flex-1 flex flex-col justify-between">
                     {/* Header: Countdown / Status */}
                     <div className="flex justify-center mb-3">
@@ -604,6 +579,25 @@ export default function Predictions() {
                         <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 opacity-70" />
                       )}
                     </button>
+
+                    {/* Footer bar */}
+                    <div className="-mx-5 -mb-5 mt-3 border-t border-slate-700/50 flex overflow-hidden rounded-b-xl">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-slate-400 hover:text-blue-400 hover:bg-white/5 transition-colors text-xs font-medium"
+                      >
+                        <HelpCircle className="w-3.5 h-3.5" />
+                        כללי ניקוד
+                      </button>
+                      <div className="w-px bg-slate-700/50 my-1.5" />
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-slate-400 hover:text-green-400 hover:bg-white/5 transition-colors text-xs font-medium"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        ניחושים
+                      </button>
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>);
