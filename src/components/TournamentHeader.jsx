@@ -52,7 +52,7 @@ export default function TournamentHeader() {
           className="text-4xl md:text-5xl font-bold tracking-widest uppercase text-white"
           style={{ fontFamily: "'Syne', 'Orbitron', sans-serif", letterSpacing: '0.12em' }}
         >
-          <TextRoll loop loopInterval={3500} stagger={0.06}>World Cup</TextRoll>
+          <TextRoll loop duration={0.55} stagger={0.13} loopInterval={5000}>World Cup</TextRoll>
         </h1>
 
         <div className="flex items-center gap-3">
