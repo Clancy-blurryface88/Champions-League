@@ -15,7 +15,7 @@ const RoundCard = ({ round, onClick }) => {
       <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-amber-400/60 via-white/20 to-amber-400/60 blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
       <figure
-        className="relative h-16 w-60 overflow-hidden rounded-2xl flex items-center justify-center gap-2"
+        className="relative h-16 w-60 overflow-hidden rounded-2xl flex items-center justify-center gap-4"
         style={{
           background: 'rgba(8,22,45,0.88)',
           border: '1px solid rgba(245,197,24,0.28)',
