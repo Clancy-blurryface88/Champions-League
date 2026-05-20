@@ -64,40 +64,43 @@ export default function PredictionSummary({ predictions, matches, onConfirm, onC
             {predictionsList.map(({ match, prediction }, index) =>
             <motion.div
               key={match.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="bg-slate-700/50 rounded-lg p-3">
+              className="rounded-xl overflow-hidden border border-slate-600/40 bg-gradient-to-br from-slate-700/60 to-slate-800/70">
 
-                {/* תצוגה נקייה - רק לוגואים ותוצאה */}
-                <div className="flex items-center justify-between">
-                  {/* לוגo קבוצה A */}
-                  <div className="flex items-center justify-center w-12">
-                    <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-10 h-10 " />
-
-                  </div>
-
-                  {/* תוצאה במרכז */}
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="bg-slate-600 px-4 py-2 rounded-md">
-                      <span className="text-white font-bold text-lg">
-                        {prediction.predicted_score_a} - {prediction.predicted_score_b}
-                      </span>
-                    </div>
-                    {match.league && (
-                      <span className="text-[10px] text-amber-400/70 font-medium tracking-wide">
-                        {match.league}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* לוגו קבוצה B */}
-                  <div className="flex items-center justify-center w-12">
-                    <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-10 h-10 " />
-
-                  </div>
+              <div className="flex items-center justify-between px-4 py-3 gap-2">
+                {/* קבוצה A */}
+                <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+                  <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-10 h-10" />
+                  <span className="text-white/80 text-[10px] font-medium text-center leading-tight w-full truncate px-1">
+                    {match.team_a}
+                  </span>
                 </div>
-              </motion.div>
+
+                {/* תוצאה + בית */}
+                <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                  <div className="bg-slate-600/90 px-5 py-1.5 rounded-lg border border-slate-500/40">
+                    <span className="text-white font-bold text-xl tabular-nums tracking-wider">
+                      {prediction.predicted_score_a} – {prediction.predicted_score_b}
+                    </span>
+                  </div>
+                  {match.league && (
+                    <span className="text-[10px] text-amber-400/70 font-medium tracking-wide">
+                      {match.league}
+                    </span>
+                  )}
+                </div>
+
+                {/* קבוצה B */}
+                <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+                  <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-10 h-10" />
+                  <span className="text-white/80 text-[10px] font-medium text-center leading-tight w-full truncate px-1">
+                    {match.team_b}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
             )}
           </div>
 
