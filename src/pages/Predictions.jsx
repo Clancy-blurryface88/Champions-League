@@ -587,7 +587,7 @@ export default function Predictions() {
                         className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-slate-400 hover:text-blue-400 hover:bg-white/5 transition-colors text-xs font-medium"
                       >
                         <HelpCircle className="w-3.5 h-3.5" />
-                        כללי ניקוד
+                        1 X 2
                       </button>
                       <div className="w-px bg-slate-700/50 my-1.5" />
                       <button
