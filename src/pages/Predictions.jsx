@@ -586,7 +586,6 @@ export default function Predictions() {
                         onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
                         className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-slate-400 hover:text-blue-400 hover:bg-white/5 transition-colors text-xs font-medium"
                       >
-                        <HelpCircle className="w-3.5 h-3.5" />
                         1 X 2
                       </button>
                       <div className="w-px bg-slate-700/50 my-1.5" />
@@ -594,7 +593,6 @@ export default function Predictions() {
                         onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
                         className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-slate-400 hover:text-green-400 hover:bg-white/5 transition-colors text-xs font-medium"
                       >
-                        <Eye className="w-3.5 h-3.5" />
                         ניחושים
                       </button>
                     </div>
