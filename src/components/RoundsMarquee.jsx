@@ -15,7 +15,7 @@ const RoundCard = ({ round, onClick }) => {
       <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-amber-400/60 via-white/20 to-amber-400/60 blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
       <figure
-        className="relative h-16 w-60 overflow-hidden rounded-2xl flex items-center px-3 gap-3"
+        className="relative h-16 w-60 overflow-hidden rounded-2xl flex items-center justify-center gap-2"
         style={{
           background: 'rgba(8,22,45,0.88)',
           border: '1px solid rgba(245,197,24,0.28)',
@@ -29,7 +29,7 @@ const RoundCard = ({ round, onClick }) => {
           <img src="/trophy-marquee.png" alt="WC2026" className="h-9 w-auto object-contain" />
         </div>
 
-        <div className="flex-1 text-center">
+        <div className="text-center">
           <h3
             className="text-white font-semibold text-base tracking-wide"
             style={{ fontFamily: "'Outfit', sans-serif" }}
