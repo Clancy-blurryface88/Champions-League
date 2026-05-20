@@ -22,7 +22,7 @@ function SegmentedGroup({ items, delay = 60 }) {
         const t = CARD_THEMES[item.theme || "muted"];
         return (
           <React.Fragment key={item.label}>
-            {i > 0 && <div className="w-px bg-white/8 flex-shrink-0" />}
+            {i > 0 && <div className="w-px flex-shrink-0 bg-gradient-to-b from-transparent via-white/20 to-transparent self-stretch" />}
             <div className={`flex flex-col items-center gap-1 py-3.5 flex-1 ${t.bg}`}>
               <span className={`text-2xl font-bold tabular-nums leading-none ${t.text}`}>{item.pts}</span>
               <span className={`text-[11px] font-medium text-center leading-tight px-1 mt-0.5 ${t.text}`}>{item.label}</span>
