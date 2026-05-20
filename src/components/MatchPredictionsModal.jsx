@@ -93,14 +93,6 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
         {/* Gold divider */}
         <div className="flex-shrink-0 h-px mx-5 bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
 
-        {/* Count label */}
-        {!loading && isLocked && uniquePredictions.length > 0 && (
-          <div className="flex-shrink-0 flex justify-center pt-3">
-            <span className="text-[10px] uppercase tracking-[0.2em] text-amber-400/50 font-semibold">
-              {uniquePredictions.length} ניחושים
-            </span>
-          </div>
-        )}
 
         {/* Scrollable list */}
         <div className="flex-1 overflow-y-auto px-4 pb-4">
