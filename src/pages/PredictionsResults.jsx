@@ -31,23 +31,6 @@ import { AnimatedList } from "@/components/magicui/animated-list";
 import ScoreAccuracyVisuals from "@/components/predictions/ScoreAccuracyVisuals";
 import { calculateMatchMaxPotentialPoints } from "../components/utils/calculateMatchMaxPotentialPoints";
 
-function AnimatedCounter({ value, duration = 1200 }) {
-  const [display, setDisplay] = useState(0);
-  useEffect(() => {
-    setDisplay(0);
-    let start = 0;
-    const steps = 40;
-    const increment = value / steps;
-    const interval = duration / steps;
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= value) { setDisplay(value); clearInterval(timer); }
-      else setDisplay(start);
-    }, interval);
-    return () => clearInterval(timer);
-  }, [value, duration]);
-  return <span>{display.toFixed(2)}</span>;
-}
 
 function AnimatedDonut({ percentage, size = 64 }) {
   const [animPct, setAnimPct] = useState(0);
@@ -124,7 +107,7 @@ function ScoreBreakdownAnimated({ prediction, match }) {
           >
             <span className="text-white text-xs">{row.label}</span>
             <span className={`text-xs font-bold tabular-nums ${pts > 0 ? 'text-green-400' : 'text-slate-600'}`}>
-              {pts > 0 ? <>+<AnimatedCounter value={pts} duration={1400} /></> : '+0.00'}
+              {pts > 0 ? `+${pts.toFixed(2)}` : '+0.00'}
             </span>
           </motion.div>
         );
@@ -140,7 +123,7 @@ function ScoreBreakdownAnimated({ prediction, match }) {
           >
             <span className="text-white text-xs font-semibold">סה"כ</span>
             <span className="text-green-400 text-sm font-bold tabular-nums">
-              <AnimatedCounter value={prediction.points_earned || 0} duration={1200} />
+              {(prediction.points_earned || 0).toFixed(2)}
             </span>
           </motion.div>
         )}
@@ -164,9 +147,9 @@ function ScoreBreakdownAnimated({ prediction, match }) {
               <span className="text-white text-xs mb-1">ניקוד שנצבר</span>
               <div className="flex items-baseline gap-1">
                 <span className="text-amber-400 text-xl font-bold tabular-nums">
-                  <AnimatedCounter value={prediction.points_earned || 0} duration={1800} />
+                  {(prediction.points_earned || 0).toFixed(2)}
                 </span>
-                <span className="text-blue-400 text-sm font-semibold">/ <AnimatedCounter value={maxPoints} duration={1800} /></span>
+                <span className="text-blue-400 text-sm font-semibold">/ {maxPoints.toFixed(2)}</span>
               </div>
             </motion.div>
           </motion.div>
