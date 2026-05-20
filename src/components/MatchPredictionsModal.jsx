@@ -1,11 +1,11 @@
 import TeamFlag from "@/components/TeamFlag";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import React, { useState, useEffect, useCallback } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Prediction } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
-import { Eye } from "lucide-react";
 import { motion } from "framer-motion";
+import { Lock } from "lucide-react";
 
 export default function MatchPredictionsModal({ isOpen, onClose, match }) {
   const [predictions, setPredictions] = useState([]);
@@ -14,14 +14,12 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
 
   const loadPredictions = useCallback(async () => {
     if (!match) return;
-    
     setLoading(true);
     try {
       const [predictionsData, profilesData] = await Promise.all([
         Prediction.filter({ match_id: match.id }),
         PublicProfile.list()
       ]);
-
       setPredictions(predictionsData);
       setPublicProfiles(profilesData);
     } catch (error) {
@@ -41,128 +39,123 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
     return profile?.display_name || `משתמש ${userId.slice(0, 8)}`;
   };
 
-  // Deduplication logic - only latest prediction per user
   const getUniquePredictions = () => {
-    const uniquePredictionsMap = {};
-    
-    predictions.forEach(prediction => {
-      const key = `${prediction.user_id}_${prediction.match_id}`;
-      if (!uniquePredictionsMap[key] || 
-          new Date(prediction.created_date) > new Date(uniquePredictionsMap[key].created_date)) {
-        uniquePredictionsMap[key] = prediction;
+    const map = {};
+    predictions.forEach(p => {
+      const key = `${p.user_id}_${p.match_id}`;
+      if (!map[key] || new Date(p.created_date) > new Date(map[key].created_date)) {
+        map[key] = p;
       }
     });
-
-    return Object.values(uniquePredictionsMap);
+    return Object.values(map).sort((a, b) => {
+      const scoreA = (a.predicted_score_a ?? 0) * 10 + (a.predicted_score_b ?? 0);
+      const scoreB = (b.predicted_score_a ?? 0) * 10 + (b.predicted_score_b ?? 0);
+      return scoreB - scoreA;
+    });
   };
 
   if (!match) return null;
 
-  // Check if match is locked or finished
   const now = new Date();
-  const matchTime = new Date(match.match_date);
-  const lockTime = new Date(matchTime.getTime() - 15 * 60 * 1000);
+  const lockTime = new Date(new Date(match.match_date).getTime() - 15 * 60 * 1000);
   const isLocked = now >= lockTime || match.is_finished;
-
   const uniquePredictions = getUniquePredictions();
-
-  // Group predictions by score
-  const groupedPredictions = uniquePredictions.reduce((acc, prediction) => {
-    const scoreKey = `${prediction.predicted_score_a} - ${prediction.predicted_score_b}`;
-    if (!acc[scoreKey]) {
-      acc[scoreKey] = [];
-    }
-    acc[scoreKey].push(prediction);
-    return acc;
-  }, {});
-
-  // Sort groups by score
-  const sortedScoreKeys = Object.keys(groupedPredictions).sort((a, b) => {
-    const [aHome, aAway] = a.split(' - ').map(Number);
-    const [bHome, bAway] = b.split(' - ').map(Number);
-    if (aHome !== bHome) return bHome - aHome;
-    return bAway - aAway;
-  });
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-800 text-white p-6 border border-slate-700 max-w-lg w-full max-h-[80vh] overflow-hidden flex flex-col">
-        <DialogHeader className="flex-shrink-0 pb-4">
-          <DialogTitle className="text-center text-xl font-bold text-white flex items-center justify-center gap-2">
-            <Eye className="w-5 h-5 text-blue-400" />
-            ניחושים למשחק
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="bg-[#0d1526] text-white p-0 fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-2xl border border-white/8 max-w-sm w-full max-h-[85vh] overflow-hidden flex flex-col [&>button:last-child]:hidden">
 
-        {/* Match info */}
-        <div className="flex items-start justify-center w-full p-4 bg-slate-700/50 rounded-lg mb-4 flex-shrink-0">
-          <div className="flex items-start gap-3 flex-1 justify-end">
-            <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-10 h-10 " />
-            <div className="text-slate-50 text-sm font-medium text-left leading-tight pt-2.5">
-              {match.team_a.split(' ').map((word, i) => (
-                <div key={i}>{word}</div>
-              ))}
-            </div>
+        {/* Header */}
+        <div className="flex-shrink-0">
+          <div className="px-5 pt-4 pb-3">
+            <button
+              onClick={onClose}
+              className="w-full py-2.5 rounded-xl bg-white/6 hover:bg-white/10 active:scale-[0.97] transition-all text-sm font-semibold text-white/80 border border-white/10"
+            >
+              חזרה לדף הקודם
+            </button>
           </div>
-          
-          <div className="text-white font-bold text-lg mx-6 pt-1.5">VS</div>
-          
-          <div className="flex items-start gap-3 flex-1 justify-start">
-            <div className="text-slate-50 text-sm font-medium text-right leading-tight pt-2.5">
-              {match.team_b.split(' ').map((word, i) => (
-                <div key={i}>{word}</div>
-              ))}
+
+          {/* Title */}
+          <p className="text-center text-white/50 text-xs font-semibold uppercase tracking-widest pb-1">
+            ניחושים למשחק
+          </p>
+
+          {/* Teams */}
+          <div className="flex items-center justify-between px-7 py-3">
+            <div className="flex flex-col items-center gap-1.5 flex-1">
+              <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" />
+              <span className="text-xs text-white font-semibold leading-tight text-center">{match.team_a}</span>
+              <span className="text-[10px] text-slate-400">(בית)</span>
             </div>
-            <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-10 h-10 " />
+            <span className="text-sm font-bold text-amber-400 tracking-widest mx-3 pb-5">VS</span>
+            <div className="flex flex-col items-center gap-1.5 flex-1">
+              <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" />
+              <span className="text-xs text-white font-semibold leading-tight text-center">{match.team_b}</span>
+              <span className="text-[10px] text-slate-400">(חוץ)</span>
+            </div>
           </div>
         </div>
 
+        {/* Divider */}
+        <div className="h-px bg-white/5 flex-shrink-0" />
+
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-2">
+        <div className="flex-1 overflow-y-auto">
           {loading ? (
-            <div className="flex flex-col items-center py-8 gap-3">
+            <div className="flex justify-center py-12">
               <OrbitSpinner size={40} />
             </div>
           ) : !isLocked ? (
-            <div className="text-center py-8">
-              <p className="text-slate-300 text-lg font-medium">הניחושים ייחשפו לאחר נעילת המשחק</p>
-              <p className="text-slate-400 text-sm mt-2">המשחק ננעל 15 דקות לפני תחילתו</p>
+            <div className="flex flex-col items-center justify-center py-12 px-6 gap-3 text-center">
+              <Lock className="w-8 h-8 text-slate-500" />
+              <p className="text-white/70 font-medium">הניחושים ייחשפו לאחר נעילת המשחק</p>
+              <p className="text-slate-500 text-sm">המשחק ננעל 15 דקות לפני תחילתו</p>
             </div>
           ) : uniquePredictions.length === 0 ? (
-            <div className="text-center py-8">
+            <div className="flex flex-col items-center justify-center py-12 gap-2 text-center">
               <p className="text-slate-400">אין ניחושים למשחק זה</p>
             </div>
           ) : (
-            <div className="space-y-6">
-              {sortedScoreKeys.map((scoreKey, groupIndex) => (
-                <div key={scoreKey} className="space-y-2">
-                  {groupedPredictions[scoreKey].map((prediction, index) => (
-                    <motion.div
-                      key={prediction.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: (groupIndex * 0.1) + (index * 0.05) }}
-                      className="bg-slate-700/50 rounded-lg p-3"
-                    >
-                      <div className="flex items-center justify-between">
-                        {/* User name */}
-                        <div className="text-white font-medium text-sm flex-1">
-                          {getUserDisplayName(prediction.user_id)}
-                        </div>
+            <div className="px-5 py-3">
+              {/* Count badge */}
+              <div className="flex justify-center mb-4">
+                <span className="text-[11px] text-white/30 uppercase tracking-widest font-semibold">
+                  {uniquePredictions.length} ניחושים
+                </span>
+              </div>
 
-                        {/* Prediction with logos */}
-                        <div className="flex items-center gap-2">
-                          <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5 " />
-                          <span className="text-white font-bold text-base">
-                            {prediction.predicted_score_a} - {prediction.predicted_score_b}
-                          </span>
-                          <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5 " />
-                        </div>
+              {/* Predictions list */}
+              <div className="space-y-0">
+                {uniquePredictions.map((prediction, index) => (
+                  <motion.div
+                    key={prediction.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.04, duration: 0.2 }}
+                  >
+                    <div className="flex items-center justify-between py-3">
+                      {/* Name */}
+                      <span className="text-white/85 font-medium text-sm flex-1 text-right">
+                        {getUserDisplayName(prediction.user_id)}
+                      </span>
+
+                      {/* Score + flags */}
+                      <div className="flex items-center gap-2 mr-4">
+                        <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5" />
+                        <span className="text-white font-bold text-base tabular-nums tracking-wide min-w-[52px] text-center">
+                          {prediction.predicted_score_a} – {prediction.predicted_score_b}
+                        </span>
+                        <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5" />
                       </div>
-                    </motion.div>
-                  ))}
-                </div>
-              ))}
+                    </div>
+
+                    {index < uniquePredictions.length - 1 && (
+                      <div className="h-px bg-gradient-to-r from-transparent via-white/8 to-transparent" />
+                    )}
+                  </motion.div>
+                ))}
+              </div>
             </div>
           )}
         </div>
