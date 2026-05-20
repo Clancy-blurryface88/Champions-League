@@ -754,7 +754,7 @@ export default function MyStats() {
             ))}
           </TabsList>
 
-          <TabsContent value="ranking" className="space-y-6">
+          <TabsContent value="ranking" forceMount className="space-y-6 data-[state=inactive]:hidden">
             {/* מגמות דירוג - Moved up */}
             <RankingHistoryCharts />
 
@@ -769,7 +769,7 @@ export default function MyStats() {
 
           </TabsContent>
 
-          <TabsContent value="stats" className="space-y-6">
+          <TabsContent value="stats" forceMount className="space-y-6 data-[state=inactive]:hidden">
             {/* World Cup Reel Button */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -1091,7 +1091,7 @@ export default function MyStats() {
             </motion.div>
           </TabsContent>
 
-          <TabsContent value="head2head" className="space-y-6">
+          <TabsContent value="head2head" forceMount className="space-y-6 data-[state=inactive]:hidden">
             {/* Player Comparison Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -1585,7 +1585,7 @@ export default function MyStats() {
             </motion.div>
           </TabsContent>
 
-          <TabsContent value="tables" className="space-y-6">
+          <TabsContent value="tables" forceMount className="space-y-6 data-[state=inactive]:hidden">
             <CategoryLeaderboards />
             
             {/* Points Breakdown Pie Chart - Fixed with simple animation */}
