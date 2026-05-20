@@ -4,24 +4,32 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Target, Trophy, Zap, Goal } from "lucide-react";
 
 const CARD_THEMES = {
-  emerald: { text: "text-emerald-400", bg: "bg-emerald-500/8", border: "border-amber-400/30" },
-  blue:    { text: "text-blue-400",    bg: "bg-blue-500/8",    border: "border-amber-400/30" },
-  rose:    { text: "text-rose-400",    bg: "bg-rose-500/8",    border: "border-amber-400/30" },
-  sky:     { text: "text-sky-400",     bg: "bg-sky-500/8",     border: "border-amber-400/30" },
-  amber:   { text: "text-amber-400",   bg: "bg-amber-500/8",   border: "border-amber-400/30" },
-  muted:   { text: "text-slate-300",   bg: "bg-white/2",       border: "border-amber-400/20" },
+  emerald: { text: "text-emerald-400", bg: "bg-emerald-500/8" },
+  blue:    { text: "text-blue-400",    bg: "bg-blue-500/8" },
+  rose:    { text: "text-rose-400",    bg: "bg-rose-500/8" },
+  sky:     { text: "text-sky-400",     bg: "bg-sky-500/8" },
+  amber:   { text: "text-amber-400",   bg: "bg-amber-500/8" },
+  muted:   { text: "text-slate-300",   bg: "bg-white/2" },
 };
 
-function PtsCard({ label, pts, theme = "muted", delay = 0 }) {
-  const t = CARD_THEMES[theme];
+function SegmentedGroup({ items, delay = 60 }) {
   return (
     <div
-      className={`flex flex-col items-center gap-1 rounded-xl border ${t.bg} ${t.border} px-2 py-3 flex-1 animate-in fade-in slide-in-from-bottom-2`}
+      className="flex rounded-xl overflow-hidden border border-white/10 animate-in fade-in slide-in-from-bottom-2"
       style={{ animationDuration: "220ms", animationFillMode: "both", animationTimingFunction: "cubic-bezier(0.23,1,0.32,1)", animationDelay: `${delay}ms` }}
     >
-      <span className={`text-2xl font-bold tabular-nums leading-none ${t.text}`}>{pts}</span>
-      <span className="text-[9px] text-slate-400 uppercase tracking-widest font-semibold mt-0.5">נקודות</span>
-      <span className={`text-[11px] font-medium text-center leading-tight mt-0.5 ${t.text}`}>{label}</span>
+      {items.map((item, i) => {
+        const t = CARD_THEMES[item.theme || "muted"];
+        return (
+          <React.Fragment key={item.label}>
+            {i > 0 && <div className="w-px bg-white/8 flex-shrink-0" />}
+            <div className={`flex flex-col items-center gap-1 py-3.5 flex-1 ${t.bg}`}>
+              <span className={`text-2xl font-bold tabular-nums leading-none ${t.text}`}>{item.pts}</span>
+              <span className={`text-[11px] font-medium text-center leading-tight px-1 mt-0.5 ${t.text}`}>{item.label}</span>
+            </div>
+          </React.Fragment>
+        );
+      })}
     </div>
   );
 }
@@ -102,11 +110,11 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
           {/* כיוון משחק */}
           <div className="space-y-3">
             <SectionLabel title="כיוון משחק" icon={Trophy} color="text-amber-400" />
-            <div className="flex gap-2">
-              <PtsCard label="ניצחון ביתי" pts={match.home_win_points || 0} theme="emerald" delay={60} />
-              <PtsCard label="תיקו" pts={match.draw_points || 0} theme="muted" delay={90} />
-              <PtsCard label="ניצחון חוץ" pts={match.away_win_points || 0} theme="blue" delay={120} />
-            </div>
+            <SegmentedGroup delay={60} items={[
+              { label: "ניצחון ביתי", pts: match.home_win_points || 0, theme: "emerald" },
+              { label: "תיקו",        pts: match.draw_points || 0,      theme: "muted"   },
+              { label: "ניצחון חוץ", pts: match.away_win_points || 0,  theme: "blue"    },
+            ]} />
           </div>
 
           <Divider />
@@ -114,10 +122,10 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
           {/* שתי קבוצות כובשות */}
           <div className="space-y-3">
             <SectionLabel title="שתי קבוצות כובשות" icon={Zap} color="text-amber-400" />
-            <div className="flex gap-2">
-              <PtsCard label="כן" pts={match.btts_yes_points || 0} theme="emerald" delay={80} />
-              <PtsCard label="לא" pts={match.btts_no_points || 0} theme="rose" delay={110} />
-            </div>
+            <SegmentedGroup delay={80} items={[
+              { label: "כן", pts: match.btts_yes_points || 0, theme: "emerald" },
+              { label: "לא", pts: match.btts_no_points  || 0, theme: "rose"    },
+            ]} />
           </div>
 
           <Divider />
@@ -125,11 +133,11 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
           {/* טווח שערים */}
           <div className="space-y-3">
             <SectionLabel title="טווח שערים" icon={Goal} color="text-amber-400" />
-            <div className="flex gap-2">
-              <PtsCard label="0–2 שערים" pts={match.goals_0_2_points || 0} theme="sky" delay={100} />
-              <PtsCard label="3–4 שערים" pts={match.goals_3_4_points || 0} theme="sky" delay={130} />
-              <PtsCard label="5+ שערים" pts={match.goals_5_plus_points || 0} theme="sky" delay={160} />
-            </div>
+            <SegmentedGroup delay={100} items={[
+              { label: "0–2 שערים", pts: match.goals_0_2_points    || 0, theme: "sky" },
+              { label: "3–4 שערים", pts: match.goals_3_4_points    || 0, theme: "sky" },
+              { label: "5+ שערים",  pts: match.goals_5_plus_points || 0, theme: "sky" },
+            ]} />
           </div>
 
           {/* פגיעה מדויקת */}
