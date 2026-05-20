@@ -78,10 +78,17 @@ export default function PredictionSummary({ predictions, matches, onConfirm, onC
                   </div>
 
                   {/* תוצאה במרכז */}
-                  <div className="bg-slate-600 px-4 py-2 rounded-md">
-                    <span className="text-white font-bold text-lg">
-                      {prediction.predicted_score_a} - {prediction.predicted_score_b}
-                    </span>
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="bg-slate-600 px-4 py-2 rounded-md">
+                      <span className="text-white font-bold text-lg">
+                        {prediction.predicted_score_a} - {prediction.predicted_score_b}
+                      </span>
+                    </div>
+                    {match.league && (
+                      <span className="text-[10px] text-amber-400/70 font-medium tracking-wide">
+                        {match.league}
+                      </span>
+                    )}
                   </div>
 
                   {/* לוגו קבוצה B */}
