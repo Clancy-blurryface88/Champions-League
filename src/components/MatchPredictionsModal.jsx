@@ -61,96 +61,119 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="p-0 fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-2xl max-w-sm w-full max-h-[85vh] overflow-hidden flex flex-col [&>button:last-child]:hidden border border-emerald-500/25"
-        style={{ background: '#050d0a' }}>
+      <DialogContent
+        className="p-0 fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-3xl max-w-sm w-full max-h-[85vh] overflow-hidden flex flex-col [&>button:last-child]:hidden border-0"
+        style={{
+          background: 'rgba(8, 15, 35, 0.75)',
+          backdropFilter: 'blur(32px)',
+          WebkitBackdropFilter: 'blur(32px)',
+          boxShadow: '0 0 0 1px rgba(245,197,24,0.15), 0 32px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)',
+        }}
+      >
+        {/* Top gold line */}
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-amber-400/60 to-transparent flex-shrink-0" />
 
-        {/* Scanline overlay */}
-        <div className="absolute inset-0 pointer-events-none z-0 rounded-2xl overflow-hidden">
-          <div style={{
-            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,255,120,0.018) 3px, rgba(0,255,120,0.018) 4px)',
-            position: 'absolute', inset: 0
-          }} />
+        {/* Close button */}
+        <div className="px-5 pt-4 pb-0 flex-shrink-0">
+          <button
+            onClick={onClose}
+            className="w-full py-2.5 rounded-2xl text-sm font-medium text-white/40 hover:text-white/70 transition-colors tracking-wide"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.07)',
+            }}
+          >
+            חזרה לדף הקודם
+          </button>
         </div>
 
-        {/* Content */}
-        <div className="relative z-10 flex flex-col h-full">
-
-          {/* Close button */}
-          <div className="px-5 pt-4 pb-3 flex-shrink-0">
-            <button
-              onClick={onClose}
-              className="w-full py-2.5 rounded-xl bg-white/4 hover:bg-white/8 active:scale-[0.97] transition-all text-sm font-semibold text-white/50 border border-white/8 font-mono tracking-widest uppercase text-xs"
-            >
-              ← חזרה
-            </button>
-          </div>
-
-          {/* Teams row — compact scoreboard style */}
-          <div className="flex items-center justify-center gap-4 px-5 pb-3 flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-8 h-8" />
-              <span className="text-white/60 text-xs font-mono">{match.team_a}</span>
+        {/* Match header — glass card */}
+        <div className="px-5 pt-4 pb-2 flex-shrink-0">
+          <div
+            className="rounded-2xl px-5 py-4 flex items-center justify-between"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            {/* Team A */}
+            <div className="flex flex-col items-center gap-2 flex-1">
+              <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" />
+              <span className="text-white text-xs font-semibold text-center leading-tight">{match.team_a}</span>
+              <span className="text-white/30 text-[10px]">בית</span>
             </div>
-            <span className="text-emerald-400/70 font-mono font-bold text-xs tracking-[0.3em]">VS</span>
-            <div className="flex items-center gap-2">
-              <span className="text-white/60 text-xs font-mono">{match.team_b}</span>
-              <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-8 h-8" />
+
+            {/* VS */}
+            <div className="flex flex-col items-center gap-1 px-3">
+              <span className="text-amber-400 font-bold text-base tracking-[0.2em]">VS</span>
+            </div>
+
+            {/* Team B */}
+            <div className="flex flex-col items-center gap-2 flex-1">
+              <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" />
+              <span className="text-white text-xs font-semibold text-center leading-tight">{match.team_b}</span>
+              <span className="text-white/30 text-[10px]">חוץ</span>
             </div>
           </div>
-
-          {/* Column header */}
-          <div className="flex items-center px-5 py-2 border-y border-emerald-500/20 bg-emerald-500/5 flex-shrink-0">
-            <span className="text-emerald-400/50 text-[10px] font-mono uppercase tracking-[0.2em] flex-1 text-right">שחקן</span>
-            <span className="text-emerald-400/50 text-[10px] font-mono uppercase tracking-[0.2em] mr-4">ניחוש</span>
-          </div>
-
-          {/* List */}
-          <div className="flex-1 overflow-y-auto">
-            {loading ? (
-              <div className="flex justify-center py-12">
-                <OrbitSpinner size={36} />
-              </div>
-            ) : !isLocked ? (
-              <div className="flex flex-col items-center justify-center py-12 gap-3 text-center px-6">
-                <Lock className="w-6 h-6 text-emerald-400/30" />
-                <p className="text-white/40 text-sm font-mono">LOCKED</p>
-                <p className="text-white/25 text-xs">הניחושים ייחשפו לאחר נעילת המשחק</p>
-              </div>
-            ) : uniquePredictions.length === 0 ? (
-              <div className="flex justify-center py-12">
-                <p className="text-white/25 text-sm font-mono">NO DATA</p>
-              </div>
-            ) : (
-              <div>
-                {uniquePredictions.map((prediction, index) => (
-                  <motion.div
-                    key={prediction.id}
-                    initial={{ opacity: 0, x: -16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05, duration: 0.2 }}
-                    className="group flex items-center px-5 py-3.5 border-b border-emerald-500/10 hover:bg-emerald-500/5 transition-colors"
-                  >
-                    {/* Row index */}
-                    <span className="text-emerald-400/25 font-mono text-[10px] w-5 text-left flex-shrink-0">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-
-                    {/* Name */}
-                    <span className="text-white/80 text-sm font-medium flex-1 text-right mr-3">
-                      {getUserDisplayName(prediction.user_id)}
-                    </span>
-
-                    {/* Score */}
-                    <span className="text-emerald-400 font-mono font-bold text-lg tabular-nums tracking-wider mr-1 group-hover:text-emerald-300 transition-colors">
-                      {prediction.predicted_score_a} – {prediction.predicted_score_b}
-                    </span>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </div>
-
         </div>
+
+        {/* Section title */}
+        <div className="flex items-center gap-3 px-5 py-3 flex-shrink-0">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/10" />
+          <span className="text-white/30 text-[10px] uppercase tracking-[0.2em] font-semibold">ניחושים</span>
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/10" />
+        </div>
+
+        {/* Predictions list */}
+        <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-2">
+          {loading ? (
+            <div className="flex justify-center py-10">
+              <OrbitSpinner size={36} />
+            </div>
+          ) : !isLocked ? (
+            <div className="flex flex-col items-center justify-center py-10 gap-3 text-center">
+              <Lock className="w-7 h-7 text-amber-400/30" />
+              <p className="text-white/40 text-sm">הניחושים ייחשפו לאחר נעילת המשחק</p>
+              <p className="text-white/20 text-xs">15 דקות לפני תחילת המשחק</p>
+            </div>
+          ) : uniquePredictions.length === 0 ? (
+            <div className="flex justify-center py-10">
+              <p className="text-white/25 text-sm">אין ניחושים למשחק זה</p>
+            </div>
+          ) : (
+            uniquePredictions.map((prediction, index) => (
+              <motion.div
+                key={prediction.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05, duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
+                className="flex items-center justify-between px-4 py-3.5 rounded-2xl"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  backdropFilter: 'blur(8px)',
+                }}
+              >
+                {/* Name */}
+                <span className="text-white/85 text-sm font-semibold">
+                  {getUserDisplayName(prediction.user_id)}
+                </span>
+
+                {/* Score + mini flags */}
+                <div className="flex items-center gap-2">
+                  <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5 opacity-80" />
+                  <span className="text-amber-400 font-bold text-base tabular-nums tracking-wide">
+                    {prediction.predicted_score_a} – {prediction.predicted_score_b}
+                  </span>
+                  <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5 opacity-80" />
+                </div>
+              </motion.div>
+            ))
+          )}
+        </div>
+
+        {/* Bottom gold line */}
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-amber-400/30 to-transparent flex-shrink-0" />
       </DialogContent>
     </Dialog>
   );
