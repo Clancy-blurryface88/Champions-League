@@ -167,6 +167,7 @@ export default function PredictionsResults() {
   const [publicProfiles, setPublicProfiles] = useState([]);
   const [selectedRound, setSelectedRound] = useState('');
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
+  const [revealComplete, setRevealComplete] = useState(false);
   const [finishedMatches, setFinishedMatches] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -394,6 +395,11 @@ export default function PredictionsResults() {
     }
   };
 
+  // Reset reveal state when switching matches or view mode
+  useEffect(() => {
+    setRevealComplete(false);
+  }, [currentMatchIndex, viewMode]);
+
   // Determine if the current user has an exact hit for the currently displayed match
   const isCurrentMatchExactHit = (() => {
     if (!user || finishedMatches.length === 0) return false;
@@ -575,7 +581,8 @@ export default function PredictionsResults() {
                       match={finishedMatches[currentMatchIndex]}
                       predictions={getMatchPredictions(finishedMatches[currentMatchIndex].id)}
                       getUserDisplayName={getUserDisplayName}
-                      getOutcomeStatus={getOutcomeStatus} />
+                      getOutcomeStatus={getOutcomeStatus}
+                      onAllRevealed={() => setRevealComplete(true)} />
                   }
 
                   {viewMode === 'my_predictions' &&
@@ -599,7 +606,7 @@ export default function PredictionsResults() {
                 </div>
 
                 {/* Confetti Animation for Exact Hit */}
-                {isCurrentMatchExactHit && viewMode === 'all_predictions' && (
+                {isCurrentMatchExactHit && viewMode === 'all_predictions' && revealComplete && (
                   <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center">
                     <LottieAnimation
                       key={finishedMatches[currentMatchIndex]?.id}
@@ -807,29 +814,43 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
 }
 
 // רכיב נפרד לרשימת הניחושים עם פירוט הניקוד מתוקן
-function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeStatus }) {
+function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeStatus, onAllRevealed }) {
   const [expandedPrediction, setExpandedPrediction] = useState(null);
+
+  const REVEAL_DELAY = 0.75; // שניות בין חשיפת כל שחקן
+
+  // מיין מהגבוה לנמוך לצורך תצוגה (מקום 1 בראש)
+  const sortedPredictions = [...predictions].sort((a, b) => (b.points_earned || 0) - (a.points_earned || 0));
+
+  useEffect(() => {
+    if (sortedPredictions.length === 0) { onAllRevealed?.(); return; }
+    // זמן החשיפה האחרונה = index 0 (המקום הראשון) מופיע אחרון
+    const lastRevealTime = (sortedPredictions.length - 1) * REVEAL_DELAY + 0.5;
+    const timer = setTimeout(() => onAllRevealed?.(), lastRevealTime * 1000);
+    return () => clearTimeout(timer);
+  }, [match?.id]);
 
   if (predictions.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-slate-400">אין ניחושים למשחק זה</p>
       </div>);
-
   }
 
   return (
     <div className="space-y-3">
-      {predictions.map((prediction, index) => {
+      {sortedPredictions.map((prediction, index) => {
         const outcomeStatus = getOutcomeStatus(prediction, match);
         const isExpanded = expandedPrediction === prediction.id;
+        // מקום N מופיע ראשון (delay=0), מקום 1 מופיע אחרון (delay מקסימלי)
+        const revealDelay = (sortedPredictions.length - 1 - index) * REVEAL_DELAY;
 
         return (
           <motion.div
             key={prediction.id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.05 }}
+            initial={{ opacity: 0, y: 40, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: revealDelay, duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
             className="bg-slate-700/50 rounded-lg overflow-hidden">
 
             {/* פרטי הניחוש הבסיסיים */}
