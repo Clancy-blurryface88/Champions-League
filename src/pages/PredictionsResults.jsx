@@ -483,40 +483,57 @@ export default function PredictionsResults() {
               <div className="text-center py-8">
                 <p className="text-slate-400">אין משחקים שהסתיימו במחזור זה</p>
               </div> :
-              <div className="bg-slate-800/80 border border-slate-700 rounded-xl overflow-hidden mt-6 shadow-xl">
+              <div
+                className="rounded-2xl overflow-hidden mt-6"
+                style={{
+                  background: 'rgba(8,15,35,0.72)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  backdropFilter: 'blur(20px)',
+                  boxShadow: '0 0 0 1px rgba(245,197,24,0.06), 0 24px 48px rgba(0,0,0,0.5)',
+                }}
+              >
                 {/* Header with View Mode Toggle */}
-                <div className="px-4 py-5 border-b border-slate-700">
-                  <div className="flex justify-center gap-2 mb-4">
-                    <Button
-                      onClick={() => setViewMode('all_predictions')}
-                      size="sm"
-                      variant={viewMode === 'all_predictions' ? 'default' : 'outline'}
-                      className={viewMode === 'all_predictions' ?
-                        "bg-blue-600 hover:bg-blue-700 text-white" :
-                        "bg-slate-700 hover:bg-slate-600 text-slate-300"
-                      }>
-                      כל הניחושים
-                    </Button>
-                    <Button
-                      onClick={() => setViewMode('my_predictions')}
-                      size="sm"
-                      variant={viewMode === 'my_predictions' ? 'default' : 'outline'}
-                      className={viewMode === 'my_predictions' ?
-                        "bg-green-600 hover:bg-green-700 text-white" :
-                        "bg-slate-700 hover:bg-slate-600 text-slate-300"
-                      }>
-                      הניחושים שלי
-                    </Button>
-                    <Button
-                      onClick={() => setViewMode('leaderboard')}
-                      size="sm"
-                      variant={viewMode === 'leaderboard' ? 'default' : 'outline'}
-                      className={viewMode === 'leaderboard' ?
-                        "bg-red-600 hover:bg-red-700 text-white" :
-                        "bg-slate-700 hover:bg-slate-600 text-slate-300"
-                      }>
-                      דירוג המחזור
-                    </Button>
+                <div className="px-4 py-5 border-b border-white/6">
+                  {/* Glass tab bar */}
+                  <div
+                    className="relative flex p-1 mb-4 rounded-2xl"
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.09)',
+                      backdropFilter: 'blur(12px)',
+                    }}
+                  >
+                    {[
+                      { key: 'all_predictions', label: 'כל הניחושים',  icon: '👁️' },
+                      { key: 'my_predictions',  label: 'הניחושים שלי', icon: '⭐' },
+                      { key: 'leaderboard',     label: 'דירוג המחזור', icon: '🏆' },
+                    ].map((tab) => {
+                      const active = viewMode === tab.key;
+                      return (
+                        <button
+                          key={tab.key}
+                          onClick={() => setViewMode(tab.key)}
+                          className="relative flex-1 flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-xl transition-colors z-10"
+                          style={{ color: active ? '#000' : 'rgba(255,255,255,0.38)' }}
+                        >
+                          {active && (
+                            <motion.div
+                              layoutId="tab-pill"
+                              className="absolute inset-0 rounded-xl"
+                              style={{
+                                background: 'linear-gradient(135deg, #f5c518 0%, #fde68a 60%, #fff 100%)',
+                                boxShadow: '0 2px 12px rgba(245,197,24,0.35)',
+                              }}
+                              transition={{ type: 'spring', bounce: 0.2, duration: 0.45 }}
+                            />
+                          )}
+                          <span className="relative z-10 text-base leading-none">{tab.icon}</span>
+                          <span className="relative z-10 text-[11px] font-bold tracking-wide leading-tight text-center whitespace-nowrap">
+                            {tab.label}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {viewMode === 'all_predictions' &&
