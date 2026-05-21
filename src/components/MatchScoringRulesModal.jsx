@@ -24,7 +24,7 @@ function SegmentedGroup({ items, delay = 60 }) {
       <ShineBorder
         borderRadius={12}
         borderWidth={1.5}
-        duration={6}
+        duration={12}
         shineColor={["#f5c518", "#ffffff", "#fbbf24", "#ffffff"]}
       />
       {items.map((item, i) => {
