@@ -453,34 +453,44 @@ export default function Predictions() {
             const lockedCount = dayMatches.filter(m => isMatchLocked(m.match_date)).length;
             const openCount = dayMatches.length - lockedCount;
 
-            const dayLabel = isToday
-              ? 'היום'
-              : moment(dateKey).locale('he').format('dddd, D MMMM');
+            const dayOfWeek = moment(dateKey).locale('he').format('dddd');
+            const dayDate   = moment(dateKey).locale('he').format('D MMMM');
 
             return (
               <div key={dateKey}>
                 {/* Date header */}
                 <button
                   onClick={() => toggleDate(dateKey)}
-                  className="w-full flex items-center gap-3 px-1 py-2 group"
+                  className="w-full flex items-center px-1 py-2 group"
                 >
-                  <div className="flex items-center gap-2 flex-1">
-                    <span className={`text-sm font-bold ${isToday ? 'text-amber-400' : isPast ? 'text-slate-500' : 'text-white'}`}>
-                      {dayLabel}
-                    </span>
-                    {isToday && (
-                      <span className="text-[10px] font-bold bg-amber-400/15 text-amber-400 border border-amber-400/30 px-2 py-0.5 rounded-full">
-                        היום
-                      </span>
+                  {/* Left spacer */}
+                  <div className="flex-1" />
+
+                  {/* Centered date */}
+                  <div className="flex flex-col items-center gap-0.5">
+                    {isToday ? (
+                      <span className="text-sm font-bold text-amber-400 whitespace-nowrap">היום</span>
+                    ) : (
+                      <>
+                        <span className={`text-sm font-bold whitespace-nowrap ${isPast ? 'text-slate-500' : 'text-white'}`}>
+                          {dayOfWeek}
+                        </span>
+                        <span className={`text-xs whitespace-nowrap ${isPast ? 'text-slate-600' : 'text-slate-400'}`}>
+                          {dayDate}
+                        </span>
+                      </>
                     )}
-                    <span className="text-[10px] text-slate-600">
-                      {dayMatches.length} משחקים{openCount > 0 ? ` · ${openCount} פתוחים` : ' · נעולים'}
+                    <span className="text-[10px] text-slate-600 mt-0.5">
+                      {dayMatches.length} משחקים
                     </span>
                   </div>
-                  <div className="h-px flex-1 bg-gradient-to-r from-white/8 to-transparent" />
-                  <ChevronDown
-                    className={`w-4 h-4 text-slate-500 group-hover:text-slate-300 transition-all duration-300 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}
-                  />
+
+                  {/* Right: chevron */}
+                  <div className="flex-1 flex justify-end">
+                    <ChevronDown
+                      className={`w-4 h-4 text-slate-500 group-hover:text-slate-300 transition-all duration-300 ${isOpen ? 'rotate-180' : ''}`}
+                    />
+                  </div>
                 </button>
 
                 {/* Matches grid for this date */}
