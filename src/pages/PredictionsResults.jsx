@@ -745,36 +745,48 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
   return (
     <div className="space-y-3">
       {/* My Round Summary with Ranking */}
-      {hasMyStats &&
-      <div className="bg-slate-700/50 rounded-lg p-4 mb-4">
-          <h4 className="text-white font-semibold mb-2 text-center">סיכום ניחושים שלי</h4>
+      {hasMyStats && (() => {
+        const earned  = roundStats.summary?.totalRoundPoints || 0;
+        const maxPts  = matches.reduce((acc, m) => acc + calculateMatchMaxPotentialPoints(m), 0);
+        const pct     = maxPts > 0 ? Math.round((earned / maxPts) * 100) : 0;
+        const pctColor = pct >= 80 ? 'text-emerald-400' : pct >= 50 ? 'text-amber-400' : 'text-red-400';
 
-          {/* Points and Ranking Display */}
-          <div className="text-center mb-4">
-            <div className="bg-slate-600/50 rounded-lg p-3 inline-block">
-              <div className="text-green-400 font-bold text-xl mb-1">
-                סה"כ נקודות: {roundStats.summary?.totalRoundPoints?.toFixed(2) || '0.00'}
+        return (
+          <div
+            className="rounded-2xl p-5 mb-4 flex flex-col items-center gap-3"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            <span className="text-xs uppercase tracking-[0.18em] text-white/30 font-semibold">סיכום ניחושים שלי</span>
+
+            {/* Big score */}
+            <div className="flex flex-col items-center gap-1">
+              <span
+                className="text-5xl font-black tabular-nums leading-none"
+                style={{ background: 'linear-gradient(135deg, #34d399, #fff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
+              >
+                {earned.toFixed(2)}
+              </span>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-slate-400 text-sm">מתוך {maxPts.toFixed(2)} נקודות</span>
+                <span className="text-white/15 text-sm">·</span>
+                <span className={`text-sm font-bold tabular-nums ${pctColor}`}>{pct}%</span>
               </div>
+            </div>
 
-              {/* NEW: Display ranking if available */}
-              {hasLeaderboard &&
-            <div className="text-blue-300 font-semibold text-lg">
-                  מקום {roundLeaderboard.currentUser.rank} מתוך {roundLeaderboard.totalParticipants}
-                </div>
-            }
-            </div>
-            
-            {/* Round Accuracy Stats */}
-            <div className="mt-2">
-              <ScoreAccuracyVisuals 
-                earnedPoints={roundStats.summary?.totalRoundPoints || 0}
-                maxPoints={matches.reduce((acc, match) => acc + calculateMatchMaxPotentialPoints(match), 0)}
-                className="bg-slate-800/80 border-slate-600"
-              />
-            </div>
+            {/* Rank */}
+            {hasLeaderboard && (
+              <div
+                className="flex items-center gap-2 px-4 py-1.5 rounded-full"
+                style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.25)' }}
+              >
+                <span className="text-blue-300 text-xs font-semibold">מקום</span>
+                <span className="text-white font-bold text-sm">{roundLeaderboard.currentUser.rank}</span>
+                <span className="text-blue-300/50 text-xs">מתוך {roundLeaderboard.totalParticipants}</span>
+              </div>
+            )}
           </div>
-        </div>
-      }
+        );
+      })()}
 
       {/* Individual Match Predictions (My Predictions) */}
       {hasMyStats &&
