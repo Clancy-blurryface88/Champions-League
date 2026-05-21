@@ -5,12 +5,14 @@ import { Target, Trophy, Zap, Goal } from "lucide-react";
 import { ShineBorder } from "@/components/magicui/shine-border";
 
 const CARD_THEMES = {
-  emerald: { text: "text-emerald-400", bg: "bg-emerald-500/8" },
-  blue:    { text: "text-blue-400",    bg: "bg-blue-500/8" },
-  rose:    { text: "text-rose-400",    bg: "bg-rose-500/8" },
-  sky:     { text: "text-sky-400",     bg: "bg-sky-500/8" },
-  amber:   { text: "text-amber-400",   bg: "bg-amber-500/8" },
-  muted:   { text: "text-slate-300",   bg: "bg-white/2" },
+  emerald:        { text: "text-emerald-400", bg: "bg-emerald-500/8" },
+  blue:           { text: "text-blue-400",    bg: "bg-blue-500/8" },
+  rose:           { text: "text-rose-400",    bg: "bg-rose-500/8" },
+  sky:            { text: "text-sky-400",     bg: "bg-sky-500/8" },
+  amber:          { text: "text-amber-400",   bg: "bg-amber-500/8" },
+  muted:          { text: "text-slate-300",   bg: "bg-white/2" },
+  white:          { text: "text-white",       bg: "bg-white/3" },
+  'blue-grad':    { text: "text-blue-400",    bg: "bg-blue-500/8" },
 };
 
 function SegmentedGroup({ items, delay = 60 }) {
@@ -23,7 +25,7 @@ function SegmentedGroup({ items, delay = 60 }) {
         borderRadius={12}
         borderWidth={1.5}
         duration={6}
-        shineColor={["#22d3ee", "#4ade80", "#a78bfa", "#22d3ee"]}
+        shineColor={["#f5c518", "#ffffff", "#fbbf24", "#ffffff"]}
       />
       {items.map((item, i) => {
         const t = CARD_THEMES[item.theme || "muted"];
@@ -33,9 +35,10 @@ function SegmentedGroup({ items, delay = 60 }) {
             <div className={`flex flex-col items-center gap-1 py-3.5 flex-1 ${t.bg}`}>
               <span
                 className={`text-2xl font-bold tabular-nums leading-none ${
-                  item.theme === 'rose'
-                    ? t.text
-                    : 'bg-gradient-to-br from-cyan-400 to-emerald-400 bg-clip-text text-transparent'
+                  item.theme === 'rose'       ? t.text :
+                  item.theme === 'white'      ? 'text-white' :
+                  item.theme === 'blue-grad'  ? 'bg-gradient-to-br from-blue-400 to-cyan-300 bg-clip-text text-transparent' :
+                  'bg-gradient-to-br from-green-400 to-emerald-500 bg-clip-text text-transparent'
                 }`}
               >
                 {item.pts}
@@ -127,8 +130,8 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
             <SectionLabel title="כיוון משחק" icon={Trophy} color="text-amber-400" />
             <SegmentedGroup delay={60} items={[
               { label: "ניצחון ביתי", pts: match.home_win_points || 0, theme: "emerald" },
-              { label: "תיקו",        pts: match.draw_points || 0,      theme: "muted"   },
-              { label: "ניצחון חוץ", pts: match.away_win_points || 0,  theme: "blue"    },
+              { label: "תיקו",        pts: match.draw_points || 0,      theme: "white"   },
+              { label: "ניצחון חוץ", pts: match.away_win_points || 0,  theme: "emerald" },
             ]} />
           </div>
 
@@ -149,9 +152,9 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
           <div className="space-y-3">
             <SectionLabel title="טווח שערים" icon={Goal} color="text-amber-400" />
             <SegmentedGroup delay={100} items={[
-              { label: "0–2 שערים", pts: match.goals_0_2_points    || 0, theme: "sky" },
-              { label: "3–4 שערים", pts: match.goals_3_4_points    || 0, theme: "sky" },
-              { label: "5+ שערים",  pts: match.goals_5_plus_points || 0, theme: "sky" },
+              { label: "0–2 שערים", pts: match.goals_0_2_points    || 0, theme: "blue-grad" },
+              { label: "3–4 שערים", pts: match.goals_3_4_points    || 0, theme: "blue-grad" },
+              { label: "5+ שערים",  pts: match.goals_5_plus_points || 0, theme: "blue-grad" },
             ]} />
           </div>
 
