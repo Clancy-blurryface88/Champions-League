@@ -35,7 +35,7 @@ function SegmentedGroup({ items, delay = 60 }) {
             <div className={`flex flex-col items-center gap-1 py-3.5 flex-1 ${t.bg}`}>
               <span
                 className={`text-2xl font-bold tabular-nums leading-none ${
-                  item.theme === 'rose'    ? t.text :
+                  item.theme === 'rose'    ? 'bg-gradient-to-br from-rose-400 to-red-600 bg-clip-text text-transparent' :
                   item.theme === 'emerald' ? 'bg-gradient-to-br from-green-400 to-emerald-500 bg-clip-text text-transparent' :
                   'bg-gradient-to-br from-amber-400 to-white bg-clip-text text-transparent'
                 }`}
@@ -43,7 +43,7 @@ function SegmentedGroup({ items, delay = 60 }) {
                 {item.pts}
               </span>
               <span className={`text-[11px] font-medium text-center leading-tight px-1 mt-0.5 ${
-                  item.theme === 'rose'    ? t.text :
+                  item.theme === 'rose'    ? 'bg-gradient-to-br from-rose-400 to-red-600 bg-clip-text text-transparent' :
                   item.theme === 'emerald' ? 'bg-gradient-to-br from-green-400 to-emerald-500 bg-clip-text text-transparent' :
                   'bg-gradient-to-br from-amber-400 to-white bg-clip-text text-transparent'
               }`}>{item.label}</span>
