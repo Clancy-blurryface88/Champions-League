@@ -16,6 +16,7 @@ import moment from "moment";
 import ScoreInput from "../components/predictions/ScoreInput";
 import PredictionSummary from "../components/predictions/PredictionSummary";
 import { GlowButton } from "../components/ui/GlowButton";
+import { BgAnimateButton } from "../components/ui/bg-animate-button";
 import { useNavigate } from 'react-router-dom';
 import MatchScoringRulesModal from "../components/MatchScoringRulesModal";
 import MatchPredictionsModal from "../components/MatchPredictionsModal"; // ADDED MatchPredictionsModal import
@@ -610,20 +611,23 @@ export default function Predictions() {
           animate={{ opacity: 1, y: 0 }}
           className="sticky bottom-6 mt-2 flex justify-center">
 
-            <GlowButton
-            onClick={handleSubmit}
-            disabled={saving || !areAllPredictionsComplete()}
-            className="px-12 py-4 text-lg font-semibold">
-
-              {saving ?
-            <div className="flex items-center gap-2">
+            <BgAnimateButton
+              onClick={handleSubmit}
+              disabled={saving || !areAllPredictionsComplete()}
+              gradient="green"
+              animation="pulse"
+              rounded="full"
+              className="px-12 py-4 text-lg font-semibold shadow-lg shadow-emerald-500/30"
+            >
+              {saving ? (
+                <div className="flex items-center gap-2">
                   <OrbitSpinner size={22} />
                   <span>שולח...</span>
-                </div> :
-
-            <span className="text-emerald-400">{submitted ? 'עדכן ניחושים' : 'שלח ניחושים'}</span>
-            }
-            </GlowButton>
+                </div>
+              ) : (
+                <span>{submitted ? 'עדכן ניחושים' : 'שלח ניחושים'}</span>
+              )}
+            </BgAnimateButton>
           </motion.div>
         }
 
