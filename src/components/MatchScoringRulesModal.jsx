@@ -2,7 +2,7 @@ import TeamFlag from "@/components/TeamFlag";
 import React from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Target, Trophy, Zap, Goal } from "lucide-react";
-import { useGridBeam, GridBeamCanvas } from "@/components/ui/grid-beam";
+import { ShineBorder } from "@/components/magicui/shine-border";
 
 const CARD_THEMES = {
   emerald: { text: "text-emerald-400", bg: "bg-emerald-500/8" },
@@ -14,28 +14,23 @@ const CARD_THEMES = {
 };
 
 function SegmentedGroup({ items, delay = 60 }) {
-  const { canvasRef } = useGridBeam({
-    rows: 3,
-    cols: items.length,
-    colorVariant: "colorful",
-    theme: "dark",
-    duration: 3,
-    strength: 0.7,
-    breathe: true,
-  });
-
   return (
     <div
       className="relative flex rounded-xl overflow-hidden border border-white/10 animate-in fade-in slide-in-from-bottom-2"
       style={{ animationDuration: "220ms", animationFillMode: "both", animationTimingFunction: "cubic-bezier(0.23,1,0.32,1)", animationDelay: `${delay}ms` }}
     >
-      <GridBeamCanvas ref={canvasRef} />
+      <ShineBorder
+        borderRadius={12}
+        borderWidth={1.5}
+        duration={6}
+        shineColor={["#22d3ee", "#4ade80", "#a78bfa", "#22d3ee"]}
+      />
       {items.map((item, i) => {
         const t = CARD_THEMES[item.theme || "muted"];
         return (
           <React.Fragment key={item.label}>
-            {i > 0 && <div className="relative z-10 w-px flex-shrink-0 bg-gradient-to-b from-transparent via-white/20 to-transparent self-stretch" />}
-            <div className={`relative z-10 flex flex-col items-center gap-1 py-3.5 flex-1 ${t.bg}`}>
+            {i > 0 && <div className="w-px flex-shrink-0 bg-gradient-to-b from-transparent via-white/20 to-transparent self-stretch" />}
+            <div className={`flex flex-col items-center gap-1 py-3.5 flex-1 ${t.bg}`}>
               <span
                 className={`text-2xl font-bold tabular-nums leading-none ${
                   item.theme === 'rose'
