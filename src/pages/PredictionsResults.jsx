@@ -548,15 +548,7 @@ export default function PredictionsResults() {
               dir="rtl"
             >
               {/* Label — right side in RTL */}
-              <div className="flex flex-col gap-0.5">
-                <span className="text-xs uppercase tracking-[0.16em] text-white/25 font-semibold">בחר מחזור</span>
-                <span
-                  className="text-sm font-bold"
-                  style={{ background: 'linear-gradient(90deg,#f5c518,#fff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
-                >
-                  {availableRounds.find(r => r.id === selectedRound)?.name || '—'}
-                </span>
-              </div>
+              <span className="text-xs uppercase tracking-[0.16em] text-white/25 font-semibold">בחר מחזור</span>
 
               {/* iOS picker — left side */}
               <IosRoundPicker
