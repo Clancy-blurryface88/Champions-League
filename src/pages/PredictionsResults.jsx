@@ -760,16 +760,12 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
 
             {/* Big score */}
             <div className="flex flex-col items-center gap-1">
-              <span
-                className="text-5xl font-black tabular-nums leading-none"
-                style={{ background: 'linear-gradient(135deg, #34d399, #fff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
-              >
+              <span className="text-5xl font-black tabular-nums leading-none text-white">
                 {earned.toFixed(2)}
               </span>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-1.5 mt-1">
                 <span className="text-slate-400 text-sm">מתוך {maxPts.toFixed(2)} נקודות</span>
-                <span className="text-white/15 text-sm">·</span>
-                <span className={`text-sm font-bold tabular-nums ${pctColor}`}>{pct}%</span>
+                <span className={`text-sm font-bold tabular-nums ${pctColor}`}>({pct}%)</span>
               </div>
             </div>
 
@@ -865,17 +861,27 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                   </div>
 
                   {/* Points bar */}
-                  {isFinished && (
-                    <div className={`px-3 pb-2.5 flex justify-end`}>
-                      <span className={`text-xs font-bold tabular-nums px-2.5 py-1 rounded-full ${
-                        detail.exactScore     ? 'bg-emerald-500/15 text-emerald-300' :
-                        detail.correctOutcome ? 'bg-amber-500/15 text-amber-300' :
-                                                'bg-red-500/15 text-red-300'
-                      }`}>
-                        {detail.points.toFixed(2)} pts
-                      </span>
-                    </div>
-                  )}
+                  {isFinished && (() => {
+                    const matchMax = calculateMatchMaxPotentialPoints(match);
+                    const matchPct = matchMax > 0 ? Math.round((detail.points / matchMax) * 100) : 0;
+                    const colorClass =
+                      detail.exactScore     ? 'bg-emerald-500/15 text-emerald-300' :
+                      detail.correctOutcome ? 'bg-amber-500/15 text-amber-300' :
+                                              'bg-red-500/15 text-red-300';
+                    const pctC =
+                      detail.exactScore     ? 'text-emerald-400' :
+                      detail.correctOutcome ? 'text-amber-400' :
+                                              'text-red-400';
+                    return (
+                      <div className="px-3 pb-2.5 flex justify-center items-center gap-2">
+                        <span className={`text-xs font-bold tabular-nums px-2.5 py-1 rounded-full ${colorClass}`}>
+                          {detail.points.toFixed(2)} pts
+                        </span>
+                        <span className="text-white/20 text-xs">מתוך {matchMax.toFixed(2)}</span>
+                        <span className={`text-xs font-bold tabular-nums ${pctC}`}>({matchPct}%)</span>
+                      </div>
+                    );
+                  })()}
                 </motion.div>
               );
           })}
