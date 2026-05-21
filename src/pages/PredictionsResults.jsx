@@ -1,7 +1,7 @@
 import TeamFlag from "@/components/TeamFlag";
 import LoadingScreen from "@/components/LoadingScreen";
 import CircleLoader from "@/components/CircleLoader";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { User } from "@/api/entities";
 import { Round } from "@/api/entities";
 import { Match } from "@/api/entities";
@@ -155,6 +155,79 @@ function ScoreBreakdownAnimated({ prediction, match }) {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+const ITEM_H = 44;
+
+function IosRoundPicker({ rounds, value, onChange }) {
+  const ref = useRef(null);
+  const isScrolling = useRef(false);
+  const scrollTimer = useRef(null);
+
+  // Scroll to selected on mount / value change
+  useEffect(() => {
+    if (!ref.current || !value) return;
+    const idx = rounds.findIndex(r => r.id === value);
+    if (idx === -1) return;
+    ref.current.scrollTop = idx * ITEM_H;
+  }, [value, rounds]);
+
+  const commitScroll = () => {
+    if (!ref.current) return;
+    const idx = Math.max(0, Math.min(rounds.length - 1, Math.round(ref.current.scrollTop / ITEM_H)));
+    ref.current.scrollTo({ top: idx * ITEM_H, behavior: 'smooth' });
+    if (rounds[idx] && rounds[idx].id !== value) onChange(rounds[idx].id);
+  };
+
+  const handleScroll = () => {
+    clearTimeout(scrollTimer.current);
+    scrollTimer.current = setTimeout(commitScroll, 120);
+  };
+
+  return (
+    <div className="relative" style={{ height: ITEM_H * 3, width: 160 }}>
+      {/* Top fade */}
+      <div className="absolute inset-x-0 top-0 z-10 pointer-events-none"
+        style={{ height: ITEM_H, background: 'linear-gradient(to bottom, rgba(8,15,35,0.95), transparent)' }} />
+      {/* Bottom fade */}
+      <div className="absolute inset-x-0 bottom-0 z-10 pointer-events-none"
+        style={{ height: ITEM_H, background: 'linear-gradient(to top, rgba(8,15,35,0.95), transparent)' }} />
+      {/* Center selector highlight */}
+      <div className="absolute inset-x-2 z-10 pointer-events-none rounded-lg"
+        style={{ top: ITEM_H, height: ITEM_H, background: 'rgba(245,197,24,0.08)', border: '1px solid rgba(245,197,24,0.28)' }} />
+
+      {/* Scroll list */}
+      <div
+        ref={ref}
+        onScroll={handleScroll}
+        className="overflow-y-scroll scrollbar-hide h-full"
+        style={{ scrollSnapType: 'y mandatory' }}
+      >
+        {/* top spacer */}
+        <div style={{ height: ITEM_H }} />
+        {rounds.map((round, idx) => {
+          const isSelected = round.id === value;
+          return (
+            <div
+              key={round.id}
+              style={{ height: ITEM_H, scrollSnapAlign: 'center' }}
+              className={`flex items-center justify-center cursor-pointer transition-all duration-200 text-sm font-semibold ${
+                isSelected ? 'text-amber-400 scale-105' : 'text-white/35'
+              }`}
+              onClick={() => {
+                onChange(round.id);
+                ref.current?.scrollTo({ top: idx * ITEM_H, behavior: 'smooth' });
+              }}
+            >
+              {round.name}
+            </div>
+          );
+        })}
+        {/* bottom spacer */}
+        <div style={{ height: ITEM_H }} />
+      </div>
     </div>
   );
 }
@@ -456,26 +529,32 @@ export default function PredictionsResults() {
 
         <>
             {/* Round Selector */}
-            <div className="mb-6 flex flex-col items-end">
-              <h3 className="text-lg font-semibold text-white mb-3 text-right">בחר מחזור</h3>
-              <div className="w-full max-w-xs" dir="rtl">
-                <Select value={selectedRound} onValueChange={setSelectedRound}>
-                  <SelectTrigger className="w-full bg-slate-800 border-slate-600 text-white text-right">
-                    <SelectValue placeholder="בחר מחזור" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-600 text-white">
-                    {availableRounds.map((round) => (
-                      <SelectItem 
-                        key={round.id} 
-                        value={round.id}
-                        className="focus:bg-slate-700 focus:text-white cursor-pointer justify-end"
-                      >
-                        {round.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div
+              className="mb-6 flex items-center justify-between px-4 py-3 rounded-2xl"
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                backdropFilter: 'blur(12px)',
+              }}
+              dir="rtl"
+            >
+              {/* Label — right side in RTL */}
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs uppercase tracking-[0.16em] text-white/25 font-semibold">בחר מחזור</span>
+                <span
+                  className="text-sm font-bold"
+                  style={{ background: 'linear-gradient(90deg,#f5c518,#fff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
+                >
+                  {availableRounds.find(r => r.id === selectedRound)?.name || '—'}
+                </span>
               </div>
+
+              {/* iOS picker — left side */}
+              <IosRoundPicker
+                rounds={availableRounds}
+                value={selectedRound}
+                onChange={setSelectedRound}
+              />
             </div>
 
             {/* Finished Matches / Predictions View */}
