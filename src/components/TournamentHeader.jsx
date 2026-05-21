@@ -1,6 +1,5 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { TextRoll } from "@/components/core/text-roll";
 
 const HOST_FLAGS = ["🇨🇦", "🇺🇸", "🇲🇽"];
 
@@ -49,10 +48,17 @@ export default function TournamentHeader() {
         </div>
 
         <h1
-          className="text-4xl md:text-5xl font-bold tracking-widest uppercase text-white"
-          style={{ fontFamily: "'Syne', 'Orbitron', sans-serif", letterSpacing: '0.12em' }}
+          className="text-4xl md:text-5xl font-bold tracking-widest uppercase"
+          style={{
+            fontFamily: "'Syne', 'Orbitron', sans-serif",
+            letterSpacing: '0.12em',
+            background: 'linear-gradient(90deg, #f5c518, #fde68a, #f5c518)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
         >
-          <TextRoll loop duration={0.9} stagger={0.2} loopInterval={7000}>World Cup</TextRoll>
+          World Cup
         </h1>
 
         <div className="flex items-center gap-3">
