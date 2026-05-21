@@ -2,7 +2,7 @@ import TeamFlag from "@/components/TeamFlag";
 import React from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Target, Trophy, Zap, Goal } from "lucide-react";
-import { useGridBeam, GridBeamCanvas, GridBeamDividers } from "@/components/ui/grid-beam";
+import { useGridBeam, GridBeamCanvas } from "@/components/ui/grid-beam";
 
 const CARD_THEMES = {
   emerald: { text: "text-emerald-400", bg: "bg-emerald-500/8" },
@@ -14,17 +14,28 @@ const CARD_THEMES = {
 };
 
 function SegmentedGroup({ items, delay = 60 }) {
+  const { canvasRef } = useGridBeam({
+    rows: 2,
+    cols: items.length + 1,
+    colorVariant: "colorful",
+    theme: "dark",
+    duration: 3,
+    strength: 0.85,
+    breathe: true,
+  });
+
   return (
     <div
-      className="flex rounded-xl overflow-hidden border border-white/10 animate-in fade-in slide-in-from-bottom-2"
+      className="relative flex rounded-xl overflow-hidden border border-white/10 animate-in fade-in slide-in-from-bottom-2"
       style={{ animationDuration: "220ms", animationFillMode: "both", animationTimingFunction: "cubic-bezier(0.23,1,0.32,1)", animationDelay: `${delay}ms` }}
     >
+      <GridBeamCanvas ref={canvasRef} />
       {items.map((item, i) => {
         const t = CARD_THEMES[item.theme || "muted"];
         return (
           <React.Fragment key={item.label}>
-            {i > 0 && <div className="w-px flex-shrink-0 bg-gradient-to-b from-transparent via-white/20 to-transparent self-stretch" />}
-            <div className={`flex flex-col items-center gap-1 py-3.5 flex-1 ${t.bg}`}>
+            {i > 0 && <div className="relative z-10 w-px flex-shrink-0 bg-gradient-to-b from-transparent via-white/20 to-transparent self-stretch" />}
+            <div className={`relative z-10 flex flex-col items-center gap-1 py-3.5 flex-1 ${t.bg}`}>
               <span
                 className={`text-2xl font-bold tabular-nums leading-none ${
                   item.theme === 'rose'
@@ -57,16 +68,6 @@ function Divider() {
 }
 
 export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
-  const { canvasRef, rows: r, cols: c } = useGridBeam({
-    rows: 6,
-    cols: 5,
-    colorVariant: "colorful",
-    theme: "dark",
-    duration: 4,
-    strength: 0.6,
-    breathe: true,
-  });
-
   if (!match) return null;
 
   const hasOdds = match.score_odds && Object.keys(match.score_odds).length > 0;
@@ -93,12 +94,8 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-[#0d1526] text-white p-0 fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-2xl border border-white/8 max-w-sm w-full max-h-[85vh] overflow-hidden flex flex-col [&>button:last-child]:hidden">
 
-        {/* GridBeam animated background */}
-        <GridBeamDividers rows={r} cols={c} dividerStroke="rgba(255,255,255,0.03)" />
-        <GridBeamCanvas ref={canvasRef} style={{ borderRadius: '1rem' }} />
-
         {/* Sticky header: close button + teams */}
-        <div className="flex-shrink-0 relative z-10">
+        <div className="flex-shrink-0">
           {/* Close button */}
           <div className="px-5 pt-4 pb-3">
             <button
@@ -126,7 +123,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
         </div>
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5 relative z-10">
+        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
 
           <Divider />
 
