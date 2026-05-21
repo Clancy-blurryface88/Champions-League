@@ -32,7 +32,14 @@ import ScoreAccuracyVisuals from "@/components/predictions/ScoreAccuracyVisuals"
 import { calculateMatchMaxPotentialPoints } from "../components/utils/calculateMatchMaxPotentialPoints";
 
 
-function AnimatedDonut({ percentage, size = 64 }) {
+const OUTCOME_COLORS = {
+  exact:   { hex: '#34d399', text: 'text-emerald-400', border: 'border-emerald-500/30' },
+  correct: { hex: '#fbbf24', text: 'text-amber-400',   border: 'border-amber-500/30'   },
+  wrong:   { hex: '#f87171', text: 'text-red-400',     border: 'border-red-500/25'     },
+  default: { hex: '#34d399', text: 'text-emerald-400', border: 'border-emerald-500/30' },
+};
+
+function AnimatedDonut({ percentage, size = 64, outcomeType }) {
   const [animPct, setAnimPct] = useState(0);
   const radius = 24;
   const circumference = 2 * Math.PI * radius;
@@ -44,7 +51,7 @@ function AnimatedDonut({ percentage, size = 64 }) {
   }, [percentage]);
 
   const offset = circumference - (animPct / 100) * circumference;
-  const color = percentage >= 100 ? '#22c55e' : percentage >= 60 ? '#f59e0b' : '#3b82f6';
+  const color = (OUTCOME_COLORS[outcomeType] || OUTCOME_COLORS.default).hex;
 
   return (
     <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
@@ -73,7 +80,7 @@ const BREAKDOWN_ROWS = [
   { key: 'goals_range_points_earned',          label: 'טווח שערים',   icon: '📊' },
 ];
 
-function ScoreBreakdownAnimated({ prediction, match }) {
+function ScoreBreakdownAnimated({ prediction, match, outcomeType }) {
   const [visibleRows, setVisibleRows] = useState(0);
   const [showTotal, setShowTotal] = useState(false);
   const [showDonut, setShowDonut] = useState(false);
@@ -93,6 +100,8 @@ function ScoreBreakdownAnimated({ prediction, match }) {
     ? Math.min(100, Math.round((prediction.points_earned || 0) / maxPoints * 100))
     : 0;
 
+  const c = OUTCOME_COLORS[outcomeType] || OUTCOME_COLORS.default;
+
   return (
     <div className="p-4 space-y-1">
       {BREAKDOWN_ROWS.map((row, i) => {
@@ -105,8 +114,8 @@ function ScoreBreakdownAnimated({ prediction, match }) {
             transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
             className="flex justify-between items-center py-1.5 px-2 rounded-lg"
           >
-            <span className="text-white text-xs">{row.label}</span>
-            <span className={`text-xs font-bold tabular-nums ${pts > 0 ? 'text-green-400' : 'text-slate-600'}`}>
+            <span className="text-white/70 text-xs">{row.label}</span>
+            <span className={`text-xs font-bold tabular-nums ${pts > 0 ? c.text : 'text-slate-600'}`}>
               {pts > 0 ? `+${pts.toFixed(2)}` : '+0.00'}
             </span>
           </motion.div>
@@ -119,10 +128,10 @@ function ScoreBreakdownAnimated({ prediction, match }) {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-            className="border-t border-slate-600/50 mt-1 pt-2 flex justify-between items-center px-2"
+            className={`border-t mt-1 pt-2 flex justify-between items-center px-2 ${c.border}`}
           >
             <span className="text-white text-xs font-semibold">סה"כ</span>
-            <span className="text-green-400 text-sm font-bold tabular-nums">
+            <span className={`text-sm font-bold tabular-nums ${c.text}`}>
               {(prediction.points_earned || 0).toFixed(2)}
             </span>
           </motion.div>
@@ -137,19 +146,19 @@ function ScoreBreakdownAnimated({ prediction, match }) {
             transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
             className="flex items-center gap-4 pt-3 px-2"
           >
-            <AnimatedDonut percentage={percentage} size={72} />
+            <AnimatedDonut percentage={percentage} size={72} outcomeType={outcomeType} />
             <motion.div
               className="flex flex-col items-end flex-1"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
             >
-              <span className="text-white text-xs mb-1">ניקוד שנצבר</span>
+              <span className="text-white/50 text-xs mb-1">ניקוד שנצבר</span>
               <div className="flex items-baseline gap-1">
-                <span className="text-amber-400 text-xl font-bold tabular-nums">
+                <span className={`text-xl font-bold tabular-nums ${c.text}`}>
                   {(prediction.points_earned || 0).toFixed(2)}
                 </span>
-                <span className="text-blue-400 text-sm font-semibold">/ {maxPoints.toFixed(2)}</span>
+                <span className="text-white/30 text-sm font-semibold">/ {maxPoints.toFixed(2)}</span>
               </div>
             </motion.div>
           </motion.div>
@@ -1091,7 +1100,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.3 }}
                 className="border-t border-white/8 bg-black/20">
-                  <ScoreBreakdownAnimated prediction={prediction} match={match} />
+                  <ScoreBreakdownAnimated prediction={prediction} match={match} outcomeType={outcomeStatus?.type} />
               </motion.div>}
             </AnimatePresence>
           </motion.div>);
