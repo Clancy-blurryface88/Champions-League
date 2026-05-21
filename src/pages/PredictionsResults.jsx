@@ -626,7 +626,35 @@ export default function PredictionsResults() {
 
 }
 
-// NEW: Separate LeaderboardView component
+function PodiumStand({ entry, position, isCurrentUser }) {
+  const configs = {
+    1: { height: 'h-24', bg: 'bg-amber-500/15', border: 'border-amber-400/40', medal: '🥇', label: 'text-amber-400', pts: 'text-amber-300' },
+    2: { height: 'h-16', bg: 'bg-slate-400/10',  border: 'border-slate-400/30', medal: '🥈', label: 'text-slate-300', pts: 'text-slate-300' },
+    3: { height: 'h-12', bg: 'bg-amber-700/10',  border: 'border-amber-700/30', medal: '🥉', label: 'text-amber-600', pts: 'text-amber-600' },
+  };
+  const c = configs[position];
+  if (!entry) return <div className="flex-1" />;
+
+  return (
+    <motion.div
+      className="flex-1 flex flex-col items-center gap-1"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: position === 1 ? 0.4 : position === 2 ? 0.15 : 0.25, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+    >
+      <span className="text-[11px] font-semibold text-white/80 text-center leading-tight max-w-[72px] truncate">
+        {entry.displayName}
+      </span>
+      <span className={`text-xs font-bold tabular-nums ${c.pts}`}>
+        {entry.totalPoints.toFixed(2)}
+      </span>
+      <div className={`w-full ${c.height} rounded-t-xl border ${c.bg} ${c.border} flex items-center justify-center ${isCurrentUser ? 'ring-2 ring-blue-400/50' : ''}`}>
+        <span className="text-2xl">{c.medal}</span>
+      </div>
+    </motion.div>
+  );
+}
+
 function LeaderboardView({ roundLeaderboard, loading, user }) {
   if (loading) {
     return (
@@ -640,49 +668,53 @@ function LeaderboardView({ roundLeaderboard, loading, user }) {
     return (
       <div className="text-center py-8">
         <p className="text-slate-400">אין נתונים זמינים עבור מחזור זה</p>
-      </div>);
-
+      </div>
+    );
   }
 
+  const participants = roundLeaderboard.allParticipants;
+  const top3 = [1, 2, 3].map(r => participants.find(e => e.rank === r));
+  const rest = participants.filter(e => e.rank > 3);
+
   return (
-    <div className="space-y-3">
-      {/* All Participants Display with Animated List - EXACT SAME AS BEFORE */}
-      <div className="bg-slate-700/50 rounded-lg p-4 mb-4">
-      <h4 className="text-white font-semibold mb-2 text-center">דירוג המחזור</h4>
-        <div className="max-h-60 overflow-y-auto"> {/* Original scrollable container */}
-          <AnimatedList className="space-y-2">
-            {roundLeaderboard.allParticipants.map((entry, index) => {
-              // Original medal colors logic
-              const getMedalColor = (rank) => {
-                switch (rank) {
-                  case 1:return 'bg-yellow-600 text-white'; // Gold
-                  case 2:return 'bg-gray-400 text-white'; // Silver  
-                  case 3:return 'bg-amber-600 text-white'; // Bronze
-                  default:return 'bg-slate-600 text-white'; // White/Gray for others
-                }
-              };
+    <div className="space-y-4">
+      {/* Podium */}
+      <div className="pt-2 pb-1">
+        <div className="flex items-end justify-center gap-2 px-4">
+          {/* Order: 2nd (left) · 1st (center) · 3rd (right) */}
+          <PodiumStand entry={top3[1]} position={2} isCurrentUser={top3[1]?.isCurrentUser} />
+          <PodiumStand entry={top3[0]} position={1} isCurrentUser={top3[0]?.isCurrentUser} />
+          <PodiumStand entry={top3[2]} position={3} isCurrentUser={top3[2]?.isCurrentUser} />
+        </div>
+        {/* Podium base */}
+        <div className="h-2 bg-gradient-to-r from-transparent via-white/10 to-transparent rounded-full mx-4" />
+      </div>
 
-              return (
-                <div
-                  key={entry.rank}
-                  className={`flex items-center justify-between text-sm p-2 rounded-md ${
-                  entry.isCurrentUser ? 'bg-blue-600/20 border border-blue-400/30' : ''}`
-                  }>
-
-                  <div className="flex items-center gap-2">
-                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${getMedalColor(entry.rank)}`}>
-                      {entry.rank}
-                    </span>
-                    <span className="text-white font-medium">{entry.displayName}</span>
-                    {/* REMOVED: Badge with "אתה" text */}
-                  </div>
-                  <span className="text-green-400 font-bold">{entry.totalPoints.toFixed(2)}Pts</span>
-                </div>);
-
-            })}
+      {/* Rest of the list */}
+      {rest.length > 0 && (
+        <div className="space-y-1.5">
+          <AnimatedList className="space-y-1.5">
+            {rest.map((entry) => (
+              <div
+                key={entry.rank}
+                className={`flex items-center justify-between text-sm px-3 py-2 rounded-xl ${
+                  entry.isCurrentUser
+                    ? 'bg-blue-600/20 border border-blue-400/30'
+                    : 'bg-slate-700/40 border border-white/5'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="w-6 h-6 rounded-full bg-slate-600 flex items-center justify-center text-xs font-bold text-white/70">
+                    {entry.rank}
+                  </span>
+                  <span className="text-white font-medium">{entry.displayName}</span>
+                </div>
+                <span className="text-green-400 font-bold tabular-nums">{entry.totalPoints.toFixed(2)}</span>
+              </div>
+            ))}
           </AnimatedList>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -747,64 +779,93 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
       {/* Individual Match Predictions (My Predictions) */}
       {hasMyStats &&
       <>
-          <h4 className="text-white font-semibold mb-2 text-center">הניחושים שלי למשחקי המחזור</h4>
+          <h4 className="text-white font-semibold mb-3 text-center">הניחושים שלי למשחקי המחזור</h4>
           <div className="space-y-3">
             {roundStats.predictionDetails.map((detail, index) => {
-            const match = matches.find((m) => m.id === detail.matchId);
-            if (!match) return null;
+              const match = matches.find((m) => m.id === detail.matchId);
+              if (!match) return null;
 
-            return (
-              <motion.div
-                key={detail.matchId}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="bg-slate-700/50 rounded-lg p-3">
+              const isFinished = detail.actual !== 'Not finished';
+              const verdictBorder =
+                !isFinished              ? 'border-white/10' :
+                detail.exactScore        ? 'border-emerald-500/40' :
+                detail.correctOutcome    ? 'border-amber-500/35' :
+                                           'border-red-500/30';
+              const verdictGlow =
+                !isFinished              ? '' :
+                detail.exactScore        ? 'shadow-[0_0_16px_rgba(16,185,129,0.15)]' :
+                detail.correctOutcome    ? 'shadow-[0_0_16px_rgba(245,158,11,0.12)]' :
+                                           'shadow-[0_0_16px_rgba(239,68,68,0.10)]';
+              const statusIcon =
+                !isFinished           ? null :
+                detail.exactScore     ? '🎯' :
+                detail.correctOutcome ? '✅' :
+                                        '❌';
 
-                  <div className="flex items-center justify-between">
-                    {/* Team logos and match info */}
-                    <div className="flex items-center gap-3 flex-1">
-                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-6 h-6 " />
-                      <div className="text-center">
-                        <div className="text-slate-300 text-sm font-medium">
-                          {detail.prediction}
-                        </div>
-                        <div className="text-blue-400 text-xs">
-                          ניחוש
-                        </div>
-                      </div>
-                      <span className="text-slate-300">vs</span>
-                      <div className="text-center">
-                        <div className="text-white text-sm font-bold">
-                          {detail.actual !== 'Not finished' ? detail.actual : '--'}
-                        </div>
-                        <div className="text-emerald-400 text-xs">
-                          תוצאה
-                        </div>
-                      </div>
-                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-6 h-6 " />
+              return (
+                <motion.div
+                  key={detail.matchId}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.06, duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+                  className={`rounded-xl overflow-hidden border ${verdictBorder} ${verdictGlow}`}
+                  style={{ background: 'rgba(255,255,255,0.03)' }}
+                >
+                  {/* Teams row */}
+                  <div className="flex items-center justify-between px-3 pt-3 pb-1">
+                    <div className="flex items-center gap-1.5">
+                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5" />
+                      <span className="text-white/70 text-xs font-medium">{match.team_a}</span>
                     </div>
-
-                    {/* Points and status */}
-                    <div className="text-left flex items-center gap-2">
-                      <div className="bg-slate-600 px-2 py-1 rounded text-xs">
-                        <span className="text-green-300 font-bold">
-                          {detail.points.toFixed(2)} Pts
-                        </span>
-                      </div>
-
-                      {/* Status indicators */}
-                      {detail.actual !== 'Not finished' &&
-                    <div className="flex gap-1">
-                          {detail.exactScore && <span className="text-lg">🎯</span>}
-                          {!detail.exactScore && detail.correctOutcome && <span className="text-lg">✅</span>}
-                          {!detail.exactScore && !detail.correctOutcome && <span className="text-lg text-red-400">❌</span>}
-                        </div>
-                    }
+                    {statusIcon && <span className="text-base">{statusIcon}</span>}
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-white/70 text-xs font-medium">{match.team_b}</span>
+                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5" />
                     </div>
                   </div>
-                </motion.div>);
 
+                  {/* Split card: prediction vs actual */}
+                  <div className="flex mx-3 mb-3 mt-1 rounded-lg overflow-hidden border border-white/8">
+                    {/* My prediction */}
+                    <div className="flex-1 flex flex-col items-center py-2.5 px-2 bg-blue-900/20">
+                      <span className="text-[9px] text-blue-400 uppercase tracking-widest font-semibold mb-1">הניחוש שלי</span>
+                      <span className="text-white font-bold text-lg tabular-nums leading-none">{detail.prediction}</span>
+                    </div>
+                    {/* Divider */}
+                    <div className="w-px bg-white/8 self-stretch" />
+                    {/* Actual result */}
+                    <div className={`flex-1 flex flex-col items-center py-2.5 px-2 ${
+                      !isFinished ? 'bg-slate-800/30' :
+                      detail.exactScore     ? 'bg-emerald-900/25' :
+                      detail.correctOutcome ? 'bg-amber-900/20' :
+                                              'bg-red-900/15'
+                    }`}>
+                      <span className={`text-[9px] uppercase tracking-widest font-semibold mb-1 ${
+                        !isFinished ? 'text-slate-500' :
+                        detail.exactScore     ? 'text-emerald-400' :
+                        detail.correctOutcome ? 'text-amber-400' :
+                                                'text-red-400'
+                      }`}>תוצאה</span>
+                      <span className="text-white font-bold text-lg tabular-nums leading-none">
+                        {isFinished ? detail.actual : '–'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Points bar */}
+                  {isFinished && (
+                    <div className={`px-3 pb-2.5 flex justify-end`}>
+                      <span className={`text-xs font-bold tabular-nums px-2.5 py-1 rounded-full ${
+                        detail.exactScore     ? 'bg-emerald-500/15 text-emerald-300' :
+                        detail.correctOutcome ? 'bg-amber-500/15 text-amber-300' :
+                                                'bg-red-500/15 text-red-300'
+                      }`}>
+                        {detail.points.toFixed(2)} pts
+                      </span>
+                    </div>
+                  )}
+                </motion.div>
+              );
           })}
           </div>
         </>
@@ -845,13 +906,25 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
         // מקום N מופיע ראשון (delay=0), מקום 1 מופיע אחרון (delay מקסימלי)
         const revealDelay = (sortedPredictions.length - 1 - index) * REVEAL_DELAY;
 
+        const verdictBg =
+          outcomeStatus?.type === 'exact'   ? 'bg-emerald-900/20 border border-emerald-500/30' :
+          outcomeStatus?.type === 'correct' ? 'bg-amber-900/15 border border-amber-500/25' :
+          outcomeStatus?.type === 'wrong'   ? 'bg-red-900/15 border border-red-500/20' :
+          'bg-slate-700/50 border border-white/5';
+
+        const rankBg =
+          outcomeStatus?.type === 'exact'   ? 'bg-emerald-500' :
+          outcomeStatus?.type === 'correct' ? 'bg-amber-500' :
+          outcomeStatus?.type === 'wrong'   ? 'bg-red-600' :
+          'bg-blue-600';
+
         return (
           <motion.div
             key={prediction.id}
             initial={{ opacity: 0, y: 40, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: revealDelay, duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
-            className="bg-slate-700/50 rounded-lg overflow-hidden">
+            className={`rounded-lg overflow-hidden ${verdictBg}`}>
 
             {/* פרטי הניחוש הבסיסיים */}
             <div className="p-3">
@@ -859,43 +932,36 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setExpandedPrediction(isExpanded ? null : prediction.id)}
-                    className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold hover:bg-blue-700 transition-colors">
-
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold transition-colors hover:opacity-80 ${rankBg}`}>
                     {index + 1}
                   </button>
 
-                  {/* קונטיינר שם המשתמש והניחוש - עיצוב חדש */}
                   <div className="flex-1 flex flex-col items-center">
                     <button
                       onClick={() => setExpandedPrediction(isExpanded ? null : prediction.id)}
                       className="text-white font-medium text-sm hover:text-blue-300 transition-colors text-center mb-0.5">
-
                       {getUserDisplayName(prediction.user_id)}
                     </button>
                     <div className="text-slate-400 text-base flex items-center gap-1">
-                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-4 h-4 " />
-                      <span className="text-slate-50 pr-2 pl-2 text-sm font-medium hover:text-blue-300 transition-colors">{prediction.predicted_score_a} - {prediction.predicted_score_b}</span>
-                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-4 h-4 " />
+                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-4 h-4" />
+                      <span className="text-slate-50 pr-2 pl-2 text-sm font-medium">{prediction.predicted_score_a} - {prediction.predicted_score_b}</span>
+                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-4 h-4" />
                     </div>
                   </div>
                 </div>
 
                 <div className="text-left flex items-center gap-2">
-                  <Badge className="bg-green-600/20 text-green-300 text-xs">
+                  <Badge className={`text-xs ${
+                    outcomeStatus?.type === 'exact'   ? 'bg-emerald-500/20 text-emerald-300' :
+                    outcomeStatus?.type === 'correct' ? 'bg-amber-500/20 text-amber-300' :
+                    outcomeStatus?.type === 'wrong'   ? 'bg-red-500/20 text-red-300' :
+                    'bg-green-600/20 text-green-300'
+                  }`}>
                     {(prediction.points_earned || 0).toFixed(2)} PTS
                   </Badge>
-                  {/* אייקון פגיעה רק עבור תוצאה מדויקת */}
-                  {outcomeStatus?.type === 'exact' &&
-                  <span className="text-lg">{outcomeStatus.icon}</span>
-                  }
-                  {/* X אדום עבור ניחוש שגיו */}
-                  {outcomeStatus?.type === 'wrong' &&
-                  <span className="text-lg text-red-400">❌</span>
-                  }
-                  {/* V ירוק עבור כיוון נכון */}
-                  {outcomeStatus?.type === 'correct' &&
-                  <span className="text-lg">{outcomeStatus.icon}</span>
-                  }
+                  {outcomeStatus?.type === 'exact'   && <span className="text-lg">🎯</span>}
+                  {outcomeStatus?.type === 'correct' && <span className="text-lg">✅</span>}
+                  {outcomeStatus?.type === 'wrong'   && <span className="text-lg">❌</span>}
                 </div>
               </div>
             </div>
@@ -908,11 +974,9 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="border-t border-slate-600 bg-slate-800/50">
-
+                className="border-t border-white/8 bg-black/20">
                   <ScoreBreakdownAnimated prediction={prediction} match={match} />
-                      </motion.div>
-                      }
+              </motion.div>}
             </AnimatePresence>
           </motion.div>);
 
