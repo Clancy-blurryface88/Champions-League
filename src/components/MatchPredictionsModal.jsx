@@ -134,7 +134,7 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
             <div className="flex flex-col items-center justify-center py-10 gap-3 text-center">
               <Lock className="w-7 h-7 text-amber-400/30" />
               <p className="text-white/40 text-sm">הניחושים ייחשפו לאחר נעילת המשחק</p>
-              <p className="text-white/20 text-xs">15 דקות לפני תחילת המשחק</p>
+              <p className="text-white/20 text-xs" dir="rtl">15 דקות לפני תחילת המשחק</p>
             </div>
           ) : uniquePredictions.length === 0 ? (
             <div className="flex justify-center py-10">

@@ -23,13 +23,11 @@ export function TextRoll({
 }) {
   const text = typeof children === 'string' ? children : '';
 
-  // Total time for one roll-out + roll-in cycle (in seconds)
   const cycleDuration = duration * 2;
-  // Hold time between cycles
   const holdTime = loopInterval / 1000 - cycleDuration;
 
   return (
-    <span className={cn('inline-flex', className)} aria-label={text} style={{ perspective: '500px' }}>
+    <span className={cn('inline-flex', className)} aria-label={text} style={{ perspective: '800px' }}>
       {text.split('').map((char, i) => {
         const charDelay = i * stagger;
 
@@ -41,7 +39,20 @@ export function TextRoll({
               loop
                 ? {
                     rotateX: [0, 90, 90, 0],
-                    filter: ['blur(0px)', 'blur(2px)', 'blur(2px)', 'blur(0px)'],
+                    filter: [
+                      'blur(0px) brightness(1)',
+                      'blur(1px) brightness(2)',
+                      'blur(1px) brightness(2)',
+                      'blur(0px) brightness(1)',
+                    ],
+                    color: ['#ffffff', '#f5c518', '#f5c518', '#ffffff'],
+                    scale: [1, 1.15, 1.15, 1],
+                    textShadow: [
+                      '0 0 0px rgba(245,197,24,0)',
+                      '0 0 24px rgba(245,197,24,1), 0 0 48px rgba(245,197,24,0.5)',
+                      '0 0 24px rgba(245,197,24,1), 0 0 48px rgba(245,197,24,0.5)',
+                      '0 0 0px rgba(245,197,24,0)',
+                    ],
                   }
                 : variants.exit.animate
             }
@@ -50,8 +61,8 @@ export function TextRoll({
                 ? {
                     duration: cycleDuration,
                     delay: charDelay,
-                    ease: 'easeInOut',
-                    times: [0, 0.45, 0.55, 1],
+                    ease: [0.4, 0, 0.2, 1],
+                    times: [0, 0.4, 0.6, 1],
                     repeat: Infinity,
                     repeatDelay: holdTime > 0 ? holdTime : 0,
                   }
