@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { TextRoll } from "@/components/core/text-roll";
 
-const HOST_FLAGS = ["🇺🇸", "🇨🇦", "🇲🇽"];
+const HOST_FLAGS = ["🇨🇦", "🇺🇸", "🇲🇽"];
 
 export default function TournamentHeader() {
   return (
