@@ -43,7 +43,11 @@ function SegmentedGroup({ items, delay = 60 }) {
               >
                 {item.pts}
               </span>
-              <span className={`text-[11px] font-medium text-center leading-tight px-1 mt-0.5 ${t.text}`}>{item.label}</span>
+              <span className={`text-[11px] font-medium text-center leading-tight px-1 mt-0.5 ${
+                item.theme === 'blue-grad'
+                  ? 'bg-gradient-to-br from-blue-400 to-cyan-300 bg-clip-text text-transparent'
+                  : t.text
+              }`}>{item.label}</span>
             </div>
           </React.Fragment>
         );
