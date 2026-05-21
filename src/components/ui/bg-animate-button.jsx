@@ -22,7 +22,7 @@ const RADIUS = {
 
 const ANIMATIONS = {
   spin:       "animate-spin",
-  pulse:      "animate-pulse",
+  pulse:      "animate-[pulse_4s_ease-in-out_infinite]",
   "spin-slow":"animate-[spin_3s_linear_infinite]",
   "spin-fast":"animate-[spin_0.5s_linear_infinite]",
 };
