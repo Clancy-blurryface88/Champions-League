@@ -551,10 +551,19 @@ export default function PredictionsResults() {
               <span className="text-xs uppercase tracking-[0.16em] text-white/25 font-semibold">בחר מחזור</span>
 
               {/* iOS picker — left side */}
+              {/* DEMO ONLY — remove fake rounds after testing */}
               <IosRoundPicker
-                rounds={availableRounds}
+                rounds={[
+                  ...availableRounds,
+                  { id: 'demo-2', name: 'Group Stage - 2' },
+                  { id: 'demo-3', name: 'Group Stage - 3' },
+                  { id: 'demo-4', name: 'Round of 16' },
+                  { id: 'demo-5', name: 'Quarter Finals' },
+                  { id: 'demo-6', name: 'Semi Finals' },
+                  { id: 'demo-7', name: 'Final' },
+                ]}
                 value={selectedRound}
-                onChange={setSelectedRound}
+                onChange={(id) => { if (!id.startsWith('demo-')) setSelectedRound(id); }}
               />
             </div>
 
