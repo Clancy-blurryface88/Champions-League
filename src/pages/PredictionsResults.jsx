@@ -493,7 +493,7 @@ export default function PredictionsResults() {
                 }}
               >
                 {/* Header with View Mode Toggle */}
-                <div className="px-4 py-5 border-b border-white/6">
+                <div className="px-4 py-5">
                   {/* Glass tab bar */}
                   <div
                     className="relative flex p-1 mb-4 rounded-2xl"
@@ -589,6 +589,9 @@ export default function PredictionsResults() {
                     </div>
                   }
                 </div>
+
+                {/* Gold gradient divider */}
+                <div className="h-px mx-0 bg-gradient-to-r from-transparent via-amber-400/35 to-transparent" />
 
                 {/* Content */}
                 <div className="p-4">
