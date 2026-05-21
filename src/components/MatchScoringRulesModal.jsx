@@ -15,12 +15,12 @@ const CARD_THEMES = {
 
 function SegmentedGroup({ items, delay = 60 }) {
   const { canvasRef } = useGridBeam({
-    rows: 2,
-    cols: items.length + 1,
+    rows: 3,
+    cols: items.length,
     colorVariant: "colorful",
     theme: "dark",
     duration: 3,
-    strength: 0.85,
+    strength: 0.7,
     breathe: true,
   });
 
