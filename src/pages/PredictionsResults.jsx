@@ -504,16 +504,16 @@ export default function PredictionsResults() {
                     }}
                   >
                     {[
-                      { key: 'all_predictions', label: 'כל הניחושים',  icon: '👁️' },
-                      { key: 'my_predictions',  label: 'הניחושים שלי', icon: '⭐' },
-                      { key: 'leaderboard',     label: 'דירוג המחזור', icon: '🏆' },
+                      { key: 'all_predictions', label: 'כל הניחושים'  },
+                      { key: 'my_predictions',  label: 'הניחושים שלי' },
+                      { key: 'leaderboard',     label: 'דירוג המחזור' },
                     ].map((tab) => {
                       const active = viewMode === tab.key;
                       return (
                         <button
                           key={tab.key}
                           onClick={() => setViewMode(tab.key)}
-                          className="relative flex-1 flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-xl transition-colors z-10"
+                          className="relative flex-1 flex items-center justify-center py-2.5 px-1 rounded-xl transition-colors z-10"
                           style={{ color: active ? '#000' : 'rgba(255,255,255,0.38)' }}
                         >
                           {active && (
@@ -527,7 +527,6 @@ export default function PredictionsResults() {
                               transition={{ type: 'spring', bounce: 0.2, duration: 0.45 }}
                             />
                           )}
-                          <span className="relative z-10 text-base leading-none">{tab.icon}</span>
                           <span className="relative z-10 text-[11px] font-bold tracking-wide leading-tight text-center whitespace-nowrap">
                             {tab.label}
                           </span>
