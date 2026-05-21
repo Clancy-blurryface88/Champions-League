@@ -5,14 +5,14 @@ import { Target, Trophy, Zap, Goal } from "lucide-react";
 import { ShineBorder } from "@/components/magicui/shine-border";
 
 const CARD_THEMES = {
-  emerald:        { text: "text-emerald-400", bg: "bg-emerald-500/8" },
-  blue:           { text: "text-blue-400",    bg: "bg-blue-500/8" },
-  rose:           { text: "text-rose-400",    bg: "bg-rose-500/8" },
-  sky:            { text: "text-sky-400",     bg: "bg-sky-500/8" },
-  amber:          { text: "text-amber-400",   bg: "bg-amber-500/8" },
-  muted:          { text: "text-slate-300",   bg: "bg-white/2" },
-  white:          { text: "text-white",       bg: "bg-white/3" },
-  'blue-grad':    { text: "text-blue-400",    bg: "bg-blue-500/8" },
+  emerald:     { text: "text-emerald-400", bg: "bg-emerald-500/8" },
+  blue:        { text: "text-blue-400",    bg: "bg-blue-500/8" },
+  rose:        { text: "text-rose-400",    bg: "bg-rose-500/8" },
+  sky:         { text: "text-sky-400",     bg: "bg-sky-500/8" },
+  amber:       { text: "text-amber-400",   bg: "bg-amber-500/8" },
+  muted:       { text: "text-slate-300",   bg: "bg-white/2" },
+  gold:        { text: "text-amber-400",   bg: "bg-amber-500/8" },
+  'blue-grad': { text: "text-blue-400",    bg: "bg-blue-500/8" },
 };
 
 function SegmentedGroup({ items, delay = 60 }) {
@@ -35,17 +35,17 @@ function SegmentedGroup({ items, delay = 60 }) {
             <div className={`flex flex-col items-center gap-1 py-3.5 flex-1 ${t.bg}`}>
               <span
                 className={`text-2xl font-bold tabular-nums leading-none ${
-                  item.theme === 'rose'
-                    ? t.text
-                    : 'bg-gradient-to-br from-amber-400 to-white bg-clip-text text-transparent'
+                  item.theme === 'rose'    ? t.text :
+                  item.theme === 'emerald' ? 'bg-gradient-to-br from-green-400 to-emerald-500 bg-clip-text text-transparent' :
+                  'bg-gradient-to-br from-amber-400 to-white bg-clip-text text-transparent'
                 }`}
               >
                 {item.pts}
               </span>
               <span className={`text-[11px] font-medium text-center leading-tight px-1 mt-0.5 ${
-                item.theme === 'rose'
-                  ? t.text
-                  : 'bg-gradient-to-br from-amber-400 to-white bg-clip-text text-transparent'
+                  item.theme === 'rose'    ? t.text :
+                  item.theme === 'emerald' ? 'bg-gradient-to-br from-green-400 to-emerald-500 bg-clip-text text-transparent' :
+                  'bg-gradient-to-br from-amber-400 to-white bg-clip-text text-transparent'
               }`}>{item.label}</span>
             </div>
           </React.Fragment>
@@ -132,9 +132,9 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
           <div className="space-y-3">
             <SectionLabel title="כיוון משחק" icon={Trophy} color="text-amber-400" />
             <SegmentedGroup delay={60} items={[
-              { label: "ניצחון ביתי", pts: match.home_win_points || 0, theme: "emerald" },
-              { label: "תיקו",        pts: match.draw_points || 0,      theme: "white"   },
-              { label: "ניצחון חוץ", pts: match.away_win_points || 0,  theme: "emerald" },
+              { label: "ניצחון ביתי", pts: match.home_win_points || 0, theme: "gold" },
+              { label: "תיקו",        pts: match.draw_points || 0,      theme: "gold" },
+              { label: "ניצחון חוץ", pts: match.away_win_points || 0,  theme: "gold" },
             ]} />
           </div>
 
