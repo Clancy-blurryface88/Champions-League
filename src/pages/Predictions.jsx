@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import LoadingScreen from "@/components/LoadingScreen";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import { Round } from "@/api/entities";
@@ -6,13 +6,14 @@ import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { User } from "@/api/entities";
 import { AiBrief } from "@/api/entities";
-import { ArrowLeft, Check, Calendar, Lock, HelpCircle, Eye, Sparkles } from "lucide-react";
+import { ArrowLeft, Check, Calendar, Lock, HelpCircle, Eye, Sparkles, ChevronDown } from "lucide-react";
 import AiBriefModal from "@/components/AiBriefModal"; // ADDED Eye icon
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import moment from "moment";
+import "moment/locale/he";
 import ScoreInput from "../components/predictions/ScoreInput";
 import PredictionSummary from "../components/predictions/PredictionSummary";
 import { GlowButton } from "../components/ui/GlowButton";
@@ -49,6 +50,7 @@ export default function Predictions() {
   const [briefs, setBriefs] = useState({});
   const [selectedMatchForBrief, setSelectedMatchForBrief] = useState(null);
   const [shouldAnimate, setShouldAnimate] = useState(false);
+  const [expandedDates, setExpandedDates] = useState(null); // null = not yet initialized
 
   const urlParams = new URLSearchParams(window.location.search);
   const roundId = urlParams.get('round_id');
@@ -241,6 +243,38 @@ export default function Predictions() {
     }));
   };
 
+  // Group matches by calendar date
+  const matchesByDate = useMemo(() => {
+    const groups = {};
+    matches.forEach(match => {
+      const key = moment(match.match_date).format('YYYY-MM-DD');
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(match);
+    });
+    return groups;
+  }, [matches]);
+
+  const sortedDateKeys = useMemo(() => Object.keys(matchesByDate).sort(), [matchesByDate]);
+
+  // Initialize expanded dates: expand today + future, collapse past
+  useEffect(() => {
+    if (sortedDateKeys.length === 0) return;
+    const today = moment().startOf('day');
+    const initial = new Set(sortedDateKeys.filter(k => !moment(k).isBefore(today)));
+    // If all dates are in the past, open the last one
+    if (initial.size === 0) initial.add(sortedDateKeys[sortedDateKeys.length - 1]);
+    setExpandedDates(initial);
+  }, [sortedDateKeys.join(',')]);
+
+  const toggleDate = (dateKey) => {
+    setExpandedDates(prev => {
+      const next = new Set(prev);
+      if (next.has(dateKey)) next.delete(dateKey);
+      else next.add(dateKey);
+      return next;
+    });
+  };
+
   const areAllPredictionsComplete = () => {
     const availableMatches = matches.filter((match) => !isMatchLocked(match.match_date));
 
@@ -407,9 +441,61 @@ export default function Predictions() {
         }
 
 
-        {/* Matches List - Carousel on Mobile */}
-        <div className="flex overflow-x-auto gap-8 snap-x snap-mandatory py-4 px-6 -mx-6 scrollbar-hide md:grid md:grid-cols-2 md:gap-6 md:space-y-0 md:mx-0 md:px-0">
-          {matches.map((match, index) => {
+        {/* Matches grouped by date */}
+        {expandedDates !== null && (
+        <div className="space-y-4">
+          {sortedDateKeys.map(dateKey => {
+            const dayMatches = matchesByDate[dateKey];
+            const isOpen = expandedDates.has(dateKey);
+            const isPast = moment(dateKey).isBefore(moment().startOf('day'));
+            const isToday = moment(dateKey).isSame(moment(), 'day');
+            const allLocked = dayMatches.every(m => isMatchLocked(m.match_date));
+            const lockedCount = dayMatches.filter(m => isMatchLocked(m.match_date)).length;
+            const openCount = dayMatches.length - lockedCount;
+
+            const dayLabel = isToday
+              ? 'היום'
+              : moment(dateKey).locale('he').format('dddd, D MMMM');
+
+            return (
+              <div key={dateKey}>
+                {/* Date header */}
+                <button
+                  onClick={() => toggleDate(dateKey)}
+                  className="w-full flex items-center gap-3 px-1 py-2 group"
+                >
+                  <div className="flex items-center gap-2 flex-1">
+                    <span className={`text-sm font-bold ${isToday ? 'text-amber-400' : isPast ? 'text-slate-500' : 'text-white'}`}>
+                      {dayLabel}
+                    </span>
+                    {isToday && (
+                      <span className="text-[10px] font-bold bg-amber-400/15 text-amber-400 border border-amber-400/30 px-2 py-0.5 rounded-full">
+                        היום
+                      </span>
+                    )}
+                    <span className="text-[10px] text-slate-600">
+                      {dayMatches.length} משחקים{openCount > 0 ? ` · ${openCount} פתוחים` : ' · נעולים'}
+                    </span>
+                  </div>
+                  <div className="h-px flex-1 bg-gradient-to-r from-white/8 to-transparent" />
+                  <ChevronDown
+                    className={`w-4 h-4 text-slate-500 group-hover:text-slate-300 transition-all duration-300 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
+
+                {/* Matches grid for this date */}
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      key="content"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3 pb-2">
+                        {dayMatches.map((match, index) => {
             const isLocked = isMatchLocked(match.match_date);
             const timeInfo = getTimeUntilLock(match.match_date);
             const prediction = predictions[match.id] || {};
@@ -419,8 +505,8 @@ export default function Predictions() {
                 key={match.id}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 }}
-                className="snap-center flex-shrink-0 w-[85vw] max-w-md md:w-auto h-full">
+                transition={{ delay: index * 0.06 }}
+                className="h-full">
 
                 <Card
                   className={`relative border transition-all duration-300 h-full flex flex-col ${
@@ -599,10 +685,18 @@ export default function Predictions() {
                     </div>
                   </CardContent>
                 </Card>
-              </motion.div>);
-
+              </motion.div>
+            );
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
           })}
         </div>
+        )}
 
         {/* Submit Button with Animation - החלפת הכפתור */}
         {matches.some((match) => !isMatchLocked(match.match_date)) &&
