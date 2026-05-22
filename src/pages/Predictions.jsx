@@ -537,35 +537,63 @@ export default function Predictions() {
                 {/* Date header */}
                 <button
                   onClick={() => toggleDate(dateKey)}
-                  className="w-full flex items-center px-1 py-2 group"
+                  className="w-full group"
                 >
-                  {/* Left spacer */}
-                  <div className="flex-1" />
+                  {/* Gradient line top */}
+                  <div className="h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent mb-3" />
 
-                  {/* Centered date */}
-                  <div className="flex flex-col items-center gap-0.5">
-                    {isToday ? (
-                      <span className="text-sm font-bold text-amber-400 whitespace-nowrap">היום</span>
-                    ) : (
-                      <>
-                        <span className={`text-sm font-bold whitespace-nowrap ${isPast ? 'text-slate-500' : 'text-white'}`}>
-                          {dayOfWeek}
-                        </span>
-                        <span className={`text-xs whitespace-nowrap ${isPast ? 'text-slate-600' : 'text-slate-400'}`}>
-                          {dayDate}
-                        </span>
-                      </>
-                    )}
-                    <span className="text-[10px] text-slate-600 mt-0.5">
-                      {dayMatches.length} משחקים
-                    </span>
-                  </div>
+                  <div className="flex items-center px-1 mb-3">
+                    {/* Left line */}
+                    <div className="flex-1 h-px bg-gradient-to-r from-transparent to-white/10" />
 
-                  {/* Right: chevron */}
-                  <div className="flex-1 flex justify-end">
-                    <ChevronDown
-                      className={`w-4 h-4 text-slate-500 group-hover:text-slate-300 transition-all duration-300 ${isOpen ? 'rotate-180' : ''}`}
-                    />
+                    {/* Center pill */}
+                    <div
+                      className="mx-3 flex items-center gap-3 px-4 py-2 rounded-full"
+                      style={{
+                        background: isToday
+                          ? 'linear-gradient(135deg,rgba(245,197,24,0.15),rgba(245,197,24,0.05))'
+                          : isPast
+                            ? 'rgba(255,255,255,0.03)'
+                            : 'rgba(255,255,255,0.06)',
+                        border: isToday
+                          ? '1px solid rgba(245,197,24,0.35)'
+                          : '1px solid rgba(255,255,255,0.1)',
+                      }}
+                    >
+                      {/* Date text */}
+                      <div className="flex flex-col items-center">
+                        {isToday ? (
+                          <span className="text-xs font-bold text-amber-400 whitespace-nowrap">היום</span>
+                        ) : (
+                          <span className={`text-xs font-bold whitespace-nowrap ${isPast ? 'text-slate-500' : 'text-white'}`}>
+                            {dayOfWeek}
+                          </span>
+                        )}
+                        {!isToday && (
+                          <span className={`text-[10px] whitespace-nowrap ${isPast ? 'text-slate-600' : 'text-slate-400'}`}>
+                            {dayDate}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Divider dot */}
+                      <span className={`w-1 h-1 rounded-full ${isPast ? 'bg-slate-700' : 'bg-white/20'}`} />
+
+                      {/* Match count */}
+                      <span className={`text-[10px] font-semibold tabular-nums ${isPast ? 'text-slate-600' : 'text-slate-400'}`}>
+                        {dayMatches.length} משחקים
+                      </span>
+
+                      {/* Chevron */}
+                      <ChevronDown
+                        className={`w-3.5 h-3.5 transition-all duration-300 ${
+                          isPast ? 'text-slate-600' : 'text-slate-400'
+                        } group-hover:text-white ${isOpen ? 'rotate-180' : ''}`}
+                      />
+                    </div>
+
+                    {/* Right line */}
+                    <div className="flex-1 h-px bg-gradient-to-l from-transparent to-white/10" />
                   </div>
                 </button>
 
