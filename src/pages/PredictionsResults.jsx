@@ -33,10 +33,10 @@ import { calculateMatchMaxPotentialPoints } from "../components/utils/calculateM
 
 
 const OUTCOME_COLORS = {
-  exact:   { hex: '#34d399', text: 'text-emerald-400', border: 'border-emerald-500/30' },
-  correct: { hex: '#fbbf24', text: 'text-amber-400',   border: 'border-amber-500/30'   },
-  wrong:   { hex: '#f87171', text: 'text-red-400',     border: 'border-red-500/25'     },
-  default: { hex: '#34d399', text: 'text-emerald-400', border: 'border-emerald-500/30' },
+  exact:   { hex: '#34d399', text: 'text-emerald-400', border: 'border-emerald-500/30', divider: 'bg-emerald-400/40' },
+  correct: { hex: '#fbbf24', text: 'text-amber-400',   border: 'border-amber-500/30',   divider: 'bg-amber-400/40'   },
+  wrong:   { hex: '#f87171', text: 'text-red-400',     border: 'border-red-500/25',     divider: 'bg-red-400/40'     },
+  default: { hex: '#34d399', text: 'text-emerald-400', border: 'border-emerald-500/30', divider: 'bg-emerald-400/40' },
 };
 
 function AnimatedDonut({ percentage, size = 64, outcomeType }) {
@@ -128,12 +128,15 @@ function ScoreBreakdownAnimated({ prediction, match, outcomeType }) {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-            className={`border-t mt-1 pt-2 flex justify-between items-center px-2 ${c.border}`}
+            className="mt-1"
           >
-            <span className="text-white text-xs font-semibold">סה"כ</span>
-            <span className={`text-sm font-bold tabular-nums ${c.text}`}>
-              {(prediction.points_earned || 0).toFixed(2)}
-            </span>
+            <div className={`h-px mx-2 mb-2 ${c.divider}`} />
+            <div className="flex justify-between items-center px-2">
+              <span className="text-white text-xs font-semibold">סה"כ</span>
+              <span className={`text-sm font-bold tabular-nums ${c.text}`}>
+                {(prediction.points_earned || 0).toFixed(2)}
+              </span>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
