@@ -1094,7 +1094,12 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="border-t border-white/8 bg-black/20">
+                className={`border-t bg-black/20 ${
+                  outcomeStatus?.type === 'exact'   ? 'border-emerald-400/35' :
+                  outcomeStatus?.type === 'correct' ? 'border-amber-400/35' :
+                  outcomeStatus?.type === 'wrong'   ? 'border-red-400/30' :
+                  'border-white/8'
+                }`}>
                   <ScoreBreakdownAnimated prediction={prediction} match={match} outcomeType={outcomeStatus?.type} />
               </motion.div>}
             </AnimatePresence>
