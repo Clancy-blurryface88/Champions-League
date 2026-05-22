@@ -6,7 +6,7 @@ import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { User } from "@/api/entities";
 import { AiBrief } from "@/api/entities";
-import { ArrowLeft, Check, Calendar, Lock, HelpCircle, Eye, Sparkles, ChevronDown } from "lucide-react";
+import { ArrowLeft, Check, Calendar, Lock, HelpCircle, Eye, Sparkles, ChevronDown, X } from "lucide-react";
 import AiBriefModal from "@/components/AiBriefModal"; // ADDED Eye icon
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -50,6 +50,7 @@ export default function Predictions() {
   const [briefs, setBriefs] = useState({});
   const [selectedMatchForBrief, setSelectedMatchForBrief] = useState(null);
   const [shouldAnimate, setShouldAnimate] = useState(false);
+  const [showSubmittedBanner, setShowSubmittedBanner] = useState(true);
   const [expandedDates, setExpandedDates] = useState(null); // null = not yet initialized
   const [activeDateKey, setActiveDateKey] = useState(null);
   const dateRefs = useRef({});
@@ -214,6 +215,7 @@ export default function Predictions() {
 
       setPredictions(predictionsMap);
       setSubmitted(hasSubmittedPredictions);
+      setShowSubmittedBanner(true);
       setShowSummary(false);
 
     } catch (error) {
@@ -449,22 +451,34 @@ export default function Predictions() {
           </div>
         }
 
-        {submitted &&
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-green-900/50 border border-green-700 rounded-lg p-6 mb-6 text-center">
-
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <Check className="w-8 h-8 text-green-400" />
-              <h3 className="text-xl font-bold text-green-300">הניחושים נשלחו בהצלחה</h3>
-            </div>
-
-            <p className="text-green-100 text-sm">
-              ניתן לעדכן ניחושים עד 15 דקות לפני תחילת המשחק
-            </p>
-          </motion.div>
-        }
+        <AnimatePresence>
+          {submitted && showSubmittedBanner && (
+            <motion.div
+              initial={{ opacity: 0, y: -6, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: 'auto' }}
+              exit={{ opacity: 0, y: -6, height: 0 }}
+              transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
+              className="overflow-hidden mb-3"
+            >
+              <div
+                className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl cursor-pointer"
+                style={{
+                  background: 'rgba(52,211,153,0.08)',
+                  border: '1px solid rgba(52,211,153,0.22)',
+                }}
+                onClick={() => setShowSubmittedBanner(false)}
+              >
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                  <span className="text-emerald-300 text-xs font-medium">
+                    ניחושים נשלחו · ניתן לעדכן עד 15 דקות לפני כל משחק
+                  </span>
+                </div>
+                <X className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
 
         {/* Week Strip */}
