@@ -469,7 +469,15 @@ export default function Predictions() {
 
         {/* Week Strip */}
         {expandedDates !== null && sortedDateKeys.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1 mb-2">
+          <div
+            className="sticky top-0 z-20 -mx-4 px-4 pt-2 pb-2 mb-2"
+            style={{
+              background: 'rgba(5,10,20,0.90)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+            }}
+          >
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
             {sortedDateKeys.map(dateKey => {
               const isActive = activeDateKey === dateKey;
               const isToday  = moment(dateKey).isSame(moment(), 'day');
@@ -515,6 +523,7 @@ export default function Predictions() {
               );
             })}
           </div>
+          </div>
         )}
 
         {/* Matches grouped by date */}
@@ -539,7 +548,7 @@ export default function Predictions() {
                   ref={el => dateRefs.current[dateKey] = el}
                   onClick={() => toggleDate(dateKey)}
                   className="w-full group"
-                  style={{ scrollMarginTop: '80px' }}
+                  style={{ scrollMarginTop: '90px' }}
                 >
                   {/* Gradient line top */}
                   <div className="h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent mb-3" />
