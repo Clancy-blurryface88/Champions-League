@@ -1,13 +1,36 @@
 import TeamFlag from "@/components/TeamFlag";
 import OrbitSpinner from "@/components/OrbitSpinner";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Match } from "@/api/entities";
 
-export default function PredictionSummary({ predictions, matches, onConfirm, onCancel, saving }) {
-  const predictionsList = Object.entries(predictions).map(([matchId, prediction]) => {
-    const match = matches.find((m) => m.id === matchId);
-    return { match, prediction };
-  }).filter((item) => item.match);
+export default function PredictionSummary({ predictions, roundId, onConfirm, onCancel, saving }) {
+  const [matches, setMatches] = useState([]);
+  const [loadingMatches, setLoadingMatches] = useState(true);
+
+  // Fetch fresh match data when the modal opens
+  useEffect(() => {
+    setLoadingMatches(true);
+    Match.filter({ round_id: roundId })
+      .then(fresh => {
+        setMatches(fresh.sort((a, b) => new Date(a.match_date) - new Date(b.match_date)));
+      })
+      .catch(() => {})
+      .finally(() => setLoadingMatches(false));
+  }, [roundId]);
+
+  const predictionsList = matches.length === 0 ? [] : Object.entries(predictions)
+    .map(([matchId, prediction]) => {
+      const match = matches.find(m => String(m.id) === String(matchId));
+      return { match, prediction };
+    })
+    .filter(({ match, prediction }) =>
+      match &&
+      match.team_a &&
+      match.team_b &&
+      prediction.predicted_score_a != null &&
+      prediction.predicted_score_b != null
+    );
 
   return (
     <motion.div
@@ -59,66 +82,73 @@ export default function PredictionSummary({ predictions, matches, onConfirm, onC
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
             style={{ background: 'rgba(245,197,24,0.10)', border: '1px solid rgba(245,197,24,0.28)' }}
           >
-            <span className="text-amber-400 font-black text-sm tabular-nums">{predictionsList.length}</span>
+            <span className="text-amber-400 font-black text-sm tabular-nums">
+              {loadingMatches ? '…' : predictionsList.length}
+            </span>
             <span className="text-amber-400/60 text-[11px] font-medium">ניחושים</span>
           </div>
         </div>
 
         {/* Match rows */}
         <div className="overflow-y-auto" style={{ maxHeight: '52vh' }}>
-          <div className="px-4 py-3 space-y-2">
-            {predictionsList.map(({ match, prediction }, index) => (
-              <motion.div
-                key={match.id}
-                initial={{ opacity: 1 }}
-                animate={{ opacity: 1 }}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-2xl"
-                style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                }}
-              >
-                {/* Team A — right side (RTL: home) */}
-                <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
-                  <span className="text-white/80 text-xs font-semibold truncate text-right">{match.team_a}</span>
-                  <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-7 h-7 flex-shrink-0" />
-                </div>
+          {loadingMatches ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <OrbitSpinner size={36} />
+              <span className="text-white/40 text-sm">טוען משחקים...</span>
+            </div>
+          ) : (
+            <div className="px-4 py-3 space-y-2">
+              {predictionsList.map(({ match, prediction }) => (
+                <div
+                  key={match.id}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-2xl"
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                  }}
+                >
+                  {/* Team A — right side */}
+                  <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
+                    <span className="text-white/80 text-xs font-semibold truncate text-right">{match.team_a}</span>
+                    <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-7 h-7 flex-shrink-0" />
+                  </div>
 
-                {/* Score pill */}
-                <div className="flex flex-col items-center flex-shrink-0 w-[72px]">
-                  <div
-                    className="w-full flex items-center justify-center px-2 py-1 rounded-xl"
-                    style={{
-                      background: 'rgba(245,197,24,0.11)',
-                      border: '1px solid rgba(245,197,24,0.32)',
-                      boxShadow: '0 0 12px rgba(245,197,24,0.10)',
-                    }}
-                  >
-                    <span
-                      className="font-black text-sm tabular-nums"
+                  {/* Score pill */}
+                  <div className="flex flex-col items-center flex-shrink-0 w-[72px]">
+                    <div
+                      className="w-full flex items-center justify-center px-2 py-1 rounded-xl"
                       style={{
-                        background: 'linear-gradient(90deg, #f5c518, #fde68a)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
+                        background: 'rgba(245,197,24,0.11)',
+                        border: '1px solid rgba(245,197,24,0.32)',
+                        boxShadow: '0 0 12px rgba(245,197,24,0.10)',
                       }}
                     >
-                      {prediction.predicted_score_a} – {prediction.predicted_score_b}
-                    </span>
+                      <span
+                        className="font-black text-sm tabular-nums"
+                        style={{
+                          background: 'linear-gradient(90deg, #f5c518, #fde68a)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          backgroundClip: 'text',
+                        }}
+                      >
+                        {prediction.predicted_score_a} – {prediction.predicted_score_b}
+                      </span>
+                    </div>
+                    {match.league && (
+                      <span className="text-[9px] text-amber-400/45 font-medium mt-0.5 tracking-wide">{match.league}</span>
+                    )}
                   </div>
-                  {match.league && (
-                    <span className="text-[9px] text-amber-400/45 font-medium mt-0.5 tracking-wide">{match.league}</span>
-                  )}
-                </div>
 
-                {/* Team B — left side */}
-                <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-start">
-                  <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-7 h-7 flex-shrink-0" />
-                  <span className="text-white/80 text-xs font-semibold truncate">{match.team_b}</span>
+                  {/* Team B — left side */}
+                  <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-start">
+                    <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-7 h-7 flex-shrink-0" />
+                    <span className="text-white/80 text-xs font-semibold truncate">{match.team_b}</span>
+                  </div>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -126,16 +156,15 @@ export default function PredictionSummary({ predictions, matches, onConfirm, onC
           className="px-4 pt-3 pb-6 space-y-2"
           style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
         >
-          {/* Confirm — gold gradient */}
           <button
             onClick={onConfirm}
-            disabled={saving}
+            disabled={saving || loadingMatches}
             className="w-full py-3.5 rounded-2xl font-bold text-base text-black transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               background: 'linear-gradient(90deg, #f5c518 0%, #fde68a 50%, #f5c518 100%)',
               backgroundSize: '200% 100%',
-              animation: saving ? 'none' : 'shine 2.5s linear infinite',
-              boxShadow: saving ? 'none' : '0 4px 24px rgba(245,197,24,0.38)',
+              animation: (saving || loadingMatches) ? 'none' : 'shine 2.5s linear infinite',
+              boxShadow: (saving || loadingMatches) ? 'none' : '0 4px 24px rgba(245,197,24,0.38)',
             }}
           >
             {saving ? (
@@ -148,7 +177,6 @@ export default function PredictionSummary({ predictions, matches, onConfirm, onC
             )}
           </button>
 
-          {/* Cancel — ghost */}
           <button
             onClick={onCancel}
             disabled={saving}

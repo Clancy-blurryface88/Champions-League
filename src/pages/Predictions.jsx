@@ -880,9 +880,8 @@ export default function Predictions() {
         <AnimatePresence>
           {showSummary &&
           <PredictionSummary
-            currentRound={currentRound}
             predictions={predictions}
-            matches={matches}
+            roundId={roundId}
             onConfirm={handleConfirmPredictions}
             onCancel={handleCancelPredictions}
             saving={saving} />
