@@ -6,7 +6,7 @@ import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { User } from "@/api/entities";
 import { AiBrief } from "@/api/entities";
-import { ArrowLeft, Check, Calendar, Lock, HelpCircle, Eye, Sparkles, ChevronDown, X } from "lucide-react";
+import { ArrowLeft, Check, Calendar, Lock, HelpCircle, Eye, Sparkles, ChevronDown } from "lucide-react";
 import AiBriefModal from "@/components/AiBriefModal"; // ADDED Eye icon
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -50,7 +50,6 @@ export default function Predictions() {
   const [briefs, setBriefs] = useState({});
   const [selectedMatchForBrief, setSelectedMatchForBrief] = useState(null);
   const [shouldAnimate, setShouldAnimate] = useState(false);
-  const [showSubmittedBanner, setShowSubmittedBanner] = useState(true);
   const [expandedDates, setExpandedDates] = useState(null); // null = not yet initialized
   const [activeDateKey, setActiveDateKey] = useState(null);
   const dateRefs = useRef({});
@@ -215,7 +214,6 @@ export default function Predictions() {
 
       setPredictions(predictionsMap);
       setSubmitted(hasSubmittedPredictions);
-      setShowSubmittedBanner(true);
       setShowSummary(false);
 
     } catch (error) {
@@ -452,29 +450,48 @@ export default function Predictions() {
         }
 
         <AnimatePresence>
-          {submitted && showSubmittedBanner && (
+          {submitted && (
             <motion.div
-              initial={{ opacity: 0, y: -6, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: 'auto' }}
-              exit={{ opacity: 0, y: -6, height: 0 }}
-              transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
-              className="overflow-hidden mb-3"
+              initial={{ opacity: 0, scale: 0.94, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: -10 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 26 }}
+              className="relative mb-4 rounded-2xl overflow-hidden"
+              style={{
+                background: 'rgba(52,211,153,0.07)',
+                border: '1px solid rgba(52,211,153,0.22)',
+              }}
             >
-              <div
-                className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl cursor-pointer"
+              {/* Animated glow pulse */}
+              <motion.div
+                className="absolute inset-0"
+                animate={{ opacity: [0.4, 0.9, 0.4] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                 style={{
-                  background: 'rgba(52,211,153,0.08)',
-                  border: '1px solid rgba(52,211,153,0.22)',
+                  background: 'radial-gradient(ellipse at 50% 0%, rgba(52,211,153,0.14) 0%, transparent 70%)',
+                  pointerEvents: 'none',
                 }}
-                onClick={() => setShowSubmittedBanner(false)}
-              >
-                <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                  <span className="text-emerald-300 text-xs font-medium">
-                    ניחושים נשלחו · ניתן לעדכן עד 15 דקות לפני כל משחק
-                  </span>
+              />
+
+              <div className="relative flex flex-col items-center gap-2 px-4 py-3 text-center">
+                {/* Pulsing check icon */}
+                <motion.div
+                  animate={{ scale: [1, 1.13, 1] }}
+                  transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'rgba(52,211,153,0.15)',
+                    border: '1px solid rgba(52,211,153,0.35)',
+                    boxShadow: '0 0 14px rgba(52,211,153,0.20)',
+                  }}
+                >
+                  <Check className="w-4 h-4 text-emerald-400" />
+                </motion.div>
+
+                <div>
+                  <p className="text-emerald-300 text-sm font-semibold">הניחושים נשלחו בהצלחה</p>
+                  <p className="text-emerald-400/50 text-xs mt-0.5">ניתן לעדכן עד 15 דקות לפני תחילת כל משחק</p>
                 </div>
-                <X className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
               </div>
             </motion.div>
           )}
