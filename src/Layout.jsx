@@ -469,7 +469,7 @@ export default function Layout({ children, currentPageName }) {
         }
       `}</style>
       <div
-        className="min-h-screen text-white relative overflow-hidden"
+        className="min-h-screen text-white relative overflow-x-clip"
         style={{ background: '#030d1a', fontFamily: "'Outfit', sans-serif" }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
