@@ -569,7 +569,7 @@ export default function Predictions() {
                             <span className={`text-xs font-bold whitespace-nowrap ${isPast ? 'text-slate-500' : 'text-white'}`}>
                               {dayOfWeek}
                             </span>
-                            <span className={`text-[10px] whitespace-nowrap ${isPast ? 'text-slate-600' : 'text-slate-400'}`}>
+                            <span className={`text-xs font-bold whitespace-nowrap ${isPast ? 'text-slate-500' : 'text-white'}`}>
                               {dayDate}
                             </span>
                           </div>
