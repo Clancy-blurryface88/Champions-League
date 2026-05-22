@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import LoadingScreen from "@/components/LoadingScreen";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import { Round } from "@/api/entities";
@@ -51,6 +51,8 @@ export default function Predictions() {
   const [selectedMatchForBrief, setSelectedMatchForBrief] = useState(null);
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const [expandedDates, setExpandedDates] = useState(null); // null = not yet initialized
+  const [activeDateKey, setActiveDateKey] = useState(null);
+  const dateRefs = useRef({});
 
   const urlParams = new URLSearchParams(window.location.search);
   const roundId = urlParams.get('round_id');
@@ -261,9 +263,11 @@ export default function Predictions() {
     if (sortedDateKeys.length === 0) return;
     const today = moment().startOf('day');
     const initial = new Set(sortedDateKeys.filter(k => !moment(k).isBefore(today)));
-    // If all dates are in the past, open the last one
     if (initial.size === 0) initial.add(sortedDateKeys[sortedDateKeys.length - 1]);
     setExpandedDates(initial);
+    // Set active date to today or first upcoming
+    const firstOpen = sortedDateKeys.find(k => !moment(k).isBefore(today)) || sortedDateKeys[sortedDateKeys.length - 1];
+    setActiveDateKey(firstOpen);
   }, [sortedDateKeys.join(',')]);
 
   const toggleDate = (dateKey) => {
@@ -272,6 +276,28 @@ export default function Predictions() {
       if (next.has(dateKey)) next.delete(dateKey);
       else next.add(dateKey);
       return next;
+    });
+  };
+
+  const scrollToDate = (dateKey) => {
+    setActiveDateKey(dateKey);
+    // Ensure section is open
+    setExpandedDates(prev => {
+      const next = new Set(prev);
+      next.add(dateKey);
+      return next;
+    });
+    setTimeout(() => {
+      dateRefs.current[dateKey]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
+
+  // Helper: does a date have unlocked matches with missing predictions?
+  const dateHasMissingPredictions = (dateKey) => {
+    return (matchesByDate[dateKey] || []).some(m => {
+      if (isMatchLocked(m.match_date)) return false;
+      const p = predictions[m.id];
+      return !p || p.predicted_score_a == null || p.predicted_score_b == null;
     });
   };
 
@@ -441,6 +467,56 @@ export default function Predictions() {
         }
 
 
+        {/* Week Strip */}
+        {expandedDates !== null && sortedDateKeys.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1 mb-2">
+            {sortedDateKeys.map(dateKey => {
+              const isActive = activeDateKey === dateKey;
+              const isToday  = moment(dateKey).isSame(moment(), 'day');
+              const isPast   = moment(dateKey).isBefore(moment().startOf('day'));
+              const count    = matchesByDate[dateKey]?.length || 0;
+              const hasMissing = dateHasMissingPredictions(dateKey);
+              const dayName  = isToday ? 'היום' : moment(dateKey).locale('he').format('ddd');
+              const dayNum   = moment(dateKey).format('D');
+
+              return (
+                <button
+                  key={dateKey}
+                  onClick={() => scrollToDate(dateKey)}
+                  className="relative flex-shrink-0 flex flex-col items-center gap-1 pt-2 pb-2.5 px-3 rounded-2xl transition-all duration-250"
+                  style={{
+                    background: isActive
+                      ? 'linear-gradient(135deg,#f5c518,#fde68a)'
+                      : 'rgba(255,255,255,0.05)',
+                    border: isActive
+                      ? '1px solid rgba(245,197,24,0.6)'
+                      : '1px solid rgba(255,255,255,0.08)',
+                    minWidth: 56,
+                  }}
+                >
+                  {/* Missing predictions indicator */}
+                  {hasMissing && !isPast && (
+                    <span
+                      className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-orange-500 border-2 border-[#060e1c] z-10"
+                      title="יש משחקים ללא ניחוש"
+                    />
+                  )}
+
+                  <span className={`text-[10px] font-semibold leading-none ${isActive ? 'text-black/60' : isPast ? 'text-slate-600' : 'text-slate-400'}`}>
+                    {dayName}
+                  </span>
+                  <span className={`text-base font-black leading-none ${isActive ? 'text-black' : isPast ? 'text-slate-500' : 'text-white'}`}>
+                    {dayNum}
+                  </span>
+                  <span className={`text-[9px] font-bold leading-none ${isActive ? 'text-black/50' : 'text-slate-600'}`}>
+                    {count} משחקים
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {/* Matches grouped by date */}
         {expandedDates !== null && (
         <div className="space-y-4">
@@ -457,7 +533,7 @@ export default function Predictions() {
             const dayDate   = moment(dateKey).locale('he').format('D MMMM');
 
             return (
-              <div key={dateKey}>
+              <div key={dateKey} ref={el => dateRefs.current[dateKey] = el}>
                 {/* Date header */}
                 <button
                   onClick={() => toggleDate(dateKey)}
