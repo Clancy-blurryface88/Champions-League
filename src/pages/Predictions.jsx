@@ -533,11 +533,13 @@ export default function Predictions() {
             const dayDate   = moment(dateKey).locale('he').format('D MMMM');
 
             return (
-              <div key={dateKey} ref={el => dateRefs.current[dateKey] = el}>
+              <div key={dateKey}>
                 {/* Date header */}
                 <button
+                  ref={el => dateRefs.current[dateKey] = el}
                   onClick={() => toggleDate(dateKey)}
                   className="w-full group"
+                  style={{ scrollMarginTop: '80px' }}
                 >
                   {/* Gradient line top */}
                   <div className="h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent mb-3" />
