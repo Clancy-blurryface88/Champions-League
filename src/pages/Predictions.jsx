@@ -314,6 +314,15 @@ export default function Predictions() {
     });
   };
 
+  const predictionProgress = () => {
+    const available = matches.filter((match) => !isMatchLocked(match.match_date));
+    const filled = available.filter((match) => {
+      const p = predictions[match.id];
+      return p && p.predicted_score_a != null && p.predicted_score_b != null;
+    });
+    return { filled: filled.length, total: available.length };
+  };
+
   const handleSubmit = () => {
     // The button will be disabled if predictions are not complete, so no alert needed here.
     setShowSummary(true);
@@ -870,7 +879,10 @@ export default function Predictions() {
                   <span>שולח...</span>
                 </div>
               ) : (
-                <span>{submitted ? 'עדכן ניחושים' : 'שלח ניחושים'}</span>
+                <span>
+                  {submitted ? 'עדכן ניחושים' : 'שלח ניחושים'}
+                  {(() => { const { filled, total } = predictionProgress(); return total > 0 ? ` (${filled}/${total})` : ''; })()}
+                </span>
               )}
             </BgAnimateButton>
           </motion.div>
