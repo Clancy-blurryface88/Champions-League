@@ -70,9 +70,8 @@ export default function PredictionSummary({ predictions, matches, onConfirm, onC
             {predictionsList.map(({ match, prediction }, index) => (
               <motion.div
                 key={match.id}
-                initial={{ opacity: 0, x: 16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.04, duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
+                initial={{ opacity: 1 }}
+                animate={{ opacity: 1 }}
                 className="flex items-center gap-2 px-3 py-2.5 rounded-2xl"
                 style={{
                   background: 'rgba(255,255,255,0.04)',
