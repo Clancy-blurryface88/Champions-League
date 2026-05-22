@@ -561,28 +561,23 @@ export default function Predictions() {
                       }}
                     >
                       {/* Date text */}
-                      <div className="flex flex-col items-center">
+                      <div className="flex flex-col items-center gap-0.5">
                         {isToday ? (
                           <span className="text-xs font-bold text-amber-400 whitespace-nowrap">היום</span>
                         ) : (
-                          <span className={`text-xs font-bold whitespace-nowrap ${isPast ? 'text-slate-500' : 'text-white'}`}>
-                            {dayOfWeek}
-                          </span>
+                          <div className="flex items-baseline gap-1.5">
+                            <span className={`text-xs font-bold whitespace-nowrap ${isPast ? 'text-slate-500' : 'text-white'}`}>
+                              {dayOfWeek}
+                            </span>
+                            <span className={`text-[10px] whitespace-nowrap ${isPast ? 'text-slate-600' : 'text-slate-400'}`}>
+                              {dayDate}
+                            </span>
+                          </div>
                         )}
-                        {!isToday && (
-                          <span className={`text-[10px] whitespace-nowrap ${isPast ? 'text-slate-600' : 'text-slate-400'}`}>
-                            {dayDate}
-                          </span>
-                        )}
+                        <span className={`text-[10px] ${isPast ? 'text-slate-700' : 'text-slate-500'}`}>
+                          {dayMatches.length} משחקים
+                        </span>
                       </div>
-
-                      {/* Divider dot */}
-                      <span className={`w-1 h-1 rounded-full ${isPast ? 'bg-slate-700' : 'bg-white/20'}`} />
-
-                      {/* Match count */}
-                      <span className={`text-[10px] font-semibold tabular-nums ${isPast ? 'text-slate-600' : 'text-slate-400'}`}>
-                        {dayMatches.length} משחקים
-                      </span>
 
                       {/* Chevron */}
                       <ChevronDown
