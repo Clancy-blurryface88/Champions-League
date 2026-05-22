@@ -548,7 +548,7 @@ export default function Predictions() {
 
                     {/* Center pill */}
                     <div
-                      className="mx-3 flex items-center gap-3 px-4 py-2 rounded-full"
+                      className="mx-3 flex items-center gap-3 px-4 py-2 rounded-2xl"
                       style={{
                         background: isToday
                           ? 'linear-gradient(135deg,rgba(245,197,24,0.15),rgba(245,197,24,0.05))'
