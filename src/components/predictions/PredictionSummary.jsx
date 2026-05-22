@@ -8,7 +8,6 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
   const [matches, setMatches] = useState([]);
   const [loadingMatches, setLoadingMatches] = useState(true);
 
-  // Fetch fresh match data when the modal opens
   useEffect(() => {
     setLoadingMatches(true);
     Match.filter({ round_id: roundId })
@@ -19,15 +18,12 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
       .finally(() => setLoadingMatches(false));
   }, [roundId]);
 
-  const predictionsList = matches.length === 0 ? [] : Object.entries(predictions)
-    .map(([matchId, prediction]) => {
-      const match = matches.find(m => String(m.id) === String(matchId));
-      return { match, prediction };
-    })
-    .filter(({ match, prediction }) =>
-      match &&
-      match.team_a &&
-      match.team_b &&
+  // Iterate over sorted matches (not predictions) so order is guaranteed
+  // and match.id lookup works regardless of string/number type coercion
+  const predictionsList = matches
+    .map(match => ({ match, prediction: predictions[match.id] }))
+    .filter(({ prediction }) =>
+      prediction &&
       prediction.predicted_score_a != null &&
       prediction.predicted_score_b != null
     );
@@ -46,22 +42,29 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 80, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 280, damping: 30 }}
-        className="w-full max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden"
+        className="w-full max-w-md rounded-t-3xl sm:rounded-3xl flex flex-col"
         style={{
           background: 'linear-gradient(160deg, rgba(8,18,38,0.99) 0%, rgba(4,10,22,0.99) 100%)',
           border: '1px solid rgba(245,197,24,0.18)',
           boxShadow: '0 -8px 60px rgba(245,197,24,0.10), 0 0 0 1px rgba(255,255,255,0.04)',
+          // 'clip' visually clips the border-radius without creating a scroll container,
+          // avoiding the framer-motion transform + overflow:hidden compositing bug
+          // that causes inner overflow-y:auto content to disappear on scroll.
+          overflow: 'clip',
+          maxHeight: '90vh',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle – mobile */}
-        <div className="flex justify-center pt-3 sm:hidden">
+        <div className="flex justify-center pt-3 sm:hidden flex-shrink-0">
           <div className="w-10 h-1 rounded-full bg-white/20" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-4"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <div
+          className="flex items-center justify-between px-5 pt-4 pb-4 flex-shrink-0"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+        >
           <div>
             <h2
               className="text-lg font-bold leading-tight"
@@ -89,8 +92,11 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
           </div>
         </div>
 
-        {/* Match rows */}
-        <div className="overflow-y-auto" style={{ maxHeight: '52vh' }}>
+        {/* Match rows – flex-1 so it fills available space, overflow-y for scroll */}
+        <div
+          className="overflow-y-auto flex-1"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
           {loadingMatches ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3">
               <OrbitSpinner size={36} />
@@ -153,7 +159,7 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
 
         {/* Footer */}
         <div
-          className="px-4 pt-3 pb-6 space-y-2"
+          className="px-4 pt-3 pb-6 space-y-2 flex-shrink-0"
           style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
         >
           <button
