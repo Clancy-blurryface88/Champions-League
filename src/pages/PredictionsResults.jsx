@@ -858,7 +858,7 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
             className="rounded-2xl p-5 mb-4 flex flex-col items-center gap-3"
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
           >
-            <span className="text-xs uppercase tracking-[0.18em] text-white/30 font-semibold">סיכום ניחושים שלי</span>
+            <span className="text-xs uppercase tracking-[0.18em] text-white/60 font-semibold">סיכום ניחושים שלי</span>
 
             {/* Big score */}
             <div className="flex flex-col items-center gap-1">
@@ -866,7 +866,7 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                 {earned.toFixed(2)}
               </span>
               <div className="flex items-center gap-1.5 mt-1">
-                <span className="text-slate-400 text-sm">מתוך {maxPts.toFixed(2)} נקודות</span>
+                <span className="text-white/65 text-sm">מתוך {maxPts.toFixed(2)} נקודות</span>
                 <span className={`text-sm font-bold tabular-nums ${pctColor}`}>({pct}%)</span>
               </div>
             </div>
@@ -922,16 +922,19 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                   style={{ background: 'rgba(255,255,255,0.03)' }}
                 >
                   {/* Teams row */}
-                  <div className="flex items-center justify-between px-3 pt-3 pb-1">
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex items-center px-3 pt-3 pb-1">
+                    {/* Teams centered */}
+                    <div className="flex-1 flex items-center justify-center gap-2">
                       <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5" />
                       <span className="text-white/70 text-xs font-medium">{match.team_a}</span>
-                    </div>
-                    {statusIcon && <span className="text-base">{statusIcon}</span>}
-                    <div className="flex items-center gap-1.5">
+                      <span className="text-amber-400/50 text-[10px] font-bold tracking-widest">VS</span>
                       <span className="text-white/70 text-xs font-medium">{match.team_b}</span>
                       <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5" />
                     </div>
+                    {/* Status icon — right */}
+                    <span className="text-base w-6 text-right flex-shrink-0">
+                      {statusIcon || ''}
+                    </span>
                   </div>
 
                   {/* Split card: prediction vs actual */}
@@ -979,7 +982,7 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                         <span className={`text-xs font-bold tabular-nums px-2.5 py-1 rounded-full ${colorClass}`}>
                           {detail.points.toFixed(2)} pts
                         </span>
-                        <span className="text-white/20 text-xs">מתוך {matchMax.toFixed(2)}</span>
+                        <span className="text-white/55 text-xs">מתוך {matchMax.toFixed(2)}</span>
                         <span className={`text-xs font-bold tabular-nums ${pctC}`}>({matchPct}%)</span>
                       </div>
                     );
