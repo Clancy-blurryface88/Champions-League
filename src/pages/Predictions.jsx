@@ -632,12 +632,12 @@ export default function Predictions() {
                     {/* Header: Countdown / Status */}
                     <div className="flex justify-center mb-3">
                       {timeInfo.status === 'locked' || timeInfo.status === 'finished' ?
-                      <div className="bg-slate-800/80 text-slate-300 px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-slate-700/50">
+                      <div className="bg-slate-800/80 text-slate-300 px-3 py-1.5 rounded-2xl flex items-center gap-1.5 border border-slate-700/50">
                           <Lock className="w-3.5 h-3.5" />
                           <span className="text-sm font-medium">{timeInfo.text}</span>
                         </div> :
 
-                      <div className="bg-[#1a362d] text-[#4ade80] rounded-lg px-4 py-1.5 flex gap-4 text-center shadow-lg border border-[#244a3d]" dir="rtl">
+                      <div className="bg-[#1a362d] text-[#4ade80] rounded-2xl px-4 py-1.5 flex gap-4 text-center shadow-lg border border-[#244a3d]" dir="rtl">
                           <div className="flex flex-col items-center">
                             <span className="text-base font-bold leading-none mb-0.5">{timeInfo.seconds}</span>
                             <span className="text-[10px] font-medium">שניות</span>
