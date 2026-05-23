@@ -205,9 +205,9 @@ function IosRoundPicker({ rounds, value, onChange }) {
       {/* Bottom fade */}
       <div className="absolute inset-x-0 bottom-0 z-10 pointer-events-none"
         style={{ height: ITEM_H, background: 'linear-gradient(to top, rgba(8,15,35,0.95), transparent)' }} />
-      {/* Center selector highlight — soft glow, no border */}
-      <div className="absolute inset-x-0 z-10 pointer-events-none"
-        style={{ top: ITEM_H, height: ITEM_H, background: 'radial-gradient(ellipse at center, rgba(245,197,24,0.18) 0%, transparent 75%)' }} />
+      {/* Center selector highlight */}
+      <div className="absolute inset-x-2 z-10 pointer-events-none rounded-lg"
+        style={{ top: ITEM_H, height: ITEM_H, background: 'rgba(245,197,24,0.08)', border: '1px solid rgba(245,197,24,0.28)' }} />
 
       {/* Scroll list */}
       <div
