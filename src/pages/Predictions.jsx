@@ -509,7 +509,7 @@ export default function Predictions() {
           <div
             className="sticky top-0 z-20 -mx-4 px-4 pt-2 pb-2 mb-2"
             style={{
-              background: 'rgba(5,10,20,0.45)',
+              background: 'rgba(5,10,20,0.35)',
               backdropFilter: 'blur(28px) saturate(1.6)',
               WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
               borderBottom: '1px solid rgba(255,255,255,0.07)',
@@ -883,7 +883,7 @@ export default function Predictions() {
         const allDone = areAllPredictionsComplete();
         const pct = total > 0 ? (filled / total) * 100 : 0;
         return (
-          <div className="flex justify-center px-4 py-2 border-t border-white/[0.08]" style={{ background: 'rgba(10,18,40,0.45)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)', flexShrink: 0 }}>
+          <div className="flex justify-center px-4 py-2 border-t border-white/[0.08]" style={{ background: 'rgba(10,18,40,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)', flexShrink: 0 }}>
           <AnimatePresence mode="wait">
             {allDone || submitted ? (
               <motion.button
