@@ -21,14 +21,14 @@ const ROWS = 4;
 const COLS = 4;
 const PIXEL_COUNT = ROWS * COLS;
 
-function FlagWithPixels({ code, name, px, animate }) {
+function FlagWithPixels({ code, name, px, animate, r = 'rounded-md' }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '0px' });
 
   return (
     <div
       ref={ref}
-      className="relative rounded-full overflow-hidden flex-shrink-0 shadow-md"
+      className={`relative ${r} overflow-hidden flex-shrink-0 shadow-md`}
       style={{ width: px, height: px, minWidth: px }}
     >
       <span
@@ -38,7 +38,7 @@ function FlagWithPixels({ code, name, px, animate }) {
       />
       {animate && (
         <div
-          className="absolute inset-0 grid z-10 rounded-full overflow-hidden"
+          className={`absolute inset-0 grid z-10 ${r} overflow-hidden`}
           style={{ gridTemplateRows: `repeat(${ROWS}, 1fr)`, gridTemplateColumns: `repeat(${COLS}, 1fr)` }}
         >
           {Array.from({ length: PIXEL_COUNT }, (_, i) => (
@@ -68,7 +68,7 @@ function FlagSimple({ code, name, px }) {
   );
 }
 
-export default function TeamFlag({ logo, name, className = 'w-12 h-12', animate = false, size, rounded = 'full' }) {
+export default function TeamFlag({ logo, name, className = 'w-12 h-12', animate = false, size, rounded = 'md' }) {
   const px = getPx(className, size);
   const r = `rounded-${rounded}`;
 
@@ -109,7 +109,7 @@ export default function TeamFlag({ logo, name, className = 'w-12 h-12', animate 
 
   // ISO2 flag code
   if (animate) {
-    return <FlagWithPixels code={logo} name={name} px={px} animate={animate} />;
+    return <FlagWithPixels code={logo} name={name} px={px} animate={animate} r={r} />;
   }
 
   // Simple flag (no animation) — most admin/modal usages
