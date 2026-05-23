@@ -430,9 +430,8 @@ export default function Predictions() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="flex-1 overflow-y-auto min-h-0">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="min-h-screen">
+      <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8 pt-8">
           <Button
@@ -873,170 +872,171 @@ export default function Predictions() {
         </div>
         )}
 
-      </div>
-      </div>
+        {/* Progress Bar → Submit Button */}
+        {matches.some((match) => !isMatchLocked(match.match_date)) && (() => {
+          const { filled, total } = predictionProgress();
+          const allDone = areAllPredictionsComplete();
+          const pct = total > 0 ? (filled / total) * 100 : 0;
+          return (
+            <div className="fixed bottom-[44px] left-0 right-0 z-40 flex justify-center px-6 pb-3 pt-2 pointer-events-none">
+              <AnimatePresence mode="wait">
+                {allDone || submitted ? (
+                  <motion.button
+                    key="submit-btn"
+                    onClick={handleSubmit}
+                    disabled={saving}
+                    initial={{ opacity: 0, y: 16, scale: 0.92 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                    className="pointer-events-auto flex items-center gap-2.5 px-8 py-3 rounded-full font-bold text-base text-slate-900 shadow-[0_0_24px_rgba(245,197,24,0.45)] transition-opacity"
+                    style={{ background: 'linear-gradient(135deg, #f5c518 0%, #f59e0b 100%)' }}
+                    whileTap={{ scale: 0.96 }}
+                  >
+                    {saving ? (
+                      <>
+                        <OrbitSpinner size={18} />
+                        <span>שולח...</span>
+                      </>
+                    ) : submitted ? (
+                      <span>✎ עדכן ניחושים</span>
+                    ) : (
+                      <span>✓ שלח ניחושים</span>
+                    )}
+                  </motion.button>
+                ) : (
+                  <motion.div
+                    key="progress-bar"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.25 }}
+                    className="pointer-events-auto w-full max-w-sm rounded-full overflow-hidden"
+                    style={{ background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  >
+                    <div className="relative h-10 flex items-center px-4">
+                      {/* fill */}
+                      <motion.div
+                        className="absolute inset-0 rounded-full origin-left"
+                        initial={false}
+                        animate={{ scaleX: pct / 100 }}
+                        transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+                        style={{ background: 'linear-gradient(90deg, rgba(245,197,24,0.25) 0%, rgba(245,197,24,0.45) 100%)', transformOrigin: 'left' }}
+                      />
+                      <span className="relative z-10 w-full text-center text-sm font-semibold text-amber-400/90">
+                        {filled} / {total} ניחושים
+                      </span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        })()}
 
-      {/* Submit Button — outside scroll area, never overlaps cards */}
-      {matches.some((match) => !isMatchLocked(match.match_date)) && (() => {
-        const { filled, total } = predictionProgress();
-        const allDone = areAllPredictionsComplete();
-        const pct = total > 0 ? (filled / total) * 100 : 0;
-        return (
-          <div
-            className="flex justify-center px-6 pt-2 pb-[56px] border-t border-white/[0.06]"
-            style={{ background: 'rgba(5,10,20,0.95)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
-          >
-            <AnimatePresence mode="wait">
-              {allDone || submitted ? (
-                <motion.button
-                  key="submit-btn"
-                  onClick={handleSubmit}
-                  disabled={saving}
-                  initial={{ opacity: 0, y: 16, scale: 0.92 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                  className="flex items-center gap-2.5 px-8 py-3 rounded-full font-bold text-base text-slate-900 shadow-[0_0_24px_rgba(245,197,24,0.45)] transition-opacity"
-                  style={{ background: 'linear-gradient(135deg, #f5c518 0%, #f59e0b 100%)' }}
-                  whileTap={{ scale: 0.96 }}
-                >
-                  {saving ? (
-                    <>
-                      <OrbitSpinner size={18} />
-                      <span>שולח...</span>
-                    </>
-                  ) : submitted ? (
-                    <span>✎ עדכן ניחושים</span>
-                  ) : (
-                    <span>✓ שלח ניחושים</span>
-                  )}
-                </motion.button>
-              ) : (
-                <motion.div
-                  key="progress-bar"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.25 }}
-                  className="w-full max-w-sm rounded-full overflow-hidden"
-                  style={{ background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.08)' }}
-                >
-                  <div className="relative h-10 flex items-center px-4">
-                    <motion.div
-                      className="absolute inset-0 rounded-full origin-left"
-                      initial={false}
-                      animate={{ scaleX: pct / 100 }}
-                      transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-                      style={{ background: 'linear-gradient(90deg, rgba(245,197,24,0.25) 0%, rgba(245,197,24,0.45) 100%)', transformOrigin: 'left' }}
-                    />
-                    <span className="relative z-10 w-full text-center text-sm font-semibold text-amber-400/90">
-                      {filled} / {total} ניחושים
-                    </span>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        );
-      })()}
+        {/* Summary Modal */}
+        <AnimatePresence>
+          {showSummary &&
+          <PredictionSummary
+            predictions={predictions}
+            roundId={roundId}
+            onConfirm={handleConfirmPredictions}
+            onCancel={handleCancelPredictions}
+            saving={saving} />
 
-      {/* Modals — fixed positioning, location in DOM doesn't affect visual */}
-      <AnimatePresence>
-        {showSummary &&
-        <PredictionSummary
-          predictions={predictions}
-          roundId={roundId}
-          onConfirm={handleConfirmPredictions}
-          onCancel={handleCancelPredictions}
-          saving={saving} />
-        }
-      </AnimatePresence>
+          }
+        </AnimatePresence>
 
-      <MatchScoringRulesModal
-        isOpen={showScoringRulesModal}
-        onClose={handleCloseScoringRules}
-        match={selectedMatchForRules} />
+        {/* NEW: Scoring Rules Modal */}
+        <MatchScoringRulesModal
+          isOpen={showScoringRulesModal}
+          onClose={handleCloseScoringRules}
+          match={selectedMatchForRules} />
 
-      <MatchPredictionsModal
-        isOpen={showPredictionsModal}
-        onClose={handleClosePredictions}
-        match={selectedMatchForPredictions} />
 
-      {selectedGroup && (
-        <GroupStandingsModal
-          group={selectedGroup}
-          onClose={() => setSelectedGroup(null)} />
-      )}
+        {/* NEW: Predictions Modal */}
+        <MatchPredictionsModal
+          isOpen={showPredictionsModal}
+          onClose={handleClosePredictions}
+          match={selectedMatchForPredictions} />
 
-      {selectedTeam && (
-        <TeamInfoModal
-          teamName={selectedTeam.name}
-          teamLogo={selectedTeam.logo}
-          onClose={() => setSelectedTeam(null)} />
-      )}
+        {selectedGroup && (
+          <GroupStandingsModal
+            group={selectedGroup}
+            onClose={() => setSelectedGroup(null)} />
+        )}
 
-      {selectedMatchForBrief && (
-        <AiBriefModal
-          match={selectedMatchForBrief}
-          brief={briefs[selectedMatchForBrief.id] || null}
-          onClose={() => setSelectedMatchForBrief(null)} />
-      )}
+        {selectedTeam && (
+          <TeamInfoModal
+            teamName={selectedTeam.name}
+            teamLogo={selectedTeam.logo}
+            onClose={() => setSelectedTeam(null)} />
+        )}
 
-      <AnimatePresence>
-        {showSubmissionSuccess &&
-        <>
-            <motion.div
-            className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}>
+        {selectedMatchForBrief && (
+          <AiBriefModal
+            match={selectedMatchForBrief}
+            brief={briefs[selectedMatchForBrief.id] || null}
+            onClose={() => setSelectedMatchForBrief(null)} />
+        )}
 
+        {/* --- SUCCESS ANIMATION OVERLAY --- */}
+        <AnimatePresence>
+          {showSubmissionSuccess &&
+          <>
               <motion.div
-              initial={{ scale: 0.5, opacity: 0, rotate: -15 }}
-              animate={{
-                scale: [0.5, 1.2, 1],
-                opacity: 1,
-                rotate: 0
-              }}
-              exit={{ scale: 0.8, opacity: 0, rotate: 15 }}
-              transition={{
-                type: "spring",
-                stiffness: 150,
-                damping: 10,
-                duration: 0.6
-              }}
-              className="flex flex-col items-center justify-center p-8 bg-gradient-to-br from-green-800/95 to-green-900/95 rounded-3xl shadow-2xl border-2 border-green-600 text-white backdrop-blur-sm max-w-xs mx-auto">
+              className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}>
 
                 <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}>
+                initial={{ scale: 0.5, opacity: 0, rotate: -15 }}
+                animate={{
+                  scale: [0.5, 1.2, 1],
+                  opacity: 1,
+                  rotate: 0
+                }}
+                exit={{ scale: 0.8, opacity: 0, rotate: 15 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 150,
+                  damping: 10,
+                  duration: 0.6
+                }}
+                className="flex flex-col items-center justify-center p-8 bg-gradient-to-br from-green-800/95 to-green-900/95 rounded-3xl shadow-2xl border-2 border-green-600 text-white backdrop-blur-sm max-w-xs mx-auto">
 
-                  <Check className="w-20 h-20 text-green-300 mb-4" />
+                  <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}>
+
+                    <Check className="w-20 h-20 text-green-300 mb-4" />
+                  </motion.div>
+
+                  <motion.h2
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="2xl font-bold text-green-100 mb-2 text-center">
+
+                    נשלח בהצלחה
+                  </motion.h2>
+
+                  <motion.p
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="text-green-200 text-center text-sm">
+                  </motion.p>
                 </motion.div>
-
-                <motion.h2
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="2xl font-bold text-green-100 mb-2 text-center">
-
-                  נשלח בהצלחה
-                </motion.h2>
-
-                <motion.p
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="text-green-200 text-center text-sm">
-                </motion.p>
               </motion.div>
-            </motion.div>
-          </>
-        }
-      </AnimatePresence>
+            </>
+          }
+        </AnimatePresence>
 
+      </div>
     </div>);
 
 }
