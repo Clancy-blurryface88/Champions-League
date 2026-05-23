@@ -33,8 +33,8 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
       </motion.button>
 
       {/* תצוגת הספרה */}
-      <div className="w-16 h-18 md:w-18 md:h-20 flex items-center justify-center
-        bg-slate-700/60 rounded-xl border border-slate-600/50 shadow-inner">
+      <div className="w-12 h-20 md:w-14 md:h-24 flex items-center justify-center
+        bg-slate-700/60 rounded-2xl border border-slate-600/50 shadow-inner">
         <AnimatePresence mode="popLayout">
           <motion.span
             key={displayValue}
