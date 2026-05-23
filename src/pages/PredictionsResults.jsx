@@ -178,27 +178,28 @@ function FlipBoardPicker({ rounds, value, onChange }) {
   const canNext = idx < rounds.length - 1;
   return (
     <div className="flex flex-col items-center gap-2 w-full">
-      <button onClick={() => canPrev && onChange(rounds[idx - 1].id)} disabled={!canPrev}
-        className="w-9 h-9 flex items-center justify-center rounded-full border border-slate-700 text-slate-400 disabled:opacity-20 hover:border-amber-400/50 hover:text-amber-400 transition-all">
-        <ChevronUp className="w-5 h-5" />
-      </button>
-      <AnimatePresence mode="wait">
-        <motion.div key={current?.id}
-          initial={{ rotateX: -90, opacity: 0 }}
-          animate={{ rotateX: 0, opacity: 1 }}
-          exit={{ rotateX: 90, opacity: 0 }}
-          transition={{ duration: 0.22, ease: 'easeOut' }}
-          style={{ perspective: 600 }}
-          className="px-8 py-3 rounded-xl border border-amber-400/30 min-w-[180px] text-center"
-          style={{ perspective: 600, background: 'rgba(245,197,24,0.08)' }}>
-          <span className="text-amber-400 font-bold text-base tracking-wide">{current?.name}</span>
-        </motion.div>
-      </AnimatePresence>
-      <button onClick={() => canNext && onChange(rounds[idx + 1].id)} disabled={!canNext}
-        className="w-9 h-9 flex items-center justify-center rounded-full border border-slate-700 text-slate-400 disabled:opacity-20 hover:border-amber-400/50 hover:text-amber-400 transition-all">
-        <ChevronDown className="w-5 h-5" />
-      </button>
-      <div className="flex gap-1.5 mt-1">
+      <div className="flex items-center gap-3 w-full justify-center">
+        <button onClick={() => canPrev && onChange(rounds[idx - 1].id)} disabled={!canPrev}
+          className="w-9 h-9 flex items-center justify-center rounded-full border border-slate-700 text-slate-400 disabled:opacity-20 hover:border-amber-400/50 hover:text-amber-400 transition-all">
+          <ChevronRight className="w-5 h-5" />
+        </button>
+        <AnimatePresence mode="wait">
+          <motion.div key={current?.id}
+            initial={{ rotateX: -90, opacity: 0 }}
+            animate={{ rotateX: 0, opacity: 1 }}
+            exit={{ rotateX: 90, opacity: 0 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            className="px-8 py-2.5 rounded-xl border border-amber-400/30 min-w-[180px] text-center"
+            style={{ perspective: 600, background: 'rgba(245,197,24,0.08)' }}>
+            <span className="text-amber-400 font-bold text-base tracking-wide">{current?.name}</span>
+          </motion.div>
+        </AnimatePresence>
+        <button onClick={() => canNext && onChange(rounds[idx + 1].id)} disabled={!canNext}
+          className="w-9 h-9 flex items-center justify-center rounded-full border border-slate-700 text-slate-400 disabled:opacity-20 hover:border-amber-400/50 hover:text-amber-400 transition-all">
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+      </div>
+      <div className="flex gap-1.5">
         {rounds.map((r, i) => (
           <button key={r.id} onClick={() => onChange(r.id)}
             className={`rounded-full transition-all duration-200 ${i === idx ? 'bg-amber-400 w-4 h-1.5' : 'bg-slate-700 w-1.5 h-1.5 hover:bg-slate-500'}`} />
