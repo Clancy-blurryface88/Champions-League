@@ -1023,6 +1023,7 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
 // רכיב נפרד לרשימת הניחושים עם פירוט הניקוד מתוקן
 function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeStatus, onAllRevealed }) {
   const [expandedPrediction, setExpandedPrediction] = useState(null);
+  const [shockwaveActive, setShockwaveActive] = useState(false);
 
   const REVEAL_DELAY = 0.75; // שניות בין חשיפת כל שחקן
 
@@ -1032,12 +1033,15 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
   const bottomRef = useRef(null);
 
   useEffect(() => {
+    setShockwaveActive(false);
     if (sortedPredictions.length === 0) { onAllRevealed?.(); return; }
     // גלול לתחתית כך שהמשתמש רואה את החשיפה הראשונה (הנמוך) ומעלה למנצח
     setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 100);
     const lastRevealTime = (sortedPredictions.length - 1) * REVEAL_DELAY + 0.5;
+    // הפעל shockwave 300ms אחרי שהמוביל נחשף
+    const shockTimer = setTimeout(() => setShockwaveActive(true), lastRevealTime * 1000 + 300);
     const timer = setTimeout(() => onAllRevealed?.(), lastRevealTime * 1000);
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); clearTimeout(shockTimer); };
   }, [match?.id]);
 
   if (predictions.length === 0) {
@@ -1067,13 +1071,50 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
           outcomeStatus?.type === 'wrong'   ? 'bg-red-600' :
           'bg-blue-600';
 
+        // shockwave מהמוביל כלפי מטה — כל קלף מקבל delay לפי מיקומו
+        const shockDelay = index * 0.12;
+
         return (
           <motion.div
             key={prediction.id}
             initial={{ opacity: 0, y: 40, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: revealDelay, duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
-            className={`rounded-lg overflow-hidden ${verdictBg}`}>
+            className={`relative rounded-lg overflow-hidden ${verdictBg}`}>
+
+            {/* Shockwave ring — רק על המוביל */}
+            {index === 0 && shockwaveActive && (
+              <>
+                <motion.div
+                  key="ring1"
+                  initial={{ opacity: 0.8, scale: 1 }}
+                  animate={{ opacity: 0, scale: 2.2 }}
+                  transition={{ duration: 0.9, ease: 'easeOut' }}
+                  className="absolute inset-0 rounded-lg pointer-events-none"
+                  style={{ border: '2px solid rgba(250,204,21,0.7)', zIndex: 10 }}
+                />
+                <motion.div
+                  key="ring2"
+                  initial={{ opacity: 0.5, scale: 1 }}
+                  animate={{ opacity: 0, scale: 1.8 }}
+                  transition={{ duration: 0.7, delay: 0.15, ease: 'easeOut' }}
+                  className="absolute inset-0 rounded-lg pointer-events-none"
+                  style={{ border: '2px solid rgba(250,204,21,0.4)', zIndex: 10 }}
+                />
+              </>
+            )}
+
+            {/* Cascade glow על כל הקלפים מתחת */}
+            {shockwaveActive && (
+              <motion.div
+                key={`glow-${prediction.id}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0, 0.18, 0] }}
+                transition={{ duration: 0.5, delay: shockDelay, ease: 'easeOut' }}
+                className="absolute inset-0 pointer-events-none rounded-lg"
+                style={{ background: 'rgba(250,204,21,0.25)', zIndex: 5 }}
+              />
+            )}
 
             {/* פרטי הניחוש הבסיסיים */}
             <div className="p-3">
