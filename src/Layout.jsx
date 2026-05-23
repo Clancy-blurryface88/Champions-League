@@ -475,20 +475,7 @@ export default function Layout({ children, currentPageName }) {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}>
 
-        {/* Glass navbar strip */}
-        <div
-          className="fixed left-0 right-0 z-30 pointer-events-none rounded-b-3xl"
-          style={{
-            top: '36px',
-            height: '76px',
-            background: 'rgba(5,10,20,0.18)',
-            backdropFilter: 'blur(28px) saturate(1.6)',
-            WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
-          }}
-        />
-
-        {/* כפתור המבורגר עם אייקון אסטרטגיה */}
+{/* כפתור המבורגר עם אייקון אסטרטגיה */}
         <div className="fixed top-[44px] left-4 z-40">
           <Button
             variant="ghost"
