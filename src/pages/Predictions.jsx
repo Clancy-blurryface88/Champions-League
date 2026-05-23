@@ -195,7 +195,7 @@ export default function Predictions() {
       userPredictions.forEach((prediction) => {
         const key = `${prediction.user_id}_${prediction.match_id}`;
         if (!latestPredictions[key] ||
-        new Date(prediction.created_date) > new Date(latestPredictions[key].created_date)) {
+        new Date(prediction.created_at) > new Date(latestPredictions[key].created_at)) {
           latestPredictions[key] = prediction;
         }
       });
@@ -355,11 +355,7 @@ export default function Predictions() {
           predicted_score_b: prediction.predicted_score_b
         };
 
-        if (prediction.prediction_id) {
-          return await Prediction.update(prediction.prediction_id, predictionData);
-        } else {
-          return await Prediction.create(predictionData);
-        }
+        return await Prediction.create(predictionData);
       }).filter(Boolean);
 
       await Promise.all(predictionPromises);

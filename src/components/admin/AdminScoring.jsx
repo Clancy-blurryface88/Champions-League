@@ -316,7 +316,7 @@ export default function AdminScoring({ onUpdateComplete }) {
       predictionsToProcess.forEach(prediction => {
         const key = `${prediction.user_id}_${prediction.match_id}`;
         if (!uniquePredictionsMap[key] ||
-            new Date(prediction.created_date) > new Date(uniquePredictionsMap[key].created_date)) {
+            new Date(prediction.created_at) > new Date(uniquePredictionsMap[key].created_at)) {
           uniquePredictionsMap[key] = prediction;
         }
       });
@@ -378,7 +378,7 @@ export default function AdminScoring({ onUpdateComplete }) {
         const key = `${prediction.user_id}_${prediction.match_id}`;
 
         if (!uniqueAllPredictionsMap[key] ||
-            new Date(prediction.created_date) > new Date(uniqueAllPredictionsMap[key].created_date)) {
+            new Date(prediction.created_at) > new Date(uniqueAllPredictionsMap[key].created_at)) {
           uniqueAllPredictionsMap[key] = prediction;
         }
       });
