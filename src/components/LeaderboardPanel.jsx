@@ -21,6 +21,7 @@ export default function LeaderboardPanel({ onClose, user }) {
   const [error, setError] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [shockwaveActive, setShockwaveActive] = useState(false);
 
   const handlePlayerClick = (player) => {
     setSelectedPlayer(player);
@@ -129,6 +130,16 @@ export default function LeaderboardPanel({ onClose, user }) {
     loadLeaderboard();
   }, []);
 
+  // הפעל shockwave אחרי שמקום 1 נחשף + ScoreCounter מסיים
+  useEffect(() => {
+    if (participants.length === 0) return;
+    const total = participants.length;
+    const rank1AnimDelay = Math.pow(total - 1, 1.6) * 0.38 + 0.6;
+    const shockAt = rank1AnimDelay + 1.5 + 0.25 + 0.4; // card + score duration + buffer
+    const timer = setTimeout(() => setShockwaveActive(true), shockAt * 1000);
+    return () => clearTimeout(timer);
+  }, [participants]);
+
   const getPositionIcon = (position) => {
     switch (position) {
       case 1:return <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/cda304519_gold-medal_7645285.png" alt="1st" className="w-10 h-10 object-contain" />;
@@ -216,6 +227,8 @@ export default function LeaderboardPanel({ onClose, user }) {
                   const rank = totalParticipants - 1 - index;
                   const cardAnimationDelay = Math.pow(rank, 1.6) * 0.38 + (position === 1 ? 0.6 : 0);
                   const scoreAnimationDelay = cardAnimationDelay + 0.25;
+                  const shockDelay = index * 0.12;
+
                   return (
                     <motion.div
                       key={participant.id}
@@ -226,6 +239,41 @@ export default function LeaderboardPanel({ onClose, user }) {
                         duration: 0.6,
                         ease: "easeOut"
                       }}>
+
+                        <div className="relative">
+                          {/* Shockwave rings — רק על מקום ראשון */}
+                          {position === 1 && shockwaveActive && (
+                            <>
+                              <motion.div
+                                key="sw-ring1"
+                                initial={{ opacity: 0.9, scale: 1 }}
+                                animate={{ opacity: 0, scale: 2.0 }}
+                                transition={{ duration: 0.85, ease: 'easeOut' }}
+                                className="absolute inset-0 rounded-2xl pointer-events-none"
+                                style={{ border: '2px solid rgba(250,204,21,0.8)', zIndex: 10 }}
+                              />
+                              <motion.div
+                                key="sw-ring2"
+                                initial={{ opacity: 0.5, scale: 1 }}
+                                animate={{ opacity: 0, scale: 1.6 }}
+                                transition={{ duration: 0.65, delay: 0.15, ease: 'easeOut' }}
+                                className="absolute inset-0 rounded-2xl pointer-events-none"
+                                style={{ border: '2px solid rgba(250,204,21,0.4)', zIndex: 10 }}
+                              />
+                            </>
+                          )}
+
+                          {/* Cascade glow על כל הקלפים */}
+                          {shockwaveActive && (
+                            <motion.div
+                              key={`glow-${participant.id}`}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: [0, 0.2, 0] }}
+                              transition={{ duration: 0.45, delay: shockDelay, ease: 'easeOut' }}
+                              className="absolute inset-0 rounded-2xl pointer-events-none"
+                              style={{ background: 'rgba(250,204,21,0.22)', zIndex: 5 }}
+                            />
+                          )}
 
                         <Card
                           onClick={() => handlePlayerClick(participant)}
@@ -260,6 +308,7 @@ export default function LeaderboardPanel({ onClose, user }) {
                             </div>
                           </CardContent>
                         </Card>
+                        </div>
                       </motion.div>);
 
                 });
