@@ -181,7 +181,7 @@ function FlipBoardPicker({ rounds, value, onChange }) {
       <div className="flex items-center gap-3 w-full justify-center">
         <button onClick={() => canPrev && onChange(rounds[idx - 1].id)} disabled={!canPrev}
           className="w-9 h-9 flex items-center justify-center rounded-full border border-slate-700 text-slate-400 disabled:opacity-20 hover:border-amber-400/50 hover:text-amber-400 transition-all">
-          <ChevronRight className="w-5 h-5" />
+          <ChevronUp className="w-5 h-5" />
         </button>
         <AnimatePresence mode="wait">
           <motion.div key={current?.id}
@@ -196,7 +196,7 @@ function FlipBoardPicker({ rounds, value, onChange }) {
         </AnimatePresence>
         <button onClick={() => canNext && onChange(rounds[idx + 1].id)} disabled={!canNext}
           className="w-9 h-9 flex items-center justify-center rounded-full border border-slate-700 text-slate-400 disabled:opacity-20 hover:border-amber-400/50 hover:text-amber-400 transition-all">
-          <ChevronLeft className="w-5 h-5" />
+          <ChevronDown className="w-5 h-5" />
         </button>
       </div>
       <div className="flex gap-1.5">
