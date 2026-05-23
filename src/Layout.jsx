@@ -481,10 +481,10 @@ export default function Layout({ children, currentPageName }) {
           style={{
             top: '36px',
             height: '76px',
-            background: 'rgba(5,10,20,0.35)',
+            background: 'rgba(5,10,20,0.18)',
             backdropFilter: 'blur(28px) saturate(1.6)',
             WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
-            borderBottom: '1px solid rgba(255,255,255,0.07)',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
           }}
         />
 
