@@ -167,10 +167,10 @@ export default function LeaderboardPanel({ onClose, user }) {
         animate={{ x: 0 }}
         exit={{ x: "-100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed inset-y-0 left-0 w-64 z-50 overflow-hidden"
+        className="fixed inset-y-0 left-0 w-64 z-50"
         style={{ background: 'rgba(5,10,20,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>
 
-        <div className="h-full flex flex-col">
+        <div className="h-full flex flex-col overflow-hidden">
           <div className="p-6 border-b border-white/10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
