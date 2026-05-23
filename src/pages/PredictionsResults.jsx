@@ -173,109 +173,8 @@ function ScoreBreakdownAnimated({ prediction, match, outcomeType }) {
 
 const ITEM_H = 44;
 
-function PickerShell({ children }) {
-  return (
-    <div className="relative" style={{ height: ITEM_H * 3, width: 140 }}>
-      <div className="absolute inset-x-0 top-0 z-10 pointer-events-none"
-        style={{ height: ITEM_H, background: 'linear-gradient(to bottom, rgba(8,15,35,0.95), transparent)' }} />
-      <div className="absolute inset-x-0 bottom-0 z-10 pointer-events-none"
-        style={{ height: ITEM_H, background: 'linear-gradient(to top, rgba(8,15,35,0.95), transparent)' }} />
-      <div className="absolute inset-x-0 z-10 pointer-events-none"
-        style={{ top: ITEM_H, height: ITEM_H, background: 'radial-gradient(ellipse at center, rgba(245,197,24,0.18) 0%, transparent 75%)' }} />
-      {children}
-    </div>
-  );
-}
-
-function usePickerScroll(rounds, value, onChange) {
-  const ref = useRef(null);
-  const scrollTimer = useRef(null);
-  const [scrollTop, setScrollTop] = useState(0);
-
-  useEffect(() => {
-    if (!ref.current || !value) return;
-    const idx = rounds.findIndex(r => r.id === value);
-    if (idx === -1) return;
-    ref.current.scrollTop = idx * ITEM_H;
-    setScrollTop(idx * ITEM_H);
-  }, [value, rounds]);
-
-  const commitScroll = () => {
-    if (!ref.current) return;
-    const idx = Math.max(0, Math.min(rounds.length - 1, Math.round(ref.current.scrollTop / ITEM_H)));
-    ref.current.scrollTo({ top: idx * ITEM_H, behavior: 'smooth' });
-    if (rounds[idx] && rounds[idx].id !== value) onChange(rounds[idx].id);
-  };
-
-  const handleScroll = () => {
-    setScrollTop(ref.current?.scrollTop || 0);
-    clearTimeout(scrollTimer.current);
-    scrollTimer.current = setTimeout(commitScroll, 120);
-  };
-
-  return { ref, scrollTop, handleScroll };
-}
-
-// אפקט 2: Blur
-function IosRoundPickerBlur({ rounds, value, onChange }) {
-  const { ref, scrollTop, handleScroll } = usePickerScroll(rounds, value, onChange);
-  return (
-    <PickerShell>
-      <div ref={ref} onScroll={handleScroll}
-        className="overflow-y-scroll scrollbar-hide h-full"
-        style={{ scrollSnapType: 'y mandatory' }}>
-        <div style={{ height: ITEM_H }} />
-        {rounds.map((round, idx) => {
-          const offset = Math.abs((idx * ITEM_H + ITEM_H / 2) - (scrollTop + ITEM_H * 1.5));
-          const blur = Math.min(3, (offset / ITEM_H) * 1.5);
-          const isSelected = round.id === value;
-          return (
-            <div key={round.id}
-              style={{ height: ITEM_H, scrollSnapAlign: 'center', filter: `blur(${blur}px)`, transition: 'filter 0.15s ease' }}
-              className={`flex items-center justify-center cursor-pointer text-sm font-semibold ${isSelected ? 'text-amber-400 scale-105' : 'text-white/50'}`}
-              onClick={() => { onChange(round.id); ref.current?.scrollTo({ top: idx * ITEM_H, behavior: 'smooth' }); }}>
-              {round.name}
-            </div>
-          );
-        })}
-        <div style={{ height: ITEM_H }} />
-      </div>
-    </PickerShell>
-  );
-}
-
-// אפקט 3: Drum / 3D rotateX
-function IosRoundPickerDrum({ rounds, value, onChange }) {
-  const { ref, scrollTop, handleScroll } = usePickerScroll(rounds, value, onChange);
-  return (
-    <PickerShell>
-      <div ref={ref} onScroll={handleScroll}
-        className="overflow-y-scroll scrollbar-hide h-full"
-        style={{ scrollSnapType: 'y mandatory', perspective: '220px' }}>
-        <div style={{ height: ITEM_H }} />
-        {rounds.map((round, idx) => {
-          const offset = (idx * ITEM_H + ITEM_H / 2) - (scrollTop + ITEM_H * 1.5);
-          const rotateX = Math.max(-55, Math.min(55, (offset / ITEM_H) * -40));
-          const opacity = Math.max(0.15, 1 - Math.abs(offset) / (ITEM_H * 1.8));
-          const isSelected = round.id === value;
-          return (
-            <div key={round.id}
-              style={{ height: ITEM_H, scrollSnapAlign: 'center', transform: `rotateX(${rotateX}deg)`, opacity, transformStyle: 'preserve-3d', transition: 'opacity 0.1s ease' }}
-              className={`flex items-center justify-center cursor-pointer text-sm font-semibold ${isSelected ? 'text-amber-400' : 'text-white/45'}`}
-              onClick={() => { onChange(round.id); ref.current?.scrollTo({ top: idx * ITEM_H, behavior: 'smooth' }); }}>
-              {round.name}
-            </div>
-          );
-        })}
-        <div style={{ height: ITEM_H }} />
-      </div>
-    </PickerShell>
-  );
-}
-
 function IosRoundPicker({ rounds, value, onChange }) {
   const ref = useRef(null);
-  const isScrolling = useRef(false);
   const scrollTimer = useRef(null);
 
   // Scroll to selected on mount / value change
@@ -642,29 +541,19 @@ export default function PredictionsResults() {
         <>
             {/* Round Selector */}
             <div
-              className="mb-6 flex items-center justify-between px-4 py-3 rounded-2xl"
+              className="mb-6 flex flex-col items-center gap-2 px-4 py-3 rounded-2xl"
               style={{
                 background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 backdropFilter: 'blur(12px)',
               }}
-              dir="rtl"
             >
-              {/* Label — right side in RTL */}
               <span className="text-xs uppercase tracking-[0.16em] text-amber-400/70 font-semibold">בחר מחזור</span>
-
-              {/* Two pickers side by side for comparison */}
-              <div className="flex items-center gap-3">
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-[10px] text-slate-500 uppercase tracking-wider">Blur</span>
-                  <IosRoundPickerBlur rounds={availableRounds} value={selectedRound} onChange={setSelectedRound} />
-                </div>
-                <div className="w-px self-stretch bg-white/8" />
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-[10px] text-slate-500 uppercase tracking-wider">Drum</span>
-                  <IosRoundPickerDrum rounds={availableRounds} value={selectedRound} onChange={setSelectedRound} />
-                </div>
-              </div>
+              <IosRoundPicker
+                rounds={availableRounds}
+                value={selectedRound}
+                onChange={setSelectedRound}
+              />
             </div>
 
             {/* Finished Matches / Predictions View */}
