@@ -732,7 +732,7 @@ export default function Predictions() {
                         {/* Team A: logo + name + home in one column */}
                         <div className="flex flex-col items-center flex-1 cursor-pointer"
                              onClick={() => setSelectedTeam({ name: match.team_a, logo: match.team_a_logo })}>
-                          <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" animate={shouldAnimate} rounded="md" />
+                          <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
                           <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words mt-1">
                             {match.team_a}
                           </RevealText>
@@ -773,7 +773,7 @@ export default function Predictions() {
                         {/* Team B: logo + name + away in one column */}
                         <div className="flex flex-col items-center flex-1 cursor-pointer"
                              onClick={() => setSelectedTeam({ name: match.team_b, logo: match.team_b_logo })}>
-                          <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" animate={shouldAnimate} rounded="md" />
+                          <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
                           <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words mt-1">
                             {match.team_b}
                           </RevealText>
