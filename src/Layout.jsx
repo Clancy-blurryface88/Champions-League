@@ -475,19 +475,21 @@ export default function Layout({ children, currentPageName }) {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}>
 
-{/* Glass navbar strip */}
-        <div
-          className="fixed left-0 right-0 pointer-events-none"
-          style={{
-            top: '36px',
-            height: '76px',
-            zIndex: 35,
-            background: 'rgba(5,10,20,0.35)',
-            backdropFilter: 'blur(28px) saturate(1.6)',
-            WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
-          }}
-        />
+{/* Glass navbar strip — not on Dashboard */}
+        {!location.pathname.includes('Dashboard') && location.pathname !== '/' && (
+          <div
+            className="fixed left-0 right-0 pointer-events-none"
+            style={{
+              top: '36px',
+              height: '76px',
+              zIndex: 35,
+              background: 'rgba(5,10,20,0.35)',
+              backdropFilter: 'blur(28px) saturate(1.6)',
+              WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
+              borderBottom: '1px solid rgba(255,255,255,0.08)',
+            }}
+          />
+        )}
 
         {/* כפתור המבורגר עם אייקון אסטרטגיה */}
         <div className="fixed top-[44px] left-4 z-40">
