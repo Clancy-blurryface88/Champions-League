@@ -430,8 +430,9 @@ export default function Predictions() {
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-4xl mx-auto px-4 py-8 pb-52">
+    <div className="fixed inset-0 flex flex-col" style={{ top: '112px' }}>
+      <div className="flex-1 overflow-y-auto min-h-0">
+      <div className="max-w-4xl mx-auto px-4 py-4">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8 pt-8">
           <Button
@@ -872,64 +873,67 @@ export default function Predictions() {
         </div>
         )}
 
-        {/* Progress Bar → Submit Button */}
-        {matches.some((match) => !isMatchLocked(match.match_date)) && (() => {
-          const { filled, total } = predictionProgress();
-          const allDone = areAllPredictionsComplete();
-          const pct = total > 0 ? (filled / total) * 100 : 0;
-          return (
-            <div className="fixed bottom-[44px] left-0 right-0 z-40 flex justify-center px-6 py-2 pointer-events-none border-t border-white/[0.07]" style={{ background: 'rgba(5,10,20,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
-            <AnimatePresence mode="wait">
-              {allDone || submitted ? (
-                <motion.button
-                  key="submit-btn"
-                  onClick={handleSubmit}
-                  disabled={saving}
-                  initial={{ opacity: 0, y: 16, scale: 0.92 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                  className="pointer-events-auto w-full max-w-sm flex items-center justify-center gap-2.5 px-8 py-3 rounded-2xl font-bold text-base text-slate-900 shadow-[0_0_24px_rgba(245,197,24,0.45)] transition-opacity"
-                  style={{ background: 'linear-gradient(135deg, #f5c518 0%, #f59e0b 100%)' }}
-                  whileTap={{ scale: 0.96 }}
-                >
-                  {saving ? (
-                    <>
-                      <OrbitSpinner size={18} />
-                      <span>שולח...</span>
-                    </>
-                  ) : submitted ? (
-                    <span>✎ עדכן ניחושים</span>
-                  ) : (
-                    <span>✓ שלח ניחושים</span>
-                  )}
-                </motion.button>
-              ) : (
-                <motion.div
-                  key="progress-bar"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.25 }}
-                  className="pointer-events-auto w-full max-w-sm rounded-full overflow-hidden"
-                  style={{ background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.08)' }}
-                >
-                  <div className="relative h-10 flex items-center px-4">
-                    <motion.div
-                      className="absolute inset-0 rounded-full origin-left"
-                      initial={false}
-                      animate={{ scaleX: pct / 100 }}
-                      transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-                      style={{ background: 'linear-gradient(90deg, rgba(245,197,24,0.25) 0%, rgba(245,197,24,0.45) 100%)', transformOrigin: 'left' }}
-                    />
-                    <span className="relative z-10 w-full text-center text-sm font-semibold text-amber-400/90">
-                      {filled} / {total} ניחושים
-                    </span>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+      </div>
+      </div>
+
+      {/* Submit Button — תמיד גלוי, מחוץ לאזור הגלילה */}
+      {matches.some((match) => !isMatchLocked(match.match_date)) && (() => {
+        const { filled, total } = predictionProgress();
+        const allDone = areAllPredictionsComplete();
+        const pct = total > 0 ? (filled / total) * 100 : 0;
+        return (
+          <div className="flex justify-center px-4 py-2 border-t border-white/[0.07]" style={{ background: 'rgba(5,10,20,0.97)', flexShrink: 0 }}>
+          <AnimatePresence mode="wait">
+            {allDone || submitted ? (
+              <motion.button
+                key="submit-btn"
+                onClick={handleSubmit}
+                disabled={saving}
+                initial={{ opacity: 0, y: 16, scale: 0.92 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                className="w-full max-w-sm flex items-center justify-center gap-2.5 px-8 py-3 rounded-2xl font-bold text-base text-slate-900 shadow-[0_0_24px_rgba(245,197,24,0.45)] transition-opacity"
+                style={{ background: 'linear-gradient(135deg, #f5c518 0%, #f59e0b 100%)' }}
+                whileTap={{ scale: 0.96 }}
+              >
+                {saving ? (
+                  <>
+                    <OrbitSpinner size={18} />
+                    <span>שולח...</span>
+                  </>
+                ) : submitted ? (
+                  <span>✎ עדכן ניחושים</span>
+                ) : (
+                  <span>✓ שלח ניחושים</span>
+                )}
+              </motion.button>
+            ) : (
+              <motion.div
+                key="progress-bar"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.25 }}
+                className="w-full max-w-sm rounded-full overflow-hidden"
+                style={{ background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.08)' }}
+              >
+                <div className="relative h-10 flex items-center px-4">
+                  <motion.div
+                    className="absolute inset-0 rounded-full origin-left"
+                    initial={false}
+                    animate={{ scaleX: pct / 100 }}
+                    transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+                    style={{ background: 'linear-gradient(90deg, rgba(245,197,24,0.25) 0%, rgba(245,197,24,0.45) 100%)', transformOrigin: 'left' }}
+                  />
+                  <span className="relative z-10 w-full text-center text-sm font-semibold text-amber-400/90">
+                    {filled} / {total} ניחושים
+                  </span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
         );
       })()}
 
@@ -1035,7 +1039,6 @@ export default function Predictions() {
           }
         </AnimatePresence>
 
-      </div>
     </div>);
 
 }
