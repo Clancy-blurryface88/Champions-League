@@ -889,7 +889,7 @@ export default function Predictions() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.95 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                  className="pointer-events-auto flex items-center gap-2.5 px-8 py-3 rounded-full font-bold text-base text-slate-900 shadow-[0_0_24px_rgba(245,197,24,0.45)] transition-opacity"
+                  className="pointer-events-auto flex items-center gap-2.5 px-8 py-3 rounded-2xl font-bold text-base text-slate-900 shadow-[0_0_24px_rgba(245,197,24,0.45)] transition-opacity"
                   style={{ background: 'linear-gradient(135deg, #f5c518 0%, #f59e0b 100%)' }}
                   whileTap={{ scale: 0.96 }}
                 >
