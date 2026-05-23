@@ -729,7 +729,7 @@ export default function Predictions() {
                     <div className="py-3 px-1">
                       <div
                         className="w-full grid gap-x-2"
-                        style={{ gridTemplateColumns: '1fr auto 1fr', gridTemplateRows: 'auto auto auto' }}
+                        style={{ gridTemplateColumns: '1fr auto 1fr', gridTemplateRows: 'auto auto' }}
                       >
                         {/* Row 1: flags */}
                         <div className="flex justify-center items-center cursor-pointer"
@@ -738,9 +738,9 @@ export default function Predictions() {
                           <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
                         </div>
 
-                        {/* Score — spans all 3 rows, centered */}
+                        {/* Score — spans both rows, centered */}
                         <div className="flex items-center gap-2 px-1"
-                             style={{ gridColumn: 2, gridRow: '1 / 4', alignSelf: 'center' }}>
+                             style={{ gridColumn: 2, gridRow: '1 / 3', alignSelf: 'center' }}>
                           {!isLocked ? (
                             <>
                               <ScoreInput
@@ -776,25 +776,23 @@ export default function Predictions() {
                           <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
                         </div>
 
-                        {/* Row 2: names */}
-                        <div style={{ gridColumn: 1, gridRow: 2 }} className="cursor-pointer"
+                        {/* Row 2: name + label tightly stacked, top-aligned */}
+                        <div style={{ gridColumn: 1, gridRow: 2, alignSelf: 'start' }}
+                             className="flex flex-col items-center cursor-pointer"
                              onClick={() => setSelectedTeam({ name: match.team_a, logo: match.team_a_logo })}>
                           <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words">
                             {match.team_a}
                           </RevealText>
+                          <span className="text-slate-400 text-[10px] leading-none text-center">(Home)</span>
                         </div>
-                        <div style={{ gridColumn: 3, gridRow: 2 }} className="cursor-pointer"
+                        <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
+                             className="flex flex-col items-center cursor-pointer"
                              onClick={() => setSelectedTeam({ name: match.team_b, logo: match.team_b_logo })}>
                           <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words">
                             {match.team_b}
                           </RevealText>
+                          <span className="text-slate-400 text-[10px] leading-none text-center">(Away)</span>
                         </div>
-
-                        {/* Row 3: home/away labels */}
-                        <span style={{ gridColumn: 1, gridRow: 3 }}
-                              className="text-slate-400 text-[10px] leading-none text-center block">(Home)</span>
-                        <span style={{ gridColumn: 3, gridRow: 3 }}
-                              className="text-slate-400 text-[10px] leading-none text-center block">(Away)</span>
                       </div>
                     </div>
 
