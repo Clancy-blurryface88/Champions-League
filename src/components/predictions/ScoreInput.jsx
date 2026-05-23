@@ -25,17 +25,17 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
         onClick={handleIncrement}
         disabled={disabled}
         whileTap={{ scale: 0.88 }}
-        className="w-8 h-8 rounded-full flex items-center justify-center
+        className="w-6 h-6 rounded-full flex items-center justify-center
           bg-yellow-500/15 border border-yellow-500/40
           hover:bg-yellow-500/30 hover:border-yellow-400/70
           disabled:opacity-40 disabled:cursor-not-allowed
           transition-colors duration-150"
       >
-        <ChevronUp className="w-4 h-4 text-yellow-400" strokeWidth={2.5} />
+        <ChevronUp className="w-3 h-3 text-yellow-400" strokeWidth={3} />
       </motion.button>
 
       {/* תצוגת הספרה */}
-      <div className="w-14 h-16 md:w-16 md:h-18 flex items-center justify-center
+      <div className="w-16 h-18 md:w-18 md:h-20 flex items-center justify-center
         bg-slate-700/60 rounded-xl border border-slate-600/50 shadow-inner">
         <AnimatePresence mode="popLayout">
           <motion.span
@@ -44,7 +44,7 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 8, opacity: 0, scale: 0.8 }}
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            className={`inline-block text-4xl md:text-5xl font-black tracking-tight select-none
+            className={`inline-block text-5xl md:text-6xl font-black tracking-tight select-none
               ${hasError && isUndefined ? 'text-red-400' : isUndefined ? 'text-slate-500' : 'text-white'}`}
           >
             {displayValue}
@@ -57,13 +57,13 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
         onClick={handleDecrement}
         disabled={disabled || value === 0 || isUndefined}
         whileTap={{ scale: 0.88 }}
-        className="w-8 h-8 rounded-full flex items-center justify-center
+        className="w-6 h-6 rounded-full flex items-center justify-center
           bg-yellow-500/15 border border-yellow-500/40
           hover:bg-yellow-500/30 hover:border-yellow-400/70
           disabled:opacity-40 disabled:cursor-not-allowed
           transition-colors duration-150"
       >
-        <ChevronDown className="w-4 h-4 text-yellow-400" strokeWidth={2.5} />
+        <ChevronDown className="w-3 h-3 text-yellow-400" strokeWidth={3} />
       </motion.button>
     </div>
   );
