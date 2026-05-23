@@ -48,7 +48,7 @@ export default function TournamentHeader() {
         </div>
 
         <h1
-          className="text-4xl md:text-5xl font-bold tracking-widest uppercase"
+          className="text-4xl md:text-5xl uppercase"
           style={{
             fontFamily: "'Syne', 'Orbitron', sans-serif",
             letterSpacing: '0.12em',
@@ -60,6 +60,20 @@ export default function TournamentHeader() {
         >
           World Cup
         </h1>
+
+        {/* Font preview — remove after choosing */}
+        <div className="flex flex-col items-center gap-1 mt-2 opacity-60">
+          {[
+            { name: 'Bebas Neue', label: 'Bebas Neue' },
+            { name: 'Russo One', label: 'Russo One' },
+            { name: 'Black Han Sans', label: 'Black Han Sans' },
+            { name: 'Oswald', label: 'Oswald' },
+          ].map(({ name, label }) => (
+            <span key={name} style={{ fontFamily: `'${name}', sans-serif`, fontSize: '1.5rem', letterSpacing: '0.1em', color: '#f5c518' }}>
+              {label} — World Cup
+            </span>
+          ))}
+        </div>
 
         <div className="flex items-center gap-3">
           <div className="h-px w-16 bg-gradient-to-r from-transparent to-amber-400/70" />
