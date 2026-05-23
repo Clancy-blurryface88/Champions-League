@@ -121,6 +121,13 @@ export default function Dashboard() {
     <div className="min-h-[calc(100vh-7rem)] relative flex flex-col">
       <AppBackground />
 
+      {/* Stadium Lottie background */}
+      <div className="fixed inset-0 z-[0] pointer-events-none flex items-end justify-center overflow-hidden">
+        <div className="w-full max-w-3xl opacity-20">
+          <LottieAnimation src="/stadium.json" loop autoplay />
+        </div>
+      </div>
+
       <div className="relative z-[1] flex-1 flex flex-col items-center justify-center w-full gap-10 md:gap-16 pt-8 pb-12">
         <TournamentHeader />
 
