@@ -30,6 +30,7 @@ import { getRoundLeaderboard } from "../components/utils/getRoundLeaderboard"; /
 import { AnimatedList } from "@/components/magicui/animated-list";
 import ScoreAccuracyVisuals from "@/components/predictions/ScoreAccuracyVisuals";
 import { calculateMatchMaxPotentialPoints } from "../components/utils/calculateMatchMaxPotentialPoints";
+import { WheelPicker, WheelPickerWrapper } from "@/components/wheel-picker";
 
 
 const OUTCOME_COLORS = {
@@ -171,75 +172,31 @@ function ScoreBreakdownAnimated({ prediction, match, outcomeType }) {
   );
 }
 
-const ITEM_H = 44;
-
-function IosRoundPicker({ rounds, value, onChange }) {
-  const ref = useRef(null);
-  const scrollTimer = useRef(null);
-
-  // Scroll to selected on mount / value change
-  useEffect(() => {
-    if (!ref.current || !value) return;
-    const idx = rounds.findIndex(r => r.id === value);
-    if (idx === -1) return;
-    ref.current.scrollTop = idx * ITEM_H;
-  }, [value, rounds]);
-
-  const commitScroll = () => {
-    if (!ref.current) return;
-    const idx = Math.max(0, Math.min(rounds.length - 1, Math.round(ref.current.scrollTop / ITEM_H)));
-    ref.current.scrollTo({ top: idx * ITEM_H, behavior: 'smooth' });
-    if (rounds[idx] && rounds[idx].id !== value) onChange(rounds[idx].id);
-  };
-
-  const handleScroll = () => {
-    clearTimeout(scrollTimer.current);
-    scrollTimer.current = setTimeout(commitScroll, 120);
-  };
+function RoundWheelPicker({ rounds, value, onChange }) {
+  const options = rounds.map(r => ({ value: r.id, label: r.name, textValue: r.name }));
 
   return (
-    <div className="relative" style={{ height: ITEM_H * 3, width: 160 }}>
-      {/* Top fade */}
-      <div className="absolute inset-x-0 top-0 z-10 pointer-events-none"
-        style={{ height: ITEM_H, background: 'linear-gradient(to bottom, rgba(8,15,35,0.95), transparent)' }} />
-      {/* Bottom fade */}
-      <div className="absolute inset-x-0 bottom-0 z-10 pointer-events-none"
-        style={{ height: ITEM_H, background: 'linear-gradient(to top, rgba(8,15,35,0.95), transparent)' }} />
-      {/* Center selector highlight */}
-      <div className="absolute inset-x-2 z-10 pointer-events-none rounded-lg"
-        style={{ top: ITEM_H, height: ITEM_H, background: 'rgba(245,197,24,0.08)', border: '1px solid rgba(245,197,24,0.28)' }} />
-
-      {/* Scroll list */}
-      <div
-        ref={ref}
-        onScroll={handleScroll}
-        className="overflow-y-scroll scrollbar-hide h-full"
-        style={{ scrollSnapType: 'y mandatory' }}
-      >
-        {/* top spacer */}
-        <div style={{ height: ITEM_H }} />
-        {rounds.map((round, idx) => {
-          const isSelected = round.id === value;
-          return (
-            <div
-              key={round.id}
-              style={{ height: ITEM_H, scrollSnapAlign: 'center' }}
-              className={`flex items-center justify-center cursor-pointer transition-all duration-200 text-sm font-semibold ${
-                isSelected ? 'text-amber-400 scale-105' : 'text-white/35'
-              }`}
-              onClick={() => {
-                onChange(round.id);
-                ref.current?.scrollTo({ top: idx * ITEM_H, behavior: 'smooth' });
-              }}
-            >
-              {round.name}
-            </div>
-          );
-        })}
-        {/* bottom spacer */}
-        <div style={{ height: ITEM_H }} />
-      </div>
-    </div>
+    <WheelPickerWrapper
+      className="border-0 bg-transparent px-0 shadow-none w-52"
+      style={{ '--rwp-item-height': '44px' }}
+    >
+      <WheelPicker
+        options={options}
+        value={value}
+        onValueChange={onChange}
+        visibleCount={4}
+        optionItemHeight={44}
+        infinite={false}
+        classNames={{
+          optionItem: "text-white/30 font-semibold text-sm transition-all duration-200",
+          highlightWrapper: [
+            "rounded-lg mx-1",
+            "bg-amber-400/8 border border-amber-400/30",
+          ].join(" "),
+          highlightItem: "text-amber-400 font-bold text-sm",
+        }}
+      />
+    </WheelPickerWrapper>
   );
 }
 
@@ -549,7 +506,7 @@ export default function PredictionsResults() {
               }}
             >
               <span className="text-xs uppercase tracking-[0.16em] text-amber-400/70 font-semibold">בחר מחזור</span>
-              <IosRoundPicker
+              <RoundWheelPicker
                 rounds={availableRounds}
                 value={selectedRound}
                 onChange={setSelectedRound}
