@@ -650,11 +650,11 @@ export default function Layout({ children, currentPageName }) {
                   <div
                     className="flex items-center gap-2.5 rounded-full px-3 py-1.5 transition-all duration-200"
                     style={{
-                      background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(5,10,20,0.4) 100%)',
-                      border: '1px solid rgba(245,197,24,0.30)',
+                      background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(8,20,50,0.55) 100%)',
+                      border: '1px solid rgba(245,197,24,0.35)',
                       backdropFilter: 'blur(28px) saturate(1.6)',
                       WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
-                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 16px rgba(0,0,0,0.4)',
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), 0 4px 20px rgba(0,0,0,0.5)',
                     }}
                   >
                     <img
