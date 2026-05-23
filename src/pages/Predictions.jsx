@@ -882,7 +882,7 @@ export default function Predictions() {
         const allDone = areAllPredictionsComplete();
         const pct = total > 0 ? (filled / total) * 100 : 0;
         return (
-          <div className="flex justify-center px-4 py-2 border-t border-white/[0.07]" style={{ background: 'rgba(5,10,20,0.97)', flexShrink: 0 }}>
+          <div className="flex justify-center px-4 py-2 border-t border-white/[0.07]" style={{ background: 'rgba(5,10,20,0.4)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', flexShrink: 0 }}>
           <AnimatePresence mode="wait">
             {allDone || submitted ? (
               <motion.button
