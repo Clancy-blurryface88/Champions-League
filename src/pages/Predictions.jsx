@@ -665,14 +665,19 @@ export default function Predictions() {
                 className="h-full">
 
                 <Card
-                  className={`relative border transition-all duration-300 h-full flex flex-col ${
+                  className={`relative border transition-all duration-300 h-full flex flex-col backdrop-blur-md ${
                   isLocked ?
-                  'border-slate-700/50 opacity-70' :
-                  'border-neutral-800'}`}
-                  style={isLocked ? { background: 'rgba(15,23,42,0.3)' } : {
-                    background: 'linear-gradient(110deg, rgba(0,1,3,0.7) 0%, rgba(0,1,3,0.7) 45%, rgba(30,38,49,0.9) 55%, rgba(0,1,3,0.7) 100%)',
+                  'border-slate-600/40 opacity-70' :
+                  'border-white/10'}`}
+                  style={isLocked ? {
+                    background: 'rgba(15,23,42,0.45)',
+                    backdropFilter: 'blur(12px)',
+                  } : {
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(15,30,60,0.75) 50%, rgba(255,255,255,0.04) 100%)',
+                    backdropFilter: 'blur(16px)',
                     backgroundSize: '200% 100%',
                     animation: 'shine 8s linear infinite',
+                    boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 8px 32px rgba(0,0,0,0.4)',
                   }}
                 >
                   <CardContent className="p-5 pt-2 flex-1 flex flex-col justify-between">
