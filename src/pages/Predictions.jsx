@@ -718,10 +718,10 @@ export default function Predictions() {
                     )}
 
                     {/* Separator below group badge */}
-                    <div className="border-t border-slate-700/50 mb-4" />
+                    <div className="border-t border-slate-700/50" />
 
                     {/* Teams & Score Input */}
-                    <div className="grid grid-cols-[1fr_auto_1fr] gap-x-2 mb-4">
+                    <div className="grid grid-cols-[1fr_auto_1fr] gap-x-2 py-4">
                       {/* Logo A */}
                       <div className="flex justify-center items-center cursor-pointer"
                            onClick={() => setSelectedTeam({ name: match.team_a, logo: match.team_a_logo })}>
@@ -766,7 +766,7 @@ export default function Predictions() {
                       </div>
 
                       {/* Name A */}
-                      <div className="flex flex-col items-center gap-1 pt-2">
+                      <div className="flex flex-col items-center gap-0.5 pt-1">
                         <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words flex items-start justify-center">
                           {match.team_a}
                         </RevealText>
@@ -777,7 +777,7 @@ export default function Predictions() {
                       <div />
 
                       {/* Name B */}
-                      <div className="flex flex-col items-center gap-1 pt-2">
+                      <div className="flex flex-col items-center gap-0.5 pt-1">
                         <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words flex items-start justify-center">
                           {match.team_b}
                         </RevealText>
@@ -796,7 +796,7 @@ export default function Predictions() {
                     }
 
                     {/* Footer: Date & Location */}
-                    <div className="mt-auto pt-4 border-t border-slate-700/50 space-y-1.5">
+                    <div className="mt-auto pt-3 border-t border-slate-700/50 space-y-1.5">
                       <div className="flex items-center justify-center gap-1.5 text-sm text-white">
                         <span className="text-base">🗓️</span>
                         <span>{moment(match.match_date).format('DD/MM/YYYY')} · {moment(match.match_date).format('HH:mm')}</span>
