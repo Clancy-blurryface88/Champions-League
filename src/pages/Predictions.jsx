@@ -676,7 +676,7 @@ export default function Predictions() {
                     background: 'linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(15,30,60,0.75) 50%, rgba(255,255,255,0.04) 100%)',
                     backdropFilter: 'blur(16px)',
                     backgroundSize: '200% 100%',
-                    animation: 'shine 8s linear infinite',
+                    animation: 'shine 4s linear infinite',
                     boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 8px 32px rgba(0,0,0,0.4)',
                   }}
                 >
