@@ -732,7 +732,7 @@ export default function Predictions() {
                         style={{ gridTemplateColumns: '1fr auto 1fr', gridTemplateRows: 'auto auto' }}
                       >
                         {/* Row 1: flags */}
-                        <div className="flex justify-center items-center cursor-pointer pt-3"
+                        <div className="flex justify-center items-center cursor-pointer pt-5"
                              style={{ gridColumn: 1, gridRow: 1 }}
                              onClick={() => setSelectedTeam({ name: match.team_a, logo: match.team_a_logo })}>
                           <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
