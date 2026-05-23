@@ -623,9 +623,6 @@ export default function Predictions() {
                             </span>
                           </div>
                         )}
-                        <span className={`text-[10px] ${isPast ? 'text-slate-700' : 'text-slate-500'}`}>
-                          {dayMatches.length} משחקים
-                        </span>
                       </div>
 
                       {/* Chevron */}
