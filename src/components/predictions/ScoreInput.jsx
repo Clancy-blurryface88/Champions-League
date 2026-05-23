@@ -42,7 +42,8 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 8, opacity: 0, scale: 0.8 }}
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            className={`inline-block text-5xl md:text-6xl font-black tracking-tight select-none
+            style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+            className={`inline-block text-5xl md:text-6xl tracking-wide select-none
               ${hasError && isUndefined ? 'text-red-400' : isUndefined ? 'text-slate-500' : 'text-white'}`}
           >
             {displayValue}
