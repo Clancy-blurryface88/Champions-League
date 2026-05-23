@@ -505,7 +505,7 @@ export default function PredictionsResults() {
                 backdropFilter: 'blur(12px)',
               }}
             >
-              <span className="text-xs uppercase tracking-[0.16em] text-amber-400/70 font-semibold">בחר מחזור</span>
+              <span className="text-base uppercase tracking-[0.16em] text-amber-400/70 font-bold">בחר מחזור</span>
               <RoundWheelPicker
                 rounds={availableRounds}
                 value={selectedRound}
