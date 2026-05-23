@@ -32,7 +32,7 @@ const RoundCard = ({ round, onClick }) => {
       <figure
         className="relative h-16 w-60 rounded-2xl flex items-center justify-center gap-4"
         style={{
-          background: 'linear-gradient(135deg, rgba(30,60,120,0.45) 0%, rgba(8,20,50,0.35) 100%)',
+          background: 'linear-gradient(135deg, rgba(8,22,42,0.55) 0%, rgba(3,10,20,0.45) 100%)',
           border: '1px solid rgba(245,197,24,0.28)',
           boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35)',
           transition: 'border-color 0.2s',
