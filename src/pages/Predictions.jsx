@@ -432,7 +432,7 @@ export default function Predictions() {
   return (
     <div className="fixed inset-0 flex flex-col" style={{ top: '112px' }}>
       <div className="flex-1 overflow-y-auto min-h-0">
-      <div className="max-w-4xl mx-auto px-4 py-4">
+      <div className="max-w-4xl mx-auto px-4 py-4 pb-20">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8 pt-8">
           <Button
@@ -883,7 +883,7 @@ export default function Predictions() {
         const allDone = areAllPredictionsComplete();
         const pct = total > 0 ? (filled / total) * 100 : 0;
         return (
-          <div className="flex justify-center px-4 py-2 border-t border-white/[0.08]" style={{ background: 'rgba(10,18,40,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)', flexShrink: 0 }}>
+          <div className="absolute bottom-0 left-0 right-0 flex justify-center px-4 py-2 border-t border-white/[0.08] z-20" style={{ background: 'rgba(10,18,40,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)' }}>
           <AnimatePresence mode="wait">
             {allDone || submitted ? (
               <motion.button
