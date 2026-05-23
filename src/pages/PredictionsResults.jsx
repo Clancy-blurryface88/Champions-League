@@ -629,14 +629,14 @@ export default function PredictionsResults() {
                           משחק {currentMatchIndex + 1} מתוך {finishedMatches.length}
                         </h3>
                         <div className="flex items-center justify-center gap-3">
-                          <TeamFlag logo={finishedMatches[currentMatchIndex]?.team_a_logo} name={finishedMatches[currentMatchIndex]?.team_a} className="w-8 h-8 " />
+                          <TeamFlag logo={finishedMatches[currentMatchIndex]?.team_a_logo} name={finishedMatches[currentMatchIndex]?.team_a} className="w-8 h-8" rounded="md" />
 
                           <div className="bg-slate-700 px-3 py-1 rounded-lg">
                             <span className="text-white font-bold">
                               {finishedMatches[currentMatchIndex]?.actual_score_a} - {finishedMatches[currentMatchIndex]?.actual_score_b}
                             </span>
                           </div>
-                          <TeamFlag logo={finishedMatches[currentMatchIndex]?.team_b_logo} name={finishedMatches[currentMatchIndex]?.team_b} className="w-8 h-8 " />
+                          <TeamFlag logo={finishedMatches[currentMatchIndex]?.team_b_logo} name={finishedMatches[currentMatchIndex]?.team_b} className="w-8 h-8" rounded="md" />
                         </div>
                       </div>
 
@@ -920,11 +920,11 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                   <div className="flex items-center px-3 pt-3 pb-1">
                     {/* Teams centered */}
                     <div className="flex-1 flex items-center justify-center gap-2">
-                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5" />
+                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5" rounded="sm" />
                       <span className="text-white/70 text-xs font-medium">{match.team_a}</span>
                       <span className="text-amber-400/50 text-[10px] font-bold tracking-widest">VS</span>
                       <span className="text-white/70 text-xs font-medium">{match.team_b}</span>
-                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5" />
+                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5" rounded="sm" />
                     </div>
                     {/* Status icon — right */}
                     <span className="text-base w-6 text-right flex-shrink-0">
@@ -1064,9 +1064,9 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                       {getUserDisplayName(prediction.user_id)}
                     </button>
                     <div className="text-slate-400 text-base flex items-center gap-1">
-                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-4 h-4" />
+                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-4 h-4" rounded="sm" />
                       <span className="text-slate-50 pr-2 pl-2 text-sm font-medium">{prediction.predicted_score_a} - {prediction.predicted_score_b}</span>
-                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-4 h-4" />
+                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-4 h-4" rounded="sm" />
                     </div>
                   </div>
                 </div>

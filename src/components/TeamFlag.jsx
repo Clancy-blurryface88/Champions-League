@@ -68,14 +68,15 @@ function FlagSimple({ code, name, px }) {
   );
 }
 
-export default function TeamFlag({ logo, name, className = 'w-12 h-12', animate = false, size }) {
+export default function TeamFlag({ logo, name, className = 'w-12 h-12', animate = false, size, rounded = 'full' }) {
   const px = getPx(className, size);
+  const r = `rounded-${rounded}`;
 
   // Fallback: no logo
   if (!logo) {
     return (
       <div
-        className={`rounded-full flex items-center justify-center bg-slate-700 text-slate-300 font-bold flex-shrink-0 ${className}`}
+        className={`${r} flex items-center justify-center bg-slate-700 text-slate-300 font-bold flex-shrink-0 ${className}`}
         style={{ fontSize: Math.max(px * 0.35, 8) }}
       >
         {name?.slice(0, 2).toUpperCase()}
@@ -92,7 +93,7 @@ export default function TeamFlag({ logo, name, className = 'w-12 h-12', animate 
           customGrid={{ rows: 4, cols: 4 }}
           grayscaleAnimation
           animate={animate}
-          className={className}
+          className={`${r} ${className}`}
           imageClassName="object-contain"
         />
       );
@@ -101,7 +102,7 @@ export default function TeamFlag({ logo, name, className = 'w-12 h-12', animate 
       <img
         src={logo}
         alt={name}
-        className={`rounded-full object-contain flex-shrink-0 shadow-sm ${className}`}
+        className={`${r} object-contain flex-shrink-0 shadow-sm ${className}`}
       />
     );
   }
@@ -114,7 +115,7 @@ export default function TeamFlag({ logo, name, className = 'w-12 h-12', animate 
   // Simple flag (no animation) — most admin/modal usages
   return (
     <span
-      className={`fi fi-${logo} fis rounded-full flex-shrink-0 shadow-sm ${className}`}
+      className={`fi fi-${logo} fis ${r} flex-shrink-0 shadow-sm ${className}`}
       title={name}
       style={{ display: 'inline-block', width: px, height: px, fontSize: px, backgroundSize: 'cover', backgroundPosition: 'center', minWidth: px }}
     />
