@@ -288,7 +288,11 @@ export default function RoundInsightsTicker({ user }) {
   if (loading || !tickerData || tickerData.length === 0) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-[#0f172a] border-t border-slate-800 z-50 h-[44px] flex items-center justify-center overflow-hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
+    <div
+      className="fixed bottom-0 left-0 right-0 z-50 h-[44px] rounded-t-3xl border-t border-white/[0.08]"
+      style={{ background: 'rgba(5,10,20,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)', boxShadow: '0 -4px 20px rgba(0,0,0,0.2)' }}
+    >
+    <div className="h-full flex items-center justify-center overflow-hidden rounded-t-3xl">
       <TextLoop
         interval={4}
         className="text-[14px] font-medium"
@@ -304,6 +308,7 @@ export default function RoundInsightsTicker({ user }) {
           </div>
         ))}
       </TextLoop>
+    </div>
     </div>
   );
 }
