@@ -144,10 +144,11 @@ export default function ExactHitsPanel({ onClose, user }) {
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed inset-y-0 right-0 w-64 bg-slate-900/95 backdrop-blur-lg border-l border-slate-700 z-50 overflow-hidden">
+        className="fixed inset-y-0 right-0 w-64 z-50 overflow-hidden"
+        style={{ background: 'rgba(5,10,20,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
         
         <div className="h-full flex flex-col">
-          <div className="p-6 border-b border-slate-700">
+          <div className="p-6 border-b border-white/10">
             <div className="flex items-start justify-between">
               <div className="flex flex-col w-full">
                 <div className="flex items-center gap-3">
@@ -213,7 +214,7 @@ export default function ExactHitsPanel({ onClose, user }) {
                         border-2 ${getBorderColor(position, isCurrentUser)}
                         hover:scale-105 transition-all duration-200 cursor-pointer
                       `}>
-                        <CardContent className="bg-slate-900 px-4 py-2">
+                        <CardContent className="bg-white/[0.04] px-4 py-2">
                           <div className="flex items-center gap-4">
                             <div className="w-10 flex-shrink-0 flex items-center justify-center">
                               {getPositionIcon(position)}

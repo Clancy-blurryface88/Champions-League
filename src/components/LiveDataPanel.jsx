@@ -193,9 +193,11 @@ export default function LiveDataPanel({ onClose }) {
         transition={{ type: 'spring', stiffness: 280, damping: 28 }}
         className="fixed inset-y-0 right-0 w-[340px] z-50 flex flex-col"
         style={{
-          background: 'linear-gradient(180deg, #060e1c 0%, #0a1628 100%)',
-          borderLeft: '1px solid rgba(255,255,255,0.08)',
-          boxShadow: '-20px 0 60px rgba(0,0,0,0.6)',
+          background: 'rgba(5,10,20,0.35)',
+          backdropFilter: 'blur(28px) saturate(1.6)',
+          WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
+          borderLeft: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '-20px 0 60px rgba(0,0,0,0.4)',
         }}
       >
         {/* Gold top border */}
