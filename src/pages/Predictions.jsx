@@ -721,56 +721,63 @@ export default function Predictions() {
                     <div className="border-t border-slate-700/50 mb-4" />
 
                     {/* Teams & Score Input */}
-                    <div className="flex items-center justify-between gap-2 mb-4">
-                      {/* Team A */}
-                      <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                        <div onClick={() => setSelectedTeam({ name: match.team_a, logo: match.team_a_logo })} className="cursor-pointer">
-                          <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" animate={shouldAnimate} />
-                        </div>
+                    <div className="grid grid-cols-[1fr_auto_1fr] gap-x-2 mb-4">
+                      {/* Logo A */}
+                      <div className="flex justify-center items-center cursor-pointer"
+                           onClick={() => setSelectedTeam({ name: match.team_a, logo: match.team_a_logo })}>
+                        <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" animate={shouldAnimate} />
+                      </div>
+
+                      {/* Score Input */}
+                      <div className="flex items-center gap-2 px-1">
+                        {!isLocked ? (
+                          <>
+                            <ScoreInput
+                              value={prediction.predicted_score_a}
+                              onChange={(value) => handlePredictionChange(match.id, 'predicted_score_a', value)}
+                              hasError={!areAllPredictionsComplete() && (prediction.predicted_score_a === undefined || prediction.predicted_score_a === null)} />
+                            <span className="text-slate-400 font-bold text-lg">-</span>
+                            <ScoreInput
+                              value={prediction.predicted_score_b}
+                              onChange={(value) => handlePredictionChange(match.id, 'predicted_score_b', value)}
+                              hasError={!areAllPredictionsComplete() && (prediction.predicted_score_b === undefined || prediction.predicted_score_b === null)} />
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-10 h-10 bg-slate-700/50 rounded-lg flex items-center justify-center">
+                              <span className="text-slate-400 text-lg font-bold">
+                                {prediction.predicted_score_a !== undefined && prediction.predicted_score_a !== null ? prediction.predicted_score_a : '?'}
+                              </span>
+                            </div>
+                            <span className="text-slate-400 font-bold text-lg">-</span>
+                            <div className="w-10 h-10 bg-slate-700/50 rounded-lg flex items-center justify-center">
+                              <span className="text-slate-400 text-lg font-bold">
+                                {prediction.predicted_score_b !== undefined && prediction.predicted_score_b !== null ? prediction.predicted_score_b : '?'}
+                              </span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Logo B */}
+                      <div className="flex justify-center items-center cursor-pointer"
+                           onClick={() => setSelectedTeam({ name: match.team_b, logo: match.team_b_logo })}>
+                        <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" animate={shouldAnimate} />
+                      </div>
+
+                      {/* Name A */}
+                      <div className="flex flex-col items-center gap-1 pt-2">
                         <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words flex items-start justify-center">
                           {match.team_a}
                         </RevealText>
                         <span className="text-slate-400 text-[10px] leading-none">(Home)</span>
                       </div>
 
-                      {/* Score Input */}
-                      <div className="flex flex-col items-center justify-center px-1">
-                        <div className="flex items-center gap-2">
-                           {!isLocked ?
-                          <>
-                                <ScoreInput
-                              value={prediction.predicted_score_a}
-                              onChange={(value) => handlePredictionChange(match.id, 'predicted_score_a', value)}
-                              hasError={!areAllPredictionsComplete() && (prediction.predicted_score_a === undefined || prediction.predicted_score_a === null)} />
+                      {/* Empty spacer */}
+                      <div />
 
-                                <span className="text-slate-400 font-bold text-lg">-</span>
-                                <ScoreInput
-                              value={prediction.predicted_score_b}
-                              onChange={(value) => handlePredictionChange(match.id, 'predicted_score_b', value)}
-                              hasError={!areAllPredictionsComplete() && (prediction.predicted_score_b === undefined || prediction.predicted_score_b === null)} />
-                              </> :
-                          <>
-                                <div className="w-10 h-10 bg-slate-700/50 rounded-lg flex items-center justify-center">
-                                  <span className="text-slate-400 text-lg font-bold">
-                                    {prediction.predicted_score_a !== undefined && prediction.predicted_score_a !== null ? prediction.predicted_score_a : '?'}
-                                  </span>
-                                </div>
-                                <span className="text-slate-400 font-bold text-lg">-</span>
-                                <div className="w-10 h-10 bg-slate-700/50 rounded-lg flex items-center justify-center">
-                                  <span className="text-slate-400 text-lg font-bold">
-                                    {prediction.predicted_score_b !== undefined && prediction.predicted_score_b !== null ? prediction.predicted_score_b : '?'}
-                                  </span>
-                                </div>
-                              </>
-                          }
-                        </div>
-                      </div>
-
-                      {/* Team B */}
-                      <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                        <div onClick={() => setSelectedTeam({ name: match.team_b, logo: match.team_b_logo })} className="cursor-pointer">
-                          <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" animate={shouldAnimate} />
-                        </div>
+                      {/* Name B */}
+                      <div className="flex flex-col items-center gap-1 pt-2">
                         <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words flex items-start justify-center">
                           {match.team_b}
                         </RevealText>

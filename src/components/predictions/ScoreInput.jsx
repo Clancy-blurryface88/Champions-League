@@ -24,14 +24,12 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
       <motion.button
         onClick={handleIncrement}
         disabled={disabled}
-        whileTap={{ scale: 0.88 }}
-        className="w-6 h-6 rounded-full flex items-center justify-center
-          bg-yellow-500/15 border border-yellow-500/40
-          hover:bg-yellow-500/30 hover:border-yellow-400/70
-          disabled:opacity-40 disabled:cursor-not-allowed
-          transition-colors duration-150"
+        whileTap={{ scale: 0.85 }}
+        className="flex items-center justify-center
+          hover:opacity-70 disabled:opacity-30 disabled:cursor-not-allowed
+          transition-opacity duration-150"
       >
-        <ChevronUp className="w-3 h-3 text-yellow-400" strokeWidth={3} />
+        <ChevronUp className="w-4 h-4 text-yellow-400" strokeWidth={3} />
       </motion.button>
 
       {/* תצוגת הספרה */}
@@ -56,14 +54,12 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
       <motion.button
         onClick={handleDecrement}
         disabled={disabled || value === 0 || isUndefined}
-        whileTap={{ scale: 0.88 }}
-        className="w-6 h-6 rounded-full flex items-center justify-center
-          bg-yellow-500/15 border border-yellow-500/40
-          hover:bg-yellow-500/30 hover:border-yellow-400/70
-          disabled:opacity-40 disabled:cursor-not-allowed
-          transition-colors duration-150"
+        whileTap={{ scale: 0.85 }}
+        className="flex items-center justify-center
+          hover:opacity-70 disabled:opacity-30 disabled:cursor-not-allowed
+          transition-opacity duration-150"
       >
-        <ChevronDown className="w-3 h-3 text-yellow-400" strokeWidth={3} />
+        <ChevronDown className="w-4 h-4 text-yellow-400" strokeWidth={3} />
       </motion.button>
     </div>
   );
