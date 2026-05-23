@@ -650,9 +650,10 @@ export default function Layout({ children, currentPageName }) {
                   <div
                     className="flex items-center gap-2.5 rounded-full px-3 py-1.5 transition-all duration-200"
                     style={{
-                      background: 'rgba(8,22,45,0.85)',
+                      background: 'rgba(5,10,20,0.35)',
                       border: '1px solid rgba(245,197,24,0.30)',
-                      backdropFilter: 'blur(14px)',
+                      backdropFilter: 'blur(28px) saturate(1.6)',
+                      WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
                     }}
                   >
                     <img
