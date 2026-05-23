@@ -872,64 +872,49 @@ export default function Predictions() {
         </div>
         )}
 
-        {/* Progress Bar → Submit Button */}
+        {/* Fixed Submit Button */}
         {matches.some((match) => !isMatchLocked(match.match_date)) && (() => {
           const { filled, total } = predictionProgress();
           const allDone = areAllPredictionsComplete();
-          const pct = total > 0 ? (filled / total) * 100 : 0;
+          const canSubmit = allDone || submitted;
           return (
-            <div className="fixed bottom-[44px] left-0 right-0 z-40 flex justify-center px-6 pb-3 pt-2 pointer-events-none">
-              <AnimatePresence mode="wait">
-                {allDone || submitted ? (
-                  <motion.button
-                    key="submit-btn"
-                    onClick={handleSubmit}
-                    disabled={saving}
-                    initial={{ opacity: 0, y: 16, scale: 0.92 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                    className="pointer-events-auto flex items-center gap-2.5 px-8 py-3 rounded-full font-bold text-base text-slate-900 shadow-[0_0_24px_rgba(245,197,24,0.45)] transition-opacity"
-                    style={{ background: 'linear-gradient(135deg, #f5c518 0%, #f59e0b 100%)' }}
-                    whileTap={{ scale: 0.96 }}
-                  >
-                    {saving ? (
-                      <>
-                        <OrbitSpinner size={18} />
-                        <span>שולח...</span>
-                      </>
-                    ) : submitted ? (
-                      <span>✎ עדכן ניחושים</span>
-                    ) : (
-                      <span>✓ שלח ניחושים</span>
-                    )}
-                  </motion.button>
+            <div className="fixed bottom-[44px] left-0 right-0 z-40 flex flex-col items-center gap-1 px-6 pb-3 pt-2 pointer-events-none">
+              {!allDone && (
+                <span className="text-xs text-amber-400/70 font-medium pointer-events-none">
+                  {filled} / {total} ניחושים מולאו
+                </span>
+              )}
+              <motion.button
+                onClick={canSubmit ? handleSubmit : undefined}
+                disabled={saving || !canSubmit}
+                initial={{ opacity: 0, y: 16, scale: 0.92 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                className="pointer-events-auto flex items-center gap-2.5 px-8 py-3 rounded-full font-bold text-base transition-all duration-300"
+                style={canSubmit ? {
+                  background: 'linear-gradient(135deg, #f5c518 0%, #f59e0b 100%)',
+                  color: '#1a1a1a',
+                  boxShadow: '0 0 24px rgba(245,197,24,0.45)',
+                } : {
+                  background: 'rgba(20,30,50,0.9)',
+                  color: 'rgba(255,255,255,0.3)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  backdropFilter: 'blur(12px)',
+                  cursor: 'not-allowed',
+                }}
+                whileTap={canSubmit ? { scale: 0.96 } : {}}
+              >
+                {saving ? (
+                  <>
+                    <OrbitSpinner size={18} />
+                    <span>שולח...</span>
+                  </>
+                ) : submitted ? (
+                  <span>✎ עדכן ניחושים</span>
                 ) : (
-                  <motion.div
-                    key="progress-bar"
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.25 }}
-                    className="pointer-events-auto w-full max-w-sm rounded-full overflow-hidden"
-                    style={{ background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.08)' }}
-                  >
-                    <div className="relative h-10 flex items-center px-4">
-                      {/* fill */}
-                      <motion.div
-                        className="absolute inset-0 rounded-full origin-left"
-                        initial={false}
-                        animate={{ scaleX: pct / 100 }}
-                        transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-                        style={{ background: 'linear-gradient(90deg, rgba(245,197,24,0.25) 0%, rgba(245,197,24,0.45) 100%)', transformOrigin: 'left' }}
-                      />
-                      <span className="relative z-10 w-full text-center text-sm font-semibold text-amber-400/90">
-                        {filled} / {total} ניחושים
-                      </span>
-                    </div>
-                  </motion.div>
+                  <span>✓ שלח ניחושים</span>
                 )}
-              </AnimatePresence>
+              </motion.button>
             </div>
           );
         })()}
