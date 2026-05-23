@@ -477,7 +477,7 @@ export default function Layout({ children, currentPageName }) {
 
 {/* Glass navbar strip */}
         <div
-          className="fixed left-0 right-0 pointer-events-none rounded-b-3xl"
+          className="fixed left-0 right-0 pointer-events-none"
           style={{
             top: '36px',
             height: '76px',
