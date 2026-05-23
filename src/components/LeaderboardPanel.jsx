@@ -216,34 +216,24 @@ export default function LeaderboardPanel({ onClose, user }) {
                   const rank = totalParticipants - 1 - index;
                   const cardAnimationDelay = Math.pow(rank, 1.6) * 0.38 + (position === 1 ? 0.6 : 0);
                   const scoreAnimationDelay = cardAnimationDelay + 0.25;
-                  const isWinner = position === 1;
-
                   return (
                     <motion.div
                       key={participant.id}
-                      initial={{ opacity: 0, y: isWinner ? 40 : 20, scale: isWinner ? 0.88 : 1 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
                       transition={{
                         delay: cardAnimationDelay,
-                        duration: isWinner ? 0.9 : 0.6,
-                        ease: isWinner ? [0.34, 1.56, 0.64, 1] : "easeOut"
+                        duration: 0.6,
+                        ease: "easeOut"
                       }}>
 
-<Card
+                        <Card
                           onClick={() => handlePlayerClick(participant)}
                           className={`
                           ${getBackgroundColor(position)}
                           border-2 ${getBorderColor(position, isCurrentUser)}
                           hover:scale-105 transition-all duration-200 cursor-pointer
-                          ${isWinner ? 'relative overflow-hidden' : ''}
                         `}>
-                          {isWinner && (
-                            <motion.div
-                              className="absolute inset-0 rounded-lg"
-                              animate={{ boxShadow: ['0 0 0px rgba(245,197,24,0)', '0 0 30px rgba(245,197,24,0.5)', '0 0 0px rgba(245,197,24,0)'] }}
-                              transition={{ delay: cardAnimationDelay + 0.7, duration: 1.2, repeat: 2 }}
-                            />
-                          )}
                           <CardContent className="bg-white/[0.04] px-4 py-2">
                             <div className="flex items-center gap-2">
                               <div className="w-8 flex-shrink-0 flex items-center justify-center">
