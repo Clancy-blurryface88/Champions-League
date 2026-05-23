@@ -513,9 +513,9 @@ export default function PredictionsResults() {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-2">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8 pt-8">
+        <div className="flex items-center gap-4 mb-6 pt-2">
           <Button
             variant="outline"
             size="icon"
@@ -625,7 +625,7 @@ export default function PredictionsResults() {
                         size="icon"
                         onClick={nextMatch}
                         disabled={finishedMatches.length <= 1}
-                        className="w-10 h-10 rounded-full bg-slate-700 hover:bg-slate-600 disabled:opacity-30">
+                        className="w-10 h-10 rounded-full bg-slate-500 hover:bg-slate-400 disabled:opacity-30">
                         <ChevronLeft className="w-6 h-6 text-white" />
                       </Button>
 
@@ -650,7 +650,7 @@ export default function PredictionsResults() {
                         size="icon"
                         onClick={prevMatch}
                         disabled={finishedMatches.length <= 1}
-                        className="w-10 h-10 rounded-full bg-slate-700 hover:bg-slate-600 disabled:opacity-30">
+                        className="w-10 h-10 rounded-full bg-slate-500 hover:bg-slate-400 disabled:opacity-30">
                         <ChevronRight className="w-6 h-6 text-white" />
                       </Button>
                     </div>
@@ -1003,12 +1003,15 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
 
   const REVEAL_DELAY = 0.75; // שניות בין חשיפת כל שחקן
 
-  // מיין מהגבוה לנמוך לצורך תצוגה (מקום 1 בראש)
+  // מיין מהגבוה לנמוך — הגבוה בראש, הנמוך בתחתית ומופיע ראשון
   const sortedPredictions = [...predictions].sort((a, b) => (b.points_earned || 0) - (a.points_earned || 0));
+
+  const bottomRef = useRef(null);
 
   useEffect(() => {
     if (sortedPredictions.length === 0) { onAllRevealed?.(); return; }
-    // זמן החשיפה האחרונה = index 0 (המקום הראשון) מופיע אחרון
+    // גלול לתחתית כך שהמשתמש רואה את החשיפה הראשונה (הנמוך) ומעלה למנצח
+    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 100);
     const lastRevealTime = (sortedPredictions.length - 1) * REVEAL_DELAY + 0.5;
     const timer = setTimeout(() => onAllRevealed?.(), lastRevealTime * 1000);
     return () => clearTimeout(timer);
@@ -1026,7 +1029,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
       {sortedPredictions.map((prediction, index) => {
         const outcomeStatus = getOutcomeStatus(prediction, match);
         const isExpanded = expandedPrediction === prediction.id;
-        // מקום N מופיע ראשון (delay=0), מקום 1 מופיע אחרון (delay מקסימלי)
+        // מקום N (תחתית) מופיע ראשון (delay=0), מקום 1 (ראש) מופיע אחרון
         const revealDelay = (sortedPredictions.length - 1 - index) * REVEAL_DELAY;
 
         const verdictBg =
@@ -1109,6 +1112,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
           </motion.div>);
 
       })}
+      <div ref={bottomRef} />
     </div>);
 
 }
