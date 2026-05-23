@@ -725,22 +725,22 @@ export default function Predictions() {
                     {/* Separator below group badge */}
                     <div className="border-t border-slate-700/50" />
 
-                    {/* Teams & Score Input — flex-1 centers content between the two dividers */}
-                    <div className="flex-1 flex items-center py-2">
-                      <div className="flex items-start justify-between w-full gap-2">
-
-                        {/* Team A: logo + name + home in one column */}
-                        <div className="flex flex-col items-center flex-1 cursor-pointer"
+                    {/* Teams & Score Input */}
+                    <div className="py-3 px-1">
+                      <div
+                        className="w-full grid gap-x-2"
+                        style={{ gridTemplateColumns: '1fr auto 1fr', gridTemplateRows: 'auto auto auto' }}
+                      >
+                        {/* Row 1: flags */}
+                        <div className="flex justify-center items-center pb-1 cursor-pointer"
+                             style={{ gridColumn: 1, gridRow: 1 }}
                              onClick={() => setSelectedTeam({ name: match.team_a, logo: match.team_a_logo })}>
                           <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
-                          <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words mt-1">
-                            {match.team_a}
-                          </RevealText>
-                          <span className="text-slate-400 text-[10px] leading-none mt-0.5">(Home)</span>
                         </div>
 
-                        {/* Score Input */}
-                        <div className="flex items-center gap-2 px-1 self-center">
+                        {/* Score — spans all 3 rows, centered */}
+                        <div className="flex items-center gap-2 px-1"
+                             style={{ gridColumn: 2, gridRow: '1 / 4', alignSelf: 'center' }}>
                           {!isLocked ? (
                             <>
                               <ScoreInput
@@ -770,16 +770,31 @@ export default function Predictions() {
                           )}
                         </div>
 
-                        {/* Team B: logo + name + away in one column */}
-                        <div className="flex flex-col items-center flex-1 cursor-pointer"
+                        <div className="flex justify-center items-center pb-1 cursor-pointer"
+                             style={{ gridColumn: 3, gridRow: 1 }}
                              onClick={() => setSelectedTeam({ name: match.team_b, logo: match.team_b_logo })}>
                           <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
-                          <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words mt-1">
-                            {match.team_b}
-                          </RevealText>
-                          <span className="text-slate-400 text-[10px] leading-none mt-0.5">(Away)</span>
                         </div>
 
+                        {/* Row 2: names */}
+                        <div style={{ gridColumn: 1, gridRow: 2 }} className="cursor-pointer"
+                             onClick={() => setSelectedTeam({ name: match.team_a, logo: match.team_a_logo })}>
+                          <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words">
+                            {match.team_a}
+                          </RevealText>
+                        </div>
+                        <div style={{ gridColumn: 3, gridRow: 2 }} className="cursor-pointer"
+                             onClick={() => setSelectedTeam({ name: match.team_b, logo: match.team_b_logo })}>
+                          <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words">
+                            {match.team_b}
+                          </RevealText>
+                        </div>
+
+                        {/* Row 3: home/away labels */}
+                        <span style={{ gridColumn: 1, gridRow: 3 }}
+                              className="text-slate-400 text-[10px] leading-none text-center block mt-0.5">(Home)</span>
+                        <span style={{ gridColumn: 3, gridRow: 3 }}
+                              className="text-slate-400 text-[10px] leading-none text-center block mt-0.5">(Away)</span>
                       </div>
                     </div>
 
