@@ -16,6 +16,7 @@ const adminSupabase = createClient(import.meta.env.VITE_SUPABASE_URL, _svcKey);
 
 export default function AdminScoring({ onUpdateComplete }) {
   const [loading, setLoading] = useState(false);
+  const [forceLoading, setForceLoading] = useState(false);
   const [status, setStatus] = useState({ type: '', message: '' });
 
   const calculateScore = (prediction, match) => {
@@ -139,6 +140,144 @@ export default function AdminScoring({ onUpdateComplete }) {
       bttsPoints: parseFloat(bttsPoints.toFixed(2)),
       goalRangePoints: parseFloat(goalRangePoints.toFixed(2))
     };
+  };
+
+  const handleForceRecalculation = async () => {
+    if (!window.confirm('⚠️ Force Recalculate יחשב מחדש את כל הניחושים לכל המשחקים שהסתיימו — כולל כאלה שכבר חושבו. להמשיך?')) return;
+    setForceLoading(true);
+    setStatus({ type: '', message: '' });
+
+    try {
+      const [allMatches, allPredictions, allUsers] = await Promise.all([
+        Match.list(),
+        Prediction.list(),
+        User.list()
+      ]);
+
+      const finishedMatches = allMatches.filter(m =>
+        m.is_finished &&
+        m.actual_score_a !== null &&
+        m.actual_score_b !== null
+      );
+
+      if (finishedMatches.length === 0) {
+        setStatus({ type: 'info', message: 'אין משחקים שהסתיימו לחישוב.' });
+        setForceLoading(false);
+        return;
+      }
+
+      const matchIdsToProcess = finishedMatches.map(m => m.id);
+      const predictionsToProcess = allPredictions.filter(p => matchIdsToProcess.includes(p.match_id));
+
+      const uniquePredictionsMap = {};
+      predictionsToProcess.forEach(prediction => {
+        const key = `${prediction.user_id}_${prediction.match_id}`;
+        if (!uniquePredictionsMap[key] ||
+            new Date(prediction.created_at) > new Date(uniquePredictionsMap[key].created_at)) {
+          uniquePredictionsMap[key] = prediction;
+        }
+      });
+      const uniquePredictions = Object.values(uniquePredictionsMap);
+
+      let updatedCount = 0;
+      for (const prediction of uniquePredictions) {
+        const match = finishedMatches.find(m => m.id === prediction.match_id);
+        if (match) {
+          const scoreBreakdown = calculateScore(prediction, match);
+          await Prediction.update(prediction.id, {
+            points_earned: scoreBreakdown.totalPoints,
+            exact_score_points_earned: scoreBreakdown.exactScorePoints,
+            correct_outcome_points_earned: scoreBreakdown.outcomePoints,
+            both_teams_scored_points_earned: scoreBreakdown.bttsPoints,
+            goals_range_points_earned: scoreBreakdown.goalRangePoints
+          });
+          updatedCount++;
+        }
+      }
+
+      const refreshedPredictions = await Prediction.list();
+      const userTotalPoints = {};
+      const userExactHits = {};
+      const userTotalPredictions = {};
+      const userExactScorePoints = {};
+      const userOutcomePoints = {};
+      const userBttsPoints = {};
+      const userGoalsRangePoints = {};
+
+      allUsers.forEach(user => {
+        userTotalPoints[user.id] = 0;
+        userExactHits[user.id] = 0;
+        userTotalPredictions[user.id] = 0;
+        userExactScorePoints[user.id] = 0;
+        userOutcomePoints[user.id] = 0;
+        userBttsPoints[user.id] = 0;
+        userGoalsRangePoints[user.id] = 0;
+      });
+
+      const uniqueAllMap = {};
+      refreshedPredictions.forEach(p => {
+        const key = `${p.user_id}_${p.match_id}`;
+        if (!uniqueAllMap[key] || new Date(p.created_at) > new Date(uniqueAllMap[key].created_at)) {
+          uniqueAllMap[key] = p;
+        }
+      });
+
+      Object.values(uniqueAllMap).forEach(prediction => {
+        const uid = prediction.user_id;
+        if (!userTotalPredictions.hasOwnProperty(uid)) {
+          userTotalPoints[uid] = 0; userExactHits[uid] = 0; userTotalPredictions[uid] = 0;
+          userExactScorePoints[uid] = 0; userOutcomePoints[uid] = 0;
+          userBttsPoints[uid] = 0; userGoalsRangePoints[uid] = 0;
+        }
+        userTotalPredictions[uid]++;
+        userTotalPoints[uid] = parseFloat((userTotalPoints[uid] + (prediction.points_earned || 0)).toFixed(2));
+        userExactScorePoints[uid] = parseFloat((userExactScorePoints[uid] + (prediction.exact_score_points_earned || 0)).toFixed(2));
+        userOutcomePoints[uid] = parseFloat((userOutcomePoints[uid] + (prediction.correct_outcome_points_earned || 0)).toFixed(2));
+        userBttsPoints[uid] = parseFloat((userBttsPoints[uid] + (prediction.both_teams_scored_points_earned || 0)).toFixed(2));
+        userGoalsRangePoints[uid] = parseFloat((userGoalsRangePoints[uid] + (prediction.goals_range_points_earned || 0)).toFixed(2));
+        const match = allMatches.find(m => m.id === prediction.match_id);
+        if (match && match.is_finished &&
+            prediction.predicted_score_a === match.actual_score_a &&
+            prediction.predicted_score_b === match.actual_score_b) {
+          userExactHits[uid]++;
+        }
+      });
+
+      let updatedUsersCount = 0;
+      for (const [userId, totalPoints] of Object.entries(userTotalPoints)) {
+        try {
+          const now = new Date().toISOString();
+          const statsData = {
+            total_points: totalPoints,
+            exact_hits_count: userExactHits[userId] || 0,
+            total_predictions_count: userTotalPredictions[userId] || 0,
+            total_exact_score_points: Math.round(userExactScorePoints[userId] || 0),
+            total_outcome_points: Math.round(userOutcomePoints[userId] || 0),
+            total_btts_points: Math.round(userBttsPoints[userId] || 0),
+            total_goals_range_points: Math.round(userGoalsRangePoints[userId] || 0),
+            updated_at: now,
+          };
+          const { error: delError } = await adminSupabase.from('user_stats').delete().eq('user_id', userId);
+          if (delError) throw delError;
+          const { error: insError } = await adminSupabase.from('user_stats').insert({ user_id: userId, ...statsData });
+          if (insError) throw insError;
+          updatedUsersCount++;
+        } catch (err) {
+          console.error(`Failed to update UserStats for ${userId}:`, err);
+        }
+      }
+
+      setStatus({
+        type: 'success',
+        message: `✅ Force Recalculate הושלם! ${updatedCount} ניחושים חושבו מחדש. ${updatedUsersCount} משתמשים עודכנו.`
+      });
+      if (onUpdateComplete) onUpdateComplete();
+    } catch (error) {
+      console.error("Error during force recalculation:", error);
+      setStatus({ type: 'error', message: `שגיאה: ${error?.message || JSON.stringify(error)}` });
+    }
+
+    setForceLoading(false);
   };
 
   const handleFullScoreCalculation = async () => {
@@ -378,7 +517,7 @@ export default function AdminScoring({ onUpdateComplete }) {
 
         <Button
           onClick={handleFullScoreCalculation}
-          disabled={loading}
+          disabled={loading || forceLoading}
           className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white w-full"
         >
           {loading ? (
@@ -388,6 +527,23 @@ export default function AdminScoring({ onUpdateComplete }) {
           )}
           Run Incremental Score Calculation
         </Button>
+
+        <div className="border-t border-slate-600 pt-3">
+          <p className="text-xs text-slate-400 mb-2">⚠️ Force Recalculate — מחשב מחדש את כל הניחושים לכל המשחקים שהסתיימו. השתמש כשניחוש עודכן אחרי חישוב.</p>
+          <Button
+            onClick={handleForceRecalculation}
+            disabled={loading || forceLoading}
+            variant="outline"
+            className="border-orange-600 text-orange-400 hover:bg-orange-900/30 w-full"
+          >
+            {forceLoading ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Calculator className="w-4 h-4 mr-2" />
+            )}
+            Force Recalculate All (מחשב מחדש הכל)
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
