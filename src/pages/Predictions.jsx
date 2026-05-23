@@ -915,12 +915,12 @@ export default function Predictions() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.25 }}
-                className="w-full max-w-sm rounded-full overflow-hidden"
+                className="w-full max-w-sm rounded-2xl overflow-hidden"
                 style={{ background: 'rgba(245,197,24,0.05)', border: '1px solid rgba(245,197,24,0.35)' }}
               >
                 <div className="relative h-10 flex items-center px-4">
                   <motion.div
-                    className="absolute inset-0 rounded-full origin-left"
+                    className="absolute inset-0 rounded-2xl origin-left"
                     initial={false}
                     animate={{ scaleX: pct / 100 }}
                     transition={{ type: 'spring', stiffness: 120, damping: 20 }}
