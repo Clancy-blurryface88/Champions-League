@@ -227,7 +227,7 @@ export default function LeaderboardPanel({ onClose, user }) {
                   const rank = totalParticipants - 1 - index;
                   const cardAnimationDelay = Math.pow(rank, 1.6) * 0.38 + (position === 1 ? 0.6 : 0);
                   const scoreAnimationDelay = cardAnimationDelay + 0.25;
-                  const shockDelay = index * 0.12;
+                  const shockDelay = index * 0.28;
 
                   return (
                     <motion.div
