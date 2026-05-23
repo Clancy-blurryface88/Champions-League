@@ -15,15 +15,18 @@ const RoundCard = ({ round, onClick }) => {
       <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-amber-400/60 via-white/20 to-amber-400/60 blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
       <figure
-        className="relative h-16 w-60 overflow-hidden rounded-2xl flex items-center justify-center gap-4"
+        className="relative h-16 w-60 rounded-2xl flex items-center justify-center gap-4"
         style={{
-          background: 'rgba(8,22,45,0.88)',
+          background: 'rgba(8,22,45,0.35)',
           border: '1px solid rgba(245,197,24,0.28)',
-          backdropFilter: 'blur(14px)',
+          backdropFilter: 'blur(28px) saturate(1.6)',
+          WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
           transition: 'border-color 0.2s',
         }}
       >
-        <ShineBorder shineColor={["#f5c518", "#ffffff", "#f5c518"]} borderRadius={16} borderWidth={1} />
+        <div className="absolute inset-0 rounded-2xl overflow-hidden">
+          <ShineBorder shineColor={["#f5c518", "#ffffff", "#f5c518"]} borderRadius={16} borderWidth={1} />
+        </div>
 
         <div className="flex-shrink-0">
           <img src="/trophy-marquee.png" alt="WC2026" className="h-9 w-auto object-contain" />
