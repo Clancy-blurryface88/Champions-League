@@ -34,8 +34,8 @@ const RoundCard = ({ round, onClick }) => {
 
         <div className="text-center">
           <h3
-            className="text-white font-semibold text-base tracking-wide"
-            style={{ fontFamily: "'Outfit', sans-serif" }}
+            className="font-semibold text-base tracking-wide"
+            style={{ fontFamily: "'Outfit', sans-serif", background: 'linear-gradient(90deg, #f5c518, #ffffff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
           >
             {round.name}
           </h3>
