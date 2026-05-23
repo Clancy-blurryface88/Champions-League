@@ -300,6 +300,129 @@ function SegmentedPicker({ rounds, value, onChange }) {
   );
 }
 
+/* ── Option 5: Timeline Dots ── */
+function TimelinePicker({ rounds, value, onChange }) {
+  const idx = rounds.findIndex(r => r.id === value);
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current?.querySelector('[data-selected="true"]');
+    el?.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' });
+  }, [value]);
+  return (
+    <div ref={ref} className="w-full overflow-x-auto scrollbar-hide py-2">
+      <div className="flex items-center min-w-max px-4">
+        {rounds.map((r, i) => {
+          const sel = r.id === value;
+          const past = i < idx;
+          return (
+            <React.Fragment key={r.id}>
+              {i > 0 && (
+                <div className={`h-0.5 w-8 flex-shrink-0 transition-colors duration-300 ${past || sel ? 'bg-amber-400/50' : 'bg-slate-700'}`} />
+              )}
+              <button data-selected={sel} onClick={() => onChange(r.id)}
+                className="flex flex-col items-center gap-1.5 flex-shrink-0">
+                <motion.div
+                  animate={{ scale: sel ? 1.25 : 1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  className={`rounded-full transition-all duration-200 ${
+                    sel
+                      ? 'w-4 h-4 bg-amber-400 shadow-[0_0_10px_rgba(245,197,24,0.6)]'
+                      : past
+                      ? 'w-2.5 h-2.5 bg-amber-400/40'
+                      : 'w-2.5 h-2.5 bg-slate-600'
+                  }`} />
+                <span className={`text-[10px] font-semibold transition-colors duration-200 whitespace-nowrap ${sel ? 'text-amber-400' : 'text-slate-500'}`}>
+                  {r.name}
+                </span>
+              </button>
+            </React.Fragment>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ── Option 6: Flip Board ── */
+function FlipBoardPicker({ rounds, value, onChange }) {
+  const idx = rounds.findIndex(r => r.id === value);
+  const current = rounds[idx];
+  const canPrev = idx > 0;
+  const canNext = idx < rounds.length - 1;
+  return (
+    <div className="flex flex-col items-center gap-3 w-full">
+      <div className="flex items-center gap-4 w-full justify-center">
+        <button onClick={() => canPrev && onChange(rounds[idx - 1].id)} disabled={!canPrev}
+          className="w-9 h-9 flex items-center justify-center rounded-full border border-slate-700 text-slate-400 disabled:opacity-20 hover:border-amber-400/50 hover:text-amber-400 transition-all">
+          <ChevronRight className="w-5 h-5" />
+        </button>
+        <AnimatePresence mode="wait">
+          <motion.div key={current?.id}
+            initial={{ rotateX: -90, opacity: 0 }}
+            animate={{ rotateX: 0, opacity: 1 }}
+            exit={{ rotateX: 90, opacity: 0 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            style={{ perspective: 600 }}
+            className="px-8 py-3 rounded-xl border border-amber-400/30 bg-amber-400/8 min-w-[160px] text-center">
+            <span className="text-amber-400 font-bold text-base tracking-wide">{current?.name}</span>
+          </motion.div>
+        </AnimatePresence>
+        <button onClick={() => canNext && onChange(rounds[idx + 1].id)} disabled={!canNext}
+          className="w-9 h-9 flex items-center justify-center rounded-full border border-slate-700 text-slate-400 disabled:opacity-20 hover:border-amber-400/50 hover:text-amber-400 transition-all">
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+      </div>
+      <div className="flex gap-1.5">
+        {rounds.map((r, i) => (
+          <button key={r.id} onClick={() => onChange(r.id)}
+            className={`rounded-full transition-all duration-200 ${i === idx ? 'bg-amber-400 w-4 h-1.5' : 'bg-slate-700 w-1.5 h-1.5 hover:bg-slate-500'}`} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Option 7: Neon Underline Tabs ── */
+function NeonUnderlinePicker({ rounds, value, onChange }) {
+  const idx = rounds.findIndex(r => r.id === value);
+  const containerRef = useRef(null);
+  const [underline, setUnderline] = useState({});
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const btn = container.children[idx];
+    if (!btn) return;
+    setUnderline({ left: btn.offsetLeft, width: btn.offsetWidth });
+  }, [idx, rounds]);
+  useEffect(() => {
+    const el = containerRef.current?.children[idx];
+    el?.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' });
+  }, [idx]);
+  return (
+    <div className="w-full overflow-x-auto scrollbar-hide">
+      <div ref={containerRef} className="relative flex gap-0 min-w-max border-b border-slate-700/60 pb-0">
+        <motion.div
+          className="absolute bottom-0 h-0.5 rounded-full"
+          style={{ background: 'linear-gradient(90deg, rgba(245,197,24,0.4), #f5c518, rgba(245,197,24,0.4))' }}
+          animate={underline}
+          transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+        />
+        {rounds.map(r => {
+          const sel = r.id === value;
+          return (
+            <button key={r.id} onClick={() => onChange(r.id)}
+              className={`px-4 py-2.5 text-sm font-semibold transition-colors duration-150 whitespace-nowrap ${
+                sel ? 'text-amber-400' : 'text-slate-500 hover:text-slate-300'
+              }`}>
+              {r.name}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function IosRoundPicker({ rounds, value, onChange }) {
   const ref = useRef(null);
   const scrollTimer = useRef(null);
@@ -665,6 +788,9 @@ export default function PredictionsResults() {
                 { label: '2 — Stepper', comp: <StepperPicker rounds={availableRounds} value={selectedRound} onChange={setSelectedRound} /> },
                 { label: '3 — Carousel', comp: <CarouselPicker rounds={availableRounds} value={selectedRound} onChange={setSelectedRound} /> },
                 { label: '4 — Segmented', comp: <SegmentedPicker rounds={availableRounds} value={selectedRound} onChange={setSelectedRound} /> },
+                { label: '5 — Timeline Dots', comp: <TimelinePicker rounds={availableRounds} value={selectedRound} onChange={setSelectedRound} /> },
+                { label: '6 — Flip Board', comp: <FlipBoardPicker rounds={availableRounds} value={selectedRound} onChange={setSelectedRound} /> },
+                { label: '7 — Neon Underline', comp: <NeonUnderlinePicker rounds={availableRounds} value={selectedRound} onChange={setSelectedRound} /> },
               ].map(({ label, comp }) => (
                 <div key={label}
                   className="flex flex-col items-center gap-2 px-4 py-3 rounded-2xl"
