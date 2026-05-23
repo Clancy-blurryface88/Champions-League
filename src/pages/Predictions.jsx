@@ -787,7 +787,6 @@ export default function Predictions() {
                         </div>
                       </div>
                     }
-                    </div>{/* end flex-1 wrapper */}
 
                     {/* Footer: Date & Location */}
                     <div className="pt-3 border-t border-slate-700/50 space-y-1.5">
