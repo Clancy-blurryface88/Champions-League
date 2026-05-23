@@ -5,7 +5,7 @@ import { Round } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { calculateMatchMaxPotentialPoints } from "@/components/utils/calculateMatchMaxPotentialPoints";
 import { Trophy, Target, Star, Zap } from "lucide-react";
-import Marquee from "@/components/magicui/marquee";
+import { TextLoop } from "@/components/core/text-loop";
 
 const CircularProgress = ({ percentage }) => {
   const radius = 8;
@@ -275,13 +275,7 @@ export default function RoundInsightsTicker({ user }) {
         ...(bestMatchItem !== null ? [bestMatchItem] : [])];
 
 
-        const tickerItems = [...items].reverse();
-        tickerItems.unshift({
-          id: 'blank',
-          text: '',
-          icon: null
-        });
-        setTickerData(tickerItems);
+        setTickerData(items);
       } catch (error) {
         console.error("Error fetching round insights:", error);
       }
@@ -294,23 +288,22 @@ export default function RoundInsightsTicker({ user }) {
   if (loading || !tickerData || tickerData.length === 0) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-[#0f172a] border-t border-slate-800 z-50 h-[44px] flex items-center overflow-hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)]" style={{ direction: 'ltr' }}>
-      <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#0f172a] to-transparent z-10 pointer-events-none"></div>
-      <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#0f172a] to-transparent z-10 pointer-events-none"></div>
-      
-      <Marquee className="py-0" pauseOnHover repeat={6} reverse duration="30s">
-        {tickerData.map((item, idx) =>
-        <div key={item.id} className={`flex items-center mx-3 text-[15px] font-medium ${item.id === 'blank' ? 'w-[100vw]' : ''}`} style={{ direction: 'rtl' }}>
-            {item.icon &&
-          <span className="ml-2 flex items-center justify-center bg-slate-800/80 p-1.5 rounded-md shadow-sm border border-slate-700/50">
+    <div className="fixed bottom-0 left-0 right-0 bg-[#0f172a] border-t border-slate-800 z-50 h-[44px] flex items-center justify-center overflow-hidden shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
+      <TextLoop
+        interval={4}
+        className="text-[14px] font-medium"
+      >
+        {tickerData.map((item) => (
+          <div key={item.id} className="flex items-center justify-center gap-2 px-4" dir="rtl">
+            {item.icon && (
+              <span className="flex items-center justify-center bg-slate-800/80 p-1.5 rounded-md shadow-sm border border-slate-700/50 shrink-0">
                 {item.icon}
               </span>
-          }
+            )}
             <span className="tracking-wide">{item.text}</span>
-            {idx === tickerData.length - 1 && item.id !== 'blank' && <span className="mr-6 text-slate-700">|</span>}
           </div>
-        )}
-      </Marquee>
-    </div>);
-
+        ))}
+      </TextLoop>
+    </div>
+  );
 }
