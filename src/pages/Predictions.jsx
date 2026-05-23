@@ -878,7 +878,7 @@ export default function Predictions() {
           const allDone = areAllPredictionsComplete();
           const pct = total > 0 ? (filled / total) * 100 : 0;
           return (
-            <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center px-6 pb-[44px] pt-1.5 pointer-events-none border-t border-white/[0.07]" style={{ background: 'rgba(5,10,20,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
+            <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center px-6 pb-[44px] pt-0.5 pointer-events-none border-t border-white/[0.07]" style={{ background: 'rgba(5,10,20,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
             <AnimatePresence mode="wait">
               {allDone || submitted ? (
                 <motion.button
