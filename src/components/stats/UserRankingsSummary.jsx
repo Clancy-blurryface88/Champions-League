@@ -374,7 +374,6 @@ export default function UserRankingsSummary() {
                     <TrendBadge rankSeries={rankSeries} />
                   </div>
                   <RankTrajectoryChart rankSeries={rankSeries} totalParticipants={totalParticipants} />
-                  <p className="text-center text-[10px] text-slate-600 mt-1">מיקום נמוך יותר = טוב יותר</p>
                 </div>
               )}
 
