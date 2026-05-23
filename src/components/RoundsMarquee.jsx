@@ -7,6 +7,21 @@ import { ShineBorder } from "@/components/magicui/shine-border";
 
 const RoundCard = ({ round, onClick }) => {
   return (
+    <>
+    <style>{`
+      @keyframes shimmer-text {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 200% 50%; }
+      }
+      .shimmer-text {
+        background: linear-gradient(90deg, #f5c518, #ffffff, #f5c518, #ffffff, #f5c518);
+        background-size: 300% 100%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: shimmer-text 3s linear infinite;
+      }
+    `}</style>
     <div
       className="relative group cursor-pointer mx-3 flex-shrink-0"
       onClick={() => onClick(round)}
@@ -33,14 +48,15 @@ const RoundCard = ({ round, onClick }) => {
 
         <div className="text-center">
           <h3
-            className="font-semibold text-base tracking-wide"
-            style={{ fontFamily: "'Outfit', sans-serif", background: 'linear-gradient(90deg, #f5c518, #ffffff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
+            className="shimmer-text font-semibold text-base tracking-wide"
+            style={{ fontFamily: "'Outfit', sans-serif" }}
           >
             {round.name}
           </h3>
         </div>
       </figure>
     </div>
+    </>
   );
 };
 
