@@ -916,7 +916,7 @@ export default function Predictions() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.25 }}
                 className="w-full max-w-sm rounded-full overflow-hidden"
-                style={{ background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.08)' }}
+                style={{ background: 'rgba(245,197,24,0.05)', border: '1px solid rgba(245,197,24,0.35)' }}
               >
                 <div className="relative h-10 flex items-center px-4">
                   <motion.div
