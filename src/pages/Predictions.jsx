@@ -732,7 +732,7 @@ export default function Predictions() {
                         style={{ gridTemplateColumns: '1fr auto 1fr', gridTemplateRows: 'auto auto auto' }}
                       >
                         {/* Row 1: flags */}
-                        <div className="flex justify-center items-center pb-1 cursor-pointer"
+                        <div className="flex justify-center items-center cursor-pointer"
                              style={{ gridColumn: 1, gridRow: 1 }}
                              onClick={() => setSelectedTeam({ name: match.team_a, logo: match.team_a_logo })}>
                           <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
@@ -770,7 +770,7 @@ export default function Predictions() {
                           )}
                         </div>
 
-                        <div className="flex justify-center items-center pb-1 cursor-pointer"
+                        <div className="flex justify-center items-center cursor-pointer"
                              style={{ gridColumn: 3, gridRow: 1 }}
                              onClick={() => setSelectedTeam({ name: match.team_b, logo: match.team_b_logo })}>
                           <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
@@ -792,9 +792,9 @@ export default function Predictions() {
 
                         {/* Row 3: home/away labels */}
                         <span style={{ gridColumn: 1, gridRow: 3 }}
-                              className="text-slate-400 text-[10px] leading-none text-center block mt-0.5">(Home)</span>
+                              className="text-slate-400 text-[10px] leading-none text-center block">(Home)</span>
                         <span style={{ gridColumn: 3, gridRow: 3 }}
-                              className="text-slate-400 text-[10px] leading-none text-center block mt-0.5">(Away)</span>
+                              className="text-slate-400 text-[10px] leading-none text-center block">(Away)</span>
                       </div>
                     </div>
 
