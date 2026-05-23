@@ -58,21 +58,7 @@ export default function AppBackground() {
   return (
     <div className="fixed inset-0 overflow-hidden" style={{ background: '#030d1a', zIndex: 0 }}>
 
-      {/* Pitch grid lines */}
-      <svg
-        className="absolute inset-0 w-full h-full opacity-[0.035]"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ pointerEvents: 'none' }}
-      >
-        <defs>
-          <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse">
-            <path d="M 80 0 L 0 0 0 80" fill="none" stroke="#ffffff" strokeWidth="0.8"/>
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#grid)" />
-      </svg>
-
-      {/* Central pitch circle */}
+{/* Central pitch circle */}
       <div
         className="absolute"
         style={{
