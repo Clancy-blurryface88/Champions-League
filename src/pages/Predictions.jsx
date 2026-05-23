@@ -883,7 +883,7 @@ export default function Predictions() {
         const allDone = areAllPredictionsComplete();
         const pct = total > 0 ? (filled / total) * 100 : 0;
         return (
-          <div className="absolute bottom-0 left-0 right-0 flex justify-center px-4 py-2 border-t border-white/[0.08] z-20" style={{ background: 'rgba(10,18,40,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)' }}>
+          <div className="absolute bottom-0 left-0 right-0 flex justify-center px-4 py-2 border-t border-white/[0.08] z-20 rounded-t-3xl" style={{ background: 'rgba(10,18,40,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)' }}>
           <AnimatePresence mode="wait">
             {allDone || submitted ? (
               <motion.button
