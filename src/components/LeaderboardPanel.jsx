@@ -229,18 +229,7 @@ export default function LeaderboardPanel({ onClose, user }) {
                         ease: isWinner ? [0.34, 1.56, 0.64, 1] : "easeOut"
                       }}>
 
-                        {isWinner && (
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: [0, 1, 0.6, 1] }}
-                            transition={{ delay: cardAnimationDelay + 0.5, duration: 0.8 }}
-                            className="text-center text-xs font-bold tracking-widest text-amber-400/70 uppercase mb-1"
-                          >
-                            ★ מקום ראשון ★
-                          </motion.div>
-                        )}
-
-                        <Card
+<Card
                           onClick={() => handlePlayerClick(participant)}
                           className={`
                           ${getBackgroundColor(position)}
