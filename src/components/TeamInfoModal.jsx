@@ -1008,6 +1008,15 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
           className="relative w-full sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden rounded-t-2xl sm:rounded-2xl bg-[#0f1923] border border-slate-700"
           dir="rtl"
         >
+          {/* Back button — absolute top-left, outside scroll container */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 left-4 z-20 px-4 py-1.5 rounded-full text-sm font-semibold text-slate-400 hover:text-white transition-all duration-200 active:scale-95"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+          >
+            חזרה
+          </button>
+
           {/* Scrollable content */}
           <div className="flex-1 overflow-y-auto">
 
@@ -1048,17 +1057,6 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
             )}
           </div>
 
-          {/* Back button — left side, just below the flag banner */}
-          <div className="px-4 pb-1" dir="ltr">
-            <button
-              onClick={onClose}
-              className="px-4 py-1.5 rounded-full text-sm font-semibold text-slate-400 hover:text-white transition-all duration-200 active:scale-95"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
-            >
-              חזרה
-            </button>
-          </div>
-
           {/* Stat Cards — HUD Strip with animated flag-color border */}
           {data && stats && (() => {
             const parenIdx = stats.bestResult.indexOf(' (');
@@ -1084,7 +1082,7 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
                 {/* Animated color-shift border in flag colors (no spin) */}
                 <motion.div
                   animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
                   style={{
                     position: 'absolute', inset: 0, borderRadius: '18px',
                     background: `linear-gradient(90deg, ${flagColors[0]}, ${flagColors[1]}, ${flagColors[2]}, ${flagColors[0]})`,
