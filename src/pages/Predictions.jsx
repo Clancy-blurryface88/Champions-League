@@ -355,6 +355,12 @@ export default function Predictions() {
           predicted_score_b: prediction.predicted_score_b
         };
 
+        if (prediction.prediction_id) {
+          return await Prediction.update(prediction.prediction_id, {
+            predicted_score_a: prediction.predicted_score_a,
+            predicted_score_b: prediction.predicted_score_b
+          });
+        }
         return await Prediction.create(predictionData);
       }).filter(Boolean);
 
