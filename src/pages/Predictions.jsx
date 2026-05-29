@@ -361,7 +361,12 @@ export default function Predictions() {
             predicted_score_b: prediction.predicted_score_b
           });
         }
-        return await Prediction.create(predictionData);
+        const created = await Prediction.create(predictionData);
+        setPredictions(prev => ({
+          ...prev,
+          [match.id]: { ...prev[match.id], prediction_id: created.id }
+        }));
+        return created;
       }).filter(Boolean);
 
       await Promise.all(predictionPromises);

@@ -468,7 +468,7 @@ export default function PredictionsResults() {
     matchPredictions.forEach((prediction) => {
       const key = `${prediction.user_id}_${prediction.match_id}`;
       if (!uniquePredictionsMap[key] ||
-      new Date(prediction.created_date) > new Date(uniquePredictionsMap[key].created_date)) {
+      new Date(prediction.created_at) > new Date(uniquePredictionsMap[key].created_at)) {
         uniquePredictionsMap[key] = prediction;
       }
     });

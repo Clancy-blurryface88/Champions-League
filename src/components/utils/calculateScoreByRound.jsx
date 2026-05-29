@@ -59,8 +59,8 @@ export const calculateScoreByRound = async ({ userId, roundId, roundName }) => {
         const uniquePredictionsMap = {};
         userPredictionsInRound.forEach(prediction => {
             const key = `${prediction.user_id}_${prediction.match_id}`;
-            if (!uniquePredictionsMap[key] || 
-                new Date(prediction.created_date) > new Date(uniquePredictionsMap[key].created_date)) {
+            if (!uniquePredictionsMap[key] ||
+                new Date(prediction.created_at) > new Date(uniquePredictionsMap[key].created_at)) {
                 uniquePredictionsMap[key] = prediction;
             }
         });
