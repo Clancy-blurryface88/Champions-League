@@ -1048,6 +1048,17 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
             )}
           </div>
 
+          {/* Back button — left side, just below the flag banner */}
+          <div className="px-4 pb-1" dir="ltr">
+            <button
+              onClick={onClose}
+              className="px-4 py-1.5 rounded-full text-sm font-semibold text-slate-400 hover:text-white transition-all duration-200 active:scale-95"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+            >
+              חזרה
+            </button>
+          </div>
+
           {/* Stat Cards — HUD Strip with animated flag-color border */}
           {data && stats && (() => {
             const parenIdx = stats.bestResult.indexOf(' (');
@@ -1070,13 +1081,14 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
                 className="mx-4 mb-5"
                 style={{ position: 'relative', padding: '2px', borderRadius: '18px' }}
               >
-                {/* Rotating conic-gradient border in flag colors */}
+                {/* Animated color-shift border in flag colors (no spin) */}
                 <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                  animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                   style={{
                     position: 'absolute', inset: 0, borderRadius: '18px',
-                    background: `conic-gradient(${flagColors[0]}, ${flagColors[1]}, ${flagColors[2]}, ${flagColors[0]})`,
+                    background: `linear-gradient(90deg, ${flagColors[0]}, ${flagColors[1]}, ${flagColors[2]}, ${flagColors[0]})`,
+                    backgroundSize: '300% 100%',
                   }}
                 />
                 {/* Dark inner panel */}
@@ -1161,17 +1173,6 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
               </div>
             </div>
           )}
-
-          {/* Back button — bottom of content, scroll to reach */}
-          <div className="px-4 pb-6 pt-2 flex justify-center">
-            <button
-              onClick={onClose}
-              className="px-10 py-2.5 rounded-full text-sm font-semibold text-slate-400 hover:text-white transition-all duration-200 hover:bg-white/10 active:scale-95"
-              style={{ border: '1px solid rgba(255,255,255,0.12)' }}
-            >
-              חזרה
-            </button>
-          </div>
 
           </div>{/* end scrollable content */}
         </motion.div>
