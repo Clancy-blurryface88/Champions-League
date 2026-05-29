@@ -675,21 +675,30 @@ export default function Predictions() {
                 className="h-full">
 
                 <Card
-                  className={`relative border-2 transition-all duration-300 h-full flex flex-col backdrop-blur-md ${
-                  isLocked ?
-                  'border-slate-500/40 opacity-70' :
-                  'border-white/20'}`}
+                  className={`relative border transition-all duration-300 h-full flex flex-col overflow-hidden ${
+                  isLocked ? 'border-white/8 opacity-65' : 'border-white/15 hover:border-white/25'}`}
                   style={isLocked ? {
-                    background: 'rgba(15,23,42,0.45)',
-                    backdropFilter: 'blur(12px)',
+                    background: 'rgba(10,18,35,0.55)',
+                    backdropFilter: 'blur(20px) saturate(140%)',
+                    WebkitBackdropFilter: 'blur(20px) saturate(140%)',
+                    boxShadow: '0 2px 16px rgba(0,0,0,0.35)',
                   } : {
-                    background: 'linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(15,30,60,0.75) 50%, rgba(255,255,255,0.04) 100%)',
-                    backdropFilter: 'blur(16px)',
+                    background: 'linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(10,20,50,0.55) 45%, rgba(255,255,255,0.04) 100%)',
+                    backdropFilter: 'blur(28px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(28px) saturate(180%)',
                     backgroundSize: '200% 100%',
                     animation: 'shine 8s linear infinite',
-                    boxShadow: '0 0 0 1px rgba(255,255,255,0.15), 0 8px 32px rgba(0,0,0,0.5)',
+                    boxShadow: '0 0 0 1px rgba(255,255,255,0.12), 0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.14)',
                   }}
                 >
+                  {/* Specular highlight — top edge */}
+                  {!isLocked && (
+                    <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
+                      style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.45) 40%, rgba(255,255,255,0.55) 55%, rgba(255,255,255,0.45) 70%, transparent 95%)' }} />
+                  )}
+                  {/* Noise texture overlay */}
+                  <div className="absolute inset-0 pointer-events-none opacity-[0.025]"
+                    style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundSize: '180px' }} />
                   <CardContent className="p-5 pt-2 flex-1 flex flex-col justify-between">
                     {/* Header: Countdown / Status */}
                     <div className="flex justify-center mb-3">
