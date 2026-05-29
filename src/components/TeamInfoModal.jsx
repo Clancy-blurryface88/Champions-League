@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
 import { Timeline } from "@/components/ui/timeline";
 
@@ -1009,9 +1009,18 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
           className="relative w-full sm:max-w-md max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-[#0f1923] border border-slate-700"
           dir="rtl"
         >
-          {/* Close */}
-          <button onClick={onClose} className="absolute top-4 left-4 z-10 text-slate-400 hover:text-white">
-            <X className="w-5 h-5" />
+          {/* Back button */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold text-slate-300 hover:text-white transition-all duration-200 hover:scale-105 active:scale-95"
+            style={{
+              background: 'rgba(255,255,255,0.07)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            <ArrowRight className="w-4 h-4" />
+            <span>חזרה</span>
           </button>
 
           {/* Flag reveal header */}
@@ -1051,90 +1060,69 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
             )}
           </div>
 
-          {/* Honeycomb Stats */}
+          {/* Stat Cards */}
           {data && stats && (() => {
-            const hexClip = "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)";
             const parenIdx = stats.bestResult.indexOf(' (');
             const bestMain = parenIdx === -1 ? stats.bestResult : stats.bestResult.slice(0, parenIdx);
             const bestYear = parenIdx === -1 ? null : stats.bestResult.slice(parenIdx + 2, -1);
-            const hexColors = stats.hexColors || [data.color, data.color, data.color];
+            const teamColor = data.color || '#1e3a5f';
             const statCells = [
-              { label: "הופעות במונדיאל", value: stats.appearances, isText: false, hexColor: hexColors[0] },
-              { label: "ההישג הגדול",     bestMain, bestYear,        isText: true,  hexColor: hexColors[1] },
-              { label: "שערים במונדיאל",  value: stats.goals,        isText: false, hexColor: hexColors[2] },
+              { label: "הופעות במונדיאל", value: stats.appearances, isText: false, icon: "🏆" },
+              { label: "ההישג הגדול", bestMain, bestYear, isText: true, icon: "⭐" },
+              { label: "שערים במונדיאל", value: stats.goals, isText: false, icon: "⚽" },
             ];
             return (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.55 }}
-                className="flex justify-center items-start gap-3 px-4 pb-4"
+                className="flex justify-center items-stretch gap-3 px-4 pb-5"
               >
                 {statCells.map((stat, i) => (
-                  <div
+                  <motion.div
                     key={i}
-                    className="flex-1"
-                    style={{ maxWidth: 120, filter: `drop-shadow(0 0 7px ${stat.hexColor}80)` }}
+                    initial={{ opacity: 0, y: 16, scale: 0.92 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ delay: 0.6 + i * 0.1, type: "spring", stiffness: 260, damping: 22 }}
+                    className="flex-1 flex flex-col items-center justify-center py-4 px-2 rounded-2xl text-center"
+                    style={{
+                      background: `linear-gradient(160deg, ${teamColor}20 0%, rgba(15,25,35,0.85) 100%)`,
+                      border: `1px solid ${teamColor}38`,
+                      boxShadow: `0 4px 24px ${teamColor}18, inset 0 1px 0 rgba(255,255,255,0.06)`,
+                      backdropFilter: 'blur(12px)',
+                    }}
                   >
-                    {/* Outer hex = border */}
-                    <div style={{ position: "relative", paddingBottom: "115%", clipPath: hexClip, background: stat.hexColor }}>
-                      {/* Inner hex = dark bg */}
-                      <div
-                        style={{
-                          position: "absolute", inset: "3px",
-                          clipPath: hexClip,
-                          background: "linear-gradient(135deg, #1e2d3d 0%, #0f1923 100%)",
-                        }}
-                      >
-                        {/* Content centered via absolute positioning at visual midpoint of hex */}
-                        <div style={{
-                          position: "absolute",
-                          top: "50%", left: "8%", right: "8%",
-                          transform: "translateY(-50%)",
-                          display: "flex", flexDirection: "column",
-                          alignItems: "center", textAlign: "center", gap: 5,
+                    <span className="text-xl mb-2 leading-none">{stat.icon}</span>
+                    {stat.isText ? (
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span style={{
+                          fontFamily: "'Orbitron', sans-serif",
+                          fontSize: "0.78rem", fontWeight: 700, lineHeight: 1.25,
+                          background: "linear-gradient(to bottom, #FFE066, #FFB300)",
+                          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                         }}>
-                          {/* Value */}
-                          {stat.isText ? (
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-                              <span style={{
-                                fontFamily: "'Orbitron', sans-serif",
-                                fontSize: "0.85rem", fontWeight: 700, lineHeight: 1.2,
-                                background: "linear-gradient(to bottom, #FFE066, #FFB300)",
-                                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                              }}>
-                                {stat.bestMain}
-                              </span>
-                              {stat.bestYear && (
-                                <span style={{
-                                  fontFamily: "'Orbitron', sans-serif",
-                                  fontSize: "0.55rem", color: "#FFD700", lineHeight: 1.2,
-                                }}>
-                                  {stat.bestYear}
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <span style={{
-                              fontFamily: "'Orbitron', sans-serif",
-                              fontSize: "2rem", fontWeight: 900, lineHeight: 1,
-                              background: "linear-gradient(to bottom, #FFE066, #FFB300)",
-                              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                            }}>
-                              {stat.value}
-                            </span>
-                          )}
-                          {/* Label */}
-                          <span style={{
-                            fontSize: "0.78rem", color: "#ffffff", lineHeight: 1.3,
-                            fontWeight: 700, letterSpacing: "0.02em",
-                          }}>
-                            {stat.label}
+                          {stat.bestMain}
+                        </span>
+                        {stat.bestYear && (
+                          <span style={{ fontSize: "0.6rem", color: "#FFD700aa", lineHeight: 1.2 }}>
+                            {stat.bestYear}
                           </span>
-                        </div>
+                        )}
                       </div>
-                    </div>
-                  </div>
+                    ) : (
+                      <span style={{
+                        fontFamily: "'Orbitron', sans-serif",
+                        fontSize: "2rem", fontWeight: 900, lineHeight: 1,
+                        background: "linear-gradient(to bottom, #FFE066, #FFB300)",
+                        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                      }}>
+                        {stat.value}
+                      </span>
+                    )}
+                    <span className="text-white/60 text-xs font-semibold mt-2 leading-tight">
+                      {stat.label}
+                    </span>
+                  </motion.div>
                 ))}
               </motion.div>
             );
