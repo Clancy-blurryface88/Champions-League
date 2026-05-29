@@ -1008,21 +1008,23 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
           className="relative w-full sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden rounded-t-2xl sm:rounded-2xl bg-[#0f1923] border border-slate-700"
           dir="rtl"
         >
-          {/* Back button — absolute top-left, outside scroll container */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 left-4 z-20 px-4 py-1.5 rounded-full text-sm font-semibold text-slate-400 hover:text-white transition-all duration-200 active:scale-95"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
-          >
-            חזרה
-          </button>
+          {/* Non-scrolling top bar — always visible */}
+          <div className="flex-shrink-0 px-4 pt-3 pb-1" dir="ltr">
+            <button
+              onClick={onClose}
+              className="px-4 py-1.5 rounded-full text-sm font-semibold text-slate-400 hover:text-white transition-all duration-200 active:scale-95"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+            >
+              חזרה
+            </button>
+          </div>
 
           {/* Scrollable content */}
           <div className="flex-1 overflow-y-auto">
 
           {/* Flag reveal header */}
           <div
-            className="flex flex-col items-center pt-10 pb-6 px-4"
+            className="flex flex-col items-center pt-4 pb-6 px-4"
             style={{ background: `linear-gradient(160deg, ${data?.color || '#1e3a5f'}22 0%, transparent 60%)` }}
           >
             <motion.div
