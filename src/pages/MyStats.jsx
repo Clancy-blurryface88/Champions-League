@@ -23,6 +23,7 @@ import { BarChart } from "../components/ui/BarChart";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import RankingHistoryTable from "../components/stats/RankingHistoryTable";
 import ExactHitsHistoryTable from "../components/stats/ExactHitsHistoryTable";
+import PredictionsHeatmap from "../components/stats/PredictionsHeatmap";
 import UserRankingsSummary from "../components/stats/UserRankingsSummary";
 import RankingHistoryCharts from "../components/stats/RankingHistoryCharts";
 import CategoryLeaderboards from "../components/stats/CategoryLeaderboards";
@@ -43,7 +44,8 @@ export default function MyStats() {
   const [averagePointsPerMatch, setAveragePointsPerMatch] = useState(0);
   const [averagePointsPerRound, setAveragePointsPerRound] = useState(0);
   const [pointsBreakdownData, setPointsBreakdownData] = useState([]);
-  const [exactHitsList, setExactHitsList] = useState([]); // NEW: Exact hits list state
+  const [exactHitsList, setExactHitsList] = useState([]);
+  const [heatmapData, setHeatmapData] = useState([]);
   const [activeTab, setActiveTab] = useState("stats");
 
   const [rounds, setRounds] = useState([]);
@@ -471,6 +473,30 @@ export default function MyStats() {
         setExactHitsList(exactHitsWithMatch);
 
         await generateChartData(currentUser.id, roundsData, myPlayerData.uniquePredictions, allMatches);
+
+        // Build heatmap data: rounds → matches → prediction result
+        const heatmap = roundsData.map(round => ({
+          roundName: round.name,
+          roundId: round.id,
+          matches: allMatches
+            .filter(m => m.round_id === round.id)
+            .map(match => {
+              const pred = myPlayerData.uniquePredictions.find(p => p.match_id === match.id);
+              return {
+                matchId: match.id,
+                homeTeam: match.home_team,
+                awayTeam: match.away_team,
+                isFinished: !!match.is_finished,
+                hasPrediction: !!pred,
+                pointsEarned: pred ? (parseFloat(pred.points_earned) || 0) : 0,
+                homeScore: match.home_score,
+                awayScore: match.away_score,
+                predictedA: pred?.predicted_score_a,
+                predictedB: pred?.predicted_score_b,
+              };
+            }),
+        })).filter(r => r.matches.length > 0);
+        setHeatmapData(heatmap);
 
       } else {
         // Handle error/no data for current user
@@ -1086,6 +1112,26 @@ export default function MyStats() {
                       </p>
                     </div>
                   }
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Predictions Heatmap */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center justify-center gap-2">
+                    <span>🗺️</span>
+                    מפת ניחושים
+                  </CardTitle>
+                  <p className="text-slate-400 text-xs text-center">כל משחק — צבע לפי כמות הנקודות</p>
+                </CardHeader>
+                <CardContent>
+                  <PredictionsHeatmap heatmapData={heatmapData} />
                 </CardContent>
               </Card>
             </motion.div>
