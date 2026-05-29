@@ -68,8 +68,8 @@ export const getRoundLeaderboard = async ({ roundId, currentUserId }) => {
                 const uniquePredictionsMap = {};
                 userPredictionsInRound.forEach(prediction => {
                     const key = `${prediction.user_id}_${prediction.match_id}`;
-                    if (!uniquePredictionsMap[key] || 
-                        new Date(prediction.created_date) > new Date(uniquePredictionsMap[key].created_date)) {
+                    if (!uniquePredictionsMap[key] ||
+                        new Date(prediction.created_at) > new Date(uniquePredictionsMap[key].created_at)) {
                         uniquePredictionsMap[key] = prediction;
                     }
                 });
@@ -119,26 +119,19 @@ export const getRoundLeaderboard = async ({ roundId, currentUserId }) => {
             userScores[i].rank = currentRank;
         }
 
-        // Find current user's position
-        const currentUserScore = userScores.find(score => score.isCurrentUser);
-        
-        if (!currentUserScore) {
-            return { 
-                error: 'Current user not found in round rankings',
-                success: false 
-            };
-        }
+        // Find current user's position (may be null if user has no predictions this round)
+        const currentUserScore = userScores.find(score => score.isCurrentUser) || null;
 
-        console.log(`Frontend getRoundLeaderboard: Calculated scores for ${userScores.length} users. Current user rank: ${currentUserScore.rank}`);
+        console.log(`Frontend getRoundLeaderboard: Calculated scores for ${userScores.length} users. Current user rank: ${currentUserScore?.rank ?? 'N/A'}`);
 
         return {
             success: true,
             roundId: roundId,
-            currentUser: {
+            currentUser: currentUserScore ? {
                 rank: currentUserScore.rank,
                 totalPoints: currentUserScore.totalPoints,
                 displayName: currentUserScore.displayName
-            },
+            } : null,
             totalParticipants: userScores.length,
             allParticipants: userScores.map(score => ({
                 rank: score.rank,
