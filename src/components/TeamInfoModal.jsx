@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
@@ -980,6 +980,7 @@ const TEAM_STATS = {
 };
 
 export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
+  const [statStyle, setStatStyle] = useState(4);
   const dataKey = Object.keys(TEAM_DATA).find(k => k.toLowerCase() === teamName?.toLowerCase());
   const data = dataKey ? TEAM_DATA[dataKey] : null;
   const stats = dataKey ? TEAM_STATS[dataKey] : null;
@@ -1006,13 +1007,13 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
           exit={{ y: "100%", opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full sm:max-w-md max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-[#0f1923] border border-slate-700"
+          className="relative w-full sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden rounded-t-2xl sm:rounded-2xl bg-[#0f1923] border border-slate-700"
           dir="rtl"
         >
-          {/* Back button */}
+          {/* Back button — sits outside the scroll div so it never scrolls away */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold text-slate-300 hover:text-white transition-all duration-200 hover:scale-105 active:scale-95"
+            className="absolute top-4 left-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold text-slate-300 hover:text-white transition-all duration-200 hover:scale-105 active:scale-95"
             style={{
               background: 'rgba(255,255,255,0.07)',
               border: '1px solid rgba(255,255,255,0.15)',
@@ -1022,6 +1023,9 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
             <ArrowRight className="w-4 h-4" />
             <span>חזרה</span>
           </button>
+
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto">
 
           {/* Flag reveal header */}
           <div
@@ -1071,60 +1075,124 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
               { label: "ההישג הגדול", bestMain, bestYear, isText: true, icon: "⭐" },
               { label: "שערים במונדיאל", value: stats.goals, isText: false, icon: "⚽" },
             ];
+
+            const goldGrad = { background: "linear-gradient(to bottom, #FFE066, #FFB300)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" };
+            const orbitron = { fontFamily: "'Orbitron', sans-serif" };
+
             return (
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.55 }}
-                className="flex justify-center items-stretch gap-3 px-4 pb-5"
-              >
-                {statCells.map((stat, i) => (
+              <div>
+                {/* Style toggle */}
+                <div className="flex justify-center gap-2 px-4 pb-3">
+                  {[4, 5].map(s => (
+                    <button
+                      key={s}
+                      onClick={() => setStatStyle(s)}
+                      className="px-4 py-1 rounded-full text-xs font-bold transition-all duration-200"
+                      style={{
+                        background: statStyle === s ? teamColor : 'rgba(255,255,255,0.06)',
+                        color: statStyle === s ? '#fff' : '#94a3b8',
+                        border: `1px solid ${statStyle === s ? teamColor : 'rgba(255,255,255,0.1)'}`,
+                      }}
+                    >
+                      {s === 4 ? 'Spotlight' : 'HUD Strip'}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Style 4 — Glowing Number Spotlight */}
+                {statStyle === 4 && (
                   <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 16, scale: 0.92 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ delay: 0.6 + i * 0.1, type: "spring", stiffness: 260, damping: 22 }}
-                    className="flex-1 flex flex-col items-center justify-center py-4 px-2 rounded-2xl text-center"
+                    key="style4"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="flex justify-center items-end gap-1 px-4 pb-5"
+                  >
+                    {statCells.map((stat, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.08 * i, type: "spring", stiffness: 280, damping: 22 }}
+                        className="flex-1 flex flex-col items-center gap-1 py-4"
+                      >
+                        <motion.div
+                          animate={{ filter: [`drop-shadow(0 0 0px ${teamColor})`, `drop-shadow(0 0 18px ${teamColor})`, `drop-shadow(0 0 0px ${teamColor})`] }}
+                          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: i * 0.8 }}
+                        >
+                          {stat.isText ? (
+                            <div className="flex flex-col items-center gap-0.5">
+                              <span style={{ ...orbitron, ...goldGrad, fontSize: "0.82rem", fontWeight: 700, lineHeight: 1.25 }}>
+                                {stat.bestMain}
+                              </span>
+                              {stat.bestYear && (
+                                <span style={{ fontSize: "0.6rem", color: "#FFD700aa" }}>{stat.bestYear}</span>
+                              )}
+                            </div>
+                          ) : (
+                            <span style={{ ...orbitron, ...goldGrad, fontSize: "2.6rem", fontWeight: 900, lineHeight: 1 }}>
+                              {stat.value}
+                            </span>
+                          )}
+                        </motion.div>
+                        <div className="w-8 h-px rounded-full mt-1" style={{ background: `linear-gradient(90deg, transparent, ${teamColor}, transparent)` }} />
+                        <span className="text-slate-400 text-xs font-medium text-center leading-tight mt-1">{stat.label}</span>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+
+                {/* Style 5 — HUD Strip */}
+                {statStyle === 5 && (
+                  <motion.div
+                    key="style5"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="mx-4 mb-5 rounded-2xl overflow-hidden"
                     style={{
-                      background: `linear-gradient(160deg, ${teamColor}20 0%, rgba(15,25,35,0.85) 100%)`,
-                      border: `1px solid ${teamColor}38`,
-                      boxShadow: `0 4px 24px ${teamColor}18, inset 0 1px 0 rgba(255,255,255,0.06)`,
-                      backdropFilter: 'blur(12px)',
+                      background: 'rgba(255,255,255,0.03)',
+                      border: `1px solid ${teamColor}30`,
+                      boxShadow: `0 0 30px ${teamColor}12`,
                     }}
                   >
-                    <span className="text-xl mb-2 leading-none">{stat.icon}</span>
-                    {stat.isText ? (
-                      <div className="flex flex-col items-center gap-0.5">
-                        <span style={{
-                          fontFamily: "'Orbitron', sans-serif",
-                          fontSize: "0.78rem", fontWeight: 700, lineHeight: 1.25,
-                          background: "linear-gradient(to bottom, #FFE066, #FFB300)",
-                          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                        }}>
-                          {stat.bestMain}
-                        </span>
-                        {stat.bestYear && (
-                          <span style={{ fontSize: "0.6rem", color: "#FFD700aa", lineHeight: 1.2 }}>
-                            {stat.bestYear}
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <span style={{
-                        fontFamily: "'Orbitron', sans-serif",
-                        fontSize: "2rem", fontWeight: 900, lineHeight: 1,
-                        background: "linear-gradient(to bottom, #FFE066, #FFB300)",
-                        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                      }}>
-                        {stat.value}
-                      </span>
-                    )}
-                    <span className="text-white/60 text-xs font-semibold mt-2 leading-tight">
-                      {stat.label}
-                    </span>
+                    {/* Top accent bar */}
+                    <div className="h-0.5 w-full" style={{ background: `linear-gradient(90deg, transparent 0%, ${teamColor} 50%, transparent 100%)` }} />
+                    <div className="flex">
+                      {statCells.map((stat, i) => (
+                        <React.Fragment key={i}>
+                          {i > 0 && <div className="w-px self-stretch" style={{ background: `${teamColor}25` }} />}
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.08 * i + 0.1 }}
+                            className="flex-1 flex flex-col items-center py-4 px-2"
+                          >
+                            <span className="text-base mb-2">{stat.icon}</span>
+                            {stat.isText ? (
+                              <div className="flex flex-col items-center gap-0.5">
+                                <span style={{ ...orbitron, ...goldGrad, fontSize: "0.75rem", fontWeight: 700, lineHeight: 1.3 }}>
+                                  {stat.bestMain}
+                                </span>
+                                {stat.bestYear && (
+                                  <span style={{ fontSize: "0.58rem", color: "#FFD700aa" }}>{stat.bestYear}</span>
+                                )}
+                              </div>
+                            ) : (
+                              <span style={{ ...orbitron, ...goldGrad, fontSize: "2rem", fontWeight: 900, lineHeight: 1 }}>
+                                {stat.value}
+                              </span>
+                            )}
+                            <span className="text-slate-400 text-xs mt-2 text-center leading-tight">{stat.label}</span>
+                          </motion.div>
+                        </React.Fragment>
+                      ))}
+                    </div>
+                    {/* Bottom accent bar */}
+                    <div className="h-0.5 w-full" style={{ background: `linear-gradient(90deg, transparent 0%, ${teamColor} 50%, transparent 100%)` }} />
                   </motion.div>
-                ))}
-              </motion.div>
+                )}
+              </div>
             );
           })()}
 
@@ -1170,6 +1238,8 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
               </div>
             </div>
           )}
+
+          </div>{/* end scrollable content */}
         </motion.div>
       </motion.div>
     </AnimatePresence>
