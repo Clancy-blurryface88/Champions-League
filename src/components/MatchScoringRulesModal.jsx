@@ -1,8 +1,69 @@
 import TeamFlag from "@/components/TeamFlag";
-import React from "react";
+import React, { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Target, Trophy, Zap, Goal } from "lucide-react";
+import { Target, Trophy, Zap, Goal, ChevronUp, ChevronDown } from "lucide-react";
 import { ShineBorder } from "@/components/magicui/shine-border";
+import { motion, AnimatePresence } from "framer-motion";
+
+function calcSimPoints(match, a, b) {
+  if (a === null || b === null) return null;
+  let total = 0;
+  const breakdown = [];
+
+  // כיוון
+  let dirPts = 0;
+  if (a > b)       dirPts = match.home_win_points || 0;
+  else if (a === b) dirPts = match.draw_points      || 0;
+  else              dirPts = match.away_win_points  || 0;
+  breakdown.push({ label: 'כיוון משחק', pts: dirPts, hit: dirPts > 0 });
+  total += dirPts;
+
+  // BTTS
+  const btts = a > 0 && b > 0;
+  const bttsPts = btts ? (match.btts_yes_points || 0) : (match.btts_no_points || 0);
+  breakdown.push({ label: 'שתי קבוצות כובשות', pts: bttsPts, hit: bttsPts > 0 });
+  total += bttsPts;
+
+  // טווח שערים
+  const goals = a + b;
+  let rangePts = 0;
+  if (goals <= 2)      rangePts = match.goals_0_2_points    || 0;
+  else if (goals <= 4) rangePts = match.goals_3_4_points    || 0;
+  else                 rangePts = match.goals_5_plus_points || 0;
+  breakdown.push({ label: 'טווח שערים', pts: rangePts, hit: rangePts > 0 });
+  total += rangePts;
+
+  // פגיעה מדויקת
+  if (match.score_odds) {
+    const key = `${a}:${b}`;
+    const exactPts = match.score_odds[key] ?? match.score_odds['other'] ?? 0;
+    breakdown.push({ label: 'פגיעה מדויקת', pts: exactPts, hit: exactPts > 0 });
+    total += exactPts;
+  }
+
+  return { total: parseFloat(total.toFixed(2)), breakdown };
+}
+
+function SimInput({ value, onChange }) {
+  const inc = () => onChange((value ?? -1) + 1);
+  const dec = () => { if (value > 0) onChange(value - 1); };
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <button onClick={inc} className="text-yellow-400 hover:opacity-70 transition-opacity">
+        <ChevronUp className="w-5 h-5" strokeWidth={2.5} />
+      </button>
+      <div className="w-11 h-14 flex items-center justify-center rounded-xl bg-white/6 border border-white/15"
+        style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)' }}>
+        <span className="text-3xl font-bold text-white tabular-nums" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+          {value ?? '?'}
+        </span>
+      </div>
+      <button onClick={dec} disabled={!value} className="text-yellow-400 hover:opacity-70 disabled:opacity-20 transition-opacity">
+        <ChevronDown className="w-5 h-5" strokeWidth={2.5} />
+      </button>
+    </div>
+  );
+}
 
 const CARD_THEMES = {
   emerald:     { text: "text-emerald-400", bg: "bg-emerald-500/8" },
@@ -69,9 +130,13 @@ function Divider() {
 }
 
 export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
+  const [simA, setSimA] = useState(null);
+  const [simB, setSimB] = useState(null);
+
   if (!match) return null;
 
   const hasOdds = match.score_odds && Object.keys(match.score_odds).length > 0;
+  const sim = calcSimPoints(match, simA, simB);
 
   const oddsColumns = [
     {
@@ -125,6 +190,67 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+
+          {/* ── סימולטור ניחוש ── */}
+          <div className="rounded-2xl border border-yellow-500/25 overflow-hidden"
+            style={{ background: 'linear-gradient(145deg, rgba(245,197,24,0.07) 0%, rgba(10,20,50,0.6) 100%)' }}>
+
+            <div className="px-4 pt-3 pb-1 text-center">
+              <span className="text-[10px] uppercase tracking-[0.14em] font-semibold text-yellow-400/80">סימולטור — כמה שווה הניחוש שלך?</span>
+            </div>
+
+            {/* Inputs */}
+            <div className="flex items-center justify-center gap-4 px-4 pb-3 pt-1" dir="ltr">
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-[10px] text-slate-400 font-medium">{match.team_a}</span>
+                <SimInput value={simA} onChange={setSimA} />
+              </div>
+              <span className="text-white/30 font-bold text-xl pb-2">—</span>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-[10px] text-slate-400 font-medium">{match.team_b}</span>
+                <SimInput value={simB} onChange={setSimB} />
+              </div>
+            </div>
+
+            {/* Breakdown */}
+            <AnimatePresence>
+              {sim && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                  className="border-t border-yellow-500/15"
+                >
+                  <div className="px-4 py-3 space-y-1.5">
+                    {sim.breakdown.map((row) => (
+                      <div key={row.label} className="flex items-center justify-between">
+                        <span className={`text-xs ${row.hit ? 'text-white/80' : 'text-white/25 line-through'}`}>
+                          {row.label}
+                        </span>
+                        <span className={`text-xs font-bold tabular-nums ${row.hit ? 'text-yellow-400' : 'text-white/20'}`}>
+                          +{row.pts}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mx-4 mb-3 rounded-xl flex items-center justify-between px-4 py-2.5"
+                    style={{ background: 'rgba(245,197,24,0.12)', border: '1px solid rgba(245,197,24,0.3)' }}>
+                    <span className="text-sm font-semibold text-white/70">סה"כ</span>
+                    <motion.span
+                      key={sim.total}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                      className="text-xl font-bold text-yellow-400 tabular-nums"
+                    >
+                      {sim.total} PTS
+                    </motion.span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           <Divider />
 
