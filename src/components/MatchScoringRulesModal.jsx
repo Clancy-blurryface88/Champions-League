@@ -233,15 +233,14 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
                       </div>
                     ))}
                   </div>
-                  <div className="mx-4 mb-3 rounded-xl flex items-center justify-between px-4 py-2.5"
+                  <div className="mx-4 mb-3 rounded-xl flex items-center justify-center px-4 py-2.5"
                     style={{ background: 'rgba(245,197,24,0.12)', border: '1px solid rgba(245,197,24,0.3)' }}>
-                    <span className="text-sm font-semibold text-white/70">סה"כ</span>
                     <motion.span
                       key={sim.total}
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                      className="text-xl font-bold text-yellow-400 tabular-nums"
+                      className="text-base font-bold text-yellow-400 tabular-nums"
                     >
                       {sim.total} PTS
                     </motion.span>
