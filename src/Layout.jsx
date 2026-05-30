@@ -605,7 +605,7 @@ export default function Layout({ children, currentPageName }) {
                     className="w-14 h-14 object-contain mb-4 shrink-0" />
                     
                     <div className="flex-1 flex items-start justify-center">
-                      <h3 className="text-white text-base font-semibold leading-tight">נתונים</h3>
+                      <h3 className="text-white text-base font-semibold leading-tight">סטטיסטיקה</h3>
                     </div>
                   </motion.div>
 
