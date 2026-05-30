@@ -1,5 +1,7 @@
 import TeamFlag from "@/components/TeamFlag";
 import React, { useState, useEffect, useCallback } from "react";
+import LottieAnimation from "@/components/ui/LottieAnimation";
+import fifaLottie from "../assets/fifa-world-cup.json";
 import { User } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { Match } from "@/api/entities";
@@ -737,6 +739,20 @@ export default function MyStats() {
     }
   }, [user, userStats, pointsBreakdownData, bestMatch, myRank, comparisonMyStats]);
 
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <LottieAnimation
+          animationData={fifaLottie}
+          loop
+          autoplay
+          className="w-52 h-52"
+        />
+        <p className="text-slate-400 text-sm font-medium tracking-wide">טוען נתונים...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
