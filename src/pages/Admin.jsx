@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, Wand2 } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
 import AdminMatches from "../components/admin/AdminMatches";
@@ -16,8 +16,6 @@ import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
-import AdminFlagRevealDemo from "../components/admin/AdminFlagRevealDemo";
-import AdminAnimationsDemo from "../components/admin/AdminAnimationsDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -77,8 +75,6 @@ export default function Admin() {
       case 'live-data': return <AdminLiveData />;
       case 'import': return <AdminImportMatches />;
       case 'reset': return <AdminReset />;
-      case 'flag-demo': return <AdminFlagRevealDemo />;
-      case 'anim-demo': return <AdminAnimationsDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -94,8 +90,6 @@ export default function Admin() {
     { id: 'live-data', label: 'Live Data Test', icon: BarChart3 },
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset', label: 'Reset Center', icon: RotateCcw },
-    { id: 'flag-demo', label: '✨ Flag Reveal Demo', icon: Wand2 },
-    { id: 'anim-demo', label: '🎬 Animations Demo',  icon: Wand2 },
   ];
 
   return (
