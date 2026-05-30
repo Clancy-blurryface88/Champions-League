@@ -602,7 +602,7 @@ export default function PredictionsResults() {
                     className="relative flex p-1 mb-4 rounded-2xl"
                     style={{
                       background: 'rgba(255,255,255,0.04)',
-                      border: '1px solid rgba(255,255,255,0.09)',
+                      border: '1px solid rgba(245,197,24,0.45)',
                       backdropFilter: 'blur(12px)',
                     }}
                   >
@@ -617,7 +617,7 @@ export default function PredictionsResults() {
                           key={tab.key}
                           onClick={() => setViewMode(tab.key)}
                           className="relative flex-1 flex items-center justify-center py-2.5 px-1 rounded-xl transition-colors z-10"
-                          style={{ color: active ? '#000' : 'rgba(255,255,255,0.38)' }}
+                          style={{ color: active ? '#000' : 'rgba(255,255,255,0.72)' }}
                         >
                           {active && (
                             <motion.div
@@ -626,6 +626,7 @@ export default function PredictionsResults() {
                               style={{
                                 background: 'linear-gradient(135deg, #f5c518 0%, #fde68a 60%, #fff 100%)',
                                 boxShadow: '0 2px 12px rgba(245,197,24,0.35)',
+                                opacity: 0.82,
                               }}
                               transition={{ type: 'spring', bounce: 0.2, duration: 0.45 }}
                             />
