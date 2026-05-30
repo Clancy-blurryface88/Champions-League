@@ -16,10 +16,6 @@ import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
-import AdminLeaderboardStylesDemo from "../components/admin/AdminLeaderboardStylesDemo";
-import AdminLeaderboardShapesDemo from "../components/admin/AdminLeaderboardShapesDemo";
-import AdminSuspenseAnimDemo from "../components/admin/AdminSuspenseAnimDemo";
-import AdminLeaderboardShapes2Demo from "../components/admin/AdminLeaderboardShapes2Demo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -79,10 +75,6 @@ export default function Admin() {
       case 'live-data': return <AdminLiveData />;
       case 'import': return <AdminImportMatches />;
       case 'reset': return <AdminReset />;
-      case 'lb-styles': return <AdminLeaderboardStylesDemo />;
-      case 'lb-shapes':  return <AdminLeaderboardShapesDemo />;
-      case 'suspense':   return <AdminSuspenseAnimDemo />;
-      case 'lb-shapes2': return <AdminLeaderboardShapes2Demo />;
       default: return <AdminRounds />;
     }
   };
@@ -98,10 +90,6 @@ export default function Admin() {
     { id: 'live-data', label: 'Live Data Test', icon: BarChart3 },
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',     label: 'Reset Center',      icon: RotateCcw },
-    { id: 'lb-styles', label: '🏆 Leaderboard Styles', icon: RotateCcw },
-    { id: 'lb-shapes',  label: '🔷 Shapes #1',      icon: RotateCcw },
-    { id: 'suspense',   label: '🎭 Suspense Anim',  icon: RotateCcw },
-    { id: 'lb-shapes2', label: '🔶 Shapes #2',      icon: RotateCcw },
   ];
 
   return (
