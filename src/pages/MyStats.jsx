@@ -551,7 +551,6 @@ export default function MyStats() {
           .filter(p =>
             p.name &&
             !p.name.startsWith('user_') &&
-            !p.isAdmin &&  // Filter out admins
             p.id !== user?.id  // Filter out current user
           );
 
