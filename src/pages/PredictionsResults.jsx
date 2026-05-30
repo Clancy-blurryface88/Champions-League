@@ -641,14 +641,22 @@ export default function PredictionsResults() {
 
                   {viewMode === 'all_predictions' &&
                     <div className="flex items-center justify-between">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={nextMatch}
-                        disabled={finishedMatches.length <= 1}
-                        className="w-10 h-10 rounded-full bg-slate-500 hover:bg-slate-400 disabled:opacity-30">
-                        <ChevronLeft className="w-6 h-6 text-white" />
-                      </Button>
+                      {/* Progress Arc — next */}
+                      {(() => {
+                        const pct = finishedMatches.length > 1 ? (currentMatchIndex + 1) / finishedMatches.length : 1;
+                        const r = 18, c = 22, stroke = 2.5, circ = 2 * Math.PI * r;
+                        return (
+                          <button onClick={nextMatch} disabled={finishedMatches.length <= 1}
+                            className="relative w-11 h-11 flex items-center justify-center disabled:opacity-30">
+                            <svg width={c*2} height={c*2} className="absolute" style={{ transform:'rotate(-90deg)' }}>
+                              <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
+                              <circle cx={c} cy={c} r={r} fill="none" stroke="#f5c518" strokeWidth={stroke}
+                                strokeDasharray={`${circ*pct} ${circ}`} strokeLinecap="round" />
+                            </svg>
+                            <ChevronLeft className="w-5 h-5 text-white relative z-10" />
+                          </button>
+                        );
+                      })()}
 
                       <div className="text-center flex-1 px-4">
                         <h3 className="text-white font-semibold mb-2">
@@ -684,14 +692,22 @@ export default function PredictionsResults() {
                         </div>
                       </div>
 
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={prevMatch}
-                        disabled={finishedMatches.length <= 1}
-                        className="w-10 h-10 rounded-full bg-slate-500 hover:bg-slate-400 disabled:opacity-30">
-                        <ChevronRight className="w-6 h-6 text-white" />
-                      </Button>
+                      {/* Progress Arc — prev */}
+                      {(() => {
+                        const pct = finishedMatches.length > 1 ? (currentMatchIndex + 1) / finishedMatches.length : 1;
+                        const r = 18, c = 22, stroke = 2.5, circ = 2 * Math.PI * r;
+                        return (
+                          <button onClick={prevMatch} disabled={finishedMatches.length <= 1}
+                            className="relative w-11 h-11 flex items-center justify-center disabled:opacity-30">
+                            <svg width={c*2} height={c*2} className="absolute" style={{ transform:'rotate(-90deg)' }}>
+                              <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
+                              <circle cx={c} cy={c} r={r} fill="none" stroke="#f5c518" strokeWidth={stroke}
+                                strokeDasharray={`${circ*pct} ${circ}`} strokeLinecap="round" />
+                            </svg>
+                            <ChevronRight className="w-5 h-5 text-white relative z-10" />
+                          </button>
+                        );
+                      })()}
                     </div>
                   }
 
