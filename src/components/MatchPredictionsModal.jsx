@@ -16,13 +16,13 @@ function SlotDigit({ target, delay = 0 }) {
     setNum(Math.floor(Math.random() * 9));
     setSettled(false);
     let spins = 0;
-    const max = 12 + Math.floor(Math.random() * 6);
+    const max = 18 + Math.floor(Math.random() * 8);
     const t = setTimeout(() => {
       const iv = setInterval(() => {
         spins++;
         if (spins >= max) { setNum(target); setSettled(true); clearInterval(iv); }
         else setNum(Math.floor(Math.random() * 10));
-      }, 55);
+      }, 90);
       return () => clearInterval(iv);
     }, delay * 1000);
     return () => clearTimeout(t);
@@ -190,50 +190,40 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
               <p className="text-white/25 text-sm">אין ניחושים למשחק זה</p>
             </div>
           ) : (
-            grouped.map((group, gi) => (
-              <motion.div
-                key={`${group.scoreA}-${group.scoreB}`}
-                initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                transition={{ delay: gi * 0.12, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-                className="rounded-2xl overflow-hidden"
-                style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  backdropFilter: 'blur(12px)',
-                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
-                }}
-              >
-                {/* Score row */}
-                <div className="flex items-center justify-between px-4 py-3">
-                  {/* Users */}
-                  <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                    {group.users.map((name, ui) => (
-                      <span key={ui} className="text-white/80 text-sm font-semibold truncate">
-                        {name}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Score — Slot Machine */}
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5 opacity-75" />
-                    <SlotScore scoreA={group.scoreA} scoreB={group.scoreB} delay={gi * 0.12 + 0.1} />
-                    <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5 opacity-75" />
-                  </div>
+            <div className="space-y-3">
+              {grouped.map((group, gi) => (
+                <div key={`${group.scoreA}-${group.scoreB}`} className="space-y-1.5">
+                  {group.users.map((name, ui) => {
+                    const rowDelay = gi * 0.15 + ui * 0.08;
+                    return (
+                      <motion.div
+                        key={`${gi}-${ui}`}
+                        initial={{ opacity: 0, x: 20, filter: 'blur(6px)' }}
+                        animate={{ opacity: 1, x: 0,  filter: 'blur(0px)' }}
+                        transition={{ delay: rowDelay, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                        className="flex items-center justify-between px-4 py-3 rounded-2xl"
+                        style={{
+                          background: 'rgba(255,255,255,0.04)',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                          backdropFilter: 'blur(12px)',
+                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+                        }}
+                      >
+                        <span className="text-white/85 text-sm font-semibold truncate flex-1 min-w-0">
+                          {name}
+                        </span>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5 opacity-75" />
+                          {/* Slot Machine — delay based on group, not per user row */}
+                          <SlotScore scoreA={group.scoreA} scoreB={group.scoreB} delay={gi * 0.15 + 0.1} />
+                          <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5 opacity-75" />
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
-
-                {/* If multiple users share same prediction — subtle separator */}
-                {group.users.length > 1 && (
-                  <div className="mx-4 mb-2 px-3 py-1 rounded-lg flex items-center justify-center"
-                    style={{ background: 'rgba(245,197,24,0.07)', border: '1px solid rgba(245,197,24,0.15)' }}>
-                    <span className="text-amber-400/70 text-[10px] font-semibold tracking-wider">
-                      {group.users.length} ניחושים זהים
-                    </span>
-                  </div>
-                )}
-              </motion.div>
-            ))
+              ))}
+            </div>
           )}
         </div>
 
