@@ -290,6 +290,21 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('openYearlySummaryPanel', handleOpenYearlySummaryPanel);
   }, []);
 
+  // כפתור Back במובייל — סוגר panels לפי סדר עדיפות
+  useEffect(() => {
+    const anyOpen = showLeaderboard || showExactHits || showSidebar || showYearlySummary;
+    if (!anyOpen) return;
+    window.history.pushState({ panel: 'layout' }, '');
+    const handlePop = () => {
+      if (showSidebar)        { setShowSidebar(false);        return; }
+      if (showLeaderboard)    { setShowLeaderboard(false);    return; }
+      if (showExactHits)      { setShowExactHits(false);      return; }
+      if (showYearlySummary)  { setShowYearlySummary(false);  return; }
+    };
+    window.addEventListener('popstate', handlePop);
+    return () => window.removeEventListener('popstate', handlePop);
+  }, [showLeaderboard, showExactHits, showSidebar, showYearlySummary]);
+
   const handleTouchStart = (e) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
