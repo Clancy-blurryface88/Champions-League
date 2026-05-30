@@ -973,8 +973,9 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                 <motion.div
                   key={detail.matchId}
                   initial={{ opacity: 0, x: off.x, y: off.y, rotate: off.rotate, scale: off.scale }}
-                  animate={{ opacity: 1, x: 0,     y: 0,     rotate: 0,          scale: 1 }}
-                  transition={{ delay: index * 0.07, type: 'spring', stiffness: 130, damping: 16 }}
+                  whileInView={{ opacity: 1, x: 0, y: 0, rotate: 0, scale: 1 }}
+                  viewport={{ once: true, amount: 0.25 }}
+                  transition={{ type: 'spring', stiffness: 130, damping: 16 }}
                   className={`rounded-xl overflow-hidden border ${verdictBorder} ${verdictGlow}`}
                   style={{ background: 'rgba(255,255,255,0.03)' }}
                 >
