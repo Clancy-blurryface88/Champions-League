@@ -1,7 +1,7 @@
 import TeamFlag from "@/components/TeamFlag";
 import React, { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Target, Trophy, Zap, Goal, ChevronUp, ChevronDown } from "lucide-react";
+import { Target, Trophy, Zap, Goal, ChevronUp, ChevronDown, ArrowLeft } from "lucide-react";
 import { ShineBorder } from "@/components/magicui/shine-border";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -163,12 +163,12 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
         {/* Sticky header: close button + teams */}
         <div className="flex-shrink-0">
           {/* Close button */}
-          <div className="px-5 pt-4 pb-3">
+          <div className="px-5 pt-4 pb-3 flex items-center">
             <button
               onClick={onClose}
-              className="w-full py-2.5 rounded-xl bg-white/6 hover:bg-white/10 active:scale-[0.97] transition-all text-sm font-semibold text-white/80 border border-white/10"
+              className="inline-flex items-center justify-center w-9 h-9 rounded-md border border-slate-600 bg-slate-800 hover:bg-slate-700 transition-colors"
             >
-              חזרה לדף הקודם
+              <ArrowLeft className="w-4 h-4 text-white" />
             </button>
           </div>
 
