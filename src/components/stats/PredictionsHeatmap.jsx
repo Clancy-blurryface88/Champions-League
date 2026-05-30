@@ -66,70 +66,81 @@ export default function PredictionsHeatmap({ heatmapData }) {
         ))}
       </div>
 
-      {/* Popup — מרונדר פעם אחת, ממורכז, לא יוצא מהמסך */}
+      {/* Popup — wrapper נשאר מאונט, תוכן מתחלף בפנים בצורה חלקה */}
       <AnimatePresence>
         {active && activeStyle && (
           <motion.div
-            key={active.matchId}
-            initial={{ opacity: 0, y: -8, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0,  scale: 1 }}
-            exit={{    opacity: 0, y: -4, scale: 0.96 }}
-            transition={{ duration: 0.18 }}
-            className="rounded-2xl p-4 mx-auto"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className="rounded-2xl p-4 mx-auto overflow-hidden"
             style={{
               maxWidth: 280,
               background: 'rgba(8,15,28,0.97)',
               border: `1px solid ${activeStyle.border}`,
               backdropFilter: 'blur(16px)',
               boxShadow: `0 8px 32px rgba(0,0,0,0.55), 0 0 16px ${activeStyle.border}40`,
+              transition: 'border-color 0.15s, box-shadow 0.15s',
             }}
             dir="rtl"
           >
-            {/* Flags */}
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <TeamFlag logo={active.homeTeamLogo} name={active.homeTeam} className="w-8 h-8" rounded="sm" />
-              <span className="text-white/30 text-sm">—</span>
-              <TeamFlag logo={active.awayTeamLogo} name={active.awayTeam} className="w-8 h-8" rounded="sm" />
-            </div>
-
-            {active.isFinished ? (
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs">
-                  <span className="text-slate-400">תוצאה</span>
-                  <span className="font-bold text-white tabular-nums">
-                    {active.homeScore ?? '?'} – {active.awayScore ?? '?'}
-                  </span>
+            {/* התוכן עם key — מתחלף בפנים */}
+            <AnimatePresence mode="popLayout" initial={false}>
+              <motion.div
+                key={active.matchId}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.1 }}
+              >
+                {/* Flags */}
+                <div className="flex items-center justify-center gap-3 mb-3">
+                  <TeamFlag logo={active.homeTeamLogo} name={active.homeTeam} className="w-8 h-8" rounded="sm" />
+                  <span className="text-white/30 text-sm">—</span>
+                  <TeamFlag logo={active.awayTeamLogo} name={active.awayTeam} className="w-8 h-8" rounded="sm" />
                 </div>
-                {active.hasPrediction ? (
-                  <>
+
+                {active.isFinished ? (
+                  <div className="space-y-1.5">
                     <div className="flex justify-between text-xs">
-                      <span className="text-slate-400">ניחוש</span>
+                      <span className="text-slate-400">תוצאה</span>
                       <span className="font-bold text-white tabular-nums">
-                        {active.predictedA} – {active.predictedB}
+                        {active.homeScore ?? '?'} – {active.awayScore ?? '?'}
                       </span>
                     </div>
-                    {OUTCOME_LABEL[activeOutcome] && (
-                      <div className="flex justify-between text-xs">
-                        <span className="text-slate-400">סטטוס</span>
-                        <span className="font-semibold" style={{ color: OUTCOME_LABEL[activeOutcome].color }}>
-                          {OUTCOME_LABEL[activeOutcome].text}
-                        </span>
-                      </div>
+                    {active.hasPrediction ? (
+                      <>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-slate-400">ניחוש</span>
+                          <span className="font-bold text-white tabular-nums">
+                            {active.predictedA} – {active.predictedB}
+                          </span>
+                        </div>
+                        {OUTCOME_LABEL[activeOutcome] && (
+                          <div className="flex justify-between text-xs">
+                            <span className="text-slate-400">סטטוס</span>
+                            <span className="font-semibold" style={{ color: OUTCOME_LABEL[activeOutcome].color }}>
+                              {OUTCOME_LABEL[activeOutcome].text}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex justify-between text-xs pt-1.5 mt-0.5 border-t border-white/10">
+                          <span className="text-slate-400">ניקוד</span>
+                          <span className="font-black tabular-nums" style={{ color: activeStyle.text }}>
+                            {active.pointsEarned}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-slate-500 text-xs text-center pt-1">ללא ניחוש</p>
                     )}
-                    <div className="flex justify-between text-xs pt-1.5 mt-0.5 border-t border-white/10">
-                      <span className="text-slate-400">ניקוד</span>
-                      <span className="font-black tabular-nums" style={{ color: activeStyle.text }}>
-                        {active.pointsEarned}
-                      </span>
-                    </div>
-                  </>
+                  </div>
                 ) : (
-                  <p className="text-slate-500 text-xs text-center pt-1">ללא ניחוש</p>
+                  <p className="text-slate-500 text-xs text-center">טרם הסתיים</p>
                 )}
-              </div>
-            ) : (
-              <p className="text-slate-500 text-xs text-center">טרם הסתיים</p>
-            )}
+              </motion.div>
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
