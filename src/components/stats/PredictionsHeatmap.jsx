@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import TeamFlag from "@/components/TeamFlag";
 
 function getOutcome(match) {
   if (!match.isFinished || !match.hasPrediction) return 'none';
@@ -110,10 +111,14 @@ export default function PredictionsHeatmap({ heatmapData }) {
                         }}
                         dir="rtl"
                       >
-                        {/* Match title */}
-                        <p className="text-white font-bold text-xs text-center mb-2.5 leading-tight">
-                          {match.homeTeam} — {match.awayTeam}
-                        </p>
+                        {/* Match title with flags */}
+                        <div className="flex items-center justify-center gap-2 mb-2.5">
+                          <TeamFlag logo={match.homeTeamLogo} name={match.homeTeam} className="w-6 h-6" rounded="sm" />
+                          <span className="text-white font-bold text-xs leading-tight text-center">
+                            {match.homeTeam} — {match.awayTeam}
+                          </span>
+                          <TeamFlag logo={match.awayTeamLogo} name={match.awayTeam} className="w-6 h-6" rounded="sm" />
+                        </div>
 
                         {match.isFinished ? (
                           <div className="space-y-1.5">

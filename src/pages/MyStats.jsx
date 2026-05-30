@@ -483,16 +483,18 @@ export default function MyStats() {
             .map(match => {
               const pred = myPlayerData.uniquePredictions.find(p => p.match_id === match.id);
               return {
-                matchId: match.id,
-                homeTeam: match.home_team,
-                awayTeam: match.away_team,
-                isFinished: !!match.is_finished,
+                matchId:      match.id,
+                homeTeam:     match.team_a,
+                awayTeam:     match.team_b,
+                homeTeamLogo: match.team_a_logo,
+                awayTeamLogo: match.team_b_logo,
+                isFinished:   !!match.is_finished,
                 hasPrediction: !!pred,
                 pointsEarned: pred ? (parseFloat(pred.points_earned) || 0) : 0,
-                homeScore: match.home_score,
-                awayScore: match.away_score,
-                predictedA: pred?.predicted_score_a,
-                predictedB: pred?.predicted_score_b,
+                homeScore:    match.actual_score_a,
+                awayScore:    match.actual_score_b,
+                predictedA:   pred?.predicted_score_a,
+                predictedB:   pred?.predicted_score_b,
               };
             }),
         })).filter(r => r.matches.length > 0);
