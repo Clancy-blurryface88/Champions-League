@@ -17,6 +17,7 @@ import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminFlagRevealDemo from "../components/admin/AdminFlagRevealDemo";
+import AdminAnimationsDemo from "../components/admin/AdminAnimationsDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -77,6 +78,7 @@ export default function Admin() {
       case 'import': return <AdminImportMatches />;
       case 'reset': return <AdminReset />;
       case 'flag-demo': return <AdminFlagRevealDemo />;
+      case 'anim-demo': return <AdminAnimationsDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -93,6 +95,7 @@ export default function Admin() {
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset', label: 'Reset Center', icon: RotateCcw },
     { id: 'flag-demo', label: '✨ Flag Reveal Demo', icon: Wand2 },
+    { id: 'anim-demo', label: '🎬 Animations Demo',  icon: Wand2 },
   ];
 
   return (
