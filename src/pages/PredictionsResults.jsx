@@ -1,7 +1,7 @@
 import TeamFlag from "@/components/TeamFlag";
 import LoadingScreen from "@/components/LoadingScreen";
 import CircleLoader from "@/components/CircleLoader";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { User } from "@/api/entities";
 import { Round } from "@/api/entities";
 import { Match } from "@/api/entities";
@@ -871,6 +871,16 @@ function LeaderboardView({ roundLeaderboard, loading, user }) {
 
 // NEW: Updated MyRoundPredictions WITHOUT leaderboard section
 function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, roundLeaderboard, matches, getUserDisplayName, getOutcomeStatus }) {
+  // חייב להיות לפני כל return מוקדם (כלל Hooks)
+  const scatterOffsets = useMemo(() =>
+    (roundStats?.predictionDetails ?? []).map(() => ({
+      x:      (Math.random() - 0.5) * 380,
+      y:      (Math.random() - 0.5) * 280,
+      rotate: (Math.random() - 0.5) * 45,
+      scale:  0.25 + Math.random() * 0.35,
+    })),
+  [roundStats]);
+
   if (loading || loadingLeaderboard) {
     return (
       <div className="flex justify-center py-8">
@@ -958,12 +968,13 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                 detail.correctOutcome ? '✅' :
                                         '❌';
 
+              const off = scatterOffsets[index] ?? { x: 0, y: 0, rotate: 0, scale: 1 };
               return (
                 <motion.div
                   key={detail.matchId}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.06, duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+                  initial={{ opacity: 0, x: off.x, y: off.y, rotate: off.rotate, scale: off.scale }}
+                  animate={{ opacity: 1, x: 0,     y: 0,     rotate: 0,          scale: 1 }}
+                  transition={{ delay: index * 0.07, type: 'spring', stiffness: 130, damping: 16 }}
                   className={`rounded-xl overflow-hidden border ${verdictBorder} ${verdictGlow}`}
                   style={{ background: 'rgba(255,255,255,0.03)' }}
                 >
