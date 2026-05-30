@@ -4,13 +4,56 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Prediction } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Lock } from "lucide-react";
 
+// ── Slot digit ────────────────────────────────────────────────────────────────
+function SlotDigit({ target, delay = 0 }) {
+  const [num, setNum]       = useState(Math.floor(Math.random() * 9));
+  const [settled, setSettled] = useState(false);
+
+  useEffect(() => {
+    setNum(Math.floor(Math.random() * 9));
+    setSettled(false);
+    let spins = 0;
+    const max = 12 + Math.floor(Math.random() * 6);
+    const t = setTimeout(() => {
+      const iv = setInterval(() => {
+        spins++;
+        if (spins >= max) { setNum(target); setSettled(true); clearInterval(iv); }
+        else setNum(Math.floor(Math.random() * 10));
+      }, 55);
+      return () => clearInterval(iv);
+    }, delay * 1000);
+    return () => clearTimeout(t);
+  }, [target, delay]);
+
+  return (
+    <motion.span
+      animate={{ color: settled ? '#f5c518' : '#475569' }}
+      transition={{ duration: 0.2 }}
+      className="font-black text-2xl tabular-nums leading-none"
+    >
+      {num}
+    </motion.span>
+  );
+}
+
+// ── Slot score ────────────────────────────────────────────────────────────────
+function SlotScore({ scoreA, scoreB, delay = 0 }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <SlotDigit target={scoreA} delay={delay} />
+      <span className="text-white/30 font-bold text-xl leading-none">–</span>
+      <SlotDigit target={scoreB} delay={delay + 0.15} />
+    </div>
+  );
+}
+
 export default function MatchPredictionsModal({ isOpen, onClose, match }) {
-  const [predictions, setPredictions] = useState([]);
+  const [predictions, setPredictions]     = useState([]);
   const [publicProfiles, setPublicProfiles] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]             = useState(true);
 
   const loadPredictions = useCallback(async () => {
     if (!match) return;
@@ -22,8 +65,8 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
       ]);
       setPredictions(predictionsData);
       setPublicProfiles(profilesData);
-    } catch (error) {
-      console.error("Error loading predictions:", error);
+    } catch (e) {
+      console.error(e);
     }
     setLoading(false);
   }, [match]);
@@ -32,147 +75,169 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
     if (isOpen && match) loadPredictions();
   }, [isOpen, match, loadPredictions]);
 
-  const getUserDisplayName = (userId) => {
-    const profile = publicProfiles.find(p => p.user_id === userId);
-    return profile?.display_name || `משתמש ${userId.slice(0, 8)}`;
-  };
+  const getUserName = (userId) =>
+    publicProfiles.find(p => p.user_id === userId)?.display_name || `משתמש ${userId.slice(0, 6)}`;
 
-  const getUniquePredictions = () => {
+  const getUnique = () => {
     const map = {};
     predictions.forEach(p => {
       const key = `${p.user_id}_${p.match_id}`;
-      if (!map[key] || new Date(p.created_date) > new Date(map[key].created_date)) {
-        map[key] = p;
-      }
+      if (!map[key] || new Date(p.created_date) > new Date(map[key].created_date)) map[key] = p;
     });
-    return Object.values(map).sort((a, b) => {
-      const sa = (a.predicted_score_a ?? 0) * 10 + (a.predicted_score_b ?? 0);
-      const sb = (b.predicted_score_a ?? 0) * 10 + (b.predicted_score_b ?? 0);
-      return sb - sa;
+    return Object.values(map);
+  };
+
+  // קיבוץ לפי ניחוש זהה
+  const getGrouped = () => {
+    const groups = {};
+    getUnique().forEach(p => {
+      const key = `${p.predicted_score_a}-${p.predicted_score_b}`;
+      if (!groups[key]) groups[key] = { scoreA: p.predicted_score_a, scoreB: p.predicted_score_b, users: [] };
+      groups[key].users.push(getUserName(p.user_id));
     });
+    return Object.values(groups).sort((a, b) =>
+      (b.scoreA * 10 + b.scoreB) - (a.scoreA * 10 + a.scoreB)
+    );
   };
 
   if (!match) return null;
 
-  const now = new Date();
-  const lockTime = new Date(new Date(match.match_date).getTime() - 15 * 60 * 1000);
-  const isLocked = now >= lockTime || match.is_finished;
-  const uniquePredictions = getUniquePredictions();
+  const lockTime  = new Date(new Date(match.match_date).getTime() - 15 * 60 * 1000);
+  const isLocked  = new Date() >= lockTime || match.is_finished;
+  const grouped   = getGrouped();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className="p-0 fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-3xl max-w-sm w-full max-h-[85vh] overflow-hidden flex flex-col [&>button:last-child]:hidden border-0"
         style={{
-          background: 'rgba(8, 15, 35, 0.75)',
-          backdropFilter: 'blur(32px)',
-          WebkitBackdropFilter: 'blur(32px)',
-          boxShadow: '0 0 0 1px rgba(245,197,24,0.15), 0 32px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)',
+          background: 'rgba(5, 10, 25, 0.72)',
+          backdropFilter: 'blur(40px) saturate(1.8)',
+          WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
+          boxShadow: '0 0 0 1px rgba(245,197,24,0.18), 0 32px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.07)',
         }}
       >
-        {/* Top gold line */}
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-amber-400/60 to-transparent flex-shrink-0" />
+        {/* Top gradient line */}
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-amber-400/70 to-transparent flex-shrink-0" />
 
-        {/* Close button */}
+        {/* Back button */}
         <div className="px-5 pt-4 pb-0 flex-shrink-0">
           <button
             onClick={onClose}
-            className="w-full py-2.5 rounded-2xl text-sm font-medium text-white/40 hover:text-white/70 transition-colors tracking-wide"
+            className="w-full py-2.5 rounded-2xl text-sm font-medium transition-colors tracking-wide"
             style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.07)',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: 'rgba(255,255,255,0.45)',
             }}
           >
             חזרה לדף הקודם
           </button>
         </div>
 
-        {/* Match header — glass card */}
+        {/* Match area — blue-gold gradient border */}
         <div className="px-5 pt-4 pb-2 flex-shrink-0">
-          <div
-            className="rounded-2xl px-5 py-4 flex items-center justify-between"
-            style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
-            }}
-          >
-            {/* Team A */}
-            <div className="flex flex-col items-center gap-2 flex-1">
-              <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" />
-              <span className="text-white text-xs font-semibold text-center leading-tight">{match.team_a}</span>
-              <span className="text-white/30 text-[10px]">בית</span>
-            </div>
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(59,130,246,0.6) 0%, rgba(245,197,24,0.6) 100%)',
+            borderRadius: 20,
+            padding: 1.5,
+          }}>
+            <div
+              className="rounded-[18px] px-5 py-4 flex items-center justify-between"
+              style={{ background: 'rgba(6,12,30,0.92)' }}
+            >
+              {/* Team A */}
+              <div className="flex flex-col items-center gap-2 flex-1">
+                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" />
+                <span className="text-white text-xs font-semibold text-center leading-tight">{match.team_a}</span>
+                <span className="text-white/65 text-[10px] font-medium">בית</span>
+              </div>
 
-            {/* VS */}
-            <div className="flex flex-col items-center gap-1 px-3">
-              <span className="text-amber-400 font-bold text-base tracking-[0.2em]">VS</span>
-            </div>
+              {/* VS */}
+              <div className="flex flex-col items-center gap-1 px-3">
+                <span className="text-amber-400 font-bold text-base tracking-[0.2em]">VS</span>
+              </div>
 
-            {/* Team B */}
-            <div className="flex flex-col items-center gap-2 flex-1">
-              <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" />
-              <span className="text-white text-xs font-semibold text-center leading-tight">{match.team_b}</span>
-              <span className="text-white/30 text-[10px]">חוץ</span>
+              {/* Team B */}
+              <div className="flex flex-col items-center gap-2 flex-1">
+                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" />
+                <span className="text-white text-xs font-semibold text-center leading-tight">{match.team_b}</span>
+                <span className="text-white/65 text-[10px] font-medium">חוץ</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Section title */}
+        {/* Divider */}
         <div className="flex items-center gap-3 px-5 py-3 flex-shrink-0">
           <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/10" />
           <span className="text-white/30 text-[10px] uppercase tracking-[0.2em] font-semibold">ניחושים</span>
           <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/10" />
         </div>
 
-        {/* Predictions list */}
-        <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-2">
+        {/* Predictions */}
+        <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-2.5">
           {loading ? (
-            <div className="flex justify-center py-10">
-              <OrbitSpinner size={36} />
-            </div>
+            <div className="flex justify-center py-10"><OrbitSpinner size={36} /></div>
           ) : !isLocked ? (
             <div className="flex flex-col items-center justify-center py-10 gap-3 text-center">
               <Lock className="w-7 h-7 text-amber-400/30" />
               <p className="text-white/40 text-sm">הניחושים ייחשפו לאחר נעילת המשחק</p>
-              <p className="text-white/20 text-xs" dir="rtl">15 דקות לפני תחילת המשחק</p>
+              <p className="text-white/20 text-xs">15 דקות לפני תחילת המשחק</p>
             </div>
-          ) : uniquePredictions.length === 0 ? (
+          ) : grouped.length === 0 ? (
             <div className="flex justify-center py-10">
               <p className="text-white/25 text-sm">אין ניחושים למשחק זה</p>
             </div>
           ) : (
-            uniquePredictions.map((prediction, index) => (
+            grouped.map((group, gi) => (
               <motion.div
-                key={prediction.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05, duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
-                className="flex items-center justify-between px-4 py-3.5 rounded-2xl"
+                key={`${group.scoreA}-${group.scoreB}`}
+                initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                transition={{ delay: gi * 0.12, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+                className="rounded-2xl overflow-hidden"
                 style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  backdropFilter: 'blur(8px)',
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  backdropFilter: 'blur(12px)',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
                 }}
               >
-                {/* Name */}
-                <span className="text-white/85 text-sm font-semibold">
-                  {getUserDisplayName(prediction.user_id)}
-                </span>
+                {/* Score row */}
+                <div className="flex items-center justify-between px-4 py-3">
+                  {/* Users */}
+                  <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                    {group.users.map((name, ui) => (
+                      <span key={ui} className="text-white/80 text-sm font-semibold truncate">
+                        {name}
+                      </span>
+                    ))}
+                  </div>
 
-                {/* Score + mini flags */}
-                <div className="flex items-center gap-2">
-                  <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5 opacity-80" />
-                  <span className="text-amber-400 font-bold text-base tabular-nums tracking-wide">
-                    {prediction.predicted_score_a} – {prediction.predicted_score_b}
-                  </span>
-                  <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5 opacity-80" />
+                  {/* Score — Slot Machine */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5 opacity-75" />
+                    <SlotScore scoreA={group.scoreA} scoreB={group.scoreB} delay={gi * 0.12 + 0.1} />
+                    <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5 opacity-75" />
+                  </div>
                 </div>
+
+                {/* If multiple users share same prediction — subtle separator */}
+                {group.users.length > 1 && (
+                  <div className="mx-4 mb-2 px-3 py-1 rounded-lg flex items-center justify-center"
+                    style={{ background: 'rgba(245,197,24,0.07)', border: '1px solid rgba(245,197,24,0.15)' }}>
+                    <span className="text-amber-400/70 text-[10px] font-semibold tracking-wider">
+                      {group.users.length} ניחושים זהים
+                    </span>
+                  </div>
+                )}
               </motion.div>
             ))
           )}
         </div>
 
-        {/* Bottom gold line */}
+        {/* Bottom line */}
         <div className="h-px w-full bg-gradient-to-r from-transparent via-amber-400/30 to-transparent flex-shrink-0" />
       </DialogContent>
     </Dialog>
