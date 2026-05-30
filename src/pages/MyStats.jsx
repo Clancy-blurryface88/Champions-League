@@ -752,22 +752,35 @@ export default function MyStats() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex w-full justify-between mb-6 relative">
+          <TabsList
+            className="flex w-full justify-between mb-6 relative p-1 rounded-xl"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(245,197,24,0.45)',
+              backdropFilter: 'blur(12px)',
+            }}
+          >
             {[
               { id: "stats", label: "סטטיסטיקה" },
               { id: "ranking", label: "דירוג" },
               { id: "tables", label: "טבלאות" },
               { id: "head2head", label: "ראש בראש" }
             ].map((tab) => (
-              <TabsTrigger 
-                key={tab.id} 
-                value={tab.id} 
-                className="flex-1 relative z-10 data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:data-[state=active]:bg-transparent"
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className="flex-1 relative z-10 data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:data-[state=active]:bg-transparent rounded-lg"
+                style={{ color: activeTab === tab.id ? '#000' : 'rgba(255,255,255,0.72)' }}
               >
                 {activeTab === tab.id && (
                   <motion.div
                     layoutId="active-tab-indicator"
-                    className="absolute inset-0 bg-slate-600 rounded-full shadow-md -z-10"
+                    className="absolute inset-0 rounded-lg -z-10"
+                    style={{
+                      background: 'linear-gradient(135deg, #f5c518 0%, #fde68a 60%, #fff 100%)',
+                      boxShadow: '0 2px 12px rgba(245,197,24,0.35)',
+                      opacity: 0.82,
+                    }}
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   />
                 )}
