@@ -766,7 +766,7 @@ export default function PredictionsResults() {
 
 }
 
-function PodiumStand({ entry, position, isCurrentUser }) {
+function PodiumStand({ entry, position, isCurrentUser, baseDelay = 0 }) {
   const configs = {
     1: { height: 'h-24', bg: 'bg-amber-500/15', border: 'border-amber-400/40', medal: '🥇', label: 'text-amber-400', pts: 'text-amber-300' },
     2: { height: 'h-16', bg: 'bg-slate-400/10',  border: 'border-slate-400/30', medal: '🥈', label: 'text-slate-300', pts: 'text-slate-300' },
@@ -775,12 +775,14 @@ function PodiumStand({ entry, position, isCurrentUser }) {
   const c = configs[position];
   if (!entry) return <div className="flex-1" />;
 
+  const podiumDelay = baseDelay + (position === 1 ? 0.7 : position === 2 ? 0.35 : 0.1);
+
   return (
     <motion.div
       className="flex-1 flex flex-col items-center gap-1"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: position === 1 ? 0.4 : position === 2 ? 0.15 : 0.25, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+      initial={{ opacity: 0, y: 30, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0,  scale: 1 }}
+      transition={{ delay: podiumDelay, duration: 0.55, ease: [0.23, 1, 0.32, 1] }}
     >
       <span className="text-[11px] font-semibold text-white/80 text-center leading-tight max-w-[72px] truncate">
         {entry.displayName}
@@ -812,31 +814,39 @@ function LeaderboardView({ roundLeaderboard, loading, user }) {
     );
   }
 
+  const REVEAL_DELAY = 0.35;
+
   const participants = roundLeaderboard.allParticipants;
   const top3 = [1, 2, 3].map(r => participants.find(e => e.rank === r));
-  const rest = participants.filter(e => e.rank > 3);
+  const rest  = participants.filter(e => e.rank > 3).sort((a, b) => a.rank - b.rank);
+
+  // הפודיום מופיע אחרי כל השורות
+  const podiumBaseDelay = rest.length * REVEAL_DELAY + 0.3;
 
   return (
     <div className="space-y-4">
-      {/* Podium */}
+      {/* Podium — מופיע אחרון */}
       <div className="pt-2 pb-1">
         <div className="flex items-end justify-center gap-2 px-4">
-          {/* Order: 2nd (left) · 1st (center) · 3rd (right) */}
-          <PodiumStand entry={top3[1]} position={2} isCurrentUser={top3[1]?.isCurrentUser} />
-          <PodiumStand entry={top3[0]} position={1} isCurrentUser={top3[0]?.isCurrentUser} />
-          <PodiumStand entry={top3[2]} position={3} isCurrentUser={top3[2]?.isCurrentUser} />
+          <PodiumStand entry={top3[1]} position={2} isCurrentUser={top3[1]?.isCurrentUser} baseDelay={podiumBaseDelay} />
+          <PodiumStand entry={top3[0]} position={1} isCurrentUser={top3[0]?.isCurrentUser} baseDelay={podiumBaseDelay} />
+          <PodiumStand entry={top3[2]} position={3} isCurrentUser={top3[2]?.isCurrentUser} baseDelay={podiumBaseDelay} />
         </div>
-        {/* Podium base */}
         <div className="h-2 bg-gradient-to-r from-transparent via-white/10 to-transparent rounded-full mx-4" />
       </div>
 
-      {/* Rest of the list */}
+      {/* שאר המשתתפים — נחשפים מהאחרון לראשון */}
       {rest.length > 0 && (
         <div className="space-y-1.5">
-          <AnimatedList className="space-y-1.5">
-            {rest.map((entry) => (
-              <div
+          {rest.map((entry, i) => {
+            // אינדקס הפוך: האחרון (i = rest.length-1) מקבל delay=0, מקום 4 (i=0) מקבל delay הכי גדול
+            const delay = (rest.length - 1 - i) * REVEAL_DELAY;
+            return (
+              <motion.div
                 key={entry.rank}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay, duration: 0.35, ease: 'easeOut' }}
                 className={`flex items-center justify-between text-sm px-3 py-2 rounded-xl ${
                   entry.isCurrentUser
                     ? 'bg-blue-600/20 border border-blue-400/30'
@@ -850,9 +860,9 @@ function LeaderboardView({ roundLeaderboard, loading, user }) {
                   <span className="text-white font-medium">{entry.displayName}</span>
                 </div>
                 <span className="text-green-400 font-bold tabular-nums">{entry.totalPoints.toFixed(2)}</span>
-              </div>
-            ))}
-          </AnimatedList>
+              </motion.div>
+            );
+          })}
         </div>
       )}
     </div>
