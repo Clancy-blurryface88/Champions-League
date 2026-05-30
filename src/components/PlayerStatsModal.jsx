@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 import { useState, useEffect } from 'react';
+import { useModalBackButton } from "@/hooks/useModalBackButton";
 
 export default function PlayerStatsModal({ isOpen, onClose, selectedPlayer: initialSelectedPlayer, allParticipants }) {
     const [selectedPlayer, setSelectedPlayer] = useState(initialSelectedPlayer);
@@ -14,13 +15,7 @@ export default function PlayerStatsModal({ isOpen, onClose, selectedPlayer: init
         }
     }, [isOpen, initialSelectedPlayer]);
 
-    useEffect(() => {
-        if (!isOpen) return;
-        window.history.pushState({ modal: 'player-stats' }, '');
-        const handlePop = () => onClose();
-        window.addEventListener('popstate', handlePop);
-        return () => window.removeEventListener('popstate', handlePop);
-    }, [isOpen, onClose]);
+    useModalBackButton(isOpen, onClose);
 
     if (!selectedPlayer || !allParticipants) return null;
 

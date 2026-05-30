@@ -1,17 +1,12 @@
-import React, { useEffect } from "react";
+import React from "react";
+import { useModalBackButtonOnMount } from "@/hooks/useModalBackButton";
 import { createPortal } from "react-dom";
 import { X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TeamFlag from "@/components/TeamFlag";
 
 export default function AiBriefModal({ match, brief, onClose }) {
-  useEffect(() => {
-    if (!match) return;
-    window.history.pushState({ modal: 'ai-brief' }, '');
-    const handlePop = () => onClose();
-    window.addEventListener('popstate', handlePop);
-    return () => window.removeEventListener('popstate', handlePop);
-  }, [match, onClose]);
+  useModalBackButtonOnMount(onClose);
 
   if (!match) return null;
 

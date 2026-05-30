@@ -6,6 +6,7 @@ import { Prediction } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock } from "lucide-react";
+import { useModalBackButton } from "@/hooks/useModalBackButton";
 
 // ── Slot digit ────────────────────────────────────────────────────────────────
 function SlotDigit({ target, delay = 0 }) {
@@ -75,13 +76,7 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
     if (isOpen && match) loadPredictions();
   }, [isOpen, match, loadPredictions]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    window.history.pushState({ modal: 'match-predictions' }, '');
-    const handlePop = () => onClose();
-    window.addEventListener('popstate', handlePop);
-    return () => window.removeEventListener('popstate', handlePop);
-  }, [isOpen, onClose]);
+  useModalBackButton(isOpen, onClose);
 
 
   const getUserName = (userId) =>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useModalBackButton } from "@/hooks/useModalBackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -56,13 +57,7 @@ export default function UserExactHitsModal({ userId, userName, isOpen, onClose, 
     fetchExactHits();
   }, [userId, isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    window.history.pushState({ modal: 'user-exact-hits' }, '');
-    const handlePop = () => onClose();
-    window.addEventListener('popstate', handlePop);
-    return () => window.removeEventListener('popstate', handlePop);
-  }, [isOpen, onClose]);
+  useModalBackButton(isOpen, onClose);
 
   if (!isOpen) return null;
 

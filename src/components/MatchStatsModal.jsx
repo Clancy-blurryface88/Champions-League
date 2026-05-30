@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import { useModalBackButton } from "@/hooks/useModalBackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, BarChart3, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -45,13 +46,7 @@ export default function MatchStatsModal({ isOpen, onClose, matchId }) {
     }
   }, [isOpen, matchId]);
 
-  React.useEffect(() => {
-    if (!isOpen) return;
-    window.history.pushState({ modal: 'match-stats' }, '');
-    const handlePop = () => onClose();
-    window.addEventListener('popstate', handlePop);
-    return () => window.removeEventListener('popstate', handlePop);
-  }, [isOpen, onClose]);
+  useModalBackButton(isOpen, onClose);
 
   const loadStats = async () => {
     setLoading(true);

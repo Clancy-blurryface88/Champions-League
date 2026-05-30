@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useModalBackButton } from "@/hooks/useModalBackButton";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Clock, CheckCircle } from "lucide-react";
@@ -121,13 +122,7 @@ export default function MatchesByDateSheet({ isOpen, onClose }) {
     });
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    window.history.pushState({ modal: 'matches-by-date' }, '');
-    const handlePop = () => onClose();
-    window.addEventListener('popstate', handlePop);
-    return () => window.removeEventListener('popstate', handlePop);
-  }, [isOpen, onClose]);
+  useModalBackButton(isOpen, onClose);
 
   // Scroll active tab into view
   useEffect(() => {

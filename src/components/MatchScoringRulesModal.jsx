@@ -1,5 +1,6 @@
 import TeamFlag from "@/components/TeamFlag";
 import React, { useState } from "react";
+import { useModalBackButton } from "@/hooks/useModalBackButton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Target, Trophy, Zap, Goal, ChevronUp, ChevronDown, ArrowLeft } from "lucide-react";
 import { ShineBorder } from "@/components/magicui/shine-border";
@@ -133,13 +134,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
   const [simA, setSimA] = useState(null);
   const [simB, setSimB] = useState(null);
 
-  React.useEffect(() => {
-    if (!isOpen) return;
-    window.history.pushState({ modal: 'match-scoring' }, '');
-    const handlePop = () => onClose();
-    window.addEventListener('popstate', handlePop);
-    return () => window.removeEventListener('popstate', handlePop);
-  }, [isOpen, onClose]);
+  useModalBackButton(isOpen, onClose);
 
   if (!match) return null;
 

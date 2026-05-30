@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, UserStats } from "@/api/entities";
@@ -290,16 +290,21 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('openYearlySummaryPanel', handleOpenYearlySummaryPanel);
   }, []);
 
-  // כפתור Back במובייל — סוגר panels לפי סדר עדיפות
+  // כפתור Back במובייל — סוגר panels לפי סדר עדיפות (ref למניעת stale closure)
+  const panelStateRef = useRef({});
+  useEffect(() => {
+    panelStateRef.current = { showLeaderboard, showExactHits, showSidebar, showYearlySummary };
+  });
   useEffect(() => {
     const anyOpen = showLeaderboard || showExactHits || showSidebar || showYearlySummary;
     if (!anyOpen) return;
     window.history.pushState({ panel: 'layout' }, '');
     const handlePop = () => {
-      if (showSidebar)        { setShowSidebar(false);        return; }
-      if (showLeaderboard)    { setShowLeaderboard(false);    return; }
-      if (showExactHits)      { setShowExactHits(false);      return; }
-      if (showYearlySummary)  { setShowYearlySummary(false);  return; }
+      const s = panelStateRef.current;
+      if (s.showSidebar)       { setShowSidebar(false);        return; }
+      if (s.showLeaderboard)   { setShowLeaderboard(false);    return; }
+      if (s.showExactHits)     { setShowExactHits(false);      return; }
+      if (s.showYearlySummary) { setShowYearlySummary(false);  return; }
     };
     window.addEventListener('popstate', handlePop);
     return () => window.removeEventListener('popstate', handlePop);

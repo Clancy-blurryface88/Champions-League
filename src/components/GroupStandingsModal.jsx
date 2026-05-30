@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useModalBackButtonOnMount } from "@/hooks/useModalBackButton";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import { Match } from "@/api/entities";
 import { motion, AnimatePresence } from "framer-motion";
@@ -91,12 +92,7 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
   const activeButtonRef = useRef(null);
   const scrollContainerRef = useRef(null);
 
-  useEffect(() => {
-    window.history.pushState({ modal: 'group-standings' }, '');
-    const handlePop = () => onClose();
-    window.addEventListener('popstate', handlePop);
-    return () => window.removeEventListener('popstate', handlePop);
-  }, [onClose]);
+  useModalBackButtonOnMount(onClose);
 
   // Load ALL matches once on mount
   useEffect(() => {
