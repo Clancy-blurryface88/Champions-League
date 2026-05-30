@@ -1,12 +1,27 @@
 import TeamFlag from "@/components/TeamFlag";
 import OrbitSpinner from "@/components/OrbitSpinner";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+
+const rowVariants   = { hidden: {}, visible: {} };
+const teamAVariants = {
+  hidden:   { x: 50, opacity: 0 },
+  visible:  { x: 0,  opacity: 1, transition: { type: 'spring', stiffness: 220, damping: 22 } },
+};
+const teamBVariants = {
+  hidden:   { x: -50, opacity: 0 },
+  visible:  { x: 0,   opacity: 1, transition: { type: 'spring', stiffness: 220, damping: 22 } },
+};
+const scoreVariants = {
+  hidden:   { opacity: 0, scale: 0.6 },
+  visible:  { opacity: 1, scale: 1,  transition: { delay: 0.2, type: 'spring', stiffness: 300, damping: 20 } },
+};
 import { Match } from "@/api/entities";
 
 export default function PredictionSummary({ predictions, roundId, onConfirm, onCancel, saving }) {
   const [matches, setMatches] = useState([]);
   const [loadingMatches, setLoadingMatches] = useState(true);
+  const scrollRef = useRef(null);
 
   useEffect(() => {
     setLoadingMatches(true);
@@ -86,6 +101,7 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
         <div
           className="overflow-y-auto flex-1"
           style={{ WebkitOverflowScrolling: 'touch' }}
+          ref={scrollRef}
         >
           {loadingMatches ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3">
@@ -94,9 +110,13 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
             </div>
           ) : (
             <div className="px-4 py-3 space-y-2">
-              {predictionsList.map(({ match, prediction }, i) => (
-                <div
+              {predictionsList.map(({ match, prediction }) => (
+                <motion.div
                   key={match.id}
+                  variants={rowVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.4, root: scrollRef }}
                   className="flex items-center gap-2 px-3 py-2.5 rounded-2xl overflow-hidden"
                   style={{
                     background: 'rgba(255,255,255,0.04)',
@@ -105,10 +125,8 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                 >
                   {/* Team A — נכנסת מימין */}
                   <motion.div
+                    variants={teamAVariants}
                     className="flex items-center gap-1.5 flex-1 min-w-0 justify-end"
-                    initial={{ x: 50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: i * 0.07, type: 'spring', stiffness: 220, damping: 22 }}
                   >
                     <span className="text-white/80 text-xs font-semibold truncate text-right">{match.team_a}</span>
                     <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-7 h-7 flex-shrink-0" />
@@ -116,10 +134,8 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
 
                   {/* Score pill — מופיע אחרי הדגלים */}
                   <motion.div
+                    variants={scoreVariants}
                     className="flex flex-col items-center flex-shrink-0 w-[72px]"
-                    initial={{ opacity: 0, scale: 0.6 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.07 + 0.22, type: 'spring', stiffness: 300, damping: 20 }}
                   >
                     <div
                       className="w-full flex items-center justify-center px-2 py-1 rounded-xl"
@@ -148,15 +164,13 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
 
                   {/* Team B — נכנסת משמאל */}
                   <motion.div
+                    variants={teamBVariants}
                     className="flex items-center gap-1.5 flex-1 min-w-0 justify-start"
-                    initial={{ x: -50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: i * 0.07, type: 'spring', stiffness: 220, damping: 22 }}
                   >
                     <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-7 h-7 flex-shrink-0" />
                     <span className="text-white/80 text-xs font-semibold truncate">{match.team_b}</span>
                   </motion.div>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
