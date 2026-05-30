@@ -80,16 +80,6 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
             <p className="text-white/35 text-xs mt-0.5">עבור לפני אישור</p>
           </div>
 
-          {/* Count badge */}
-          <div
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
-            style={{ background: 'rgba(245,197,24,0.10)', border: '1px solid rgba(245,197,24,0.28)' }}
-          >
-            <span className="text-amber-400 font-black text-sm tabular-nums">
-              {loadingMatches ? '…' : predictionsList.length}
-            </span>
-            <span className="text-amber-400/60 text-[11px] font-medium">ניחושים</span>
-          </div>
         </div>
 
         {/* Match rows – flex-1 so it fills available space, overflow-y for scroll */}
@@ -180,12 +170,10 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
           <button
             onClick={onConfirm}
             disabled={saving || loadingMatches}
-            className="w-full py-3.5 rounded-2xl font-bold text-base text-black transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3.5 rounded-2xl font-bold text-base text-white transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
-              background: 'linear-gradient(90deg, #f5c518 0%, #fde68a 50%, #f5c518 100%)',
-              backgroundSize: '200% 100%',
-              animation: (saving || loadingMatches) ? 'none' : 'shine 2.5s linear infinite',
-              boxShadow: (saving || loadingMatches) ? 'none' : '0 4px 24px rgba(245,197,24,0.38)',
+              background: 'linear-gradient(90deg, #16a34a, #22c55e)',
+              boxShadow: (saving || loadingMatches) ? 'none' : '0 4px 20px rgba(34,197,94,0.35)',
             }}
           >
             {saving ? (
@@ -201,7 +189,11 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
           <button
             onClick={onCancel}
             disabled={saving}
-            className="w-full py-2.5 rounded-2xl text-sm font-medium text-white/35 hover:text-white/65 transition-colors disabled:opacity-40"
+            className="w-full py-2.5 rounded-2xl text-sm font-bold text-white transition-opacity disabled:opacity-40"
+            style={{
+              background: 'linear-gradient(90deg, #b91c1c, #ef4444)',
+              boxShadow: '0 4px 20px rgba(239,68,68,0.25)',
+            }}
           >
             ביטול
           </button>
