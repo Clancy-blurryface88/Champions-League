@@ -105,27 +105,37 @@ export default function RoundInsightsTicker({ user }) {
         Prediction.list()]
         );
 
-        // Find the latest completed round
+        // מציג טיקר רק כשהמחזור האחרון (הנוכחי) הושלם לגמרי
         const roundsWithMatches = rounds.filter((r) => matches.some((m) => m.round_id === r.id));
 
-        let lastCompletedRound = null;
+        if (roundsWithMatches.length === 0) {
+          setLoading(false);
+          return;
+        }
+
+        // בדוק רק את המחזור האחרון — אם הוא לא הושלם, אל תציג
+        const latestRound = roundsWithMatches[roundsWithMatches.length - 1];
+        const latestRoundMatches = matches.filter((m) => m.round_id === latestRound.id);
+        const allFinished = latestRoundMatches.length > 0 &&
+          latestRoundMatches.every((m) => m.is_finished && m.is_score_calculated);
+
+        if (!allFinished) {
+          setLoading(false);
+          return;
+        }
+
+        let lastCompletedRound = latestRound;
         let previousCompletedRound = null;
-        let roundMatches = [];
+        let roundMatches = latestRoundMatches;
         let previousRoundMatches = [];
 
-        for (let i = roundsWithMatches.length - 1; i >= 0; i--) {
-          const r = roundsWithMatches[i];
-          const rMatches = matches.filter((m) => m.round_id === r.id);
-          const allFinished = rMatches.every((m) => m.is_finished && m.is_score_calculated);
-          if (allFinished && rMatches.length > 0) {
-            if (!lastCompletedRound) {
-              lastCompletedRound = r;
-              roundMatches = rMatches;
-            } else if (!previousCompletedRound) {
-              previousCompletedRound = r;
-              previousRoundMatches = rMatches;
-              break;
-            }
+        // מחזור קודם להשוואה (אם קיים ומושלם)
+        if (roundsWithMatches.length >= 2) {
+          const prevRound = roundsWithMatches[roundsWithMatches.length - 2];
+          const prevMatches = matches.filter((m) => m.round_id === prevRound.id);
+          if (prevMatches.length > 0 && prevMatches.every((m) => m.is_finished && m.is_score_calculated)) {
+            previousCompletedRound = prevRound;
+            previousRoundMatches = prevMatches;
           }
         }
 
