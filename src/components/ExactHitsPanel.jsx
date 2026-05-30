@@ -108,10 +108,10 @@ export default function ExactHitsPanel({ onClose, user }) {
 
   const getPositionIcon = (position) => {
     switch (position) {
-      case 1:return <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/cda304519_gold-medal_7645285.png" alt="1st" className="w-12 h-12 object-contain" />;
-      case 2:return <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/2cdb3f3ad_silver-medal_7645682.png" alt="2nd" className="w-10 h-10 object-contain" />;
-      case 3:return <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/5c6258044_bronze-medal_7645706.png" alt="3rd" className="w-10 h-10 object-contain" />;
-      default:return <span className="w-10 h-10 flex items-center justify-center text-slate-400 font-bold text-xl">{position}</span>;
+      case 1: return <span className="text-3xl leading-none">🥇</span>;
+      case 2: return <span className="text-2xl leading-none">🥈</span>;
+      case 3: return <span className="text-2xl leading-none">🥉</span>;
+      default: return <span className="w-10 h-10 flex items-center justify-center text-slate-400 font-bold text-xl">{position}</span>;
     }
   };
 

@@ -10,9 +10,6 @@ import ScoreCounter from "./ScoreCounter";
 import PlayerStatsModal from "./PlayerStatsModal";
 
 const LEADERBOARD_ICON_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/a99a73381_image.png";
-const FIRST_PLACE_MEDAL_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/3525e4c19_pngwingcom.png";
-const SECOND_PLACE_MEDAL_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/1945c1a34_pngwingcom1.png";
-const THIRD_PLACE_MEDAL_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/b290e6e06_pngwingcom2.png";
 const GENERIC_USER_AVATAR_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/314b5002f_WhatsApp2025-07-07000346_91206de8.jpg";
 
 export default function LeaderboardPanel({ onClose, user }) {
@@ -142,10 +139,10 @@ export default function LeaderboardPanel({ onClose, user }) {
 
   const getPositionIcon = (position) => {
     switch (position) {
-      case 1:return <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/cda304519_gold-medal_7645285.png" alt="1st" className="w-10 h-10 object-contain" />;
-      case 2:return <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/2cdb3f3ad_silver-medal_7645682.png" alt="2nd" className="w-8 h-8 object-contain" />;
-      case 3:return <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/5c6258044_bronze-medal_7645706.png" alt="3rd" className="w-8 h-8 object-contain" />;
-      default:return <span className="w-6 h-6 flex items-center justify-center text-slate-400 font-bold text-lg">{position}</span>;
+      case 1: return <span className="text-3xl leading-none">🥇</span>;
+      case 2: return <span className="text-2xl leading-none">🥈</span>;
+      case 3: return <span className="text-2xl leading-none">🥉</span>;
+      default: return <span className="w-6 h-6 flex items-center justify-center text-slate-400 font-bold text-lg">{position}</span>;
     }
   };
 
