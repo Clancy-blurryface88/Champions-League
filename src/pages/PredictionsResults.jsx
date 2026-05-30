@@ -8,7 +8,7 @@ import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Eye } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Eye, Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -1090,9 +1090,9 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
         return (
           <motion.div
             key={prediction.id}
-            initial={{ opacity: 0, y: 40, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ delay: revealDelay, duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
+            initial={{ opacity: 0, filter: 'blur(16px)', scale: 0.85 }}
+            animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
+            transition={{ delay: revealDelay, duration: 0.7, ease: 'easeOut' }}
             className={`relative rounded-lg overflow-hidden ${verdictBg}`}>
 
             {/* Shockwave ring — רק על המוביל */}
@@ -1163,7 +1163,11 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                     {(prediction.points_earned || 0).toFixed(2)} PTS
                   </Badge>
                   {outcomeStatus?.type === 'exact'   && <span className="text-lg">🎯</span>}
-                  {outcomeStatus?.type === 'correct' && <span className="text-lg">✅</span>}
+                  {outcomeStatus?.type === 'correct' && (
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-yellow-400/20 border border-yellow-400/40">
+                      <Check className="w-3.5 h-3.5 text-yellow-400" strokeWidth={3} />
+                    </span>
+                  )}
                   {outcomeStatus?.type === 'wrong'   && <span className="text-lg">❌</span>}
                 </div>
               </div>
