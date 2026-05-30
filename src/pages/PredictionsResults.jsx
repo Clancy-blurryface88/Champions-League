@@ -715,11 +715,6 @@ export default function PredictionsResults() {
                       loading={loadingMyStats}
                       loadingLeaderboard={loadingLeaderboard}
                       matches={finishedMatches}
-                      allRoundScoresCalculated={
-                        selectedRound
-                          ? matches.filter(m => m.round_id === selectedRound).every(m => m.is_score_calculated)
-                          : false
-                      }
                       getUserDisplayName={getUserDisplayName}
                       getOutcomeStatus={getOutcomeStatus} />
                   }
@@ -847,7 +842,7 @@ function LeaderboardView({ roundLeaderboard, loading, user }) {
 }
 
 // NEW: Updated MyRoundPredictions WITHOUT leaderboard section
-function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, roundLeaderboard, matches, allRoundScoresCalculated, getUserDisplayName, getOutcomeStatus }) {
+function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, roundLeaderboard, matches, getUserDisplayName, getOutcomeStatus }) {
   if (loading || loadingLeaderboard) {
     return (
       <div className="flex justify-center py-8">
@@ -856,19 +851,13 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
     );
   }
 
-  // מציג סיכום רק לאחר שכל משחקי המחזור חושבו
-  const hasMyStats = allRoundScoresCalculated && roundStats && roundStats.predictionDetails && roundStats.predictionDetails.length > 0;
-  // Check if roundLeaderboard is an object, has success, and contains currentUser info
+  const hasMyStats = roundStats && roundStats.predictionDetails && roundStats.predictionDetails.length > 0;
   const hasLeaderboard = roundLeaderboard && roundLeaderboard.success && roundLeaderboard.currentUser && roundLeaderboard.currentUser.rank && roundLeaderboard.totalParticipants;
 
   if (!hasMyStats) {
     return (
-      <div className="text-center py-8 space-y-2">
-        <p className="text-slate-400">
-          {!allRoundScoresCalculated
-            ? "הסיכום יופיע לאחר שכל המשחקים יסתיימו ויחושב עבורם ניקוד"
-            : "אין נתונים זמינים עבור מחזור זה"}
-        </p>
+      <div className="text-center py-8">
+        <p className="text-slate-400">אין נתונים זמינים עבור מחזור זה</p>
       </div>
     );
   }
