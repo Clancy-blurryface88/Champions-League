@@ -1,7 +1,5 @@
 import TeamFlag from "@/components/TeamFlag";
 import React, { useState, useEffect, useCallback } from "react";
-import LottieAnimation from "@/components/ui/LottieAnimation";
-import fifaLottie from "../assets/fifa-world-cup.json";
 import { User } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { Match } from "@/api/entities";
@@ -743,14 +741,7 @@ export default function MyStats() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="rounded-3xl overflow-hidden" style={{ background: '#fff' }}>
-          <LottieAnimation
-            animationData={fifaLottie}
-            loop
-            autoplay
-            className="w-64 h-64"
-          />
-        </div>
+        <CircleLoader size={60} />
       </div>
     );
   }
