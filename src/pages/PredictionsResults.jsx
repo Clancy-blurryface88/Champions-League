@@ -653,15 +653,33 @@ export default function PredictionsResults() {
                         <h3 className="text-white font-semibold mb-2">
                           משחק {currentMatchIndex + 1} מתוך {finishedMatches.length}
                         </h3>
-                        <div className="flex items-center justify-center gap-3">
-                          <TeamFlag logo={finishedMatches[currentMatchIndex]?.team_a_logo} name={finishedMatches[currentMatchIndex]?.team_a} className="w-8 h-8" rounded="md" />
+                        <div key={currentMatchIndex} className="flex items-center justify-center gap-3 overflow-hidden">
+                          {/* קבוצה א — נכנסת משמאל */}
+                          <motion.div
+                            initial={{ x: -60, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ type: "spring", stiffness: 220, damping: 22 }}>
+                            <TeamFlag logo={finishedMatches[currentMatchIndex]?.team_a_logo} name={finishedMatches[currentMatchIndex]?.team_a} className="w-8 h-8" rounded="md" />
+                          </motion.div>
 
-                          <div className="bg-slate-700 px-3 py-1 rounded-lg">
+                          {/* תוצאה — מופיעה אחרי שתי הקבוצות */}
+                          <motion.div
+                            className="bg-slate-700 px-3 py-1 rounded-lg"
+                            initial={{ opacity: 0, scale: 0.7 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.25, type: "spring", stiffness: 300, damping: 20 }}>
                             <span className="text-white font-bold">
                               {finishedMatches[currentMatchIndex]?.actual_score_a} - {finishedMatches[currentMatchIndex]?.actual_score_b}
                             </span>
-                          </div>
-                          <TeamFlag logo={finishedMatches[currentMatchIndex]?.team_b_logo} name={finishedMatches[currentMatchIndex]?.team_b} className="w-8 h-8" rounded="md" />
+                          </motion.div>
+
+                          {/* קבוצה ב — נכנסת מימין */}
+                          <motion.div
+                            initial={{ x: 60, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ type: "spring", stiffness: 220, damping: 22 }}>
+                            <TeamFlag logo={finishedMatches[currentMatchIndex]?.team_b_logo} name={finishedMatches[currentMatchIndex]?.team_b} className="w-8 h-8" rounded="md" />
+                          </motion.div>
                         </div>
                       </div>
 
