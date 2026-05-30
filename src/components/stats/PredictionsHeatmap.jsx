@@ -17,7 +17,6 @@ function getCellStyle(match) {
     return { bg: 'rgba(71,85,105,0.18)', border: 'rgba(71,85,105,0.30)', text: '#475569' };
   if (!match.hasPrediction)
     return { bg: 'rgba(71,85,105,0.22)', border: 'rgba(100,116,139,0.35)', text: '#64748b' };
-
   const outcome = getOutcome(match);
   if (outcome === 'exact')
     return { bg: 'rgba(20,83,45,0.80)',   border: 'rgba(74,222,128,0.90)', text: '#4ade80' };
@@ -50,6 +49,9 @@ export default function PredictionsHeatmap({ heatmapData }) {
     );
   }
 
+  const activeStyle = active ? getCellStyle(active) : null;
+  const activeOutcome = active ? getOutcome(active) : 'none';
+
   return (
     <div className="space-y-5" dir="rtl">
       {/* Legend */}
@@ -64,6 +66,74 @@ export default function PredictionsHeatmap({ heatmapData }) {
         ))}
       </div>
 
+      {/* Popup — מרונדר פעם אחת, ממורכז, לא יוצא מהמסך */}
+      <AnimatePresence>
+        {active && activeStyle && (
+          <motion.div
+            key={active.matchId}
+            initial={{ opacity: 0, y: -8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0,  scale: 1 }}
+            exit={{    opacity: 0, y: -4, scale: 0.96 }}
+            transition={{ duration: 0.18 }}
+            className="rounded-2xl p-4 mx-auto"
+            style={{
+              maxWidth: 280,
+              background: 'rgba(8,15,28,0.97)',
+              border: `1px solid ${activeStyle.border}`,
+              backdropFilter: 'blur(16px)',
+              boxShadow: `0 8px 32px rgba(0,0,0,0.55), 0 0 16px ${activeStyle.border}40`,
+            }}
+            dir="rtl"
+          >
+            {/* Flags */}
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <TeamFlag logo={active.homeTeamLogo} name={active.homeTeam} className="w-8 h-8" rounded="sm" />
+              <span className="text-white/30 text-sm">—</span>
+              <TeamFlag logo={active.awayTeamLogo} name={active.awayTeam} className="w-8 h-8" rounded="sm" />
+            </div>
+
+            {active.isFinished ? (
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-400">תוצאה</span>
+                  <span className="font-bold text-white tabular-nums">
+                    {active.homeScore ?? '?'} – {active.awayScore ?? '?'}
+                  </span>
+                </div>
+                {active.hasPrediction ? (
+                  <>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-400">ניחוש</span>
+                      <span className="font-bold text-white tabular-nums">
+                        {active.predictedA} – {active.predictedB}
+                      </span>
+                    </div>
+                    {OUTCOME_LABEL[activeOutcome] && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-400">סטטוס</span>
+                        <span className="font-semibold" style={{ color: OUTCOME_LABEL[activeOutcome].color }}>
+                          {OUTCOME_LABEL[activeOutcome].text}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-xs pt-1.5 mt-0.5 border-t border-white/10">
+                      <span className="text-slate-400">ניקוד</span>
+                      <span className="font-black tabular-nums" style={{ color: activeStyle.text }}>
+                        {active.pointsEarned}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-slate-500 text-xs text-center pt-1">ללא ניחוש</p>
+                )}
+              </div>
+            ) : (
+              <p className="text-slate-500 text-xs text-center">טרם הסתיים</p>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Rounds */}
       {heatmapData.map((round, ri) => (
         <div key={round.roundId}>
@@ -72,108 +142,29 @@ export default function PredictionsHeatmap({ heatmapData }) {
           </p>
           <div className="flex flex-wrap gap-1.5" dir="ltr">
             {round.matches.map((match, mi) => {
-              const style   = getCellStyle(match);
-              const outcome = getOutcome(match);
-              const isOpen  = active?.matchId === match.matchId;
-
+              const style  = getCellStyle(match);
+              const isOpen = active?.matchId === match.matchId;
               return (
-                <div key={match.matchId} className="relative">
-                  <motion.button
-                    initial={{ opacity: 0, scale: 0.6 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: ri * 0.04 + mi * 0.02, type: 'spring', stiffness: 300, damping: 20 }}
-                    className="w-9 h-9 rounded-lg select-none"
-                    style={{
-                      background: style.bg,
-                      border: `1.5px solid ${style.border}`,
-                      boxShadow: isOpen ? `0 0 14px ${style.border}` : 'none',
-                    }}
-                    onClick={() => setActive(isOpen ? null : { matchId: match.matchId, ...match })}
-                  />
-
-                  {/* Popup */}
-                  <AnimatePresence>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 6, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0,  scale: 1 }}
-                        exit={{    opacity: 0, y: 4,  scale: 0.95 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute z-50 w-48 rounded-xl p-3"
-                        style={{
-                          bottom: 'calc(100% + 10px)',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          background: 'rgba(8,15,28,0.97)',
-                          border: `1px solid ${style.border}`,
-                          backdropFilter: 'blur(16px)',
-                          boxShadow: `0 8px 32px rgba(0,0,0,0.55), 0 0 16px ${style.border}40`,
-                        }}
-                        dir="rtl"
-                      >
-                        {/* Flags only */}
-                        <div className="flex items-center justify-center gap-3 mb-2.5">
-                          <TeamFlag logo={match.homeTeamLogo} name={match.homeTeam} className="w-7 h-7" rounded="sm" />
-                          <span className="text-white/30 text-xs">—</span>
-                          <TeamFlag logo={match.awayTeamLogo} name={match.awayTeam} className="w-7 h-7" rounded="sm" />
-                        </div>
-
-                        {match.isFinished ? (
-                          <div className="space-y-1.5">
-                            {/* תוצאה */}
-                            <div className="flex justify-between text-xs">
-                              <span className="text-slate-400">תוצאה</span>
-                              <span className="font-bold text-white tabular-nums">
-                                {match.homeScore ?? '?'} – {match.awayScore ?? '?'}
-                              </span>
-                            </div>
-
-                            {match.hasPrediction ? (
-                              <>
-                                {/* ניחוש */}
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-slate-400">ניחוש</span>
-                                  <span className="font-bold text-white tabular-nums">
-                                    {match.predictedA} – {match.predictedB}
-                                  </span>
-                                </div>
-
-                                {/* סוג ניחוש */}
-                                {OUTCOME_LABEL[outcome] && (
-                                  <div className="flex justify-between text-xs">
-                                    <span className="text-slate-400">סטטוס</span>
-                                    <span className="font-semibold" style={{ color: OUTCOME_LABEL[outcome].color }}>
-                                      {OUTCOME_LABEL[outcome].text}
-                                    </span>
-                                  </div>
-                                )}
-
-                                {/* ניקוד */}
-                                <div className="flex justify-between text-xs pt-1.5 mt-0.5 border-t border-white/10">
-                                  <span className="text-slate-400">ניקוד</span>
-                                  <span className="font-black tabular-nums" style={{ color: style.text }}>
-                                    {match.pointsEarned}
-                                  </span>
-                                </div>
-                              </>
-                            ) : (
-                              <p className="text-slate-500 text-xs text-center pt-1">ללא ניחוש</p>
-                            )}
-                          </div>
-                        ) : (
-                          <p className="text-slate-500 text-xs text-center">טרם הסתיים</p>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                <motion.button
+                  key={match.matchId}
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: ri * 0.04 + mi * 0.02, type: 'spring', stiffness: 300, damping: 20 }}
+                  className="w-9 h-9 rounded-lg select-none"
+                  style={{
+                    background: style.bg,
+                    border: `1.5px solid ${style.border}`,
+                    boxShadow: isOpen ? `0 0 14px ${style.border}` : 'none',
+                  }}
+                  onClick={() => setActive(isOpen ? null : { matchId: match.matchId, ...match })}
+                />
               );
             })}
           </div>
         </div>
       ))}
 
-      {/* סגירת popup בלחיצה על הרקע */}
+      {/* סגירה בלחיצה על הרקע */}
       {active && (
         <div className="fixed inset-0 z-40" onClick={() => setActive(null)} />
       )}
