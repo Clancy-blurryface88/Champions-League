@@ -17,6 +17,7 @@ import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminLeaderboardStylesDemo from "../components/admin/AdminLeaderboardStylesDemo";
+import AdminLeaderboardShapesDemo from "../components/admin/AdminLeaderboardShapesDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -77,6 +78,7 @@ export default function Admin() {
       case 'import': return <AdminImportMatches />;
       case 'reset': return <AdminReset />;
       case 'lb-styles': return <AdminLeaderboardStylesDemo />;
+      case 'lb-shapes': return <AdminLeaderboardShapesDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -93,6 +95,7 @@ export default function Admin() {
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',     label: 'Reset Center',      icon: RotateCcw },
     { id: 'lb-styles', label: '🏆 Leaderboard Styles', icon: RotateCcw },
+    { id: 'lb-shapes', label: '🔷 Leaderboard Shapes', icon: RotateCcw },
   ];
 
   return (
