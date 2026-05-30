@@ -742,14 +742,15 @@ export default function MyStats() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <LottieAnimation
-          animationData={fifaLottie}
-          loop
-          autoplay
-          className="w-52 h-52"
-        />
-        <p className="text-slate-400 text-sm font-medium tracking-wide">טוען נתונים...</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="rounded-3xl overflow-hidden" style={{ background: '#fff' }}>
+          <LottieAnimation
+            animationData={fifaLottie}
+            loop
+            autoplay
+            className="w-64 h-64"
+          />
+        </div>
       </div>
     );
   }
