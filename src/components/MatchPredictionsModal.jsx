@@ -75,6 +75,17 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
     if (isOpen && match) loadPredictions();
   }, [isOpen, match, loadPredictions]);
 
+  // כפתור Back במובייל סוגר את המודל במקום לנווט אחורה
+  useEffect(() => {
+    if (!isOpen) return;
+    window.history.pushState({ modal: 'match-predictions' }, '');
+    const handlePop = () => onClose();
+    window.addEventListener('popstate', handlePop);
+    return () => {
+      window.removeEventListener('popstate', handlePop);
+    };
+  }, [isOpen, onClose]);
+
   const getUserName = (userId) =>
     publicProfiles.find(p => p.user_id === userId)?.display_name || `משתמש ${userId.slice(0, 6)}`;
 
