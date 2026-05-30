@@ -104,23 +104,33 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
             </div>
           ) : (
             <div className="px-4 py-3 space-y-2">
-              {predictionsList.map(({ match, prediction }) => (
+              {predictionsList.map(({ match, prediction }, i) => (
                 <div
                   key={match.id}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-2xl"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-2xl overflow-hidden"
                   style={{
                     background: 'rgba(255,255,255,0.04)',
                     border: '1px solid rgba(255,255,255,0.07)',
                   }}
                 >
-                  {/* Team A — right side */}
-                  <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
+                  {/* Team A — נכנסת מימין */}
+                  <motion.div
+                    className="flex items-center gap-1.5 flex-1 min-w-0 justify-end"
+                    initial={{ x: 50, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: i * 0.07, type: 'spring', stiffness: 220, damping: 22 }}
+                  >
                     <span className="text-white/80 text-xs font-semibold truncate text-right">{match.team_a}</span>
                     <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-7 h-7 flex-shrink-0" />
-                  </div>
+                  </motion.div>
 
-                  {/* Score pill */}
-                  <div className="flex flex-col items-center flex-shrink-0 w-[72px]">
+                  {/* Score pill — מופיע אחרי הדגלים */}
+                  <motion.div
+                    className="flex flex-col items-center flex-shrink-0 w-[72px]"
+                    initial={{ opacity: 0, scale: 0.6 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.07 + 0.22, type: 'spring', stiffness: 300, damping: 20 }}
+                  >
                     <div
                       className="w-full flex items-center justify-center px-2 py-1 rounded-xl"
                       style={{
@@ -144,13 +154,18 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                     {match.league && (
                       <span className="text-[9px] text-amber-400/45 font-medium mt-0.5 tracking-wide">{match.league}</span>
                     )}
-                  </div>
+                  </motion.div>
 
-                  {/* Team B — left side */}
-                  <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-start">
+                  {/* Team B — נכנסת משמאל */}
+                  <motion.div
+                    className="flex items-center gap-1.5 flex-1 min-w-0 justify-start"
+                    initial={{ x: -50, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: i * 0.07, type: 'spring', stiffness: 220, damping: 22 }}
+                  >
                     <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-7 h-7 flex-shrink-0" />
                     <span className="text-white/80 text-xs font-semibold truncate">{match.team_b}</span>
-                  </div>
+                  </motion.div>
                 </div>
               ))}
             </div>
