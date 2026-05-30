@@ -14,6 +14,14 @@ export default function PlayerStatsModal({ isOpen, onClose, selectedPlayer: init
         }
     }, [isOpen, initialSelectedPlayer]);
 
+    useEffect(() => {
+        if (!isOpen) return;
+        window.history.pushState({ modal: 'player-stats' }, '');
+        const handlePop = () => onClose();
+        window.addEventListener('popstate', handlePop);
+        return () => window.removeEventListener('popstate', handlePop);
+    }, [isOpen, onClose]);
+
     if (!selectedPlayer || !allParticipants) return null;
 
     const selectedPoints = selectedPlayer.total_points || 0;

@@ -121,6 +121,14 @@ export default function MatchesByDateSheet({ isOpen, onClose }) {
     });
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    window.history.pushState({ modal: 'matches-by-date' }, '');
+    const handlePop = () => onClose();
+    window.addEventListener('popstate', handlePop);
+    return () => window.removeEventListener('popstate', handlePop);
+  }, [isOpen, onClose]);
+
   // Scroll active tab into view
   useEffect(() => {
     if (!selectedDate || !tabsRef.current) return;

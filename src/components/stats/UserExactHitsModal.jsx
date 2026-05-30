@@ -56,6 +56,14 @@ export default function UserExactHitsModal({ userId, userName, isOpen, onClose, 
     fetchExactHits();
   }, [userId, isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    window.history.pushState({ modal: 'user-exact-hits' }, '');
+    const handlePop = () => onClose();
+    window.addEventListener('popstate', handlePop);
+    return () => window.removeEventListener('popstate', handlePop);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (

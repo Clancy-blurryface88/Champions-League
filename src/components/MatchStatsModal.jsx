@@ -45,6 +45,14 @@ export default function MatchStatsModal({ isOpen, onClose, matchId }) {
     }
   }, [isOpen, matchId]);
 
+  React.useEffect(() => {
+    if (!isOpen) return;
+    window.history.pushState({ modal: 'match-stats' }, '');
+    const handlePop = () => onClose();
+    window.addEventListener('popstate', handlePop);
+    return () => window.removeEventListener('popstate', handlePop);
+  }, [isOpen, onClose]);
+
   const loadStats = async () => {
     setLoading(true);
     setError(null);
