@@ -27,15 +27,6 @@ export default function MatchTickerBar({ onClick }) {
       if (todays.length > 0) {
         setMatches(todays);
         setDateLabel(formatDate(todays[0].match_date));
-      } else {
-        // אין משחקים היום — הצג 14/06 (יום הפתיחה)
-        const opening = all
-          .filter(m => localDateKey(new Date(m.match_date)) === '2026-06-14')
-          .sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
-        if (opening.length > 0) {
-          setMatches(opening);
-          setDateLabel(formatDate(opening[0].match_date));
-        }
       }
     }).catch(() => {});
   }, []);
