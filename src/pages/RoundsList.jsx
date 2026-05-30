@@ -115,14 +115,11 @@ export default function RoundsList() {
         <div className="max-w-4xl mx-auto px-4 pb-8 mt-6">
           {/* כפתור חזרה */}
           <div className="mb-6">
-            <Button
-              variant="outline"
-              size="icon"
+            <button
               onClick={() => navigate(createPageUrl("Dashboard"))}
-              className="bg-slate-800 border-slate-600 hover:bg-slate-700"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
+              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 backdrop-blur-sm text-white/70 hover:text-white transition-all">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Rounds Section */}

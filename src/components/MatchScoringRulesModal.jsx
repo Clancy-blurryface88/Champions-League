@@ -166,9 +166,8 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
           <div className="px-5 pt-4 pb-3 flex items-center">
             <button
               onClick={onClose}
-              className="inline-flex items-center justify-center w-9 h-9 rounded-md border border-slate-600 bg-slate-800 hover:bg-slate-700 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 text-white" />
+              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 backdrop-blur-sm text-white/70 hover:text-white transition-all">
+              <ArrowLeft className="w-5 h-5" />
             </button>
           </div>
 
