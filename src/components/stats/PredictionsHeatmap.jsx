@@ -111,13 +111,11 @@ export default function PredictionsHeatmap({ heatmapData }) {
                         }}
                         dir="rtl"
                       >
-                        {/* Match title with flags */}
-                        <div className="flex items-center justify-center gap-2 mb-2.5">
-                          <TeamFlag logo={match.homeTeamLogo} name={match.homeTeam} className="w-6 h-6" rounded="sm" />
-                          <span className="text-white font-bold text-xs leading-tight text-center">
-                            {match.homeTeam} — {match.awayTeam}
-                          </span>
-                          <TeamFlag logo={match.awayTeamLogo} name={match.awayTeam} className="w-6 h-6" rounded="sm" />
+                        {/* Flags only */}
+                        <div className="flex items-center justify-center gap-3 mb-2.5">
+                          <TeamFlag logo={match.homeTeamLogo} name={match.homeTeam} className="w-7 h-7" rounded="sm" />
+                          <span className="text-white/30 text-xs">—</span>
+                          <TeamFlag logo={match.awayTeamLogo} name={match.awayTeam} className="w-7 h-7" rounded="sm" />
                         </div>
 
                         {match.isFinished ? (
@@ -154,7 +152,7 @@ export default function PredictionsHeatmap({ heatmapData }) {
                                 <div className="flex justify-between text-xs pt-1.5 mt-0.5 border-t border-white/10">
                                   <span className="text-slate-400">ניקוד</span>
                                   <span className="font-black tabular-nums" style={{ color: style.text }}>
-                                    {match.pointsEarned} PTS
+                                    {match.pointsEarned}
                                   </span>
                                 </div>
                               </>
