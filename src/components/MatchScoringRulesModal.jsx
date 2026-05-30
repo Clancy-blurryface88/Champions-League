@@ -133,15 +133,6 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
   const [simA, setSimA] = useState(null);
   const [simB, setSimB] = useState(null);
 
-  // כפתור Back במובייל סוגר את המודל במקום לנווט אחורה
-  React.useEffect(() => {
-    if (!isOpen) return;
-    window.history.pushState({ modal: 'match-scoring' }, '');
-    const handlePop = () => onClose();
-    window.addEventListener('popstate', handlePop);
-    return () => window.removeEventListener('popstate', handlePop);
-  }, [isOpen, onClose]);
-
   if (!match) return null;
 
   const hasOdds = match.score_odds && Object.keys(match.score_odds).length > 0;

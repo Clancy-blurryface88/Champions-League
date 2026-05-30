@@ -752,7 +752,7 @@ export default function MyStats() {
         {/* Header with improved mobile spacing and reduced top padding */}
         <div className="flex items-center gap-4 mb-4 pt-4">
           <button
-            onClick={() => navigate(createPageUrl("Dashboard"))}
+            onClick={() => navigate(-1)}
             className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 backdrop-blur-sm text-white/70 hover:text-white transition-all">
             <ArrowLeft className="w-5 h-5" />
           </button>
