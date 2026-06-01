@@ -675,7 +675,7 @@ export default function Predictions() {
                 <Card
                   className={`relative border-0 transition-all duration-300 h-full flex flex-col overflow-hidden ${
                   isLocked ? 'opacity-65' : ''}`}
-                  style={{ outline: '1px solid rgba(255,255,255,0.07)' }}
+                  style={{ outline: isLocked ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(184,148,50,0.22)' }}
                   style={isLocked ? {
                     background: 'rgba(10,18,35,0.55)',
                     backdropFilter: 'blur(20px) saturate(140%)',
@@ -695,13 +695,13 @@ export default function Predictions() {
                         borderRadius={16}
                         borderWidth={1}
                         duration={14}
-                        shineColor={["rgba(255,255,255,0.85)", "rgba(210,225,255,0.55)", "rgba(255,255,255,0.9)"]}
+                        shineColor={["rgba(184,148,50,0.3)", "rgba(255,215,0,0.75)", "rgba(255,235,120,0.9)", "rgba(255,215,0,0.75)", "rgba(184,148,50,0.3)"]}
                       />
                       <ShineBorder
                         borderRadius={16}
                         borderWidth={1}
                         duration={14}
-                        shineColor={["rgba(255,255,255,0.85)", "rgba(210,225,255,0.55)", "rgba(255,255,255,0.9)"]}
+                        shineColor={["rgba(184,148,50,0.3)", "rgba(255,215,0,0.75)", "rgba(255,235,120,0.9)", "rgba(255,215,0,0.75)", "rgba(184,148,50,0.3)"]}
                         className="[&>div]:[animation-delay:-7s]"
                       />
                     </>
