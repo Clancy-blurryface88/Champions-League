@@ -674,14 +674,14 @@ export default function Predictions() {
 
                 <Card
                   className={`relative border transition-all duration-300 h-full flex flex-col overflow-hidden ${
-                  isLocked ? 'border-white/8 opacity-65' : 'border-white/12 hover:border-white/20'}`}
+                  isLocked ? 'border-white/8 opacity-65' : 'border-white/[0.06] hover:border-white/[0.1]'}`}
                   style={isLocked ? {
                     background: 'rgba(10,18,35,0.55)',
                     backdropFilter: 'blur(20px) saturate(140%)',
                     WebkitBackdropFilter: 'blur(20px) saturate(140%)',
                     boxShadow: '0 2px 16px rgba(0,0,0,0.35)',
                   } : {
-                    background: 'linear-gradient(145deg, rgba(255,255,255,0.13) 0%, rgba(10,20,50,0.5) 50%, rgba(255,255,255,0.06) 100%)',
+                    background: 'radial-gradient(ellipse at 50% 120%, rgba(255,220,80,0.12) 0%, transparent 60%), linear-gradient(180deg, rgba(0,0,0,0.95), rgba(5,10,20,0.98))',
                     backdropFilter: 'blur(36px) saturate(210%)',
                     WebkitBackdropFilter: 'blur(36px) saturate(210%)',
                     boxShadow: '0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(255,255,255,0.04)',
