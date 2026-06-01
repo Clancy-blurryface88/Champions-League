@@ -56,7 +56,7 @@ function SimInput({ value, onChange }) {
       <div className="w-11 h-14 flex items-center justify-center rounded-xl bg-white/6 border border-white/15"
         style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)' }}>
         <span className="text-3xl font-bold text-white tabular-nums" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
-          {value ?? '?'}
+          {value ?? 0}
         </span>
       </div>
       <button onClick={dec} disabled={!value} className="text-yellow-400 hover:opacity-70 disabled:opacity-20 transition-opacity">
@@ -175,17 +175,29 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
           </div>
 
           {/* Teams */}
-          <div className="flex items-center justify-between px-7 py-3">
+          <div className="flex items-center justify-between px-5 py-3 mx-4 mb-1 rounded-2xl"
+            style={{ background: 'linear-gradient(135deg, rgba(30,58,138,0.35) 0%, rgba(15,23,42,0.6) 50%, rgba(120,90,10,0.35) 100%)', border: '1px solid rgba(255,255,255,0.08)' }}>
             <div className="flex flex-col items-center gap-1.5 flex-1">
-              <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" />
-              <span className="text-xs text-white font-semibold leading-tight text-center">{match.team_a}</span>
-              <span className="text-[10px] text-slate-400 leading-none">(בית)</span>
+              <div style={{ filter: 'drop-shadow(0 0 10px rgba(96,165,250,0.5))' }}>
+                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" />
+              </div>
+              <span className="text-xs font-bold leading-tight text-center bg-clip-text text-transparent"
+                style={{ backgroundImage: 'linear-gradient(135deg, #60a5fa 0%, #93c5fd 50%, #fbbf24 100%)' }}>
+                {match.team_a}
+              </span>
+              <span className="text-[10px] text-slate-500 leading-none">(בית)</span>
             </div>
-            <span className="text-sm font-bold text-amber-400 tracking-widest mx-3 pb-5">VS</span>
+            <span className="text-sm font-black tracking-widest mx-3 pb-5 bg-clip-text text-transparent"
+              style={{ backgroundImage: 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)' }}>VS</span>
             <div className="flex flex-col items-center gap-1.5 flex-1">
-              <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" />
-              <span className="text-xs text-white font-semibold leading-tight text-center">{match.team_b}</span>
-              <span className="text-[10px] text-slate-400 leading-none">(חוץ)</span>
+              <div style={{ filter: 'drop-shadow(0 0 10px rgba(251,191,36,0.5))' }}>
+                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" />
+              </div>
+              <span className="text-xs font-bold leading-tight text-center bg-clip-text text-transparent"
+                style={{ backgroundImage: 'linear-gradient(135deg, #fbbf24 0%, #93c5fd 50%, #60a5fa 100%)' }}>
+                {match.team_b}
+              </span>
+              <span className="text-[10px] text-slate-500 leading-none">(חוץ)</span>
             </div>
           </div>
         </div>
