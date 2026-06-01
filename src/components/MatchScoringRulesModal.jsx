@@ -183,7 +183,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
           {/* Teams */}
           <div className="flex items-center justify-between px-5 py-4 mx-4 mb-1">
             <div className="flex flex-col items-center gap-1.5 flex-1">
-              <div style={{ filter: 'drop-shadow(0 0 14px rgba(255,255,255,0.65)) drop-shadow(0 0 6px rgba(255,255,255,0.4))' }}>
+              <div style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.3))' }}>
                 <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" />
               </div>
               <span className="text-xs font-bold leading-tight text-center text-white">
@@ -194,7 +194,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
             <span className="text-sm font-black tracking-widest mx-3 pb-5 bg-clip-text text-transparent"
               style={{ backgroundImage: 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)' }}>VS</span>
             <div className="flex flex-col items-center gap-1.5 flex-1">
-              <div style={{ filter: 'drop-shadow(0 0 14px rgba(255,255,255,0.65)) drop-shadow(0 0 6px rgba(255,255,255,0.4))' }}>
+              <div style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.3))' }}>
                 <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" />
               </div>
               <span className="text-xs font-bold leading-tight text-center text-white">
