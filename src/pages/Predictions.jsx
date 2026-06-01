@@ -764,7 +764,15 @@ export default function Predictions() {
                         <div className="flex justify-center items-center cursor-pointer pt-7"
                              style={{ gridColumn: 1, gridRow: 1 }}
                              onClick={() => setSelectedTeam({ name: match.team_a, logo: match.team_a_logo })}>
-                          <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
+                          <motion.div
+                            animate={{ filter: [
+                              'drop-shadow(0 4px 8px rgba(0,0,0,0.4))',
+                              'drop-shadow(0 6px 18px rgba(0,0,0,0.7)) drop-shadow(0 0 14px rgba(255,255,255,0.3))',
+                              'drop-shadow(0 4px 8px rgba(0,0,0,0.4))',
+                            ]}}
+                            transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}>
+                            <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
+                          </motion.div>
                         </div>
 
                         {/* Score — spans both rows, centered */}
@@ -802,7 +810,15 @@ export default function Predictions() {
                         <div className="flex justify-center items-center cursor-pointer pt-7"
                              style={{ gridColumn: 3, gridRow: 1 }}
                              onClick={() => setSelectedTeam({ name: match.team_b, logo: match.team_b_logo })}>
-                          <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
+                          <motion.div
+                            animate={{ filter: [
+                              'drop-shadow(0 4px 8px rgba(0,0,0,0.4))',
+                              'drop-shadow(0 6px 18px rgba(0,0,0,0.7)) drop-shadow(0 0 14px rgba(255,255,255,0.3))',
+                              'drop-shadow(0 4px 8px rgba(0,0,0,0.4))',
+                            ]}}
+                            transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut', delay: 1.4 }}>
+                            <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
+                          </motion.div>
                         </div>
 
                         {/* Row 2: name + label tightly stacked, top-aligned */}
