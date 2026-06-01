@@ -181,7 +181,8 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
           </div>
 
           {/* Teams */}
-          <div className="flex items-center justify-between px-5 py-4 mx-4 mb-1">
+          <div className="flex items-center justify-between px-5 py-4 mx-4 mb-1 rounded-2xl overflow-hidden relative"
+            style={{ background: "linear-gradient(90deg, rgba(30,58,138,0.5) 0%, rgba(15,23,42,0.85) 35%, rgba(15,23,42,0.85) 65%, rgba(120,20,20,0.5) 100%)", border: "1px solid rgba(255,255,255,0.08)" }}>
             <div className="flex flex-col items-center gap-1.5 flex-1">
               <div style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.3))' }}>
                 <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" />
