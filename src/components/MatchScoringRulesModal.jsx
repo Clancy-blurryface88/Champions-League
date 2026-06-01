@@ -208,18 +208,18 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
             style={{ background: 'linear-gradient(145deg, rgba(245,197,24,0.07) 0%, rgba(10,20,50,0.6) 100%)' }}>
 
             <div className="px-4 pt-3 pb-1 text-center">
-              <span className="text-[10px] uppercase tracking-[0.14em] font-semibold text-yellow-400/80">סימולטור — כמה שווה הניחוש שלך?</span>
+              <span className="text-[10px] uppercase tracking-[0.14em] font-semibold text-yellow-400/80">סימולטור — כמה שווה הניחוש שלך</span>
             </div>
 
             {/* Inputs */}
             <div className="flex items-center justify-center gap-4 px-4 pb-3 pt-1" dir="ltr">
               <div className="flex flex-col items-center gap-1">
-                <span className="text-[10px] text-slate-400 font-medium">{match.team_a}</span>
+                <span className="text-sm text-white font-semibold">{match.team_a}</span>
                 <SimInput value={simA} onChange={setSimA} />
               </div>
               <span className="text-white/30 font-bold text-xl pb-2">—</span>
               <div className="flex flex-col items-center gap-1">
-                <span className="text-[10px] text-slate-400 font-medium">{match.team_b}</span>
+                <span className="text-sm text-white font-semibold">{match.team_b}</span>
                 <SimInput value={simB} onChange={setSimB} />
               </div>
             </div>
