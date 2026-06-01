@@ -675,7 +675,7 @@ export default function Predictions() {
                 <Card
                   className={`relative border-0 transition-all duration-300 h-full flex flex-col overflow-hidden ${
                   isLocked ? 'opacity-65' : ''}`}
-                  style={{ outline: isLocked ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(184,148,50,0.38)' }}
+                  style={{ outline: '1px solid rgba(255,255,255,0.07)' }}
                   style={isLocked ? {
                     background: 'rgba(10,18,35,0.55)',
                     backdropFilter: 'blur(20px) saturate(140%)',
@@ -688,23 +688,22 @@ export default function Predictions() {
                     boxShadow: '0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(255,255,255,0.04)',
                   }}
                 >
-                  {/* Glass shine effects */}
+                  {/* Dual ShineBorder — two light points 180° apart */}
                   {!isLocked && (
                     <>
                       <ShineBorder
                         borderRadius={16}
                         borderWidth={1}
-                        duration={16}
-                        shineColor={["rgba(255,255,255,0.9)", "rgba(200,220,255,0.7)", "rgba(255,255,255,1)"]}
+                        duration={14}
+                        shineColor={["rgba(255,255,255,0.85)", "rgba(210,225,255,0.55)", "rgba(255,255,255,0.9)"]}
                       />
-                      {/* Top specular edge */}
-                      <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
-                        style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.6) 35%, rgba(255,255,255,0.85) 50%, rgba(255,255,255,0.6) 65%, transparent 95%)' }} />
-                      {/* Diagonal light streak */}
-                      <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
-                        <div className="absolute -top-full -left-1/4 w-1/3 h-[300%] opacity-[0.04]"
-                          style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,1) 50%, transparent 70%)', animation: 'shineSweep 7s ease-in-out infinite' }} />
-                      </div>
+                      <ShineBorder
+                        borderRadius={16}
+                        borderWidth={1}
+                        duration={14}
+                        shineColor={["rgba(255,255,255,0.85)", "rgba(210,225,255,0.55)", "rgba(255,255,255,0.9)"]}
+                        className="[&>div]:[animation-delay:-7s]"
+                      />
                     </>
                   )}
                   {/* Noise texture overlay */}
