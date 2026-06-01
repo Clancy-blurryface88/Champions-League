@@ -766,9 +766,9 @@ export default function Predictions() {
                              onClick={() => setSelectedTeam({ name: match.team_a, logo: match.team_a_logo })}>
                           <motion.div
                             animate={{ filter: [
-                              'drop-shadow(0 4px 8px rgba(0,0,0,0.4))',
-                              'drop-shadow(0 6px 18px rgba(0,0,0,0.7)) drop-shadow(0 0 14px rgba(255,255,255,0.3))',
-                              'drop-shadow(0 4px 8px rgba(0,0,0,0.4))',
+                              'drop-shadow(0 4px 10px rgba(0,0,0,0.5))',
+                              'drop-shadow(0 0 18px rgba(255,255,255,0.75)) drop-shadow(0 8px 20px rgba(0,0,0,0.8))',
+                              'drop-shadow(0 4px 10px rgba(0,0,0,0.5))',
                             ]}}
                             transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}>
                             <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
@@ -812,9 +812,9 @@ export default function Predictions() {
                              onClick={() => setSelectedTeam({ name: match.team_b, logo: match.team_b_logo })}>
                           <motion.div
                             animate={{ filter: [
-                              'drop-shadow(0 4px 8px rgba(0,0,0,0.4))',
-                              'drop-shadow(0 6px 18px rgba(0,0,0,0.7)) drop-shadow(0 0 14px rgba(255,255,255,0.3))',
-                              'drop-shadow(0 4px 8px rgba(0,0,0,0.4))',
+                              'drop-shadow(0 4px 10px rgba(0,0,0,0.5))',
+                              'drop-shadow(0 0 18px rgba(255,255,255,0.75)) drop-shadow(0 8px 20px rgba(0,0,0,0.8))',
+                              'drop-shadow(0 4px 10px rgba(0,0,0,0.5))',
                             ]}}
                             transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut', delay: 1.4 }}>
                             <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
