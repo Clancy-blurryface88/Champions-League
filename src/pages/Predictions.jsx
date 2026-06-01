@@ -693,17 +693,12 @@ export default function Predictions() {
                       <ShineBorder
                         borderRadius={16}
                         borderWidth={1.5}
-                        duration={6}
+                        duration={16}
                         shineColor={["#b8860b", "#ffd700", "#fffacd", "#ffd700", "#b8860b"]}
                       />
                       {/* Top gold specular edge */}
                       <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
                         style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(212,175,55,0.6) 30%, rgba(255,215,0,0.95) 50%, rgba(212,175,55,0.6) 70%, transparent 95%)' }} />
-                      {/* Subtle corner gold accents */}
-                      <div className="absolute top-0 left-0 w-8 h-8 pointer-events-none"
-                        style={{ background: 'radial-gradient(circle at 0% 0%, rgba(255,215,0,0.18) 0%, transparent 70%)' }} />
-                      <div className="absolute top-0 right-0 w-8 h-8 pointer-events-none"
-                        style={{ background: 'radial-gradient(circle at 100% 0%, rgba(255,215,0,0.18) 0%, transparent 70%)' }} />
                       {/* Diagonal gold sweep */}
                       <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
                         <div className="absolute -top-full -left-1/4 w-1/3 h-[300%] opacity-[0.06]"
