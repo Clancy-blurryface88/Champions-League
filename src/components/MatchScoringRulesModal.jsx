@@ -47,19 +47,25 @@ function calcSimPoints(match, a, b) {
 
 function SimInput({ value, onChange }) {
   const inc = () => onChange((value ?? -1) + 1);
-  const dec = () => { if (value > 0) onChange(value - 1); };
+  const dec = () => { if (value !== null && value > 0) onChange(value - 1); };
+  const isSet = value !== null;
   return (
     <div className="flex flex-col items-center gap-1">
       <button onClick={inc} className="text-yellow-400 hover:opacity-70 transition-opacity">
         <ChevronUp className="w-5 h-5" strokeWidth={2.5} />
       </button>
-      <div className="w-11 h-14 flex items-center justify-center rounded-xl bg-white/6 border border-white/15"
-        style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)' }}>
-        <span className="text-3xl font-bold text-white tabular-nums" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
-          {value ?? 0}
+      <div className="w-11 h-14 flex items-center justify-center rounded-xl border"
+        style={{
+          background: isSet ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.02)',
+          borderColor: isSet ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)'
+        }}>
+        <span className="text-3xl font-bold tabular-nums"
+          style={{ fontFamily: "'Bebas Neue', sans-serif", color: isSet ? 'white' : 'rgba(255,255,255,0.25)' }}>
+          {isSet ? value : '—'}
         </span>
       </div>
-      <button onClick={dec} disabled={!value} className="text-yellow-400 hover:opacity-70 disabled:opacity-20 transition-opacity">
+      <button onClick={dec} disabled={!isSet || value === 0} className="text-yellow-400 hover:opacity-70 disabled:opacity-20 transition-opacity">
         <ChevronDown className="w-5 h-5" strokeWidth={2.5} />
       </button>
     </div>
