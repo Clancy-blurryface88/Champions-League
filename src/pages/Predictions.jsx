@@ -673,36 +673,41 @@ export default function Predictions() {
                 className="h-full">
 
                 <Card
-                  className={`relative border transition-all duration-300 h-full flex flex-col overflow-hidden ${
-                  isLocked ? 'border-white/8 opacity-65' : 'border-white/15 hover:border-white/25'}`}
+                  className={`relative border-0 transition-all duration-300 h-full flex flex-col overflow-hidden`}
                   style={isLocked ? {
                     background: 'rgba(10,18,35,0.55)',
                     backdropFilter: 'blur(20px) saturate(140%)',
                     WebkitBackdropFilter: 'blur(20px) saturate(140%)',
                     boxShadow: '0 2px 16px rgba(0,0,0,0.35)',
+                    opacity: 0.65,
                   } : {
-                    background: 'linear-gradient(145deg, rgba(255,255,255,0.16) 0%, rgba(10,20,50,0.48) 50%, rgba(255,255,255,0.08) 100%)',
-                    backdropFilter: 'blur(36px) saturate(210%)',
-                    WebkitBackdropFilter: 'blur(36px) saturate(210%)',
-                    boxShadow: '0 0 0 1px rgba(255,255,255,0.2), 0 12px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(255,255,255,0.06)',
+                    background: 'linear-gradient(155deg, rgba(20,16,5,0.85) 0%, rgba(10,18,40,0.75) 45%, rgba(18,14,4,0.85) 100%)',
+                    backdropFilter: 'blur(36px) saturate(200%)',
+                    WebkitBackdropFilter: 'blur(36px) saturate(200%)',
+                    boxShadow: '0 0 0 1.5px rgba(212,175,55,0.55), 0 0 24px rgba(212,175,55,0.18), 0 16px 48px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,215,80,0.25), inset 0 -1px 0 rgba(180,140,20,0.1)',
                   }}
                 >
-                  {/* Shine border + specular highlight */}
+                  {/* Gold World Cup border effects */}
                   {!isLocked && (
                     <>
                       <ShineBorder
                         borderRadius={16}
-                        borderWidth={1}
-                        duration={8}
-                        shineColor={["rgba(255,255,255,0.9)", "rgba(180,210,255,0.7)", "rgba(255,255,255,1)"]}
+                        borderWidth={1.5}
+                        duration={6}
+                        shineColor={["#b8860b", "#ffd700", "#fffacd", "#ffd700", "#b8860b"]}
                       />
-                      {/* Top specular edge */}
+                      {/* Top gold specular edge */}
                       <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
-                        style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.7) 35%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.7) 65%, transparent 95%)' }} />
-                      {/* Diagonal light streak */}
+                        style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(212,175,55,0.6) 30%, rgba(255,215,0,0.95) 50%, rgba(212,175,55,0.6) 70%, transparent 95%)' }} />
+                      {/* Subtle corner gold accents */}
+                      <div className="absolute top-0 left-0 w-8 h-8 pointer-events-none"
+                        style={{ background: 'radial-gradient(circle at 0% 0%, rgba(255,215,0,0.18) 0%, transparent 70%)' }} />
+                      <div className="absolute top-0 right-0 w-8 h-8 pointer-events-none"
+                        style={{ background: 'radial-gradient(circle at 100% 0%, rgba(255,215,0,0.18) 0%, transparent 70%)' }} />
+                      {/* Diagonal gold sweep */}
                       <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
-                        <div className="absolute -top-full -left-1/4 w-1/3 h-[300%] opacity-[0.04]"
-                          style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,1) 50%, transparent 70%)', animation: 'shineSweep 7s ease-in-out infinite' }} />
+                        <div className="absolute -top-full -left-1/4 w-1/3 h-[300%] opacity-[0.06]"
+                          style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,215,0,1) 50%, transparent 70%)', animation: 'shineSweep 7s ease-in-out infinite' }} />
                       </div>
                     </>
                   )}
