@@ -26,6 +26,7 @@ import { RevealText } from "@/components/magicui/reveal-text";
 import TeamFlag from "@/components/TeamFlag";
 import GroupStandingsModal from "@/components/GroupStandingsModal";
 import TeamInfoModal from "@/components/TeamInfoModal";
+import { ShineBorder } from "@/components/magicui/shine-border";
 
 export default function Predictions() {
   const [currentRound, setCurrentRound] = useState(null);
@@ -680,18 +681,30 @@ export default function Predictions() {
                     WebkitBackdropFilter: 'blur(20px) saturate(140%)',
                     boxShadow: '0 2px 16px rgba(0,0,0,0.35)',
                   } : {
-                    background: 'linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(10,20,50,0.55) 45%, rgba(255,255,255,0.04) 100%)',
-                    backdropFilter: 'blur(28px) saturate(180%)',
-                    WebkitBackdropFilter: 'blur(28px) saturate(180%)',
-                    backgroundSize: '200% 100%',
-                    animation: 'shine 8s linear infinite',
-                    boxShadow: '0 0 0 1px rgba(255,255,255,0.12), 0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.14)',
+                    background: 'linear-gradient(145deg, rgba(255,255,255,0.16) 0%, rgba(10,20,50,0.48) 50%, rgba(255,255,255,0.08) 100%)',
+                    backdropFilter: 'blur(36px) saturate(210%)',
+                    WebkitBackdropFilter: 'blur(36px) saturate(210%)',
+                    boxShadow: '0 0 0 1px rgba(255,255,255,0.2), 0 12px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(255,255,255,0.06)',
                   }}
                 >
-                  {/* Specular highlight — top edge */}
+                  {/* Shine border + specular highlight */}
                   {!isLocked && (
-                    <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
-                      style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.45) 40%, rgba(255,255,255,0.55) 55%, rgba(255,255,255,0.45) 70%, transparent 95%)' }} />
+                    <>
+                      <ShineBorder
+                        borderRadius={16}
+                        borderWidth={1}
+                        duration={8}
+                        shineColor={["rgba(255,255,255,0.9)", "rgba(180,210,255,0.7)", "rgba(255,255,255,1)"]}
+                      />
+                      {/* Top specular edge */}
+                      <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
+                        style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.7) 35%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.7) 65%, transparent 95%)' }} />
+                      {/* Diagonal light streak */}
+                      <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
+                        <div className="absolute -top-full -left-1/4 w-1/3 h-[300%] opacity-[0.04]"
+                          style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,1) 50%, transparent 70%)', animation: 'shineSweep 7s ease-in-out infinite' }} />
+                      </div>
+                    </>
                   )}
                   {/* Noise texture overlay */}
                   <div className="absolute inset-0 pointer-events-none opacity-[0.025]"

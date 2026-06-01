@@ -118,6 +118,13 @@ body {
 }
 .animate-shine { animation: shine 2s linear infinite; }
 
+/* ── Diagonal shine sweep ──────────────────────────────────── */
+@keyframes shineSweep {
+  0%   { transform: translateX(-100%) skewX(-15deg); }
+  40%  { transform: translateX(400%)  skewX(-15deg); }
+  100% { transform: translateX(400%)  skewX(-15deg); }
+}
+
 /* ── Slide-in ──────────────────────────────────────────────── */
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(18px); }
