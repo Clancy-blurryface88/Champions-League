@@ -181,11 +181,10 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
               <div style={{ filter: 'drop-shadow(0 0 10px rgba(96,165,250,0.5))' }}>
                 <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" />
               </div>
-              <span className="text-xs font-bold leading-tight text-center bg-clip-text text-transparent"
-                style={{ backgroundImage: 'linear-gradient(135deg, #60a5fa 0%, #93c5fd 50%, #fbbf24 100%)' }}>
+              <span className="text-xs font-bold leading-tight text-center text-white">
                 {match.team_a}
               </span>
-              <span className="text-[10px] text-slate-500 leading-none">(בית)</span>
+              <span className="text-[10px] text-slate-300 leading-none">(בית)</span>
             </div>
             <span className="text-sm font-black tracking-widest mx-3 pb-5 bg-clip-text text-transparent"
               style={{ backgroundImage: 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)' }}>VS</span>
@@ -193,11 +192,10 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
               <div style={{ filter: 'drop-shadow(0 0 10px rgba(251,191,36,0.5))' }}>
                 <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" />
               </div>
-              <span className="text-xs font-bold leading-tight text-center bg-clip-text text-transparent"
-                style={{ backgroundImage: 'linear-gradient(135deg, #fbbf24 0%, #93c5fd 50%, #60a5fa 100%)' }}>
+              <span className="text-xs font-bold leading-tight text-center text-white">
                 {match.team_b}
               </span>
-              <span className="text-[10px] text-slate-500 leading-none">(חוץ)</span>
+              <span className="text-[10px] text-slate-300 leading-none">(חוץ)</span>
             </div>
           </div>
         </div>
