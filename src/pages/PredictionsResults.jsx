@@ -477,6 +477,11 @@ export default function PredictionsResults() {
     sort((a, b) => (b.points_earned || 0) - (a.points_earned || 0));
   };
 
+  const handleRoundChange = (roundId) => {
+    setSelectedRound(roundId);
+    setCurrentMatchIndex(0);
+  };
+
   const nextMatch = () => {
     setCurrentMatchIndex((prev) => (prev + 1) % finishedMatches.length);
   };
@@ -511,6 +516,13 @@ export default function PredictionsResults() {
   useEffect(() => {
     setRevealComplete(false);
   }, [currentMatchIndex, viewMode]);
+
+  // Guard: if currentMatchIndex is out of bounds after round change, reset it
+  useEffect(() => {
+    if (finishedMatches.length > 0 && currentMatchIndex >= finishedMatches.length) {
+      setCurrentMatchIndex(0);
+    }
+  }, [finishedMatches, currentMatchIndex]);
 
   // Determine if the current user has an exact hit for the currently displayed match
   const isCurrentMatchExactHit = (() => {
@@ -577,7 +589,7 @@ export default function PredictionsResults() {
               <FlipBoardPicker
                 rounds={availableRounds}
                 value={selectedRound}
-                onChange={setSelectedRound}
+                onChange={handleRoundChange}
               />
             </div>
 
