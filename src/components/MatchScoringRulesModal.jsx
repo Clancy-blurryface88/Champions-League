@@ -1,5 +1,6 @@
 import TeamFlag from "@/components/TeamFlag";
 import React, { useState } from "react";
+import { getTeamColor } from "@/utils/teamColors";
 import { useModalBackButton } from "@/hooks/useModalBackButton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Target, Trophy, Zap, Goal, ChevronUp, ChevronDown, ArrowLeft } from "lucide-react";
@@ -180,9 +181,19 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
             </button>
           </div>
 
-          {/* Teams */}
+          {/* Teams — dynamic banner gradient from flag colors */}
+          {(() => {
+            const colorA = getTeamColor(match.team_a);
+            const colorB = getTeamColor(match.team_b);
+            const toRgba = (hex, a) => {
+              const r = parseInt(hex.slice(1,3),16);
+              const g = parseInt(hex.slice(3,5),16);
+              const b = parseInt(hex.slice(5,7),16);
+              return `rgba(${r},${g},${b},${a})`;
+            };
+            return (
           <div className="flex items-center justify-between px-5 py-4 mx-4 mb-1 rounded-2xl overflow-hidden relative"
-            style={{ background: "linear-gradient(90deg, rgba(30,58,138,0.5) 0%, rgba(15,23,42,0.85) 35%, rgba(15,23,42,0.85) 65%, rgba(120,20,20,0.5) 100%)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            style={{ background: `linear-gradient(90deg, ${toRgba(colorA,0.45)} 0%, rgba(15,23,42,0.85) 35%, rgba(15,23,42,0.85) 65%, ${toRgba(colorB,0.45)} 100%)`, border: "1px solid rgba(255,255,255,0.08)" }}>
             <div className="flex flex-col items-center gap-1.5 flex-1">
               <div style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.3))' }}>
                 <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" />
@@ -204,6 +215,8 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
               <span className="text-[10px] text-slate-300 leading-none">(חוץ)</span>
             </div>
           </div>
+            );
+          })()}
         </div>
 
         {/* Scrollable content */}
