@@ -673,36 +673,36 @@ export default function Predictions() {
                 className="h-full">
 
                 <Card
-                  className={`relative border-0 transition-all duration-300 h-full flex flex-col overflow-hidden`}
+                  className={`relative border transition-all duration-300 h-full flex flex-col overflow-hidden ${
+                  isLocked ? 'border-white/8 opacity-65' : 'border-white/12 hover:border-white/20'}`}
                   style={isLocked ? {
                     background: 'rgba(10,18,35,0.55)',
                     backdropFilter: 'blur(20px) saturate(140%)',
                     WebkitBackdropFilter: 'blur(20px) saturate(140%)',
                     boxShadow: '0 2px 16px rgba(0,0,0,0.35)',
-                    opacity: 0.65,
                   } : {
-                    background: 'linear-gradient(155deg, rgba(20,16,5,0.85) 0%, rgba(10,18,40,0.75) 45%, rgba(18,14,4,0.85) 100%)',
-                    backdropFilter: 'blur(36px) saturate(200%)',
-                    WebkitBackdropFilter: 'blur(36px) saturate(200%)',
-                    boxShadow: '0 0 0 1.5px rgba(212,175,55,0.55), 0 0 24px rgba(212,175,55,0.18), 0 16px 48px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,215,80,0.25), inset 0 -1px 0 rgba(180,140,20,0.1)',
+                    background: 'linear-gradient(145deg, rgba(255,255,255,0.13) 0%, rgba(10,20,50,0.5) 50%, rgba(255,255,255,0.06) 100%)',
+                    backdropFilter: 'blur(36px) saturate(210%)',
+                    WebkitBackdropFilter: 'blur(36px) saturate(210%)',
+                    boxShadow: '0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(255,255,255,0.04)',
                   }}
                 >
-                  {/* Gold World Cup border effects */}
+                  {/* Glass shine effects */}
                   {!isLocked && (
                     <>
                       <ShineBorder
                         borderRadius={16}
-                        borderWidth={1.5}
+                        borderWidth={1}
                         duration={16}
-                        shineColor={["#b8860b", "#ffd700", "#fffacd", "#ffd700", "#b8860b"]}
+                        shineColor={["rgba(255,255,255,0.9)", "rgba(200,220,255,0.7)", "rgba(255,255,255,1)"]}
                       />
-                      {/* Top gold specular edge */}
+                      {/* Top specular edge */}
                       <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
-                        style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(212,175,55,0.6) 30%, rgba(255,215,0,0.95) 50%, rgba(212,175,55,0.6) 70%, transparent 95%)' }} />
-                      {/* Diagonal gold sweep */}
+                        style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.6) 35%, rgba(255,255,255,0.85) 50%, rgba(255,255,255,0.6) 65%, transparent 95%)' }} />
+                      {/* Diagonal light streak */}
                       <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
-                        <div className="absolute -top-full -left-1/4 w-1/3 h-[300%] opacity-[0.06]"
-                          style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,215,0,1) 50%, transparent 70%)', animation: 'shineSweep 7s ease-in-out infinite' }} />
+                        <div className="absolute -top-full -left-1/4 w-1/3 h-[300%] opacity-[0.04]"
+                          style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,1) 50%, transparent 70%)', animation: 'shineSweep 7s ease-in-out infinite' }} />
                       </div>
                     </>
                   )}
