@@ -1,365 +1,425 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const FLAG_PX = 56;
+const PX = 64;
 
+// ── Real flag using flag-icons ─────────────────────────────────────────────────
 function Flag({ code }) {
   return (
     <span
-      className="fi fis rounded-md shadow-md"
-      style={{ width: FLAG_PX, height: FLAG_PX, fontSize: FLAG_PX, display: "inline-block",
-               backgroundSize: "cover", backgroundPosition: "center", minWidth: FLAG_PX }}
-    >
-      <span className={`fi fi-${code}`} style={{ display: "none" }} />
-    </span>
+      className={`fi fi-${code} fis`}
+      style={{
+        width: PX, height: PX, fontSize: PX,
+        display: "inline-block",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        borderRadius: 8,
+        boxShadow: "0 2px 12px rgba(0,0,0,0.5)",
+        minWidth: PX, flexShrink: 0,
+      }}
+    />
   );
 }
 
-// Wraps a flag with an ambient effect — effect is always running
-function FlagWrap({ code, children }) {
+// ── Mini match card shell ──────────────────────────────────────────────────────
+function Card({ children }) {
   return (
-    <div className="relative flex-shrink-0" style={{ width: FLAG_PX, height: FLAG_PX }}>
+    <div className="flex items-center gap-4 px-5 py-4 rounded-2xl w-full"
+      style={{ background: "rgba(10,18,35,0.9)", border: "1px solid rgba(255,255,255,0.1)" }}>
+      {children}
+    </div>
+  );
+}
+function Vs() {
+  return <span className="text-slate-500 font-bold text-sm flex-shrink-0">VS</span>;
+}
+
+// ── Wrapper that adds an effect layer on top of the flag ──────────────────────
+function FX({ code, children }) {
+  return (
+    <div className="relative flex-shrink-0" style={{ width: PX, height: PX }}>
       <Flag code={code} />
       {children}
     </div>
   );
 }
 
-function Shell({ children }) {
-  return (
-    <div className="flex items-center gap-5 px-5 py-4 rounded-2xl"
-      style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(255,255,255,0.08)" }}>
-      {children}
-      <span className="text-slate-600 font-bold text-base">—</span>
-      {React.cloneElement(children, { code: "cz" })}
-    </div>
-  );
-}
+// ═══════════════════════════════════════════════════════════════════════════════
+// 15 NEW ambient effects
+// ═══════════════════════════════════════════════════════════════════════════════
 
-// ── 1. Soft Glow Pulse ────────────────────────────────────────────────────────
+// 1. Comet Orbit — a glowing dot orbits the flag
 function E1() {
-  const F = ({ code }) => (
-    <FlagWrap code={code}>
-      <motion.div className="absolute inset-0 rounded-md pointer-events-none"
-        animate={{ boxShadow: ["0 0 0px 0px rgba(255,255,255,0)", "0 0 18px 6px rgba(255,255,255,0.35)", "0 0 0px 0px rgba(255,255,255,0)"] }}
-        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }} />
-    </FlagWrap>
-  );
-  return <Shell><F code="kr" /></Shell>;
-}
-
-// ── 2. Rainbow Glow ───────────────────────────────────────────────────────────
-function E2() {
-  const F = ({ code }) => (
-    <FlagWrap code={code}>
-      <motion.div className="absolute inset-0 rounded-md pointer-events-none"
-        animate={{ boxShadow: [
-          "0 0 16px 4px rgba(255,80,80,0.5)", "0 0 16px 4px rgba(255,200,0,0.5)",
-          "0 0 16px 4px rgba(0,255,120,0.5)", "0 0 16px 4px rgba(0,180,255,0.5)",
-          "0 0 16px 4px rgba(180,0,255,0.5)", "0 0 16px 4px rgba(255,80,80,0.5)"
-        ]}}
-        transition={{ duration: 4, repeat: Infinity, ease: "linear" }} />
-    </FlagWrap>
-  );
-  return <Shell><F code="kr" /></Shell>;
-}
-
-// ── 3. Float + Shadow ─────────────────────────────────────────────────────────
-function E3() {
-  const F = ({ code }) => (
-    <motion.div className="relative" style={{ width: FLAG_PX, height: FLAG_PX }}
-      animate={{ y: [0, -6, 0], filter: ["drop-shadow(0 4px 6px rgba(0,0,0,0.6))", "drop-shadow(0 14px 12px rgba(0,0,0,0.3))", "drop-shadow(0 4px 6px rgba(0,0,0,0.6))"] }}
-      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
-      <Flag code={code} />
-    </motion.div>
-  );
-  return <Shell><F code="kr" /></Shell>;
-}
-
-// ── 4. Heartbeat Scale ────────────────────────────────────────────────────────
-function E4() {
-  const F = ({ code }) => (
-    <motion.div style={{ width: FLAG_PX, height: FLAG_PX }}
-      animate={{ scale: [1, 1.08, 1, 1.04, 1] }}
-      transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.2 }}>
-      <Flag code={code} />
-    </motion.div>
-  );
-  return <Shell><F code="kr" /></Shell>;
-}
-
-// ── 5. Shine Sweep ────────────────────────────────────────────────────────────
-function E5() {
-  const F = ({ code }) => (
-    <FlagWrap code={code}>
-      <div className="absolute inset-0 rounded-md overflow-hidden pointer-events-none">
-        <motion.div className="absolute top-0 bottom-0 w-8"
-          style={{ background: "linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.55) 50%, transparent 80%)", transform: "skewX(-15deg)" }}
-          animate={{ left: ["-40%", "140%"] }}
-          transition={{ duration: 1.8, repeat: Infinity, repeatDelay: 2.5, ease: "easeInOut" }} />
-      </div>
-    </FlagWrap>
-  );
-  return <Shell><F code="kr" /></Shell>;
-}
-
-// ── 6. Gentle Wobble ─────────────────────────────────────────────────────────
-function E6() {
-  const F = ({ code, delay = 0 }) => (
-    <motion.div style={{ width: FLAG_PX, height: FLAG_PX }}
-      animate={{ rotate: [0, 3, 0, -3, 0] }}
-      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay }}>
-      <Flag code={code} />
-    </motion.div>
-  );
   return (
-    <div className="flex items-center gap-5 px-5 py-4 rounded-2xl"
-      style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(255,255,255,0.08)" }}>
-      <F code="kr" delay={0} />
-      <span className="text-slate-600 font-bold text-base">—</span>
-      <F code="cz" delay={0.8} />
-    </div>
-  );
-}
-
-// ── 7. Breathing ─────────────────────────────────────────────────────────────
-function E7() {
-  const F = ({ code, delay = 0 }) => (
-    <motion.div style={{ width: FLAG_PX, height: FLAG_PX }}
-      animate={{ scale: [1, 1.06, 1], opacity: [1, 0.85, 1] }}
-      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay }}>
-      <Flag code={code} />
-    </motion.div>
-  );
-  return (
-    <div className="flex items-center gap-5 px-5 py-4 rounded-2xl"
-      style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(255,255,255,0.08)" }}>
-      <F code="kr" delay={0} />
-      <span className="text-slate-600 font-bold text-base">—</span>
-      <F code="cz" delay={2} />
-    </div>
-  );
-}
-
-// ── 8. Particle Ring ─────────────────────────────────────────────────────────
-function E8() {
-  const dots = [0, 1, 2, 3, 4, 5];
-  const F = ({ code, colorBase = "#60a5fa" }) => (
-    <div className="relative" style={{ width: FLAG_PX, height: FLAG_PX }}>
-      <Flag code={code} />
-      {dots.map(i => {
-        const angle = (i / dots.length) * 360;
-        const rad = (angle * Math.PI) / 180;
-        const r = 36;
-        return (
-          <motion.div key={i} className="absolute w-1.5 h-1.5 rounded-full pointer-events-none"
-            style={{ background: colorBase, top: "50%", left: "50%", marginTop: -3, marginLeft: -3 }}
-            animate={{ x: [0, Math.cos(rad) * r, 0], y: [0, Math.sin(rad) * r, 0], opacity: [0, 1, 0], scale: [0.5, 1, 0.5] }}
-            transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.4, ease: "easeInOut" }} />
-        );
-      })}
-    </div>
-  );
-  return (
-    <div className="flex items-center gap-5 px-5 py-4 rounded-2xl"
-      style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(255,255,255,0.08)" }}>
-      <F code="kr" colorBase="#f87171" />
-      <span className="text-slate-600 font-bold text-base">—</span>
-      <F code="cz" colorBase="#60a5fa" />
-    </div>
-  );
-}
-
-// ── 9. Ripple Ring ───────────────────────────────────────────────────────────
-function E9() {
-  const F = ({ code }) => (
-    <div className="relative flex items-center justify-center" style={{ width: FLAG_PX + 20, height: FLAG_PX + 20 }}>
-      {[0, 0.8, 1.6].map(delay => (
-        <motion.div key={delay} className="absolute rounded-md border border-white/30 pointer-events-none"
-          style={{ width: FLAG_PX, height: FLAG_PX }}
-          animate={{ scale: [1, 1.7], opacity: [0.6, 0] }}
-          transition={{ duration: 2, repeat: Infinity, delay, ease: "easeOut" }} />
+    <Card>
+      {["br","ar"].map((c, i) => (
+        <FX key={c} code={c}>
+          <motion.div className="absolute pointer-events-none"
+            style={{ width: 10, height: 10, borderRadius: "50%", background: i===0?"#fbbf24":"#60a5fa", boxShadow: i===0?"0 0 10px 3px #fbbf24":"0 0 10px 3px #60a5fa", top:"50%", left:"50%", marginTop:-5, marginLeft:-5 }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
+            style2={{ transformOrigin: `${PX/2+38}px 0px` }}>
+            <motion.div className="absolute"
+              style={{ width: 10, height: 10, borderRadius:"50%", background: i===0?"#fbbf24":"#60a5fa", boxShadow: i===0?"0 0 10px 3px #fbbf24":"0 0 10px 3px #60a5fa", top: -5, left: 38 }} />
+          </motion.div>
+          {/* orbit path using CSS */}
+          <motion.div className="absolute inset-0 pointer-events-none rounded-lg overflow-visible"
+            style={{ transformOrigin:"center" }}
+            animate={{ rotate: [0, 360] }}
+            transition={{ duration: 2.5 + i*0.5, repeat: Infinity, ease:"linear" }}>
+            <div className="absolute" style={{ width:10, height:10, borderRadius:"50%", background: i===0?"#fbbf24":"#60a5fa", boxShadow: i===0?"0 0 10px 4px rgba(251,191,36,0.8)":"0 0 10px 4px rgba(96,165,250,0.8)", top: -5, left: "50%", marginLeft: -5 }} />
+          </motion.div>
+        </FX>
       ))}
-      <Flag code={code} />
-    </div>
+      <Vs />
+    </Card>
   );
+}
+
+// 2. Multi-Ring Aura — concentric rings expanding at different speeds
+function E2() {
   return (
-    <div className="flex items-center gap-3 px-4 py-3 rounded-2xl"
-      style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(255,255,255,0.08)" }}>
-      <F code="kr" /><span className="text-slate-600 font-bold">—</span><F code="cz" />
-    </div>
+    <Card>
+      {["de","fr"].map((c,i) => (
+        <div key={c} className="relative flex-shrink-0 flex items-center justify-center" style={{ width: PX+24, height: PX+24 }}>
+          {[0, 0.7, 1.4].map(d => (
+            <motion.div key={d} className="absolute rounded-lg pointer-events-none"
+              style={{ width: PX, height: PX, border: `1.5px solid ${i===0?"rgba(239,68,68,0.6)":"rgba(59,130,246,0.6)"}` }}
+              animate={{ scale: [1, 1.9], opacity: [0.7, 0] }}
+              transition={{ duration: 1.8, repeat: Infinity, delay: d, ease: "easeOut" }} />
+          ))}
+          <Flag code={c} />
+        </div>
+      ))}
+      <Vs />
+    </Card>
   );
 }
 
-// ── 10. Electric Border ──────────────────────────────────────────────────────
-function E10() {
-  const F = ({ code }) => (
-    <FlagWrap code={code}>
-      <motion.div className="absolute inset-0 rounded-md pointer-events-none"
-        style={{ border: "1.5px solid transparent" }}
-        animate={{ boxShadow: [
-          "0 0 0 1.5px rgba(0,240,255,0.8), 0 0 8px 2px rgba(0,240,255,0.4)",
-          "0 0 0 1.5px rgba(180,0,255,0.8), 0 0 8px 2px rgba(180,0,255,0.4)",
-          "0 0 0 1.5px rgba(0,240,255,0.8), 0 0 8px 2px rgba(0,240,255,0.4)",
-        ]}}
-        transition={{ duration: 2, repeat: Infinity, ease: "linear" }} />
-    </FlagWrap>
+// 3. Wind Wave — flag skews as if blowing in wind
+function E3() {
+  return (
+    <Card>
+      {["es","pt"].map((c,i) => (
+        <motion.div key={c} className="flex-shrink-0"
+          animate={{ skewX: [0, i===0?3:-3, 0, i===0?2:-2, 0], scaleX: [1, 0.97, 1] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: i*0.4 }}
+          style={{ transformOrigin: "bottom center" }}>
+          <Flag code={c} />
+        </motion.div>
+      ))}
+      <Vs />
+    </Card>
   );
-  return <Shell><F code="kr" /></Shell>;
 }
 
-// ── 11. Neon Outline ─────────────────────────────────────────────────────────
-function E11() {
-  const F = ({ code }) => (
-    <FlagWrap code={code}>
-      <motion.div className="absolute inset-0 rounded-md pointer-events-none"
-        animate={{ boxShadow: [
-          "0 0 0 2px rgba(250,204,21,0.9), 0 0 20px 4px rgba(250,204,21,0.3)",
-          "0 0 0 2px rgba(250,204,21,0.4), 0 0 6px 1px rgba(250,204,21,0.1)",
-          "0 0 0 2px rgba(250,204,21,0.9), 0 0 20px 4px rgba(250,204,21,0.3)",
-        ]}}
-        transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }} />
-    </FlagWrap>
+// 4. Mirror Reflection — faded upside-down flag below
+function E4() {
+  return (
+    <Card>
+      {["us","mx"].map(c => (
+        <div key={c} className="flex flex-col items-center flex-shrink-0" style={{ gap: 2 }}>
+          <Flag code={c} />
+          <div style={{ width: PX, height: PX/2, overflow: "hidden", transform: "scaleY(-1)", opacity: 0.18, maskImage: "linear-gradient(to bottom, black 0%, transparent 100%)", WebkitMaskImage: "linear-gradient(to bottom, black 0%, transparent 100%)" }}>
+            <Flag code={c} />
+          </div>
+        </div>
+      ))}
+      <Vs />
+    </Card>
   );
-  return <Shell><F code="kr" /></Shell>;
 }
 
-// ── 12. Hue Shift ────────────────────────────────────────────────────────────
-function E12() {
-  const F = ({ code }) => (
-    <motion.div style={{ width: FLAG_PX, height: FLAG_PX }}
-      animate={{ filter: ["hue-rotate(0deg) saturate(1)", "hue-rotate(60deg) saturate(1.4)", "hue-rotate(120deg) saturate(1.2)", "hue-rotate(0deg) saturate(1)"] }}
-      transition={{ duration: 5, repeat: Infinity, ease: "linear" }}>
-      <Flag code={code} />
-    </motion.div>
+// 5. Freeze → Color — desaturates then snaps back
+function E5() {
+  return (
+    <Card>
+      {["jp","kr"].map((c,i) => (
+        <motion.div key={c} className="flex-shrink-0"
+          animate={{ filter: ["saturate(1) brightness(1)", "saturate(0) brightness(0.7)", "saturate(0) brightness(0.7)", "saturate(1) brightness(1)"] }}
+          transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: i*1.2, times:[0,0.3,0.6,1] }}>
+          <Flag code={c} />
+        </motion.div>
+      ))}
+      <Vs />
+    </Card>
   );
-  return <Shell><F code="kr" /></Shell>;
 }
 
-// ── 13. Spotlight Sweep ──────────────────────────────────────────────────────
-function E13() {
-  const F = ({ code }) => (
-    <FlagWrap code={code}>
-      <div className="absolute inset-0 rounded-md overflow-hidden pointer-events-none">
-        <motion.div className="absolute inset-0"
-          animate={{ background: [
-            "radial-gradient(circle at 0% 50%, rgba(255,255,255,0.25) 0%, transparent 55%)",
-            "radial-gradient(circle at 100% 50%, rgba(255,255,255,0.25) 0%, transparent 55%)",
-            "radial-gradient(circle at 0% 50%, rgba(255,255,255,0.25) 0%, transparent 55%)",
+// 6. Sparkle Crown — ✦ sparkles pop around the flag
+function E6() {
+  const positions = [
+    { top:-10, left:"50%" }, { top:"50%", right:-10 }, { bottom:-8, left:"30%" },
+    { top:"20%", left:-10 }, { top:-8, right:"25%" },
+  ];
+  return (
+    <Card>
+      {["gb","nl"].map((c,fi) => (
+        <FX key={c} code={c}>
+          {positions.map((pos,i) => (
+            <motion.div key={i} className="absolute text-yellow-300 pointer-events-none font-bold"
+              style={{ fontSize: 10, ...pos, transform: pos.left==="50%"?"translateX(-50%)":pos.top==="50%"?"translateY(-50%)":"" }}
+              animate={{ opacity:[0,1,0], scale:[0.5,1.2,0], rotate:[0,20,0] }}
+              transition={{ duration: 1.2, repeat: Infinity, delay: fi*0.5 + i*0.25, repeatDelay: 1.5 }}>
+              ✦
+            </motion.div>
+          ))}
+        </FX>
+      ))}
+      <Vs />
+    </Card>
+  );
+}
+
+// 7. Fire Glow — warm flicker from below
+function E7() {
+  return (
+    <Card>
+      {["it","hr"].map((c,i) => (
+        <FX key={c} code={c}>
+          <motion.div className="absolute inset-x-0 bottom-0 rounded-b-lg pointer-events-none h-1/2"
+            animate={{ opacity:[0.5,0.9,0.6,0.8,0.5], background:[
+              "linear-gradient(to top, rgba(251,146,60,0.7), transparent)",
+              "linear-gradient(to top, rgba(239,68,68,0.8), transparent)",
+              "linear-gradient(to top, rgba(251,191,36,0.6), transparent)",
+              "linear-gradient(to top, rgba(239,68,68,0.7), transparent)",
+              "linear-gradient(to top, rgba(251,146,60,0.7), transparent)",
+            ]}}
+            transition={{ duration: 1.5, repeat: Infinity, ease:"easeInOut", delay: i*0.3 }} />
+          <motion.div className="absolute inset-0 rounded-lg pointer-events-none"
+            animate={{ boxShadow:["0 8px 20px rgba(251,146,60,0.3)","0 8px 30px rgba(239,68,68,0.5)","0 8px 20px rgba(251,146,60,0.3)"] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease:"easeInOut", delay: i*0.3 }} />
+        </FX>
+      ))}
+      <Vs />
+    </Card>
+  );
+}
+
+// 8. Neon Flicker — occasional flicker like a neon sign
+function E8() {
+  return (
+    <Card>
+      {["au","nz"].map((c,i) => (
+        <motion.div key={c} className="flex-shrink-0 rounded-lg"
+          animate={{ opacity:[1,1,0.3,1,0.6,1,1,1,1,1], boxShadow:[
+            "0 0 12px rgba(74,222,128,0.6)","0 0 12px rgba(74,222,128,0.6)",
+            "0 0 2px rgba(74,222,128,0.1)","0 0 20px rgba(74,222,128,0.9)",
+            "0 0 5px rgba(74,222,128,0.3)","0 0 16px rgba(74,222,128,0.8)",
+            "0 0 12px rgba(74,222,128,0.6)","0 0 12px rgba(74,222,128,0.6)",
+            "0 0 12px rgba(74,222,128,0.6)","0 0 12px rgba(74,222,128,0.6)",
           ]}}
-          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }} />
-      </div>
-    </FlagWrap>
+          transition={{ duration: 4, repeat: Infinity, delay: i*1.8, ease:"linear" }}>
+          <Flag code={c} />
+        </motion.div>
+      ))}
+      <Vs />
+    </Card>
   );
-  return <Shell><F code="kr" /></Shell>;
 }
 
-// ── 14. Shadow Color Pulse ───────────────────────────────────────────────────
-function E14() {
-  const F = ({ code, color1, color2 }) => (
-    <motion.div style={{ width: FLAG_PX, height: FLAG_PX }}
-      animate={{ filter: [`drop-shadow(0 0 8px ${color1})`, `drop-shadow(0 0 16px ${color2})`, `drop-shadow(0 0 8px ${color1})`] }}
-      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
-      <Flag code={code} />
-    </motion.div>
-  );
+// 9. Vortex Glow — rotating gradient behind the flag
+function E9() {
   return (
-    <div className="flex items-center gap-5 px-5 py-4 rounded-2xl"
-      style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(255,255,255,0.08)" }}>
-      <F code="kr" color1="rgba(239,68,68,0.6)" color2="rgba(239,68,68,1)" />
-      <span className="text-slate-600 font-bold text-base">—</span>
-      <F code="cz" color1="rgba(59,130,246,0.6)" color2="rgba(59,130,246,1)" />
-    </div>
+    <Card>
+      {["se","dk"].map((c,i) => (
+        <div key={c} className="relative flex-shrink-0 flex items-center justify-center" style={{ width: PX+16, height: PX+16 }}>
+          <motion.div className="absolute inset-0 rounded-xl pointer-events-none"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 4, repeat: Infinity, ease:"linear" }}
+            style={{ background: i===0?"conic-gradient(from 0deg, transparent 60%, rgba(59,130,246,0.7) 80%, transparent 100%)":"conic-gradient(from 0deg, transparent 60%, rgba(239,68,68,0.7) 80%, transparent 100%)" }} />
+          <div className="relative z-10"><Flag code={c} /></div>
+        </div>
+      ))}
+      <Vs />
+    </Card>
   );
 }
 
-// ── 15. Tilt 3D Mouse ────────────────────────────────────────────────────────
+// 10. Shadow Pulse — expanding shadow only, no glow on flag
+function E10() {
+  return (
+    <Card>
+      {["ng","sn"].map((c,i) => (
+        <motion.div key={c} className="flex-shrink-0"
+          animate={{ filter:[
+            `drop-shadow(0 4px 6px rgba(0,0,0,0.4))`,
+            `drop-shadow(0 12px 24px rgba(0,0,0,0.8)) drop-shadow(0 0 16px ${i===0?"rgba(34,197,94,0.5)":"rgba(234,179,8,0.5)"})`,
+            `drop-shadow(0 4px 6px rgba(0,0,0,0.4))`,
+          ]}}
+          transition={{ duration: 2.5, repeat: Infinity, ease:"easeInOut", delay: i*0.6 }}>
+          <Flag code={c} />
+        </motion.div>
+      ))}
+      <Vs />
+    </Card>
+  );
+}
+
+// 11. Thunder Flash — random electric flash
+function E11() {
+  return (
+    <Card>
+      {["ar","uy"].map((c,i) => (
+        <FX key={c} code={c}>
+          <motion.div className="absolute inset-0 rounded-lg pointer-events-none"
+            animate={{ opacity:[0,0,0,0,1,0,0.6,0,0,0,0,0,0,0,0] }}
+            transition={{ duration: 5, repeat: Infinity, delay: i*1.5, ease:"linear" }}
+            style={{ background:"rgba(255,255,255,0.7)", boxShadow:"0 0 20px 5px rgba(200,220,255,1)" }} />
+        </FX>
+      ))}
+      <Vs />
+    </Card>
+  );
+}
+
+// 12. Depth Parallax — slight float on different layers
+function E12() {
+  return (
+    <Card>
+      {["pl","cz"].map((c,i) => (
+        <div key={c} className="relative flex-shrink-0" style={{ width: PX, height: PX }}>
+          {/* shadow layer behind */}
+          <motion.div className="absolute rounded-lg"
+            style={{ width: PX, height: PX, background: i===0?"rgba(239,68,68,0.3)":"rgba(59,130,246,0.3)", filter:"blur(8px)", top: 0, left: 0 }}
+            animate={{ y:[0,-5,0,5,0], x:[0,3,0,-3,0] }}
+            transition={{ duration: 5, repeat: Infinity, ease:"easeInOut", delay: i*0.5 }} />
+          <motion.div className="relative z-10"
+            animate={{ y:[0,-3,0,3,0], x:[0,2,0,-2,0] }}
+            transition={{ duration: 5, repeat: Infinity, ease:"easeInOut", delay: i*0.5 + 0.2 }}>
+            <Flag code={c} />
+          </motion.div>
+        </div>
+      ))}
+      <Vs />
+    </Card>
+  );
+}
+
+// 13. Glitch Slice — occasional horizontal slice shift
+function E13() {
+  return (
+    <Card>
+      {["tr","gr"].map((c,i) => (
+        <FX key={c} code={c}>
+          {[25, 55, 75].map((pct,gi) => (
+            <motion.div key={gi} className="absolute inset-x-0 pointer-events-none overflow-hidden"
+              style={{ top:`${pct-8}%`, height:"16%", clipPath:"inset(0)" }}
+              animate={{ x:[0,0,0,i===0?-6:6,0,0,0,0,0,0,0] }}
+              transition={{ duration: 4, repeat: Infinity, delay: i*1.2 + gi*0.15, ease:"steps(1)" }}>
+              <div style={{ position:"absolute", top:`-${pct-8}%`, left:0 }}>
+                <Flag code={c} />
+              </div>
+            </motion.div>
+          ))}
+        </FX>
+      ))}
+      <Vs />
+    </Card>
+  );
+}
+
+// 14. Color Bloom — flag blooms in its dominant color outward
+function E14() {
+  const colors = { "gh":"rgba(34,197,94,", "ci":"rgba(251,146,60," };
+  return (
+    <Card>
+      {["gh","ci"].map((c,i) => (
+        <div key={c} className="relative flex-shrink-0 flex items-center justify-center" style={{ width: PX+20, height: PX+20 }}>
+          <motion.div className="absolute rounded-xl pointer-events-none"
+            style={{ width: PX, height: PX, background: i===0?"rgba(34,197,94,0.15)":"rgba(251,146,60,0.15)" }}
+            animate={{ scale:[1,1.5,1], opacity:[0.8,0,0.8] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease:"easeOut", delay: i*0.8 }} />
+          <div className="relative z-10"><Flag code={c} /></div>
+        </div>
+      ))}
+      <Vs />
+    </Card>
+  );
+}
+
+// 15. Tilt 3D on hover — 3D tilt that follows cursor
 function E15() {
-  const F = ({ code, dir = 1 }) => {
+  const F = ({ code }) => {
     const [tilt, setTilt] = useState({ x: 0, y: 0 });
     return (
-      <motion.div style={{ width: FLAG_PX, height: FLAG_PX, perspective: 300 }}
+      <motion.div className="flex-shrink-0 cursor-pointer"
         onMouseMove={e => {
           const r = e.currentTarget.getBoundingClientRect();
-          const cx = (e.clientX - r.left) / r.width - 0.5;
-          const cy = (e.clientY - r.top) / r.height - 0.5;
-          setTilt({ x: cy * -20, y: cx * 20 * dir });
+          setTilt({ x: ((e.clientY - r.top) / r.height - 0.5) * -24, y: ((e.clientX - r.left) / r.width - 0.5) * 24 });
         }}
-        onMouseLeave={() => setTilt({ x: 0, y: 0 })}>
-        <motion.div style={{ width: FLAG_PX, height: FLAG_PX, borderRadius: 6 }}
-          animate={{ rotateX: tilt.x, rotateY: tilt.y, boxShadow: `${-tilt.y * 0.5}px ${tilt.x * 0.5}px 20px rgba(255,255,255,0.15)` }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}>
-          <Flag code={code} />
-        </motion.div>
+        onMouseLeave={() => setTilt({ x: 0, y: 0 })}
+        animate={{ rotateX: tilt.x, rotateY: tilt.y, scale: tilt.x !== 0 ? 1.1 : 1,
+          filter: `drop-shadow(${-tilt.y * 0.3}px ${tilt.x * 0.3}px 12px rgba(255,255,255,0.3))` }}
+        transition={{ type:"spring", stiffness:250, damping:18 }}
+        style={{ perspective:400 }}>
+        <Flag code={code} />
       </motion.div>
     );
   };
   return (
-    <div className="flex items-center gap-5 px-5 py-4 rounded-2xl"
-      style={{ background: "rgba(15,23,42,0.85)", border: "1px solid rgba(255,255,255,0.08)" }}>
-      <F code="kr" dir={1} />
-      <span className="text-slate-600 font-bold text-base">—</span>
-      <F code="cz" dir={-1} />
-    </div>
+    <Card>
+      <F code="pt" /><Vs /><F code="es" />
+    </Card>
   );
 }
 
-// ── Data ───────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
 const EFFECTS = [
-  { id: 1,  name: "Soft Glow Pulse",    tag: "זוהר",      desc: "הילה לבנה שפולסת בעדינות מאחורי הדגל בלי הפסקה", Component: E1 },
-  { id: 2,  name: "Rainbow Glow",       tag: "קשת",       desc: "הזוהר מאחורי הדגל עובר לאט דרך כל צבעי הקשת", Component: E2 },
-  { id: 3,  name: "Float + Shadow",     tag: "ריחוף",     desc: "הדגל מרחף למעלה-למטה עם צל שמשתנה בהתאם לגובה", Component: E3 },
-  { id: 4,  name: "Heartbeat Scale",    tag: "פולס",      desc: "פעימה עדינה של גודל כל 2-3 שניות — כמו לב חי", Component: E4 },
-  { id: 5,  name: "Shine Sweep",        tag: "ברק",       desc: "פס אור לבן חולף על הדגל כל כמה שניות", Component: E5 },
-  { id: 6,  name: "Gentle Wobble",      tag: "נדנוד",     desc: "הדגל מתנדנד קלות ימינה-שמאלה בקצב שונה לכל קבוצה", Component: E6 },
-  { id: 7,  name: "Breathing",          tag: "נשימה",     desc: "scale ו-opacity משתנים מינימלית כמו נשימה איטית", Component: E7 },
-  { id: 8,  name: "Particle Ring",      tag: "חלקיקים",   desc: "חלקיקים קטנים יוצאים מהדגל לכל הכיוונים ונעלמים", Component: E8 },
-  { id: 9,  name: "Ripple Ring",        tag: "גלים",      desc: "טבעות מתרחבות מהדגל החוצה כמו אדווה במים", Component: E9 },
-  { id: 10, name: "Electric Border",    tag: "חשמל",      desc: "מסגרת חשמלית ציאן-סגולה שמחליפה צבעים סביב הדגל", Component: E10 },
-  { id: 11, name: "Neon Outline",       tag: "ניאון",     desc: "מסגרת זהב זוהרת שמדמה שלט ניאון", Component: E11 },
-  { id: 12, name: "Hue Shift",          tag: "צבעים",     desc: "גוון הדגל משתנה לאט מעגלית — גרדיאנט צבעים חי", Component: E12 },
-  { id: 13, name: "Spotlight",          tag: "זרקור",     desc: "זרקור עגול נע מצד לצד על פני הדגל", Component: E13 },
-  { id: 14, name: "Shadow Color Pulse", tag: "צל צבע",    desc: "כל דגל פולט צל בצבע ייחודי לו שגדל ומתכווץ", Component: E14 },
-  { id: 15, name: "3D Tilt (hover)",    tag: "3D עכבר",   desc: "הדגל נוטה ב-3D בעקבות מיקום העכבר — הזז מעליו", Component: E15 },
+  { id:1,  name:"Comet Orbit",       tag:"מסלול",    desc:"נקודה זוהרת מקיפה את הדגל כמו לוויין — צבע שונה לכל קבוצה", C:E1 },
+  { id:2,  name:"Multi-Ring Aura",   tag:"גלים",     desc:"3 טבעות מתרחבות בזו אחר זו מסביב לדגל כמו רדאר", C:E2 },
+  { id:3,  name:"Wind Wave",         tag:"רוח",      desc:"הדגל מתעוות קלות כאילו נושבת בו רוח", C:E3 },
+  { id:4,  name:"Mirror Reflection", tag:"השתקפות",  desc:"השתקפות מעומעמת של הדגל מתחתיו כמו על משטח מבריק", C:E4 },
+  { id:5,  name:"Freeze → Color",    tag:"קפיאה",    desc:"הדגל קופא לגווני אפור ואז חוזר לצבע — כמו הקפאת פריים", C:E5 },
+  { id:6,  name:"Sparkle Crown",     tag:"ניצוצות",  desc:"כוכביות זהובות מופיעות ונעלמות סביב הדגל", C:E6 },
+  { id:7,  name:"Fire Glow",         tag:"אש",       desc:"להבה כתומה-אדומה מרצדת בתחתית הדגל", C:E7 },
+  { id:8,  name:"Neon Flicker",      tag:"ניאון",    desc:"הדגל מהבהב כמו שלט ניאון ישן שמתקלקל", C:E8 },
+  { id:9,  name:"Vortex Glow",       tag:"מערבולת",  desc:"גרדיאנט זוהר מסתובב מסביב לדגל בתנועה רציפה", C:E9 },
+  { id:10, name:"Shadow Pulse",      tag:"צל",       desc:"צל עמוק עם גוון צבעוני פולס מתחת לדגל", C:E10 },
+  { id:11, name:"Thunder Flash",     tag:"ברק",      desc:"הדגל נחשף בהבזק לבן כמו ברק — כל כמה שניות", C:E11 },
+  { id:12, name:"Depth Parallax",    tag:"3D עומק",  desc:"הדגל והצל שלו נעים בתדירויות שונות — תחושת עומק", C:E12 },
+  { id:13, name:"Glitch Slice",      tag:"גליץ׳",    desc:"שורות אופקיות של הדגל מתזזות לצד לרגע ומתיישרות", C:E13 },
+  { id:14, name:"Color Bloom",       tag:"פריחה",    desc:"הדגל פולט גל צבע ממרכזו החוצה ומתכווץ חזרה", C:E14 },
+  { id:15, name:"3D Tilt (hover)",   tag:"עכבר 3D",  desc:"הדגל נוטה ב-3D לפי מיקום העכבר — הזז מעליו", C:E15 },
 ];
 
-const TAG_COLORS = {
-  "זוהר": "#e2e8f0", "קשת": "#f472b6", "ריחוף": "#60a5fa", "פולס": "#fb923c",
-  "ברק": "#fde68a", "נדנוד": "#86efac", "נשימה": "#a5b4fc", "חלקיקים": "#f87171",
-  "גלים": "#67e8f9", "חשמל": "#4ade80", "ניאון": "#fbbf24", "צבעים": "#c084fc",
-  "זרקור": "#fcd34d", "צל צבע": "#f9a8d4", "3D עכבר": "#34d399",
+const COLORS = {
+  "מסלול":"#fbbf24","גלים":"#60a5fa","רוח":"#86efac","השתקפות":"#cbd5e1",
+  "קפיאה":"#94a3b8","ניצוצות":"#fde68a","אש":"#fb923c","ניאון":"#4ade80",
+  "מערבולת":"#c084fc","צל":"#6b7280","ברק":"#e2e8f0","3D עומק":"#67e8f9",
+  "גליץ׳":"#f87171","פריחה":"#f9a8d4","עכבר 3D":"#34d399",
 };
 
-// ── Main ───────────────────────────────────────────────────────────────────────
 export default function AdminFlagAnimations() {
   const [selected, setSelected] = useState(null);
 
   return (
     <div className="text-white">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold">🏳️ אפקטים אמביינטים על דגלים</h2>
-        <p className="text-slate-400 mt-1 text-sm">אפקטים רציפים שרצים על הדגל לאחר שהוא כבר מוצג. לחץ לפרטים.</p>
+        <h2 className="text-2xl font-bold">🏳️ אפקטים אמביינטים — 15 רעיונות חדשים</h2>
+        <p className="text-slate-400 mt-1 text-sm">אפקטים רציפים שרצים על הדגל. לחץ על כרטיס לפרטים.</p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {EFFECTS.map(({ id, name, tag, Component }) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {EFFECTS.map(({ id, name, tag, C }) => (
           <motion.div key={id}
-            className={`rounded-xl overflow-hidden cursor-pointer border transition-all duration-200 ${selected === id ? "border-indigo-500 ring-2 ring-indigo-500/30" : "border-slate-700 hover:border-slate-500"}`}
-            style={{ background: "#1e293b" }}
-            whileHover={{ y: -3, scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => setSelected(id === selected ? null : id)}>
+            className={`rounded-xl overflow-hidden cursor-pointer border transition-all duration-200 ${selected===id?"border-indigo-500 ring-2 ring-indigo-500/30":"border-slate-700/60 hover:border-slate-500"}`}
+            style={{ background:"#0f172a" }}
+            whileHover={{ y:-2 }}
+            whileTap={{ scale:0.98 }}
+            onClick={() => setSelected(id===selected?null:id)}>
 
-            <div className="py-4 px-2 flex items-center justify-center min-h-[110px] relative"
-              style={{ background: "radial-gradient(ellipse at 50% 80%, rgba(30,41,80,0.6) 0%, transparent 70%)" }}>
-              <div className="absolute top-1.5 left-2 text-[9px] text-slate-600 font-mono">#{id}</div>
-              <div className="scale-90"><Component /></div>
+            <div className="p-4">
+              <C />
             </div>
 
-            <div className="px-3 py-2.5 border-t border-slate-700 flex items-center justify-between gap-2">
-              <span className="text-xs font-semibold text-white truncate">{name}</span>
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
-                style={{ background: `${TAG_COLORS[tag]}20`, color: TAG_COLORS[tag] }}>
+            <div className="px-4 pb-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-slate-600 font-mono">#{id}</span>
+                <span className="text-sm font-semibold text-white">{name}</span>
+              </div>
+              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
+                style={{ background:`${COLORS[tag]}18`, color:COLORS[tag], border:`1px solid ${COLORS[tag]}30` }}>
                 {tag}
               </span>
             </div>
@@ -369,23 +429,22 @@ export default function AdminFlagAnimations() {
 
       <AnimatePresence>
         {selected && (() => {
-          const fx = EFFECTS.find(e => e.id === selected);
+          const fx = EFFECTS.find(e => e.id===selected);
           if (!fx) return null;
-          const { name, tag, desc, Component } = fx;
           return (
             <motion.div key={selected}
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 16 }}
-              className="mt-5 rounded-2xl border border-indigo-500/30 p-5 flex gap-6 items-center flex-wrap"
-              style={{ background: "rgba(15,23,42,0.95)", boxShadow: "0 0 30px rgba(99,102,241,0.1)" }}>
-              <div className="flex-shrink-0"><Component /></div>
+              initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:16 }}
+              className="mt-5 rounded-2xl border border-indigo-500/30 p-5 flex gap-6 items-start flex-wrap"
+              style={{ background:"rgba(15,23,42,0.98)", boxShadow:"0 0 30px rgba(99,102,241,0.12)" }}>
+              <div className="flex-shrink-0 w-full sm:w-auto"><fx.C /></div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <span className="text-base font-bold">#{selected} — {name}</span>
-                  <span className="text-xs px-2 py-0.5 rounded-full font-bold"
-                    style={{ background: `${TAG_COLORS[tag]}20`, color: TAG_COLORS[tag] }}>{tag}</span>
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <span className="font-bold text-white">#{fx.id} — {fx.name}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
+                    style={{ background:`${COLORS[fx.tag]}18`, color:COLORS[fx.tag] }}>{fx.tag}</span>
                 </div>
-                <p className="text-slate-400 text-sm">{desc}</p>
-                <button onClick={() => setSelected(null)} className="mt-3 text-xs text-slate-600 hover:text-slate-400 transition-colors">✕ סגור</button>
+                <p className="text-slate-400 text-sm leading-relaxed">{fx.desc}</p>
+                <button onClick={() => setSelected(null)} className="mt-3 text-xs text-slate-600 hover:text-slate-300 transition-colors">✕ סגור</button>
               </div>
             </motion.div>
           );
