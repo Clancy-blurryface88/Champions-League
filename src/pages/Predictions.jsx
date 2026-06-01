@@ -673,8 +673,9 @@ export default function Predictions() {
                 className="h-full">
 
                 <Card
-                  className={`relative border transition-all duration-300 h-full flex flex-col overflow-hidden ${
-                  isLocked ? 'border-white/8 opacity-65' : 'border-white/[0.06] hover:border-white/[0.1]'}`}
+                  className={`relative border-0 transition-all duration-300 h-full flex flex-col overflow-hidden ${
+                  isLocked ? 'opacity-65' : ''}`}
+                  style={{ outline: isLocked ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(184,148,50,0.38)' }}
                   style={isLocked ? {
                     background: 'rgba(10,18,35,0.55)',
                     backdropFilter: 'blur(20px) saturate(140%)',
