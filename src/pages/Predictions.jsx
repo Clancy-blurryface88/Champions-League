@@ -887,8 +887,9 @@ export default function Predictions() {
                     </button>
 
                     {/* Footer bar */}
-                    <div className="-mx-5 -mb-5 mt-3 flex overflow-hidden rounded-b-xl"
-                      style={{ borderTop:'2px solid rgba(255,200,50,0.45)' }}>
+                    <div className="-mx-5 -mb-5 mt-3 flex overflow-hidden rounded-b-xl relative">
+                      <div className="absolute top-0 left-4 right-4 h-[2px] pointer-events-none"
+                        style={{ background:'linear-gradient(90deg, transparent, rgba(255,200,50,0.5) 20%, rgba(255,200,50,0.5) 80%, transparent)' }} />
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
                         className="flex-1 flex items-center justify-center gap-1.5 py-3 text-yellow-400/70 hover:text-yellow-400 hover:bg-white/4 transition-colors text-xs font-semibold tracking-wide"
