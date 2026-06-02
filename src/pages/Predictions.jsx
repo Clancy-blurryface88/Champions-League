@@ -852,14 +852,16 @@ export default function Predictions() {
                     }
 
                     {/* Footer: Date & Location */}
-                    <div className="pt-3 border-t border-slate-700/50 space-y-1.5">
-                      <div className="flex items-center justify-center gap-1.5 text-sm text-white">
-                        <span className="text-base">🗓️</span>
-                        <span>{moment(match.match_date).format('DD/MM/YYYY')} · {moment(match.match_date).format('HH:mm')}</span>
+                    <div className="pt-3 space-y-1">
+                      <div className="h-px mb-2" style={{ background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)' }} />
+                      <div className="flex items-center justify-center gap-1.5 text-xs text-slate-300">
+                        <span className="text-sm">🗓️</span>
+                        <span className="font-medium">{moment(match.match_date).format('DD/MM/YYYY')} · {moment(match.match_date).format('HH:mm')}</span>
                       </div>
                       {match.location && (
-                        <div className="flex items-center justify-center text-xs text-white">
-                          <span>📍 {match.location}</span>
+                        <div className="flex items-center justify-center gap-1 text-xs text-slate-400">
+                          <span>📍</span>
+                          <span>{match.location}</span>
                         </div>
                       )}
                     </div>
@@ -877,27 +879,31 @@ export default function Predictions() {
                     {/* AI Pre-match Brief Button */}
                     <button
                       onClick={(e) => { e.stopPropagation(); setSelectedMatchForBrief(match); }}
-                      className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-yellow-500/30 bg-yellow-500/5 hover:bg-yellow-500/15 hover:border-yellow-500/60 transition-colors group"
+                      className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all duration-200 group"
+                      style={{ background:'rgba(234,179,8,0.07)', border:'1px solid rgba(234,179,8,0.25)', backdropFilter:'blur(8px)' }}
+                      onMouseEnter={e => e.currentTarget.style.background='rgba(234,179,8,0.14)'}
+                      onMouseLeave={e => e.currentTarget.style.background='rgba(234,179,8,0.07)'}
                     >
                       <Sparkles className="w-3.5 h-3.5 text-yellow-400 group-hover:scale-110 transition-transform" />
-                      <span className="text-yellow-400 text-xs font-medium">AI טרום משחק</span>
+                      <span className="text-yellow-400 text-xs font-semibold tracking-wide">AI טרום משחק</span>
                       {briefs[match.id] && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 opacity-70" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
                       )}
                     </button>
 
                     {/* Footer bar */}
-                    <div className="-mx-5 -mb-5 mt-3 border-t border-slate-700/50 flex overflow-hidden rounded-b-xl">
+                    <div className="-mx-5 -mb-5 mt-3 flex overflow-hidden rounded-b-xl"
+                      style={{ borderTop:'1px solid rgba(255,255,255,0.06)' }}>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-slate-400 hover:text-blue-400 hover:bg-white/5 transition-colors text-xs font-medium"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-3 text-slate-500 hover:text-blue-400 hover:bg-white/4 transition-colors text-xs font-semibold tracking-wide"
                       >
                         1 X 2
                       </button>
-                      <div className="w-px bg-slate-700/50 my-1.5" />
+                      <div className="w-px my-2" style={{ background:'rgba(255,255,255,0.08)' }} />
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-slate-400 hover:text-green-400 hover:bg-white/5 transition-colors text-xs font-medium"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-3 text-slate-500 hover:text-emerald-400 hover:bg-white/4 transition-colors text-xs font-semibold tracking-wide"
                       >
                         ניחושים
                       </button>
