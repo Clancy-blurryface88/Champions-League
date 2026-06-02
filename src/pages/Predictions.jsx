@@ -891,14 +891,14 @@ export default function Predictions() {
                       style={{ borderTop:'1px solid rgba(255,255,255,0.06)' }}>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-3 text-slate-500 hover:text-blue-400 hover:bg-white/4 transition-colors text-xs font-semibold tracking-wide"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-3 text-yellow-400/70 hover:text-yellow-400 hover:bg-white/4 transition-colors text-xs font-semibold tracking-wide"
                       >
                         1 X 2
                       </button>
                       <div className="w-px my-2" style={{ background:'rgba(255,255,255,0.08)' }} />
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-3 text-slate-500 hover:text-emerald-400 hover:bg-white/4 transition-colors text-xs font-semibold tracking-wide"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-3 text-yellow-400/70 hover:text-yellow-400 hover:bg-white/4 transition-colors text-xs font-semibold tracking-wide"
                       >
                         ניחושים
                       </button>
