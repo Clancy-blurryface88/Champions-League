@@ -128,8 +128,8 @@ body {
   to { --conic-angle: 360deg; }
 }
 .rotate-conic-border {
-  background: conic-gradient(from var(--conic-angle), #1e3a8a, #3b82f6, #93c5fd, #ffffff, #93c5fd, #3b82f6, #1e3a8a);
-  animation: rotateConic 5s linear infinite;
+  background: conic-gradient(from var(--conic-angle), #022c22, #065f46, #059669, #6ee7b7, #fde68a, #fbbf24, #fde68a, #6ee7b7, #022c22);
+  animation: rotateConic 6s linear infinite;
 }
 
 /* ── Diagonal shine sweep ──────────────────────────────────── */
