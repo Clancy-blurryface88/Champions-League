@@ -1123,17 +1123,23 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
         // מקום N (תחתית) מופיע ראשון (delay=0), מקום 1 (ראש) מופיע אחרון
         const revealDelay = (sortedPredictions.length - 1 - index) * REVEAL_DELAY;
 
-        const verdictBg =
-          outcomeStatus?.type === 'exact'   ? 'bg-emerald-900/20 border border-emerald-500/30' :
-          outcomeStatus?.type === 'correct' ? 'bg-amber-900/15 border border-amber-500/25' :
-          outcomeStatus?.type === 'wrong'   ? 'bg-red-900/15 border border-red-500/20' :
-          'bg-slate-700/50 border border-white/5';
+        const verdictStyle =
+          outcomeStatus?.type === 'exact'   ? { background:'rgba(16,185,129,0.07)', backdropFilter:'blur(20px)', border:'1px solid rgba(52,211,153,0.28)', boxShadow:'0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(52,211,153,0.12)' } :
+          outcomeStatus?.type === 'correct' ? { background:'rgba(245,158,11,0.07)',  backdropFilter:'blur(20px)', border:'1px solid rgba(251,191,36,0.28)',  boxShadow:'0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(251,191,36,0.12)'  } :
+          outcomeStatus?.type === 'wrong'   ? { background:'rgba(239,68,68,0.07)',   backdropFilter:'blur(20px)', border:'1px solid rgba(248,113,113,0.25)', boxShadow:'0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(248,113,113,0.08)' } :
+                                              { background:'rgba(255,255,255,0.04)', backdropFilter:'blur(20px)', border:'1px solid rgba(255,255,255,0.09)', boxShadow:'0 4px 24px rgba(0,0,0,0.3),  inset 0 1px 0 rgba(255,255,255,0.06)'  };
 
         const rankBg =
           outcomeStatus?.type === 'exact'   ? 'bg-emerald-500' :
           outcomeStatus?.type === 'correct' ? 'bg-amber-500' :
           outcomeStatus?.type === 'wrong'   ? 'bg-red-600' :
           'bg-blue-600';
+
+        const ptsBadgeStyle =
+          outcomeStatus?.type === 'exact'   ? { background:'rgba(16,185,129,0.15)',  border:'1px solid rgba(52,211,153,0.35)',  color:'#6ee7b7' } :
+          outcomeStatus?.type === 'correct' ? { background:'rgba(245,158,11,0.15)',  border:'1px solid rgba(251,191,36,0.35)',  color:'#fde68a' } :
+          outcomeStatus?.type === 'wrong'   ? { background:'rgba(239,68,68,0.15)',   border:'1px solid rgba(248,113,113,0.3)', color:'#fca5a5' } :
+                                              { background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.12)', color:'#94a3b8' };
 
         // shockwave מהמוביל כלפי מטה — כל קלף מקבל delay לפי מיקומו
         const shockDelay = index * 0.12;
@@ -1144,7 +1150,8 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
             initial={{ opacity: 0, filter: 'blur(16px)', scale: 0.85 }}
             animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
             transition={{ delay: revealDelay, duration: 0.7, ease: 'easeOut' }}
-            className={`relative rounded-lg overflow-hidden ${verdictBg}`}>
+            className="relative rounded-xl overflow-hidden"
+            style={verdictStyle}>
 
             {/* Shockwave ring — רק על המוביל */}
             {index === 0 && shockwaveActive && (
@@ -1204,22 +1211,22 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                   </div>
                 </div>
 
-                <div className="text-left flex items-center gap-2">
-                  <Badge className={`text-xs ${
-                    outcomeStatus?.type === 'exact'   ? 'bg-emerald-500/20 text-emerald-300' :
-                    outcomeStatus?.type === 'correct' ? 'bg-amber-500/20 text-amber-300' :
-                    outcomeStatus?.type === 'wrong'   ? 'bg-red-500/20 text-red-300' :
-                    'bg-green-600/20 text-green-300'
-                  }`}>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="text-xs font-bold tabular-nums px-2.5 py-1 rounded-lg"
+                    style={ptsBadgeStyle}>
                     {(prediction.points_earned || 0).toFixed(2)} PTS
-                  </Badge>
-                  {outcomeStatus?.type === 'exact'   && <span className="text-lg">🎯</span>}
+                  </span>
+                  {outcomeStatus?.type === 'exact'   && <span className="text-base">🎯</span>}
                   {outcomeStatus?.type === 'correct' && (
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-yellow-400/20 border border-yellow-400/40">
-                      <Check className="w-3.5 h-3.5 text-yellow-400" strokeWidth={3} />
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-lg"
+                      style={{ background:'rgba(251,191,36,0.15)', border:'1px solid rgba(251,191,36,0.35)' }}>
+                      <Check className="w-3.5 h-3.5 text-amber-400" strokeWidth={3} />
                     </span>
                   )}
-                  {outcomeStatus?.type === 'wrong'   && <span className="text-lg">❌</span>}
+                  {outcomeStatus?.type === 'wrong' && (
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-lg text-sm"
+                      style={{ background:'rgba(239,68,68,0.15)', border:'1px solid rgba(248,113,113,0.3)' }}>✕</span>
+                  )}
                 </div>
               </div>
             </div>
