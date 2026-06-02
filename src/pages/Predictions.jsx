@@ -673,8 +673,19 @@ export default function Predictions() {
                 className="h-full">
 
                 {/* Rotating conic border wrapper */}
-                <div className={`h-full rounded-[18px] p-[1.5px] ${!isLocked ? 'rotate-conic-border' : ''}`}
-                  style={isLocked ? { outline: '1px solid rgba(255,255,255,0.05)', borderRadius: 18 } : {}}>
+                <div className="h-full relative overflow-hidden"
+                  style={{ borderRadius: 18, padding: '1.5px',
+                    background: isLocked ? 'rgba(255,255,255,0.05)' : 'transparent' }}>
+                  {!isLocked && (
+                    <motion.div
+                      className="absolute pointer-events-none"
+                      style={{ width:'200%', height:'200%', top:'-50%', left:'-50%',
+                        background:'conic-gradient(from 0deg, #022c22, #065f46, #059669, #6ee7b7, #fde68a, #fbbf24, #fde68a, #6ee7b7, #022c22)' }}
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
+                    />
+                  )}
+                  <div className="relative h-full" style={{ borderRadius: 16, overflow: 'hidden' }}>
                 <Card
                   className={`relative border-0 transition-all duration-300 h-full flex flex-col overflow-hidden !rounded-2xl ${
                   isLocked ? 'opacity-65' : ''}`}
@@ -894,7 +905,8 @@ export default function Predictions() {
                     </div>
                   </CardContent>
                 </Card>
-                </div>
+                </div>{/* inner border-radius div */}
+                </div>{/* conic wrapper */}
               </motion.div>
             );
                         })}
