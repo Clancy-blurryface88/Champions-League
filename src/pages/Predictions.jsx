@@ -892,14 +892,16 @@ export default function Predictions() {
                         style={{ background:'linear-gradient(90deg, transparent, rgba(255,200,50,0.5) 20%, rgba(255,200,50,0.5) 80%, transparent)' }} />
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-3 text-yellow-400/70 hover:text-yellow-400 hover:bg-white/4 transition-colors text-xs font-semibold tracking-wide"
+                        className="flex-1 flex items-center justify-center py-3 text-xs font-bold transition-colors"
+                        style={{ color:'rgba(255,200,50,0.9)', textShadow:'0 0 12px rgba(255,200,50,0.6)' }}
                       >
                         1 X 2
                       </button>
                       <div className="w-[2px] my-1.5" style={{ background:'rgba(255,200,50,0.45)' }} />
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-3 text-yellow-400/70 hover:text-yellow-400 hover:bg-white/4 transition-colors text-xs font-semibold tracking-wide"
+                        className="flex-1 flex items-center justify-center py-3 text-xs font-bold transition-colors"
+                        style={{ color:'rgba(255,200,50,0.9)', textShadow:'0 0 12px rgba(255,200,50,0.6)' }}
                       >
                         ניחושים
                       </button>
