@@ -675,17 +675,18 @@ export default function Predictions() {
                 <Card
                   className={`relative border-0 transition-all duration-300 h-full flex flex-col overflow-hidden ${
                   isLocked ? 'opacity-65' : ''}`}
-                  style={{ outline: isLocked ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(184,148,50,0.22)' }}
                   style={isLocked ? {
                     background: 'rgba(10,18,35,0.55)',
                     backdropFilter: 'blur(20px) saturate(140%)',
                     WebkitBackdropFilter: 'blur(20px) saturate(140%)',
                     boxShadow: '0 2px 16px rgba(0,0,0,0.35)',
+                    outline: '1px solid rgba(255,255,255,0.05)',
                   } : {
-                    background: 'radial-gradient(ellipse at 50% 120%, rgba(255,220,80,0.12) 0%, transparent 60%), linear-gradient(180deg, rgba(0,0,0,0.95), rgba(5,10,20,0.98))',
-                    backdropFilter: 'blur(36px) saturate(210%)',
-                    WebkitBackdropFilter: 'blur(36px) saturate(210%)',
-                    boxShadow: '0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(255,255,255,0.04)',
+                    background: 'linear-gradient(145deg, rgba(30,58,138,0.45) 0%, rgba(8,15,45,0.92) 45%, rgba(15,25,70,0.5) 100%)',
+                    backdropFilter: 'blur(36px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(36px) saturate(180%)',
+                    boxShadow: '0 8px 40px rgba(0,0,20,0.6), 0 0 0 1px rgba(59,130,246,0.18), inset 0 1px 0 rgba(147,197,253,0.15)',
+                    outline: 'none',
                   }}
                 >
                   {/* Dual ShineBorder — two light points 180° apart */}
@@ -695,13 +696,13 @@ export default function Predictions() {
                         borderRadius={16}
                         borderWidth={1}
                         duration={14}
-                        shineColor={["rgba(184,148,50,0.3)", "rgba(255,215,0,0.75)", "rgba(255,235,120,0.9)", "rgba(255,215,0,0.75)", "rgba(184,148,50,0.3)"]}
+                        shineColor={["rgba(59,130,246,0.3)", "rgba(147,197,253,0.8)", "rgba(219,234,254,0.95)", "rgba(147,197,253,0.8)", "rgba(59,130,246,0.3)"]}
                       />
                       <ShineBorder
                         borderRadius={16}
                         borderWidth={1}
                         duration={14}
-                        shineColor={["rgba(184,148,50,0.3)", "rgba(255,215,0,0.75)", "rgba(255,235,120,0.9)", "rgba(255,215,0,0.75)", "rgba(184,148,50,0.3)"]}
+                        shineColor={["rgba(59,130,246,0.3)", "rgba(147,197,253,0.8)", "rgba(219,234,254,0.95)", "rgba(147,197,253,0.8)", "rgba(59,130,246,0.3)"]}
                         className="[&>div]:[animation-delay:-7s]"
                       />
                     </>
