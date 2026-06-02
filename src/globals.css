@@ -118,6 +118,20 @@ body {
 }
 .animate-shine { animation: shine 2s linear infinite; }
 
+/* ── Rotating conic border ─────────────────────────────────── */
+@property --conic-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes rotateConic {
+  to { --conic-angle: 360deg; }
+}
+.rotate-conic-border {
+  background: conic-gradient(from var(--conic-angle), #1e3a8a, #3b82f6, #93c5fd, #ffffff, #93c5fd, #3b82f6, #1e3a8a);
+  animation: rotateConic 5s linear infinite;
+}
+
 /* ── Diagonal shine sweep ──────────────────────────────────── */
 @keyframes shineSweep {
   0%   { transform: translateX(-100%) skewX(-15deg); }

@@ -672,41 +672,24 @@ export default function Predictions() {
                 transition={{ delay: index * 0.06 }}
                 className="h-full">
 
+                {/* Rotating conic border wrapper */}
+                <div className={`h-full rounded-[18px] p-[1.5px] ${!isLocked ? 'rotate-conic-border' : ''}`}
+                  style={isLocked ? { outline: '1px solid rgba(255,255,255,0.05)', borderRadius: 18 } : {}}>
                 <Card
-                  className={`relative border-0 transition-all duration-300 h-full flex flex-col overflow-hidden ${
+                  className={`relative border-0 transition-all duration-300 h-full flex flex-col overflow-hidden !rounded-2xl ${
                   isLocked ? 'opacity-65' : ''}`}
                   style={isLocked ? {
                     background: 'rgba(10,18,35,0.55)',
                     backdropFilter: 'blur(20px) saturate(140%)',
                     WebkitBackdropFilter: 'blur(20px) saturate(140%)',
                     boxShadow: '0 2px 16px rgba(0,0,0,0.35)',
-                    outline: '1px solid rgba(255,255,255,0.05)',
                   } : {
                     background: 'linear-gradient(145deg, rgba(30,58,138,0.45) 0%, rgba(8,15,45,0.92) 45%, rgba(15,25,70,0.5) 100%)',
                     backdropFilter: 'blur(36px) saturate(180%)',
                     WebkitBackdropFilter: 'blur(36px) saturate(180%)',
-                    boxShadow: '0 8px 40px rgba(0,0,20,0.6), 0 0 0 1px rgba(59,130,246,0.18), inset 0 1px 0 rgba(147,197,253,0.15)',
-                    outline: 'none',
+                    boxShadow: '0 8px 40px rgba(0,0,20,0.6), inset 0 1px 0 rgba(147,197,253,0.12)',
                   }}
                 >
-                  {/* Dual ShineBorder — two light points 180° apart */}
-                  {!isLocked && (
-                    <>
-                      <ShineBorder
-                        borderRadius={16}
-                        borderWidth={1}
-                        duration={14}
-                        shineColor={["rgba(59,130,246,0.3)", "rgba(147,197,253,0.8)", "rgba(219,234,254,0.95)", "rgba(147,197,253,0.8)", "rgba(59,130,246,0.3)"]}
-                      />
-                      <ShineBorder
-                        borderRadius={16}
-                        borderWidth={1}
-                        duration={14}
-                        shineColor={["rgba(59,130,246,0.3)", "rgba(147,197,253,0.8)", "rgba(219,234,254,0.95)", "rgba(147,197,253,0.8)", "rgba(59,130,246,0.3)"]}
-                        className="[&>div]:[animation-delay:-7s]"
-                      />
-                    </>
-                  )}
                   {/* Noise texture overlay */}
                   <div className="absolute inset-0 pointer-events-none opacity-[0.025]"
                     style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundSize: '180px' }} />
@@ -911,6 +894,7 @@ export default function Predictions() {
                     </div>
                   </CardContent>
                 </Card>
+                </div>
               </motion.div>
             );
                         })}
