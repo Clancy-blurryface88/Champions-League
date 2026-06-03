@@ -123,14 +123,16 @@
     linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  animation: ba-spin 6s linear infinite;
+  animation: ba-spin 8s linear infinite;
   pointer-events: none;
+  z-index: 2;
 }
 
-/* card sits inside the 3px ring, fully original */
+/* card content sits on top of the ring */
 .match-card-content {
   position: absolute;
   inset: 3px;
   border-radius: 17px;
   overflow: hidden;
+  z-index: 3;
 }
