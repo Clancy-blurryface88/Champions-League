@@ -680,7 +680,7 @@ export default function Predictions() {
                     <motion.div
                       className="absolute pointer-events-none"
                       style={{ width:'200%', height:'200%', top:'-50%', left:'-50%',
-                        background:'conic-gradient(from 0deg, #022c22, #065f46, #059669, #6ee7b7, #86efac, #6ee7b7, #059669, #065f46, #022c22)' }}
+                        background:'conic-gradient(from 0deg, #022c22, #059669, #6ee7b7, #fbbf24, #fde68a, #fbbf24, #6ee7b7, #059669, #022c22)' }}
                       animate={{ rotate: 360 }}
                       transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
                     />
