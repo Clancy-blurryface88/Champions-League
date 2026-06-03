@@ -1,5 +1,5 @@
 import TeamFlag from "@/components/TeamFlag";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { getTeamColor } from "@/utils/teamColors";
 import { useModalBackButton } from "@/hooks/useModalBackButton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -140,6 +140,11 @@ function Divider() {
 export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
   const [simA, setSimA] = useState(null);
   const [simB, setSimB] = useState(null);
+
+  useEffect(() => {
+    setSimA(null);
+    setSimB(null);
+  }, [match?.id]);
 
   useModalBackButton(isOpen, onClose);
 
