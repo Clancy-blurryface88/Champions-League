@@ -745,7 +745,7 @@ export default function Predictions() {
                     )}
 
                     {/* Separator below group badge */}
-                    <div className="border-t border-slate-500/70" />
+                    <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)' }} />
 
                     {/* Teams & Score Input */}
                     <div className="py-3 px-1">
