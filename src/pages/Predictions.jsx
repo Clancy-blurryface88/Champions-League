@@ -857,20 +857,6 @@ export default function Predictions() {
                       </div>
                     }
 
-                    {/* AI Pre-match Brief Button */}
-                    <div className="mt-3 flex justify-center">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setSelectedMatchForBrief(match); }}
-                        className="flex items-center justify-center gap-2 px-5 py-1 rounded-full text-yellow-400 bg-yellow-400/10 border border-yellow-400/40 hover:bg-yellow-400/20 hover:border-yellow-400/70 transition-colors group"
-                      >
-                        <Sparkles className="w-3 h-3 group-hover:scale-110 transition-transform" />
-                        <span className="text-sm font-semibold">AI טרום משחק</span>
-                        {briefs[match.id] && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
-                        )}
-                      </button>
-                    </div>
-
                     {/* Footer bar */}
                     <div className="-mx-5 -mb-5 mt-3 flex overflow-hidden rounded-b-xl relative">
                       <div className="absolute top-0 left-4 right-4 h-[2px] pointer-events-none"
