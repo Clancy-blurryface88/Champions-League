@@ -739,7 +739,8 @@ export default function Predictions() {
                       <div className="flex justify-center mb-4">
                         <button
                           onClick={() => setSelectedGroup(match.league)}
-                          className="text-sm font-semibold text-cyan-400 bg-cyan-400/10 border border-cyan-400/30 px-5 py-1 rounded-full hover:bg-cyan-400/20 hover:border-cyan-400/60 transition-colors cursor-pointer"
+                          className="text-sm font-semibold px-5 py-1 rounded-full transition-colors cursor-pointer"
+                          style={{ background:'linear-gradient(135deg,#f5c518,#fde68a)', color:'#1a1000', fontWeight:700 }}
                         >
                           {match.league}
                         </button>
@@ -889,19 +890,19 @@ export default function Predictions() {
                     {/* Footer bar */}
                     <div className="-mx-5 -mb-5 mt-3 flex overflow-hidden rounded-b-xl relative">
                       <div className="absolute top-0 left-4 right-4 h-[2px] pointer-events-none"
-                        style={{ background:'linear-gradient(90deg, transparent, rgba(34,211,238,0.5) 20%, rgba(34,211,238,0.5) 80%, transparent)' }} />
+                        style={{ background:'linear-gradient(90deg, transparent, rgba(255,200,50,0.5) 20%, rgba(255,200,50,0.5) 80%, transparent)' }} />
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
                         className="flex-1 flex items-center justify-center py-3 text-xs font-bold transition-colors"
-                        style={{ color:'rgba(34,211,238,0.9)', textShadow:'0 0 12px rgba(34,211,238,0.6)' }}
+                        style={{ color:'rgba(255,200,50,0.9)', textShadow:'0 0 12px rgba(255,200,50,0.6)' }}
                       >
                         1 X 2
                       </button>
-                      <div className="w-[2px] my-1.5" style={{ background:'rgba(34,211,238,0.45)' }} />
+                      <div className="w-[2px] my-1.5" style={{ background:'rgba(255,200,50,0.45)' }} />
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
                         className="flex-1 flex items-center justify-center py-3 text-xs font-bold transition-colors"
-                        style={{ color:'rgba(34,211,238,0.9)', textShadow:'0 0 12px rgba(34,211,238,0.6)' }}
+                        style={{ color:'rgba(255,200,50,0.9)', textShadow:'0 0 12px rgba(255,200,50,0.6)' }}
                       >
                         ניחושים
                       </button>
