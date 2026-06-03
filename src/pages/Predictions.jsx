@@ -723,7 +723,7 @@ export default function Predictions() {
                             <React.Fragment key={item.label}>
                               <div className="flex flex-col items-center px-3 py-1.5">
                                 <span className="font-extrabold leading-none mb-0.5 text-[#4ade80]" style={{ fontSize: "1.05rem" }}>{item.val}</span>
-                                <span className="text-[9px] font-medium" style={{ color: "#4ade8070" }}>{item.label}</span>
+                                <span className="text-[9px] font-medium" style={{ color: "#4ade80" }}>{item.label}</span>
                               </div>
                               {i < 3 && <div className="self-center" style={{ width: 1, height: 24, background: "rgba(74,222,128,0.2)" }} />}
                             </React.Fragment>
