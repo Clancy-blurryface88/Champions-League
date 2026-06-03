@@ -713,23 +713,21 @@ export default function Predictions() {
                           <span className="text-sm font-medium">{timeInfo.text}</span>
                         </div> :
 
-                      <div className="bg-[#1a362d] text-[#4ade80] rounded-2xl px-4 py-1.5 flex gap-4 text-center shadow-lg border border-[#244a3d]" dir="rtl">
-                          <div className="flex flex-col items-center">
-                            <span className="text-base font-bold leading-none mb-0.5">{timeInfo.seconds}</span>
-                            <span className="text-[10px] font-medium">שניות</span>
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <span className="text-base font-bold leading-none mb-0.5">{timeInfo.minutes}</span>
-                            <span className="text-[10px] font-medium">דקות</span>
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <span className="text-base font-bold leading-none mb-0.5">{timeInfo.hours}</span>
-                            <span className="text-[10px] font-medium">שעות</span>
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <span className="text-base font-bold leading-none mb-0.5">{timeInfo.days}</span>
-                            <span className="text-[10px] font-medium">ימים</span>
-                          </div>
+                      <div dir="rtl" className="rounded-xl overflow-hidden border border-[#244a3d] shadow-lg flex" style={{ background: "#1a362d" }}>
+                          {[
+                            { val: timeInfo.seconds, label: "שניות" },
+                            { val: timeInfo.minutes, label: "דקות" },
+                            { val: timeInfo.hours,   label: "שעות"  },
+                            { val: timeInfo.days,    label: "ימים"  },
+                          ].map((item, i) => (
+                            <React.Fragment key={item.label}>
+                              <div className="flex flex-col items-center px-3 py-1.5">
+                                <span className="font-extrabold leading-none mb-0.5 text-[#4ade80]" style={{ fontSize: "1.05rem" }}>{item.val}</span>
+                                <span className="text-[9px] font-medium" style={{ color: "#4ade8070" }}>{item.label}</span>
+                              </div>
+                              {i < 3 && <div className="self-center" style={{ width: 1, height: 24, background: "rgba(74,222,128,0.2)" }} />}
+                            </React.Fragment>
+                          ))}
                         </div>
                       }
                     </div>
