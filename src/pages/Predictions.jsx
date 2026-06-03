@@ -738,7 +738,7 @@ export default function Predictions() {
                     <div className="py-3 px-1">
                       <div
                         className="w-full grid gap-x-2"
-                        style={{ gridTemplateColumns: '1fr auto 1fr', gridTemplateRows: 'auto auto auto' }}
+                        style={{ gridTemplateColumns: '1fr auto 1fr', gridTemplateRows: 'auto auto' }}
                       >
                         {/* Row 1: flags */}
                         <div className="flex justify-center items-center cursor-pointer pt-7"
@@ -755,8 +755,37 @@ export default function Predictions() {
                           </motion.div>
                         </div>
 
-                        {/* Row 1: center empty spacer */}
-                        <div style={{ gridColumn: 2, gridRow: 1 }} />
+                        {/* Score — spans both rows, centered */}
+                        <div className="flex items-center gap-2 px-1"
+                             style={{ gridColumn: 2, gridRow: '1 / 3', alignSelf: 'center' }}>
+                          {!isLocked ? (
+                            <>
+                              <ScoreInput
+                                value={prediction.predicted_score_a}
+                                onChange={(value) => handlePredictionChange(match.id, 'predicted_score_a', value)}
+                                hasError={!areAllPredictionsComplete() && (prediction.predicted_score_a === undefined || prediction.predicted_score_a === null)} />
+                              <span className="text-slate-400 font-bold text-lg">-</span>
+                              <ScoreInput
+                                value={prediction.predicted_score_b}
+                                onChange={(value) => handlePredictionChange(match.id, 'predicted_score_b', value)}
+                                hasError={!areAllPredictionsComplete() && (prediction.predicted_score_b === undefined || prediction.predicted_score_b === null)} />
+                            </>
+                          ) : (
+                            <>
+                              <div className="w-10 h-10 bg-slate-700/50 rounded-lg flex items-center justify-center">
+                                <span className="text-slate-400 text-lg font-bold">
+                                  {prediction.predicted_score_a !== undefined && prediction.predicted_score_a !== null ? prediction.predicted_score_a : '?'}
+                                </span>
+                              </div>
+                              <span className="text-slate-400 font-bold text-lg">-</span>
+                              <div className="w-10 h-10 bg-slate-700/50 rounded-lg flex items-center justify-center">
+                                <span className="text-slate-400 text-lg font-bold">
+                                  {prediction.predicted_score_b !== undefined && prediction.predicted_score_b !== null ? prediction.predicted_score_b : '?'}
+                                </span>
+                              </div>
+                            </>
+                          )}
+                        </div>
 
                         <div className="flex justify-center items-center cursor-pointer pt-7"
                              style={{ gridColumn: 3, gridRow: 1 }}
@@ -772,56 +801,17 @@ export default function Predictions() {
                           </motion.div>
                         </div>
 
-                        {/* Row 2: score inputs — each under its team */}
-                        <div className="flex justify-center items-center pt-2"
-                             style={{ gridColumn: 1, gridRow: 2 }}>
-                          {!isLocked ? (
-                            <ScoreInput
-                              value={prediction.predicted_score_a}
-                              onChange={(value) => handlePredictionChange(match.id, 'predicted_score_a', value)}
-                              hasError={!areAllPredictionsComplete() && (prediction.predicted_score_a === undefined || prediction.predicted_score_a === null)} />
-                          ) : (
-                            <div className="w-10 h-10 bg-slate-700/50 rounded-lg flex items-center justify-center">
-                              <span className="text-slate-400 text-lg font-bold">
-                                {prediction.predicted_score_a !== undefined && prediction.predicted_score_a !== null ? prediction.predicted_score_a : '?'}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex items-center justify-center pt-2"
-                             style={{ gridColumn: 2, gridRow: 2 }}>
-                          <span className="text-slate-400 font-bold text-lg">-</span>
-                        </div>
-
-                        <div className="flex justify-center items-center pt-2"
-                             style={{ gridColumn: 3, gridRow: 2 }}>
-                          {!isLocked ? (
-                            <ScoreInput
-                              value={prediction.predicted_score_b}
-                              onChange={(value) => handlePredictionChange(match.id, 'predicted_score_b', value)}
-                              hasError={!areAllPredictionsComplete() && (prediction.predicted_score_b === undefined || prediction.predicted_score_b === null)} />
-                          ) : (
-                            <div className="w-10 h-10 bg-slate-700/50 rounded-lg flex items-center justify-center">
-                              <span className="text-slate-400 text-lg font-bold">
-                                {prediction.predicted_score_b !== undefined && prediction.predicted_score_b !== null ? prediction.predicted_score_b : '?'}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Row 3: team names */}
-                        <div style={{ gridColumn: 1, gridRow: 3, alignSelf: 'start' }}
-                             className="flex flex-col items-center cursor-pointer pt-1"
+                        {/* Row 2: name + label tightly stacked, top-aligned */}
+                        <div style={{ gridColumn: 1, gridRow: 2, alignSelf: 'start' }}
+                             className="flex flex-col items-center cursor-pointer"
                              onClick={() => setSelectedTeam({ name: match.team_a, logo: match.team_a_logo })}>
                           <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words">
                             {match.team_a}
                           </RevealText>
                           <span className="text-slate-400 text-[10px] leading-none text-center">(Home)</span>
                         </div>
-                        <div style={{ gridColumn: 2, gridRow: 3 }} />
-                        <div style={{ gridColumn: 3, gridRow: 3, alignSelf: 'start' }}
-                             className="flex flex-col items-center cursor-pointer pt-1"
+                        <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
+                             className="flex flex-col items-center cursor-pointer"
                              onClick={() => setSelectedTeam({ name: match.team_b, logo: match.team_b_logo })}>
                           <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words">
                             {match.team_b}
