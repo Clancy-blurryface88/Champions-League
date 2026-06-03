@@ -747,7 +747,7 @@ export default function Predictions() {
                     )}
 
                     {/* Separator below group badge */}
-                    <div className="border-t border-slate-700/50" />
+                    <div className="border-t border-slate-500/70" />
 
                     {/* Teams & Score Input */}
                     <div className="py-3 px-1">
@@ -848,7 +848,7 @@ export default function Predictions() {
 
                     {/* Footer: Date & Location */}
                     <div className="pt-3 space-y-1">
-                      <div className="h-px mb-2" style={{ background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)' }} />
+                      <div className="h-px mb-2" style={{ background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)' }} />
                       <div className="flex items-center justify-center gap-1.5 text-xs text-slate-300">
                         <span className="text-sm">🗓️</span>
                         <span className="font-medium">{moment(match.match_date).format('DD/MM/YYYY')} · {moment(match.match_date).format('HH:mm')}</span>
