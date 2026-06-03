@@ -680,7 +680,7 @@ export default function Predictions() {
                     <motion.div
                       className="absolute pointer-events-none"
                       style={{ width:'200%', height:'200%', top:'-50%', left:'-50%',
-                        background:'conic-gradient(from 0deg, #022c22, #065f46, #059669, #6ee7b7, #fde68a, #fbbf24, #fde68a, #6ee7b7, #022c22)' }}
+                        background:'conic-gradient(from 0deg, #022c22, #065f46, #059669, #6ee7b7, #67e8f9, #22d3ee, #67e8f9, #6ee7b7, #022c22)' }}
                       animate={{ rotate: 360 }}
                       transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
                     />
@@ -739,7 +739,7 @@ export default function Predictions() {
                       <div className="flex justify-center mb-4">
                         <button
                           onClick={() => setSelectedGroup(match.league)}
-                          className="text-sm font-semibold text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 px-5 py-1 rounded-full hover:bg-yellow-400/20 hover:border-yellow-400/60 transition-colors cursor-pointer"
+                          className="text-sm font-semibold text-cyan-400 bg-cyan-400/10 border border-cyan-400/30 px-5 py-1 rounded-full hover:bg-cyan-400/20 hover:border-cyan-400/60 transition-colors cursor-pointer"
                         >
                           {match.league}
                         </button>
@@ -875,33 +875,33 @@ export default function Predictions() {
                     <button
                       onClick={(e) => { e.stopPropagation(); setSelectedMatchForBrief(match); }}
                       className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all duration-200 group"
-                      style={{ background:'rgba(234,179,8,0.07)', border:'1px solid rgba(234,179,8,0.25)', backdropFilter:'blur(8px)' }}
-                      onMouseEnter={e => e.currentTarget.style.background='rgba(234,179,8,0.14)'}
-                      onMouseLeave={e => e.currentTarget.style.background='rgba(234,179,8,0.07)'}
+                      style={{ background:'rgba(34,211,238,0.07)', border:'1px solid rgba(34,211,238,0.25)', backdropFilter:'blur(8px)' }}
+                      onMouseEnter={e => e.currentTarget.style.background='rgba(34,211,238,0.14)'}
+                      onMouseLeave={e => e.currentTarget.style.background='rgba(34,211,238,0.07)'}
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-yellow-400 group-hover:scale-110 transition-transform" />
-                      <span className="text-yellow-400 text-xs font-semibold tracking-wide">AI טרום משחק</span>
+                      <Sparkles className="w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform" />
+                      <span className="text-cyan-400 text-xs font-semibold tracking-wide">AI טרום משחק</span>
                       {briefs[match.id] && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
                       )}
                     </button>
 
                     {/* Footer bar */}
                     <div className="-mx-5 -mb-5 mt-3 flex overflow-hidden rounded-b-xl relative">
                       <div className="absolute top-0 left-4 right-4 h-[2px] pointer-events-none"
-                        style={{ background:'linear-gradient(90deg, transparent, rgba(255,200,50,0.5) 20%, rgba(255,200,50,0.5) 80%, transparent)' }} />
+                        style={{ background:'linear-gradient(90deg, transparent, rgba(34,211,238,0.5) 20%, rgba(34,211,238,0.5) 80%, transparent)' }} />
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
                         className="flex-1 flex items-center justify-center py-3 text-xs font-bold transition-colors"
-                        style={{ color:'rgba(255,200,50,0.9)', textShadow:'0 0 12px rgba(255,200,50,0.6)' }}
+                        style={{ color:'rgba(34,211,238,0.9)', textShadow:'0 0 12px rgba(34,211,238,0.6)' }}
                       >
                         1 X 2
                       </button>
-                      <div className="w-[2px] my-1.5" style={{ background:'rgba(255,200,50,0.45)' }} />
+                      <div className="w-[2px] my-1.5" style={{ background:'rgba(34,211,238,0.45)' }} />
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
                         className="flex-1 flex items-center justify-center py-3 text-xs font-bold transition-colors"
-                        style={{ color:'rgba(255,200,50,0.9)', textShadow:'0 0 12px rgba(255,200,50,0.6)' }}
+                        style={{ color:'rgba(34,211,238,0.9)', textShadow:'0 0 12px rgba(34,211,238,0.6)' }}
                       >
                         ניחושים
                       </button>
