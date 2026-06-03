@@ -231,7 +231,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
             </div>
 
             {/* Inputs */}
-            <div className="grid items-center px-4 pb-3 pt-1" style={{ gridTemplateColumns: '1fr auto 1fr' }} dir="ltr">
+            <div className="flex items-center justify-center gap-4 pb-3 pt-1" dir="ltr">
               <div className="flex flex-col items-center gap-1">
                 <span className="text-xs text-white font-semibold text-center leading-tight">{match.team_a}</span>
                 <SimInput value={simA} onChange={setSimA} />
