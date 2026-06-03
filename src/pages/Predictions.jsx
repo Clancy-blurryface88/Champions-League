@@ -672,24 +672,7 @@ export default function Predictions() {
                 transition={{ delay: index * 0.06 }}
                 className="h-full">
 
-                {/* Border + card */}
-                <motion.div
-                  className="h-full"
-                  style={{ borderRadius: 20 }}
-                  animate={!isLocked ? {
-                    boxShadow: [
-                      '0 0 0 2.5px #059669',
-                      '0 0 0 2.5px #6ee7b7',
-                      '0 0 0 2.5px #fde68a',
-                      '0 0 0 2.5px #fbbf24',
-                      '0 0 0 2.5px #fde68a',
-                      '0 0 0 2.5px #6ee7b7',
-                      '0 0 0 2.5px #059669',
-                    ]
-                  } : {}}
-                  transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-                >
-                  <div className="h-full relative overflow-hidden" style={{ borderRadius: 18 }}>
+                <div className="h-full relative overflow-hidden" style={{ borderRadius: 18 }}>
                 <Card
                   className={`relative border-0 transition-all duration-300 h-full flex flex-col overflow-hidden !rounded-2xl ${
                   isLocked ? 'opacity-65' : ''}`}
@@ -909,8 +892,7 @@ export default function Predictions() {
                     </div>
                   </CardContent>
                 </Card>
-                </div>{/* inner overflow div */}
-                </motion.div>{/* animated border */}
+                </div>
               </motion.div>
             );
                         })}
