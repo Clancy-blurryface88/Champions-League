@@ -39,10 +39,10 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
           border: hasError && isUndefined
             ? '1.5px solid rgba(248,113,113,0.5)'
             : !isUndefined
-              ? '1.5px solid rgba(255,255,255,0.18)'
-              : '1.5px solid rgba(255,255,255,0.07)',
+              ? '1.5px solid rgba(251,191,36,0.55)'
+              : '1.5px solid rgba(251,191,36,0.22)',
           boxShadow: !isUndefined
-            ? '0 0 18px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.3)'
+            ? '0 0 14px rgba(251,191,36,0.12), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.3)'
             : 'inset 0 2px 8px rgba(0,0,0,0.4)',
           backdropFilter: 'blur(12px)',
         }}>
