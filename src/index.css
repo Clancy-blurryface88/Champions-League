@@ -91,3 +91,25 @@
   -webkit-mask-image: linear-gradient(white, transparent 50%);
   mask-image: linear-gradient(white, transparent 50%);
 }
+
+/* ── Spinning card border ──────────────────────────────────── */
+@property --ba {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes ba-spin {
+  to { --ba: 360deg; }
+}
+
+.match-card-border {
+  border-radius: 20px;
+  border: 3px solid transparent;
+  background-image:
+    linear-gradient(#030d1a, #030d1a),
+    conic-gradient(from var(--ba), #022c22, #059669, #6ee7b7, #fbbf24, #fde68a, #fbbf24, #6ee7b7, #059669, #022c22);
+  background-origin: padding-box, border-box;
+  background-clip: padding-box, border-box;
+  animation: ba-spin 3s linear infinite;
+}
