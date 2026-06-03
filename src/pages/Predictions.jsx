@@ -739,8 +739,7 @@ export default function Predictions() {
                       <div className="flex justify-center mb-4">
                         <button
                           onClick={() => setSelectedGroup(match.league)}
-                          className="text-sm font-semibold px-5 py-1 rounded-full transition-colors cursor-pointer"
-                          style={{ background:'linear-gradient(135deg,#f5c518,#fde68a)', color:'#1a1000', fontWeight:700 }}
+                          className="text-sm font-semibold text-yellow-400 bg-yellow-400/10 border border-yellow-400/40 px-5 py-1 rounded-full hover:bg-yellow-400/20 hover:border-yellow-400/70 transition-colors cursor-pointer"
                         >
                           {match.league}
                         </button>
