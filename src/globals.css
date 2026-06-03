@@ -128,7 +128,7 @@ body {
   to { --conic-angle: 360deg; }
 }
 .rotate-conic-border {
-  background: conic-gradient(from var(--conic-angle), #022c22, #065f46, #059669, #6ee7b7, #a7f3d0, #ffffff, #a7f3d0, #6ee7b7, #022c22);
+  background: conic-gradient(from var(--conic-angle), #022c22, #065f46, #059669, #6ee7b7, #fde68a, #fbbf24, #fde68a, #6ee7b7, #022c22);
   animation: rotateConic 6s linear infinite;
 }
 
