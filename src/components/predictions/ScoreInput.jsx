@@ -60,7 +60,7 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
             style={{ fontFamily: "'Bebas Neue', sans-serif" }}
             className={`inline-block text-6xl md:text-7xl tracking-wide select-none
-              ${hasError && isUndefined ? 'text-red-400' : isUndefined ? 'text-slate-600' : 'text-yellow-400'}`}
+              ${hasError && isUndefined ? 'text-red-400' : isUndefined ? 'text-slate-600' : 'text-white'}`}
           >
             {displayValue}
           </motion.span>
