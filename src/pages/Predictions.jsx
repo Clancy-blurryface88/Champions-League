@@ -673,9 +673,8 @@ export default function Predictions() {
                 className="h-full">
 
                 {/* Rotating conic border wrapper */}
-                <div className={isLocked ? 'h-full relative rounded-[20px] p-[3px] overflow-hidden' : 'match-card-border h-full'}
-                  style={ isLocked ? { background: 'rgba(255,255,255,0.05)' } : {} }>
-                  <div className="match-card-inner">
+                <div className={isLocked ? 'h-full' : 'match-card-border h-full'}>
+                  <div className="relative h-full" style={{ borderRadius: 17, overflow: 'hidden' }}>
                 <Card
                   className={`relative border-0 transition-all duration-300 h-full flex flex-col overflow-hidden !rounded-2xl ${
                   isLocked ? 'opacity-65' : ''}`}

@@ -4,32 +4,25 @@
 @tailwind utilities;
 
 /* ── Spinning border ───────────────────────────────────────── */
-@keyframes border-spin {
-  to { transform: rotate(360deg); }
+@property --ba {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes ba-spin {
+  to { --ba: 360deg; }
 }
 
 .match-card-border {
-  position: relative;
   border-radius: 20px;
-  padding: 3px;
-  overflow: hidden;
-}
-
-.match-card-border::before {
-  content: '';
-  position: absolute;
-  inset: -100%;
-  background: conic-gradient(from 0deg, #022c22, #059669, #6ee7b7, #fbbf24, #fde68a, #fbbf24, #6ee7b7, #059669, #022c22);
-  animation: border-spin 3s linear infinite;
-  z-index: 0;
-}
-
-.match-card-inner {
-  position: relative;
-  border-radius: 17px;
-  overflow: hidden;
-  z-index: 1;
-  height: 100%;
+  border: 3px solid transparent;
+  background-image:
+    linear-gradient(#030d1a, #030d1a),
+    conic-gradient(from var(--ba), #022c22, #059669, #6ee7b7, #fbbf24, #fde68a, #fbbf24, #6ee7b7, #059669, #022c22);
+  background-origin: padding-box, border-box;
+  background-clip: padding-box, border-box;
+  animation: ba-spin 3s linear infinite;
 }
 
 /* ── WC2026 Design Tokens ─────────────────────────────────── */
