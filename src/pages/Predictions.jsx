@@ -673,20 +673,9 @@ export default function Predictions() {
                 className="h-full">
 
                 {/* Rotating conic border wrapper */}
-                <div className="h-full relative"
-                  style={{ borderRadius: 20, padding: '3px',
-                    background: isLocked ? 'rgba(255,255,255,0.05)' : 'transparent',
-                    overflow: 'hidden' }}>
-                  {!isLocked && (
-                    <motion.div
-                      className="absolute pointer-events-none"
-                      style={{ width:'200%', height:'200%', top:'-50%', left:'-50%',
-                        background:'conic-gradient(from 0deg, #022c22, #059669, #6ee7b7, #fbbf24, #fde68a, #fbbf24, #6ee7b7, #059669, #022c22)' }}
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                    />
-                  )}
-                  <div className="relative h-full" style={{ borderRadius: 17, overflow: 'hidden' }}>
+                <div className={isLocked ? 'h-full relative rounded-[20px] p-[3px] overflow-hidden' : 'match-card-border h-full'}
+                  style={ isLocked ? { background: 'rgba(255,255,255,0.05)' } : {} }>
+                  <div className="match-card-inner">
                 <Card
                   className={`relative border-0 transition-all duration-300 h-full flex flex-col overflow-hidden !rounded-2xl ${
                   isLocked ? 'opacity-65' : ''}`}
