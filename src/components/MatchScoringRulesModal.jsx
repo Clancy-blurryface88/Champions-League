@@ -231,12 +231,11 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
             </div>
 
             {/* Inputs */}
-            <div className="flex items-center justify-center gap-4 pb-3 pt-1" dir="ltr">
+            <div className="flex items-center justify-center gap-2 pb-3 pt-1" dir="ltr">
               <div className="flex flex-col items-center gap-1">
                 <span className="text-xs text-white font-semibold text-center leading-tight">{match.team_a}</span>
                 <SimInput value={simA} onChange={setSimA} />
               </div>
-              <span className="text-white/30 font-bold text-xl pb-2 px-3">—</span>
               <div className="flex flex-col items-center gap-1">
                 <span className="text-xs text-white font-semibold text-center leading-tight">{match.team_b}</span>
                 <SimInput value={simB} onChange={setSimB} />
