@@ -672,9 +672,10 @@ export default function Predictions() {
                 transition={{ delay: index * 0.06 }}
                 className="h-full">
 
-                {/* Rotating conic border wrapper */}
-                <div className={isLocked ? 'h-full' : 'match-card-border h-full'}>
-                  <div className="relative h-full" style={{ borderRadius: 17, overflow: 'hidden' }}>
+                {/* Border + card */}
+                <div className="h-full match-card-border">
+                  {!isLocked && <div className="match-card-spin-ring" />}
+                  <div className="match-card-content">
                 <Card
                   className={`relative border-0 transition-all duration-300 h-full flex flex-col overflow-hidden !rounded-2xl ${
                   isLocked ? 'opacity-65' : ''}`}
