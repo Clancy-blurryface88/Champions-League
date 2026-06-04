@@ -682,7 +682,7 @@ export default function Predictions() {
                     WebkitBackdropFilter: 'blur(20px) saturate(140%)',
                     boxShadow: '0 2px 16px rgba(0,0,0,0.35)',
                   } : {
-                    background: 'linear-gradient(145deg, rgba(10,120,60,0.22) 0%, rgba(0,95,80,0.2) 50%, rgba(4,20,18,0.55) 100%)',
+                    background: 'linear-gradient(145deg, rgba(10,120,60,0.22) 0%, rgba(4,20,18,0.55) 100%)',
                     backdropFilter: 'blur(60px) saturate(220%) brightness(0.85)',
                     WebkitBackdropFilter: 'blur(60px) saturate(220%) brightness(0.85)',
                     border: '1px solid rgba(255,255,255,0.08)',
