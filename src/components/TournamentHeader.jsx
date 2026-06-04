@@ -52,7 +52,7 @@ export default function TournamentHeader() {
           className="h-20 w-full"
           stageClassName="flex items-center justify-center"
           titleClassName="text-4xl md:text-5xl uppercase wc-title-gold"
-          samples={["World Cup", "Mundial", "2026"]}
+          samples={["World Cup", "2026"]}
           holdMs={2400}
           gapMs={250}
           speed={0.75}
@@ -77,16 +77,6 @@ export default function TournamentHeader() {
           }}
         />
 
-        <div className="flex items-center gap-3">
-          <div className="h-px w-16 bg-gradient-to-r from-transparent to-amber-400/70" />
-          <span
-            className="text-amber-400 text-xl font-bold tracking-[0.25em]"
-            style={{ fontFamily: "'Syne', sans-serif" }}
-          >
-            2026
-          </span>
-          <div className="h-px w-16 bg-gradient-to-l from-transparent to-amber-400/70" />
-        </div>
       </motion.div>
     </div>
   );
