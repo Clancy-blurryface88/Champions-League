@@ -1675,58 +1675,50 @@ export default function MyStats() {
                     <div className="rounded-xl p-5" style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)' }}>
                       {(() => {
                         const total = pointsBreakdownData.reduce((s, d) => s + (d?.value || 0), 0);
-                        const size = 200;
-                        const cx = size / 2, cy = size / 2;
+                        const r = 80, cx = 120, cy = 110;
+                        const semiCirc = Math.PI * r;
+                        let offset = 0;
                         return (
-                          <div className="flex flex-col md:flex-row items-center gap-6">
-                            {/* Radial bars SVG */}
-                            <div className="flex-shrink-0 relative">
-                              <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+                          <div className="flex flex-col items-center gap-5">
+                            {/* Semi-circle gauge */}
+                            <div className="relative">
+                              <svg width="240" height="130" viewBox="0 0 240 130">
+                                {/* background track */}
+                                <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="22" strokeLinecap="butt"/>
+                                {/* colored segments */}
                                 {pointsBreakdownData.map((d, i) => {
-                                  const r = 22 + i * 18;
-                                  const circ = 2 * Math.PI * r;
                                   const pct = total > 0 ? d.value / total : 0;
-                                  const len = pct * circ;
-                                  return (
-                                    <circle key={i}
-                                      cx={cx} cy={cy} r={r}
+                                  const len = pct * semiCirc - 1.5;
+                                  const dashOffset = -offset * semiCirc / 1 ;
+                                  const seg = (
+                                    <path key={i}
+                                      d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
                                       fill="none"
-                                      stroke="rgba(255,255,255,0.05)"
-                                      strokeWidth="12"
-                                    />
-                                  );
-                                })}
-                                {pointsBreakdownData.map((d, i) => {
-                                  const r = 22 + i * 18;
-                                  const circ = 2 * Math.PI * r;
-                                  const pct = total > 0 ? d.value / total : 0;
-                                  const len = pct * circ;
-                                  return (
-                                    <circle key={i}
-                                      cx={cx} cy={cy} r={r}
-                                      fill="none"
-                                      stroke={d.color || '#666'}
-                                      strokeWidth="12"
-                                      strokeLinecap="round"
-                                      strokeDasharray={`${len} ${circ - len}`}
-                                      strokeDashoffset={circ * 0.25}
+                                      stroke={d.color}
+                                      strokeWidth="22"
+                                      strokeLinecap="butt"
+                                      strokeDasharray={`${len} ${semiCirc - len}`}
+                                      strokeDashoffset={-offset * semiCirc}
                                       opacity={0.9}
                                     />
                                   );
+                                  offset += pct;
+                                  return seg;
                                 })}
-                                <text x={cx} y={cy - 6} textAnchor="middle" fill="white" fontSize="18" fontWeight="900">{parseFloat(total).toFixed(0)}</text>
-                                <text x={cx} y={cy + 12} textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="10">נקודות</text>
+                                {/* center total */}
+                                <text x={cx} y={cy - 8} textAnchor="middle" fill="white" fontSize="22" fontWeight="900">{parseFloat(total).toFixed(0)}</text>
+                                <text x={cx} y={cy + 10} textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="11">נקודות סה"כ</text>
                               </svg>
                             </div>
 
                             {/* Legend rows */}
-                            <div className="flex-1 space-y-3 w-full">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 w-full">
                               {pointsBreakdownData.map((d, i) => {
                                 const pct = total > 0 ? (d.value / total * 100).toFixed(1) : 0;
                                 return (
                                   <motion.div key={i}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: i * 0.1 }}
                                     className="flex items-center justify-between rounded-xl px-4 py-3"
                                     style={{ background:`${d.color}10`, border:`1px solid ${d.color}30` }}>
