@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import moment from "moment";
 import "moment/locale/he";
 import ScoreInput from "../components/predictions/ScoreInput";
+import StackedSections from "../components/ui/StackedSections";
 import PredictionSummary from "../components/predictions/PredictionSummary";
 import { GlowButton } from "../components/ui/GlowButton";
 import { BgAnimateButton } from "../components/ui/bg-animate-button";
@@ -658,7 +659,7 @@ export default function Predictions() {
                       transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                       className="overflow-hidden"
                     >
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3 pb-2">
+                      <StackedSections stackOffset={32} paneGap="gap-3" className="pt-3 pb-2">
                         {dayMatches.map((match, index) => {
             const isLocked = isMatchLocked(match.match_date);
             const timeInfo = getTimeUntilLock(match.match_date);
@@ -883,7 +884,7 @@ export default function Predictions() {
               </motion.div>
             );
                         })}
-                      </div>
+                      </StackedSections>
                     </motion.div>
                   )}
                 </AnimatePresence>
