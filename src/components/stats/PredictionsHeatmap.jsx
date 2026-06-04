@@ -148,10 +148,10 @@ export default function PredictionsHeatmap({ heatmapData }) {
       {/* Rounds */}
       {heatmapData.map((round, ri) => (
         <div key={round.roundId}>
-          <p className="text-slate-400 text-xs font-semibold tracking-widest uppercase mb-2">
+          <p className="text-slate-400 text-xs font-semibold tracking-widest uppercase mb-2 text-center">
             {round.roundName}
           </p>
-          <div className="flex flex-wrap gap-1.5" dir="ltr">
+          <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(8, minmax(0, 1fr))' }} dir="ltr">
             {round.matches.map((match, mi) => {
               const style  = getCellStyle(match);
               const isOpen = active?.matchId === match.matchId;

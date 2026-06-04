@@ -1147,7 +1147,6 @@ export default function MyStats() {
                     <span>🗺️</span>
                     מפת ניחושים
                   </CardTitle>
-                  <p className="text-slate-400 text-xs text-center">כל משחק — צבע לפי כמות הנקודות</p>
                 </CardHeader>
                 <CardContent>
                   <PredictionsHeatmap heatmapData={heatmapData} />
