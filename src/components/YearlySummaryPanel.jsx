@@ -37,17 +37,8 @@ const OverallLeaderboardCard = ({ summaryData, leaderboardRefId, setLeaderboardR
 
   return (
     <div className="flex flex-col items-center justify-center h-full text-center p-4 w-full">
-      <div className="relative mb-6 mt-8">
-        <div className="absolute inset-0 bg-blue-500 blur-2xl opacity-20 rounded-full"></div>
-        <img
-          src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68656264510003eeef16bac3/07fec56e0_trophy_2040152.png"
-          alt="Trophy"
-          draggable={false}
-          className="w-24 h-24 object-contain relative z-10 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)] pointer-events-none" />
-
-      </div>
-
-      <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-blue-500 to-blue-700 mb-2 tracking-tight">
+      <h2 className="text-3xl font-black mb-2 tracking-tight mt-8"
+        style={{ background:'linear-gradient(135deg,#fde68a,#fbbf24,#f59e0b)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
         הטבלה הכללית
       </h2>
       <p className="text-slate-400 text-sm mb-6">לחץ על משתתף ובדוק את פער הנקודות</p>
@@ -885,10 +876,6 @@ export default function YearlySummaryPanel({ onClose, user }) {
         ))}
       </div>
 
-      {/* Page counter */}
-      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-40">
-        <span className="text-xs font-semibold text-white/30 tracking-wider">{page + 1} / {pages.length}</span>
-      </div>
 
       {/* Card content — tap right half to advance, left half to go back */}
       <div className="flex-grow flex items-center justify-center relative overflow-hidden z-10">
