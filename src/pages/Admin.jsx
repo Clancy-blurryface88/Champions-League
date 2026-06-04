@@ -16,10 +16,7 @@ import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
-import AdminCardBgDemo from "../components/admin/AdminCardBgDemo";
-import AdminGoldGreenDemo from "../components/admin/AdminGoldGreenDemo";
 import AdminTournamentPredictionsDemo from "../components/admin/AdminTournamentPredictionsDemo";
-import AdminFooterButtonDemo from "../components/admin/AdminFooterButtonDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -78,11 +75,8 @@ export default function Admin() {
       case 'scoring': return <AdminScoring onUpdateComplete={() => {}} />;
       case 'live-data': return <AdminLiveData />;
       case 'import': return <AdminImportMatches />;
-      case 'reset': return <AdminReset />;
-      case 'btn-demo': return <AdminFooterButtonDemo />;
-      case 'card-bg':    return <AdminCardBgDemo />;
-      case 'gold-green':  return <AdminGoldGreenDemo />;
-      case 'tourn-pred':  return <AdminTournamentPredictionsDemo />;
+      case 'reset':      return <AdminReset />;
+      case 'tourn-pred': return <AdminTournamentPredictionsDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -97,11 +91,8 @@ export default function Admin() {
     { id: 'scoring', label: 'Calculate Scores', icon: Calculator },
     { id: 'live-data', label: 'Live Data Test', icon: BarChart3 },
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
-    { id: 'reset',    label: 'Reset Center',   icon: RotateCcw },
-    { id: 'btn-demo', label: '🎨 Button Demo', icon: Eye },
-    { id: 'card-bg',    label: '🃏 Card BG Demo',     icon: Eye },
-    { id: 'gold-green',  label: '🌿 Gold+Green Demo',    icon: Eye },
-    { id: 'tourn-pred',  label: '🏆 Tournament Predictions', icon: Trophy },
+    { id: 'reset',     label: 'Reset Center',            icon: RotateCcw },
+    { id: 'tourn-pred',label: '🏆 Tournament Predictions', icon: Trophy },
   ];
 
   return (
