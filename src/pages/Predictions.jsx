@@ -682,11 +682,11 @@ export default function Predictions() {
                     WebkitBackdropFilter: 'blur(20px) saturate(140%)',
                     boxShadow: '0 2px 16px rgba(0,0,0,0.35)',
                   } : {
-                    background: 'linear-gradient(160deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 100%)',
-                    backdropFilter: 'blur(60px) saturate(80%) brightness(1.2) grayscale(0.6)',
-                    WebkitBackdropFilter: 'blur(60px) saturate(80%) brightness(1.2) grayscale(0.6)',
-                    border: '1px solid rgba(255,255,255,0.25)',
-                    boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.1), 0 16px 48px rgba(0,0,0,0.3)',
+                    background: 'radial-gradient(ellipse at 20% 20%, rgba(99,102,241,0.45) 0%, transparent 55%), radial-gradient(ellipse at 80% 85%, rgba(20,184,166,0.4) 0%, transparent 55%), radial-gradient(ellipse at 60% 10%, rgba(139,92,246,0.25) 0%, transparent 45%), rgba(8,10,20,0.75)',
+                    backdropFilter: 'blur(40px) saturate(200%)',
+                    WebkitBackdropFilter: 'blur(40px) saturate(200%)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(0,0,0,0.2), 0 20px 60px rgba(0,0,0,0.6), 0 0 80px rgba(99,102,241,0.08), 0 0 80px rgba(20,184,166,0.08)',
                   }}
                 >
                   {/* Noise texture overlay */}
