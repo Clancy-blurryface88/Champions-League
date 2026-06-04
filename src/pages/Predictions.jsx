@@ -682,11 +682,11 @@ export default function Predictions() {
                     WebkitBackdropFilter: 'blur(20px) saturate(140%)',
                     boxShadow: '0 2px 16px rgba(0,0,0,0.35)',
                   } : {
-                    background: 'linear-gradient(160deg, rgba(35,28,12,0.97) 0%, rgba(18,28,10,0.98) 45%, rgba(10,18,6,1) 100%)',
-                    backdropFilter: 'blur(36px) saturate(160%)',
-                    WebkitBackdropFilter: 'blur(36px) saturate(160%)',
-                    border: '1px solid rgba(80,70,30,0.3)',
-                    boxShadow: '0 8px 40px rgba(0,0,0,0.75), inset 0 1px 0 rgba(180,150,60,0.1)',
+                    background: 'rgba(255,255,255,0.06)',
+                    backdropFilter: 'blur(40px)',
+                    WebkitBackdropFilter: 'blur(40px)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), 0 8px 32px rgba(0,0,0,0.3)',
                   }}
                 >
                   {/* Noise texture overlay */}
