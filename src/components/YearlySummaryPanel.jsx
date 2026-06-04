@@ -432,35 +432,61 @@ export default function YearlySummaryPanel({ onClose, user }) {
 
   // --- CARD COMPONENTS ---
 
-  const Card1_Intro = () =>
-  <div className="flex flex-col items-center justify-center h-full text-center p-6">
-      <h2 className="text-4xl font-bold text-white mb-8">World Cup Reel</h2>
-      <div className="relative mb-10">
-        <div className="absolute inset-0 bg-blue-500 blur-3xl opacity-20 rounded-full"></div>
-        <img
-        src={LEAGUE_ICON_URL}
-        alt="League Icon"
-        draggable={false}
-        className="w-40 h-40 object-contain relative z-10 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)] pointer-events-none" />
+  const Card1_Intro = () => (
+    <div className="flex flex-col items-center justify-center h-full text-center px-8 select-none">
+      <motion.p initial={{ opacity:0, y:-12 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.1 }}
+        className="text-xs uppercase tracking-[0.3em] text-white/30 font-semibold mb-8">World Cup 2026</motion.p>
 
-      </div>
-      <p className="text-xl text-slate-300 mb-2">המיקום שלך</p>
-      <div className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 to-yellow-600">
-        #{summaryData.myOverallRank}
-      </div>
-    </div>;
+      <motion.div initial={{ scale:0.7, opacity:0 }} animate={{ scale:1, opacity:1 }} transition={{ delay:0.15, type:'spring', stiffness:200 }}
+        className="relative mb-8">
+        <div className="absolute inset-0 rounded-full blur-3xl" style={{ background:'rgba(59,130,246,0.35)', transform:'scale(1.5)' }} />
+        <img src={LEAGUE_ICON_URL} alt="Trophy" draggable={false}
+          className="w-36 h-36 object-contain relative z-10 pointer-events-none"
+          style={{ filter:'drop-shadow(0 0 24px rgba(59,130,246,0.6))' }} />
+      </motion.div>
+
+      <motion.h1 initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.25 }}
+        className="text-5xl font-black mb-2"
+        style={{ background:'linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.6) 100%)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
+        World Cup Reel
+      </motion.h1>
+
+      <motion.p initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.35 }}
+        className="text-white/40 text-sm mb-10">הסטטיסטיקה המלאה שלך</motion.p>
+
+      <motion.div initial={{ opacity:0, scale:0.8 }} animate={{ opacity:1, scale:1 }} transition={{ delay:0.45, type:'spring' }}
+        className="rounded-2xl px-10 py-5" style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', backdropFilter:'blur(20px)' }}>
+        <p className="text-white/40 text-xs uppercase tracking-widest mb-1">המיקום שלך</p>
+        <p className="text-6xl font-black" style={{ background:'linear-gradient(135deg,#fbbf24,#f59e0b)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
+          #{summaryData.myOverallRank}
+        </p>
+      </motion.div>
+
+      <motion.p initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.6 }}
+        className="mt-8 text-white/25 text-xs">החלק ימינה להמשיך →</motion.p>
+    </div>
+  );
 
 
-  const Card2_TotalPoints = () =>
-  <div className="flex flex-col items-center justify-center h-full text-center p-6">
-      <div className="w-64 h-64 mb-4" style={{ filter: 'hue-rotate(-165deg) saturate(2) brightness(1.2)' }}>
+  const Card2_TotalPoints = () => (
+    <div className="flex flex-col items-center justify-center h-full text-center px-8 select-none">
+      <motion.p initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.1 }}
+        className="text-xs uppercase tracking-[0.25em] text-white/30 mb-6">סה"כ נקודות</motion.p>
+
+      <motion.div initial={{ scale:0.5, opacity:0 }} animate={{ scale:1, opacity:1 }} transition={{ delay:0.2, type:'spring', stiffness:150 }}
+        className="w-56 h-56 mb-4" style={{ filter:'hue-rotate(-165deg) saturate(2) brightness(1.3)' }}>
         <LottieAnimation src="https://media.base44.com/files/public/68656264510003eeef16bac3/46691d85b_coinsblue.json" loop={false} />
-      </div>
-      <h2 className="text-2xl font-bold text-white mb-6">סה"כ נקודות שצברת עד כה</h2>
-      <div className="text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 to-yellow-600 drop-shadow-lg">
-        {summaryData.totalPoints}
-      </div>
-    </div>;
+      </motion.div>
+
+      <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.35 }}>
+        <div className="text-[5.5rem] font-black leading-none"
+          style={{ background:'linear-gradient(135deg,#fde68a,#fbbf24,#f59e0b)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', filter:'drop-shadow(0 0 30px rgba(251,191,36,0.4))' }}>
+          {summaryData.totalPoints}
+        </div>
+        <p className="text-white/40 text-sm mt-2 tracking-widest uppercase">נקודות</p>
+      </motion.div>
+    </div>
+  );
 
 
   const Card2b_AveragePoints = () =>
@@ -799,33 +825,79 @@ export default function YearlySummaryPanel({ onClose, user }) {
   <Card9_Outro key="9" />];
 
 
+  // Per-page color themes for dynamic background
+  const PAGE_COLORS = [
+    '#3b82f6', '#fbbf24', '#06b6d4', '#ef4444',
+    '#ef4444', '#ef4444', '#a855f7', '#f97316',
+    '#22c55e', '#fbbf24', '#60a5fa', '#fb923c',
+    '#f59e0b', '#3b82f6', '#facc15',
+  ];
+  const accent = PAGE_COLORS[page] || '#3b82f6';
+
   return (
     <motion.div
-      initial={{ y: "100%" }}
-      animate={{ y: 0 }}
-      exit={{ y: "100%" }}
-      transition={{ type: "spring", stiffness: 100, damping: 20 }}
-      className="fixed inset-0 z-50 bg-gradient-to-br from-slate-900 via-slate-800 to-black text-white flex flex-col">
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      transition={{ type: "spring", stiffness: 120, damping: 20 }}
+      className="fixed inset-0 z-50 text-white flex flex-col"
+      style={{ background: '#04060f' }}>
 
-      <div className="absolute top-4 right-4 z-50">
-        <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/10 rounded-full">
-          <X className="h-8 w-8" />
-        </Button>
+      {/* Dynamic animated background blob */}
+      <AnimatePresence mode="sync">
+        <motion.div
+          key={page}
+          initial={{ opacity: 0, scale: 0.6 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 1.2 }}
+          transition={{ duration: 0.6 }}
+          className="absolute inset-0 pointer-events-none z-0"
+          style={{
+            background: `radial-gradient(ellipse at 50% 35%, ${accent}22 0%, transparent 65%)`,
+          }}
+        />
+      </AnimatePresence>
+
+      {/* Noise texture */}
+      <div className="absolute inset-0 pointer-events-none z-0 opacity-[0.03]"
+        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundSize: '180px' }} />
+
+      {/* Close button */}
+      <div className="absolute top-14 right-4 z-50">
+        <button onClick={onClose}
+          className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-110"
+          style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}>
+          <X className="h-4 w-4 text-white/80" />
+        </button>
       </div>
 
-      {/* Progress Bar */}
-      <div className="absolute top-0 left-0 right-0 flex gap-1 p-2 z-40">
-        {pages.map((_, idx) =>
-        <div
-          key={idx}
-          className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-          idx <= page ? "bg-white" : "bg-white/20"}`
-          } />
-
-        )}
+      {/* Progress pills */}
+      <div className="absolute top-0 left-0 right-0 flex gap-1 px-3 pt-3 z-40">
+        {pages.map((_, idx) => (
+          <div key={idx} className="flex-1 h-[3px] rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.15)' }}>
+            {idx < page && <div className="h-full w-full rounded-full" style={{ background: 'rgba(255,255,255,0.7)' }} />}
+            {idx === page && (
+              <motion.div className="h-full rounded-full" style={{ background: 'white' }}
+                initial={{ width: '0%' }} animate={{ width: '100%' }}
+                transition={{ duration: 0.3 }} />
+            )}
+          </div>
+        ))}
       </div>
 
-      <div className="flex-grow flex items-center justify-center relative overflow-hidden">
+      {/* Page counter */}
+      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-40">
+        <span className="text-xs font-semibold text-white/30 tracking-wider">{page + 1} / {pages.length}</span>
+      </div>
+
+      {/* Card content — tap right half to advance, left half to go back */}
+      <div className="flex-grow flex items-center justify-center relative overflow-hidden z-10">
+        {/* Tap zones */}
+        <div className="absolute inset-0 flex z-20">
+          <div className="flex-1 cursor-pointer" onClick={() => paginate(-1)} />
+          <div className="flex-1 cursor-pointer" onClick={() => paginate(1)} />
+        </div>
+
         <AnimatePresence initial={false} custom={direction} mode="wait">
           <motion.div
             key={page}
@@ -834,66 +906,64 @@ export default function YearlySummaryPanel({ onClose, user }) {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{
-              x: { type: "spring", stiffness: 300, damping: 30 },
-              opacity: { duration: 0.2 }
-            }}
+            transition={{ x: { type: "spring", stiffness: 280, damping: 28 }, opacity: { duration: 0.15 } }}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={1}
+            dragElastic={0.8}
             onDragEnd={(e, { offset, velocity }) => {
               const swipe = swipePower(offset.x, velocity.x);
-
-              if (swipe < -swipeConfidenceThreshold) {
-                paginate(1);
-              } else if (swipe > swipeConfidenceThreshold) {
-                paginate(-1);
-              }
+              if (swipe < -swipeConfidenceThreshold) paginate(1);
+              else if (swipe > swipeConfidenceThreshold) paginate(-1);
             }}
-            className="absolute w-full h-full flex items-center justify-center">
-
+            className="absolute w-full h-full flex items-center justify-center z-10">
             {pages[page]}
           </motion.div>
         </AnimatePresence>
       </div>
 
-      <div className="flex justify-between items-center px-6 pt-6 pb-12 z-40">
-        <Button
+      {/* Bottom navigation */}
+      <div className="flex justify-between items-center px-8 pb-10 pt-4 z-40">
+        <button
           onClick={() => paginate(-1)}
-          variant="ghost"
           disabled={page === 0}
-          className={`text-white hover:bg-white/10 p-0 hover:bg-transparent transition-opacity duration-300 ${page === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          className={`w-12 h-12 rounded-full flex items-center justify-center transition-all hover:scale-110 ${page === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
+          <ArrowRight className="w-5 h-5 text-white rotate-180" />
+        </button>
 
-          <img
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68656264510003eeef16bac3/7f55c36ae_fast-forward_2491899.png"
-            alt="Previous"
-            className="w-10 h-10 object-contain rotate-180 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] hover:scale-110 transition-transform" />
+        {/* Dot indicators */}
+        <div className="flex gap-1.5 items-center">
+          {pages.map((_, idx) => (
+            <button key={idx} onClick={() => { const d = idx > page ? 1 : -1; setDirection(d); setPage(idx); }}
+              className="rounded-full transition-all duration-300"
+              style={{
+                width: idx === page ? 20 : 6,
+                height: 6,
+                background: idx === page ? accent : 'rgba(255,255,255,0.2)',
+              }} />
+          ))}
+        </div>
 
-        </Button>
-
-        {page < pages.length - 1 ?
-        <Button
-          onClick={() => paginate(1)}
-          variant="ghost"
-          className="text-white hover:bg-white/10 p-0 hover:bg-transparent">
-
-            <img
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68656264510003eeef16bac3/7f55c36ae_fast-forward_2491899.png"
-            alt="Next"
-            className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] hover:scale-110 transition-transform" />
-
-          </Button> :
-        <div className="w-10" />}
+        {page < pages.length - 1 ? (
+          <button
+            onClick={() => paginate(1)}
+            className="w-12 h-12 rounded-full flex items-center justify-center transition-all hover:scale-110"
+            style={{ background: `${accent}25`, border: `1px solid ${accent}50` }}>
+            <ArrowRight className="w-5 h-5" style={{ color: accent }} />
+          </button>
+        ) : (
+          <button onClick={onClose}
+            className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm transition-all hover:scale-110"
+            style={{ background: accent, color: '#000' }}>
+            ✓
+          </button>
+        )}
       </div>
 
-      <style jsx global>{`
-        .safe-area-bottom {
-          padding-bottom: env(safe-area-inset-bottom, 24px);
-        }
-        .animate-spin-slow {
-          animation: spin 3s linear infinite;
-        }
+      <style>{`
+        .animate-spin-slow { animation: spin 3s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
-    </motion.div>);
-
+    </motion.div>
+  );
 }
