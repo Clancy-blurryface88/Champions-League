@@ -647,7 +647,7 @@ export default function Layout({ children, currentPageName }) {
                   className="inline-flex animate-shine items-center justify-start rounded-xl text-sm border border-neutral-800 bg-[linear-gradient(110deg,rgba(0,1,3,0.7),45%,rgba(30,38,49,0.9),55%,rgba(0,1,3,0.7))] bg-[length:200%_100%] p-6 font-medium text-neutral-400 transition-colors cursor-pointer hover:scale-105 flex-col text-center h-40">
 
                     <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/77dc14e52_scoreboard_4835903.png"
+                    src="/icon-scoreboard.png"
                     alt="Predictions Results"
                     className="w-14 h-14 object-contain mb-4 shrink-0" />
 
