@@ -682,7 +682,7 @@ export default function Predictions() {
                     WebkitBackdropFilter: 'blur(20px) saturate(140%)',
                     boxShadow: '0 2px 16px rgba(0,0,0,0.35)',
                   } : {
-                    background: 'radial-gradient(ellipse at 20% 20%, rgba(99,102,241,0.45) 0%, transparent 55%), radial-gradient(ellipse at 80% 85%, rgba(20,184,166,0.4) 0%, transparent 55%), radial-gradient(ellipse at 60% 10%, rgba(139,92,246,0.25) 0%, transparent 45%), rgba(8,10,20,0.75)',
+                    background: 'radial-gradient(ellipse at 15% 20%, rgba(37,99,235,0.5) 0%, transparent 55%), radial-gradient(ellipse at 85% 80%, rgba(16,185,129,0.45) 0%, transparent 55%), rgba(5,10,18,0.8)',
                     backdropFilter: 'blur(40px) saturate(200%)',
                     WebkitBackdropFilter: 'blur(40px) saturate(200%)',
                     border: '1px solid rgba(255,255,255,0.12)',
