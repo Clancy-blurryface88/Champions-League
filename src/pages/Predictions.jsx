@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import moment from "moment";
 import "moment/locale/he";
 import ScoreInput from "../components/predictions/ScoreInput";
+import { LiquidGlassCard } from "../components/ui/liquid-glass";
 import PredictionSummary from "../components/predictions/PredictionSummary";
 import { GlowButton } from "../components/ui/GlowButton";
 import { BgAnimateButton } from "../components/ui/bg-animate-button";
@@ -673,20 +674,15 @@ export default function Predictions() {
                 className="h-full">
 
                 <div className="h-full relative overflow-hidden" style={{ borderRadius: 18 }}>
-                <Card
-                  className={`relative border-0 transition-all duration-300 h-full flex flex-col overflow-hidden !rounded-2xl ${
-                  isLocked ? 'opacity-65' : ''}`}
-                  style={isLocked ? {
-                    background: 'rgba(10,18,35,0.55)',
-                    backdropFilter: 'blur(20px) saturate(140%)',
-                    WebkitBackdropFilter: 'blur(20px) saturate(140%)',
-                    boxShadow: '0 2px 16px rgba(0,0,0,0.35)',
-                  } : {
-                    background: 'radial-gradient(ellipse at 15% 20%, rgba(37,99,235,0.5) 0%, transparent 55%), radial-gradient(ellipse at 85% 80%, rgba(16,185,129,0.45) 0%, transparent 55%), radial-gradient(ellipse at 80% 10%, rgba(251,207,51,0.4) 0%, transparent 45%), rgba(5,10,18,0.8)',
-                    backdropFilter: 'blur(40px) saturate(200%)',
-                    WebkitBackdropFilter: 'blur(40px) saturate(200%)',
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(0,0,0,0.2), 0 20px 60px rgba(0,0,0,0.6), 0 0 80px rgba(99,102,241,0.08), 0 0 80px rgba(20,184,166,0.08)',
+                <LiquidGlassCard
+                  borderRadius="18px"
+                  shadowIntensity="lg"
+                  glowIntensity="xs"
+                  className={`relative transition-all duration-300 h-full flex flex-col overflow-hidden ${isLocked ? 'opacity-65' : ''}`}
+                  style={{
+                    background: isLocked
+                      ? 'rgba(10,18,35,0.45)'
+                      : 'radial-gradient(ellipse at 15% 20%, rgba(37,99,235,0.45) 0%, transparent 55%), radial-gradient(ellipse at 85% 80%, rgba(16,185,129,0.4) 0%, transparent 55%), radial-gradient(ellipse at 80% 10%, rgba(251,207,51,0.35) 0%, transparent 45%), rgba(5,10,18,0.75)',
                   }}
                 >
                   {/* Noise texture overlay */}
@@ -878,7 +874,7 @@ export default function Predictions() {
                       </button>
                     </div>
                   </CardContent>
-                </Card>
+                </LiquidGlassCard>
                 </div>
               </motion.div>
             );
