@@ -262,7 +262,7 @@ export default function TextAnimator({ spec, samples, phrases, className, stageC
   }, [spec, samplesKey, speed, holdMs, gapMs, yTravel, titleClassName]);
 
   return (
-    <div className={cn("relative flex w-full items-center justify-center overflow-hidden", className)}>
+    <div className={cn("relative flex w-full items-center justify-center", className)}>
       <div ref={stageRef} className={cn("text-animation-stage absolute inset-0", stageClassName)}>
         {failed && effectiveSamples[0] ? (
           <h3 className={cn("text-animation-title text-animation-fallback", titleClassName)}>{effectiveSamples[0]}</h3>

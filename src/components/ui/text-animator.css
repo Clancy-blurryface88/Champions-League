@@ -11,12 +11,13 @@
   text-align: center;
   width: 100%;
   will-change: transform, opacity, filter;
+}
+
+.wc-title-gold {
   font-family: 'Russo One', sans-serif;
   letter-spacing: 0.12em;
-  background: linear-gradient(90deg, #f5c518, #fde68a, #f5c518);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #f5c518;
+  text-shadow: 0 0 40px rgba(245,197,24,0.4);
 }
 
 .text-animation-title.text-animation-fallback {

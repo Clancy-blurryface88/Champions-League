@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import TextAnimator from "./ui/TextAnimator";
 
 const HOST_FLAGS = ["🇨🇦", "🇺🇸", "🇲🇽"];
 
@@ -47,19 +48,34 @@ export default function TournamentHeader() {
           ))}
         </div>
 
-        <h1
-          className="text-4xl md:text-5xl uppercase"
-          style={{
-            fontFamily: "'Russo One', sans-serif",
-            letterSpacing: '0.12em',
-            background: 'linear-gradient(90deg, #f5c518, #fde68a, #f5c518)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
+        <TextAnimator
+          className="h-20 w-full"
+          stageClassName="flex items-center justify-center"
+          titleClassName="text-4xl md:text-5xl uppercase wc-title-gold"
+          samples={["World Cup", "Mundial", "2026"]}
+          holdMs={2400}
+          gapMs={250}
+          speed={0.75}
+          spec={{
+            id: "wc-title",
+            target: "per-character",
+            staggerMode: "center-out",
+            enter: {
+              durationMs: 650,
+              staggerMs: 50,
+              easing: "cubic-bezier(0.2,0.8,0.2,1)",
+              from: { opacity: 0, yPx: 20, blurPx: 8, scale: 0.88 },
+              to:   { opacity: 1, yPx: 0,  blurPx: 0, scale: 1 },
+            },
+            exit: {
+              durationMs: 400,
+              staggerMs: 30,
+              easing: "cubic-bezier(0.4,0,1,1)",
+              from: { opacity: 1, yPx: 0,   blurPx: 0, scale: 1 },
+              to:   { opacity: 0, yPx: -16, blurPx: 5, scale: 0.95 },
+            },
           }}
-        >
-          World Cup
-        </h1>
+        />
 
         <div className="flex items-center gap-3">
           <div className="h-px w-16 bg-gradient-to-r from-transparent to-amber-400/70" />
