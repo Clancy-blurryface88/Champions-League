@@ -1672,97 +1672,79 @@ export default function MyStats() {
                 </CardHeader>
                 <CardContent className="p-3 md:p-6">
                   {pointsBreakdownData && pointsBreakdownData.length > 0 ?
-                    <div className="bg-slate-700/20 rounded-xl p-4 md:p-6 border border-slate-600/20">
-                      {/* Simple Pie Chart with built-in animation */}
-                      <div className="relative h-72 md:h-80 w-full mb-6">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={pointsBreakdownData}
-                              cx="50%"
-                              cy="50%"
-                              labelLine={false}
-                              label={renderCustomLabel}
-                              outerRadius={window.innerWidth < 768 ? 60 : 75}
-                              innerRadius={window.innerWidth < 768 ? 30 : 35}
-                              fill="#8884d8"
-                              dataKey="value"
-                              animationBegin={500}
-                              animationDuration={1500}
-                              className="drop-shadow-lg">
+                    <div className="rounded-xl p-5" style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)' }}>
+                      {(() => {
+                        const total = pointsBreakdownData.reduce((s, d) => s + (d?.value || 0), 0);
+                        const size = 200;
+                        const cx = size / 2, cy = size / 2;
+                        return (
+                          <div className="flex flex-col md:flex-row items-center gap-6">
+                            {/* Radial bars SVG */}
+                            <div className="flex-shrink-0 relative">
+                              <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+                                {pointsBreakdownData.map((d, i) => {
+                                  const r = 22 + i * 18;
+                                  const circ = 2 * Math.PI * r;
+                                  const pct = total > 0 ? d.value / total : 0;
+                                  const len = pct * circ;
+                                  return (
+                                    <circle key={i}
+                                      cx={cx} cy={cy} r={r}
+                                      fill="none"
+                                      stroke="rgba(255,255,255,0.05)"
+                                      strokeWidth="12"
+                                    />
+                                  );
+                                })}
+                                {pointsBreakdownData.map((d, i) => {
+                                  const r = 22 + i * 18;
+                                  const circ = 2 * Math.PI * r;
+                                  const pct = total > 0 ? d.value / total : 0;
+                                  const len = pct * circ;
+                                  return (
+                                    <circle key={i}
+                                      cx={cx} cy={cy} r={r}
+                                      fill="none"
+                                      stroke={d.color || '#666'}
+                                      strokeWidth="12"
+                                      strokeLinecap="round"
+                                      strokeDasharray={`${len} ${circ - len}`}
+                                      strokeDashoffset={circ * 0.25}
+                                      opacity={0.9}
+                                    />
+                                  );
+                                })}
+                                <text x={cx} y={cy - 6} textAnchor="middle" fill="white" fontSize="18" fontWeight="900">{parseFloat(total).toFixed(0)}</text>
+                                <text x={cx} y={cy + 12} textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="10">נקודות</text>
+                              </svg>
+                            </div>
 
-                              {pointsBreakdownData.map((entry, index) =>
-                                <Cell key={`cell-${index}`} fill={entry?.color || '#666'} />
-                              )}
-                            </Pie>
-                            <Tooltip
-                              formatter={(value, name) => {
-                                const totalPoints = pointsBreakdownData.reduce((sum, item) => sum + (item?.value || 0), 0);
-                                const percentage = totalPoints > 0 ? (value / totalPoints * 100).toFixed(1) : 0;
-                                return [
-                                  `${value ? parseFloat(value).toFixed(2) : '0'} נקודות (${percentage}%)`,
-                                  name || 'לא ידוע'
-                                ];
-                              }}
-                              contentStyle={{
-                                backgroundColor: '#1e293b',
-                                border: '1px solid #475569',
-                                borderRadius: '12px',
-                                color: '#f1f5f9',
-                                fontSize: '14px',
-                                boxShadow: '0 10px 25px rgba(0,0,0,0.25)'
-                              }}
-                            />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </div>
-
-                      {/* Manual Legend - with category colors for points */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-                        {pointsBreakdownData.map((entry, index) => {
-                          const totalPoints = pointsBreakdownData.reduce((sum, item) => sum + (item?.value || 0), 0);
-                          const percentage = totalPoints > 0 ? (entry.value / totalPoints * 100).toFixed(1) : 0;
-
-                          return (
-                            <motion.div
-                              key={index}
-                              className="flex items-center justify-between bg-slate-700/40 rounded-lg p-3 border border-slate-600/30"
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{
-                                duration: 0.4,
-                                delay: 2 + index * 0.1, // After pie animation completes
-                                ease: "easeOut"
-                              }}
-                              whileHover={{
-                                scale: 1.02,
-                                backgroundColor: "rgba(51, 65, 85, 0.6)"
-                              }}
-                            >
-                              <div className="flex items-center gap-3">
-                                <motion.div
-                                  className="w-4 h-4 rounded-full flex-shrink-0 shadow-sm"
-                                  style={{ backgroundColor: entry.color || '#666' }}
-                                  whileHover={{ scale: 1.2 }}
-                                  transition={{ duration: 0.2 }}
-                                />
-                                <span className="text-slate-200 text-sm font-medium">{entry.name}</span>
-                              </div>
-                              <div className="text-center">
-                                <span
-                                  className="text-sm font-bold"
-                                  style={{ color: entry.color || '#ffffff' }}>
-
-                                  {parseFloat(entry.value).toFixed(2)} Pts
-                                </span>
-                                <div className="text-slate-100 text-xs">
-                                  {percentage}%
-                                </div>
-                              </div>
-                            </motion.div>
-                          );
-                        })}
-                      </div>
+                            {/* Legend rows */}
+                            <div className="flex-1 space-y-3 w-full">
+                              {pointsBreakdownData.map((d, i) => {
+                                const pct = total > 0 ? (d.value / total * 100).toFixed(1) : 0;
+                                return (
+                                  <motion.div key={i}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    className="flex items-center justify-between rounded-xl px-4 py-3"
+                                    style={{ background:`${d.color}10`, border:`1px solid ${d.color}30` }}>
+                                    <div className="flex items-center gap-2">
+                                      <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: d.color }} />
+                                      <span className="text-sm text-white/70">{d.name}</span>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-sm font-bold" style={{ color: d.color }}>{parseFloat(d.value).toFixed(2)} Pts</p>
+                                      <p className="text-xs text-white/30">{pct}%</p>
+                                    </div>
+                                  </motion.div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div> :
 
                     <div className="text-center py-8 md:py-12">
