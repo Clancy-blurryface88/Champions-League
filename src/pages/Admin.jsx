@@ -17,6 +17,7 @@ import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminCardBgDemo from "../components/admin/AdminCardBgDemo";
+import AdminGoldGreenDemo from "../components/admin/AdminGoldGreenDemo";
 import AdminFooterButtonDemo from "../components/admin/AdminFooterButtonDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
@@ -78,7 +79,8 @@ export default function Admin() {
       case 'import': return <AdminImportMatches />;
       case 'reset': return <AdminReset />;
       case 'btn-demo': return <AdminFooterButtonDemo />;
-      case 'card-bg': return <AdminCardBgDemo />;
+      case 'card-bg':    return <AdminCardBgDemo />;
+      case 'gold-green': return <AdminGoldGreenDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -95,7 +97,8 @@ export default function Admin() {
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',    label: 'Reset Center',   icon: RotateCcw },
     { id: 'btn-demo', label: '🎨 Button Demo', icon: Eye },
-    { id: 'card-bg',  label: '🃏 Card BG Demo', icon: Eye },
+    { id: 'card-bg',    label: '🃏 Card BG Demo',     icon: Eye },
+    { id: 'gold-green', label: '🌿 Gold+Green Demo', icon: Eye },
   ];
 
   return (
