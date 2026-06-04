@@ -1225,7 +1225,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                   )}
                   {outcomeStatus?.type === 'wrong' && (
                     <span className="inline-flex items-center justify-center w-6 h-6 rounded-lg text-sm"
-                      style={{ background:'rgba(239,68,68,0.15)', border:'1px solid rgba(248,113,113,0.3)' }}>✕</span>
+                      style={{ background:'rgba(239,68,68,0.15)', border:'1px solid rgba(248,113,113,0.3)', color:'rgba(248,113,113,0.9)' }}>✕</span>
                   )}
                 </div>
               </div>
