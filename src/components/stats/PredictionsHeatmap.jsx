@@ -56,7 +56,6 @@ export default function PredictionsHeatmap({ heatmapData }) {
     <div className="space-y-5" dir="rtl">
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-400">
-        <span className="font-semibold text-slate-300">מפתח:</span>
         {LEGEND.map((l, i) => (
           <span key={i} className="flex items-center gap-1.5">
             <span className="w-3.5 h-3.5 rounded-sm inline-block flex-shrink-0"
