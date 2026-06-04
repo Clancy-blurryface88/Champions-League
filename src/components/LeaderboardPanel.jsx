@@ -138,12 +138,9 @@ export default function LeaderboardPanel({ onClose, user }) {
   }, [participants]);
 
   const getPositionIcon = (position) => {
-    switch (position) {
-      case 1: return <span className="text-3xl leading-none">🥇</span>;
-      case 2: return <span className="text-2xl leading-none">🥈</span>;
-      case 3: return <span className="text-2xl leading-none">🥉</span>;
-      default: return <span className="w-6 h-6 flex items-center justify-center text-slate-400 font-bold text-lg">{position}</span>;
-    }
+    const colors = { 1: '#FFD700', 2: '#C0C0C0', 3: '#CD7F32' };
+    if (colors[position]) return <span className="font-black text-lg leading-none" style={{ color: colors[position] }}>{position}</span>;
+    return <span className="w-6 h-6 flex items-center justify-center text-slate-400 font-bold text-lg">{position}</span>;
   };
 
   const getBorderColor = (position, isCurrentUser) => {
