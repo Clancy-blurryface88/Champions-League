@@ -53,7 +53,6 @@ export function LiquidGlassCard({
         backdropFilter: 'blur(40px) saturate(180%)',
         WebkitBackdropFilter: 'blur(40px) saturate(180%)',
         border: '1px solid rgba(255,255,255,0.18)',
-        filter: `url(#${filterId})`,
         ...style,
       }}
       {...props}
@@ -81,7 +80,7 @@ export function LiquidGlassCard({
         </defs>
       </svg>
 
-      {/* Top specular shine */}
+      {/* Top specular shine with subtle liquid distortion */}
       <div
         aria-hidden
         style={{
@@ -90,6 +89,7 @@ export function LiquidGlassCard({
           borderRadius,
           pointerEvents: 'none',
           background: 'linear-gradient(160deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.04) 40%, transparent 70%)',
+          filter: `url(#${filterId})`,
           zIndex: 1,
         }}
       />
