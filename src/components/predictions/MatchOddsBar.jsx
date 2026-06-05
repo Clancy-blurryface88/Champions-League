@@ -28,7 +28,7 @@ function calculateProbabilities(scoreOdds) {
 function GlassBadge({ label, pct }) {
   return (
     <div
-      className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl flex-1"
+      className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl"
       style={{
         background: 'rgba(0,0,0,0)',
         border: '0.5px solid rgba(255,255,255,0.12)',
@@ -57,7 +57,7 @@ export default function MatchOddsBar({ scoreOdds, teamA, teamB }) {
       >
         תחזית המשחק
       </span>
-      <div className="flex items-stretch gap-2 w-full">
+      <div className="flex items-center justify-center gap-2">
         <GlassBadge label={teamA} pct={probs.home} />
         <GlassBadge label="תיקו" pct={probs.draw} />
         <GlassBadge label={teamB} pct={probs.away} />
