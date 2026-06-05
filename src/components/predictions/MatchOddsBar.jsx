@@ -43,41 +43,55 @@ function getTopScores(scoreOdds, n = 5) {
     .map(e => ({ score: e.score, pct: Math.round((e.prob / total) * 100) }));
 }
 
-function GlassBadge({ label, pct }) {
+// Segmented control — no winner highlight
+function WinRow({ teamA, teamB, probs }) {
   return (
     <div
-      className="flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl flex-1"
-      style={{
-        background: 'rgba(0,0,0,0)',
-        border: '0.5px solid rgba(255,255,255,0.12)',
-        minWidth: 0,
-      }}
+      className="flex w-full rounded-xl overflow-hidden"
+      style={{ border: '1px solid rgba(255,255,255,0.12)' }}
     >
-      <span className="text-[9px] font-medium text-white/80 text-center leading-tight px-1 w-full truncate text-center">{label}</span>
-      <span className="text-sm font-bold text-white/60 leading-none">{pct}%</span>
+      {[
+        { l: teamA,  p: probs.home },
+        { l: 'תיקו', p: probs.draw },
+        { l: teamB,  p: probs.away },
+      ].map(({ l, p }, i) => (
+        <div
+          key={i}
+          className="flex-1 flex flex-col items-center py-1.5"
+          style={{ borderRight: i < 2 ? '1px solid rgba(255,255,255,0.08)' : 'none' }}
+        >
+          <span className="text-[9px] text-white/70 text-center px-1 w-full truncate text-center leading-tight">{l}</span>
+          <span className="text-sm font-bold text-white leading-none">{p}%</span>
+        </div>
+      ))}
     </div>
   );
 }
 
-function ScoreBadge({ score, pct }) {
+// Pill + blue neon glow
+function ScoreRow({ topScores }) {
   return (
-    <div
-      className="flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl flex-1"
-      style={{
-        background: 'rgba(0,0,0,0)',
-        border: '0.5px solid rgba(255,255,255,0.12)',
-        minWidth: 0,
-      }}
-    >
-      <span className="text-[11px] font-black text-white/80 leading-none">{score}</span>
-      <span className="text-[9px] font-medium text-white/50 leading-none">{pct}%</span>
+    <div className="flex flex-wrap gap-1.5 justify-center">
+      {topScores.map(({ score, pct }) => (
+        <div
+          key={score}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+          style={{
+            background: 'rgba(59,130,246,0.1)',
+            border: '1px solid rgba(59,130,246,0.5)',
+            boxShadow: '0 0 10px rgba(59,130,246,0.25)',
+          }}
+        >
+          <span className="text-[11px] font-black text-white">{score}</span>
+          <span className="text-[9px] text-blue-300/70">{pct}%</span>
+        </div>
+      ))}
     </div>
   );
 }
-
 
 export default function MatchOddsBar({ scoreOdds, teamA, teamB }) {
-  const probs = useMemo(() => calculateProbabilities(scoreOdds), [scoreOdds]);
+  const probs     = useMemo(() => calculateProbabilities(scoreOdds), [scoreOdds]);
   const topScores = useMemo(() => getTopScores(scoreOdds, 5), [scoreOdds]);
   const [open, setOpen] = useState(false);
 
@@ -105,21 +119,8 @@ export default function MatchOddsBar({ scoreOdds, teamA, teamB }) {
             transition={{ duration: 0.25, ease: 'easeInOut' }}
             className="overflow-hidden w-full flex flex-col gap-2"
           >
-            <div className="flex items-stretch gap-2 w-full">
-              <GlassBadge label={teamA} pct={probs.home} />
-              <GlassBadge label="תיקו" pct={probs.draw} />
-              <GlassBadge label={teamB} pct={probs.away} />
-            </div>
-
-            {topScores.length > 0 && (
-              <>
-                <div className="flex items-stretch gap-1.5 w-full">
-                  {topScores.map(({ score, pct }) => (
-                    <ScoreBadge key={score} score={score} pct={pct} />
-                  ))}
-                </div>
-              </>
-            )}
+            <WinRow teamA={teamA} teamB={teamB} probs={probs} />
+            {topScores.length > 0 && <ScoreRow topScores={topScores} />}
           </motion.div>
         )}
       </AnimatePresence>
