@@ -25,6 +25,10 @@ function calculateProbabilities(scoreOdds) {
   return { home: homePct, draw: drawPct, away: awayPct };
 }
 
+function firstWord(name) {
+  return name ? name.split(' ')[0] : name;
+}
+
 function GlassBadge({ label, pct }) {
   return (
     <div
@@ -34,8 +38,8 @@ function GlassBadge({ label, pct }) {
         border: '0.5px solid rgba(255,255,255,0.12)',
       }}
     >
-      <span className="text-[9px] font-medium text-white/50 text-center leading-tight">{label}</span>
-      <span className="text-sm font-black text-white leading-none">{pct}%</span>
+      <span className="text-[9px] font-medium text-white/80 text-center leading-tight">{label}</span>
+      <span className="text-sm font-bold text-white/60 leading-none">{pct}%</span>
     </div>
   );
 }
@@ -47,20 +51,13 @@ export default function MatchOddsBar({ scoreOdds, teamA, teamB }) {
 
   return (
     <div className="mt-3 flex flex-col items-center gap-2">
-      <span
-        className="text-[10px] font-semibold tracking-wide"
-        style={{
-          background: 'linear-gradient(135deg, #60a5fa, #3b82f6, #1d4ed8)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-        }}
-      >
+      <span className="text-[10px] font-semibold tracking-wide text-yellow-400">
         תחזית המשחק
       </span>
       <div className="flex items-center justify-center gap-2">
-        <GlassBadge label={teamA} pct={probs.home} />
+        <GlassBadge label={firstWord(teamA)} pct={probs.home} />
         <GlassBadge label="תיקו" pct={probs.draw} />
-        <GlassBadge label={teamB} pct={probs.away} />
+        <GlassBadge label={firstWord(teamB)} pct={probs.away} />
       </div>
     </div>
   );
