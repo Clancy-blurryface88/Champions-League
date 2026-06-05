@@ -305,7 +305,9 @@ export default function Predictions() {
   // Initialize expanded dates: expand today + future, collapse past
   useEffect(() => {
     if (sortedDateKeys.length === 0) return;
-    const initial = new Set(sortedDateKeys); // all dates open by default
+    const today = moment().startOf('day');
+    const initial = new Set(sortedDateKeys.filter(k => !moment(k).isBefore(today)));
+    if (initial.size === 0) initial.add(sortedDateKeys[sortedDateKeys.length - 1]);
     setExpandedDates(initial);
     // Set active date to today or first upcoming
     const firstOpen = sortedDateKeys.find(k => !moment(k).isBefore(today)) || sortedDateKeys[sortedDateKeys.length - 1];
@@ -622,11 +624,13 @@ export default function Predictions() {
         <div className="space-y-4">
           {sortedDateKeys.map(dateKey => {
             const dayMatches = matchesByDate[dateKey];
-            const isOpen = expandedDates.has(dateKey);
             const isPast = moment(dateKey).isBefore(moment().startOf('day'));
             const isToday = moment(dateKey).isSame(moment(), 'day');
-            const allLocked = dayMatches.every(m => isMatchLocked(m.match_date));
             const lockedCount = dayMatches.filter(m => isMatchLocked(m.match_date)).length;
+            const allLocked = lockedCount === dayMatches.length;
+            const hasLockedMatches = lockedCount > 0;
+            // Always show open if has locked/finished matches
+            const isOpen = expandedDates.has(dateKey) || hasLockedMatches;
             const openCount = dayMatches.length - lockedCount;
 
             const dayOfWeek = moment(dateKey).locale('he').format('dddd');
