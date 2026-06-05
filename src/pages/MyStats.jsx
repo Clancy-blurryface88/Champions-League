@@ -980,28 +980,33 @@ export default function MyStats() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
               className="mt-6">
-              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-white flex items-center justify-center gap-2">
-                    <FlexibleIcon src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/1cf56a1b1_game-coin_17879858.png" alt="התפתחות נקודות" size="medium" />
-                    נקודות לפי מחזור
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="rounded-[20px] relative overflow-hidden" style={{
+                background: 'linear-gradient(160deg, rgba(200,200,210,0.18) 0%, rgba(120,120,135,0.10) 50%, rgba(200,200,210,0.16) 100%)',
+                backdropFilter: 'blur(40px) saturate(140%)',
+                WebkitBackdropFilter: 'blur(40px) saturate(140%)',
+                border: '1px solid rgba(200,200,215,0.30)',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.20)',
+              }}>
+                <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)' }} />
+                <div className="relative px-6 pt-6 pb-4 text-center flex items-center justify-center gap-2">
+                  <FlexibleIcon src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/1cf56a1b1_game-coin_17879858.png" alt="התפתחות נקודות" size="medium" />
+                  <h3 className="font-bold text-lg" style={{ color: '#E8E8E8' }}>נקודות לפי מחזור</h3>
+                </div>
+                <div className="relative px-6 pb-6">
                   {chartData.length > 0 ?
-                    <div className="bg-slate-700/30 rounded-lg p-6">
+                    <div className="rounded-xl p-6" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }}>
                       <div className="relative h-48 w-full overflow-x-auto">
                         <BarChart height={100} items={chartData.map((d) => ({ label: d.round, progress: d.roundPoints || 0 }))} />
                       </div>
-                      <div className="mt-6 text-center"><p className="text-slate-400 text-sm">נקודות שהושגו בכל מחזור</p></div>
+                      <div className="mt-6 text-center"><p className="text-sm" style={{ color: 'rgba(255,255,255,0.40)' }}>נקודות שהושגו בכל מחזור</p></div>
                     </div> :
                     <div className="text-center py-8">
-                      <p className="text-slate-400">אין נתונים זמינים עדיין</p>
-                      <p className="text-slate-500 text-sm mt-2">הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
+                      <p style={{ color: 'rgba(255,255,255,0.40)' }}>אין נתונים זמינים עדיין</p>
+                      <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.28)' }}>הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
                     </div>
                   }
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </motion.div>
 
             {/* Points Percentage Chart */}
@@ -1010,28 +1015,33 @@ export default function MyStats() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.75 }}
               className="mt-6">
-              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-white flex items-center justify-center gap-2">
-                    <FlexibleIcon src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/cdffab42c_pie-chart_603148.png" alt="אחוז צבירת נקודות" size="medium" />
-                    אחוז צבירת נקודות ממקסימום אפשרי
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="rounded-[20px] relative overflow-hidden" style={{
+                background: 'linear-gradient(160deg, rgba(200,200,210,0.18) 0%, rgba(120,120,135,0.10) 50%, rgba(200,200,210,0.16) 100%)',
+                backdropFilter: 'blur(40px) saturate(140%)',
+                WebkitBackdropFilter: 'blur(40px) saturate(140%)',
+                border: '1px solid rgba(200,200,215,0.30)',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.20)',
+              }}>
+                <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)' }} />
+                <div className="relative px-6 pt-6 pb-4 text-center flex items-center justify-center gap-2">
+                  <FlexibleIcon src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/cdffab42c_pie-chart_603148.png" alt="אחוז צבירת נקודות" size="medium" />
+                  <h3 className="font-bold text-lg" style={{ color: '#E8E8E8' }}>אחוז צבירת נקודות ממקסימום אפשרי</h3>
+                </div>
+                <div className="relative px-6 pb-6">
                   {pointsPercentageChartData.length > 0 ?
-                    <div className="bg-slate-700/30 rounded-lg p-6">
+                    <div className="rounded-xl p-6" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }}>
                       <div className="relative h-48 w-full overflow-x-auto">
                         <BarChart height={100} items={pointsPercentageChartData.map((d) => ({ label: d.round, progress: d.percentage || 0 }))} colorScheme="blue" valueSuffix="%" valueLabel={false} />
                       </div>
-                      <div className="mt-6 text-center"><p className="text-slate-400 text-sm">אחוז הנקודות שהושגו מתוך המקסימום האפשרי בכל מחזור</p></div>
+                      <div className="mt-6 text-center"><p className="text-sm" style={{ color: 'rgba(255,255,255,0.40)' }}>אחוז הנקודות שהושגו מתוך המקסימום האפשרי בכל מחזור</p></div>
                     </div> :
                     <div className="text-center py-8">
-                      <p className="text-slate-400">אין נתונים זמינים עדיין</p>
-                      <p className="text-slate-500 text-sm mt-2">הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
+                      <p style={{ color: 'rgba(255,255,255,0.40)' }}>אין נתונים זמינים עדיין</p>
+                      <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.28)' }}>הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
                     </div>
                   }
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </motion.div>
 
             {/* Exact Hits Chart */}
@@ -1040,43 +1050,53 @@ export default function MyStats() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
               className="mt-6">
-              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-white flex items-center justify-center gap-2">
-                    <FlexibleIcon src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/7ec75a888_target_5987470.png" alt="פגיעות מדויקות" size="medium" />
-                    פגיעות לפי מחזור
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="rounded-[20px] relative overflow-hidden" style={{
+                background: 'linear-gradient(160deg, rgba(200,200,210,0.18) 0%, rgba(120,120,135,0.10) 50%, rgba(200,200,210,0.16) 100%)',
+                backdropFilter: 'blur(40px) saturate(140%)',
+                WebkitBackdropFilter: 'blur(40px) saturate(140%)',
+                border: '1px solid rgba(200,200,215,0.30)',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.20)',
+              }}>
+                <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)' }} />
+                <div className="relative px-6 pt-6 pb-4 text-center flex items-center justify-center gap-2">
+                  <FlexibleIcon src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/7ec75a888_target_5987470.png" alt="פגיעות מדויקות" size="medium" />
+                  <h3 className="font-bold text-lg" style={{ color: '#E8E8E8' }}>פגיעות לפי מחזור</h3>
+                </div>
+                <div className="relative px-6 pb-6">
                   {exactHitsChartData.length > 0 ?
-                    <div className="bg-slate-700/30 rounded-lg p-6">
+                    <div className="rounded-xl p-6" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }}>
                       <div className="relative h-48 w-full overflow-x-auto">
                         <BarChart height={100} items={exactHitsChartData.map((d) => ({ label: d.round, progress: d.exactHits || 0 }))} colorScheme="green" />
                       </div>
-                      <div className="mt-6 text-center"><p className="text-slate-400 text-sm">פגיעות מדויקות בכל מחזור</p></div>
+                      <div className="mt-6 text-center"><p className="text-sm" style={{ color: 'rgba(255,255,255,0.40)' }}>פגיעות מדויקות בכל מחזור</p></div>
                     </div> :
                     <div className="text-center py-8">
-                      <p className="text-slate-400">אין נתונים זמינים עדיין</p>
-                      <p className="text-slate-500 text-sm mt-2">הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
+                      <p style={{ color: 'rgba(255,255,255,0.40)' }}>אין נתונים זמינים עדיין</p>
+                      <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.28)' }}>הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
                     </div>
                   }
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </motion.div>
 
             {/* Predictions Heatmap */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center justify-center gap-2">
-                    <span>🗺️</span>
-                    מפת ניחושים
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="rounded-[20px] relative overflow-hidden" style={{
+                background: 'linear-gradient(160deg, rgba(200,200,210,0.18) 0%, rgba(120,120,135,0.10) 50%, rgba(200,200,210,0.16) 100%)',
+                backdropFilter: 'blur(40px) saturate(140%)',
+                WebkitBackdropFilter: 'blur(40px) saturate(140%)',
+                border: '1px solid rgba(200,200,215,0.30)',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.20)',
+              }}>
+                <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)' }} />
+                <div className="relative px-6 pt-6 pb-4 text-center flex items-center justify-center gap-2">
+                  <span>🗺️</span>
+                  <h3 className="font-bold text-lg" style={{ color: '#E8E8E8' }}>מפת ניחושים</h3>
+                </div>
+                <div className="relative px-6 pb-6">
                   <PredictionsHeatmap heatmapData={heatmapData} />
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </motion.div>
           </TabsContent>
 
