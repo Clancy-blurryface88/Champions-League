@@ -33,24 +33,23 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
       </motion.button>
 
       {/* תצוגת הספרה */}
-      <div className="w-12 h-20 md:w-14 md:h-24 flex items-center justify-center rounded-2xl relative"
+      <div className="w-12 h-20 md:w-14 md:h-24 flex items-center justify-center rounded-[20px] relative overflow-hidden"
         style={{
-          background: isUndefined ? 'rgba(15,20,40,0.6)' : 'rgba(20,28,55,0.75)',
+          background: hasError && isUndefined
+            ? 'rgba(248,113,113,0.10)'
+            : 'rgba(255,255,255,0.10)',
+          backdropFilter: 'blur(40px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
           border: hasError && isUndefined
-            ? '1.5px solid rgba(248,113,113,0.5)'
-            : !isUndefined
-              ? '1.5px solid rgba(255,255,255,0.18)'
-              : '1.5px solid rgba(255,255,255,0.07)',
-          boxShadow: !isUndefined
-            ? '0 0 18px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.3)'
-            : 'inset 0 2px 8px rgba(0,0,0,0.4)',
-          backdropFilter: 'blur(12px)',
+            ? '1px solid rgba(248,113,113,0.45)'
+            : isUndefined
+              ? '1px solid rgba(255,255,255,0.14)'
+              : '1px solid rgba(255,255,255,0.28)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 2px 0 rgba(255,255,255,0.50), inset 0 -1px 0 rgba(0,0,0,0.15)',
         }}>
-        {/* top specular */}
-        {!isUndefined && (
-          <div className="absolute top-0 inset-x-2 h-px rounded-full"
-            style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent)' }} />
-        )}
+        {/* glass top gloss */}
+        <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"
+          style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.22) 0%, transparent 100%)' }} />
         <AnimatePresence mode="popLayout">
           <motion.span
             key={displayValue}
