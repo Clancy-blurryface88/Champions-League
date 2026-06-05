@@ -305,9 +305,7 @@ export default function Predictions() {
   // Initialize expanded dates: expand today + future, collapse past
   useEffect(() => {
     if (sortedDateKeys.length === 0) return;
-    const today = moment().startOf('day');
-    const initial = new Set(sortedDateKeys.filter(k => !moment(k).isBefore(today)));
-    if (initial.size === 0) initial.add(sortedDateKeys[sortedDateKeys.length - 1]);
+    const initial = new Set(sortedDateKeys); // all dates open by default
     setExpandedDates(initial);
     // Set active date to today or first upcoming
     const firstOpen = sortedDateKeys.find(k => !moment(k).isBefore(today)) || sortedDateKeys[sortedDateKeys.length - 1];
@@ -792,7 +790,7 @@ export default function Predictions() {
                               'drop-shadow(0 0 18px rgba(255,255,255,0.75)) drop-shadow(0 8px 20px rgba(0,0,0,0.8))',
                               'drop-shadow(0 4px 10px rgba(0,0,0,0.5))',
                             ]}}
-                            transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}>
+                            transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}>
                             <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
                           </motion.div>
                         </div>
