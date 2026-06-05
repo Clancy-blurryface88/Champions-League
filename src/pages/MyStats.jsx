@@ -855,37 +855,37 @@ export default function MyStats() {
               transition={{ delay: 0.2 }}
               className="grid grid-cols-2 gap-6">
 
-              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-white flex items-center justify-center gap-2">
-                    ממוצע נקודות למשחק
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-blue-400 mb-2">
-                      <SlidingNumber number={averagePointsPerMatch} className="text-4xl font-bold" duration={1.0} delay={0.2} showDecimals={true} />
-                    </div>
-                    <p className="text-slate-400 text-sm"></p>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Avg per match — blue glassmorphism + neon */}
+              <div className="rounded-2xl p-5 text-center relative overflow-hidden" style={{
+                background: 'rgba(59,130,246,0.07)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                border: '1px solid rgba(59,130,246,0.28)',
+                boxShadow: '0 0 32px rgba(59,130,246,0.12), inset 0 1px 0 rgba(255,255,255,0.07)',
+              }}>
+                <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 60%, rgba(59,130,246,0.18) 0%, transparent 70%)' }} />
+                <p className="relative text-blue-300/60 text-[10px] uppercase tracking-widest mb-3">ממוצע למשחק</p>
+                <div className="relative text-4xl font-bold tabular-nums" style={{ color: '#60a5fa', textShadow: '0 0 18px rgba(96,165,250,0.85), 0 0 40px rgba(96,165,250,0.4)' }}>
+                  <SlidingNumber number={averagePointsPerMatch} className="text-4xl font-bold" duration={1.0} delay={0.2} showDecimals={true} />
+                </div>
+                <p className="relative text-blue-300/25 text-xs mt-2">נקודות</p>
+              </div>
 
-              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-white flex items-center justify-center gap-2">
-                    ממוצע נקודות למחזור
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-green-400 mb-2">
-                      <SlidingNumber number={averagePointsPerRound} className="text-4xl font-bold" duration={1.0} delay={0.4} showDecimals={true} />
-                    </div>
-                    <p className="text-slate-400 text-sm"></p>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Avg per round — green glassmorphism + neon */}
+              <div className="rounded-2xl p-5 text-center relative overflow-hidden" style={{
+                background: 'rgba(16,185,129,0.07)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                border: '1px solid rgba(16,185,129,0.28)',
+                boxShadow: '0 0 32px rgba(16,185,129,0.12), inset 0 1px 0 rgba(255,255,255,0.07)',
+              }}>
+                <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 60%, rgba(16,185,129,0.18) 0%, transparent 70%)' }} />
+                <p className="relative text-emerald-300/60 text-[10px] uppercase tracking-widest mb-3">ממוצע למחזור</p>
+                <div className="relative text-4xl font-bold tabular-nums" style={{ color: '#34d399', textShadow: '0 0 18px rgba(52,211,153,0.85), 0 0 40px rgba(52,211,153,0.4)' }}>
+                  <SlidingNumber number={averagePointsPerRound} className="text-4xl font-bold" duration={1.0} delay={0.4} showDecimals={true} />
+                </div>
+                <p className="relative text-emerald-300/25 text-xs mt-2">נקודות</p>
+              </div>
             </motion.div>
 
             {/* Best Match Card */}
