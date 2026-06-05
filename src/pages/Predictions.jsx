@@ -744,12 +744,26 @@ export default function Predictions() {
                     {/* Header: Countdown / Status */}
                     <div className="flex justify-center mb-3">
                       {timeInfo.status === 'locked' || timeInfo.status === 'finished' ?
-                      <div className="bg-slate-800/80 text-slate-300 px-3 py-1.5 rounded-2xl flex items-center gap-1.5 border border-slate-700/50">
-                          <Lock className="w-3.5 h-3.5" />
-                          <span className="text-sm font-medium">{timeInfo.text}</span>
+                        <div className="relative overflow-hidden flex items-center gap-1.5 px-4 py-1.5 rounded-2xl" style={{
+                          background: 'rgba(255,255,255,0.07)',
+                          backdropFilter: 'blur(20px) saturate(140%)',
+                          WebkitBackdropFilter: 'blur(20px) saturate(140%)',
+                          border: '1px solid rgba(255,255,255,0.15)',
+                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.30)',
+                        }}>
+                          <Lock className="w-3.5 h-3.5" style={{ color: 'rgba(255,255,255,0.50)' }} />
+                          <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.55)' }}>{timeInfo.text}</span>
                         </div> :
 
-                      <div dir="rtl" className="rounded-xl overflow-hidden border border-[#244a3d] shadow-lg flex" style={{ background: "#1a362d" }}>
+                        <div dir="rtl" className="relative overflow-hidden flex rounded-2xl" style={{
+                          background: 'rgba(52,199,89,0.12)',
+                          backdropFilter: 'blur(32px) saturate(180%)',
+                          WebkitBackdropFilter: 'blur(32px) saturate(180%)',
+                          border: '1px solid rgba(52,199,89,0.30)',
+                          boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.40)',
+                        }}>
+                          {/* gloss */}
+                          <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 100%)', borderRadius: '16px 16px 0 0' }} />
                           {[
                             { val: timeInfo.seconds, label: "שניות" },
                             { val: timeInfo.minutes, label: "דקות" },
@@ -757,11 +771,11 @@ export default function Predictions() {
                             { val: timeInfo.days,    label: "ימים"  },
                           ].map((item, i) => (
                             <React.Fragment key={item.label}>
-                              <div className="flex flex-col items-center px-3 py-1.5">
-                                <span className="font-extrabold leading-none mb-0.5 text-[#4ade80]" style={{ fontSize: "1.05rem" }}>{item.val}</span>
-                                <span className="text-[9px] font-medium" style={{ color: "#4ade80" }}>{item.label}</span>
+                              <div className="relative flex flex-col items-center px-3 py-2">
+                                <span className="font-extrabold leading-none mb-0.5" style={{ fontSize: "1.05rem", color: '#34C759' }}>{item.val}</span>
+                                <span className="text-[9px] font-semibold" style={{ color: 'rgba(52,199,89,0.70)' }}>{item.label}</span>
                               </div>
-                              {i < 3 && <div className="self-center" style={{ width: 1, height: 24, background: "rgba(74,222,128,0.2)" }} />}
+                              {i < 3 && <div className="self-center" style={{ width: 1, height: 24, background: 'rgba(52,199,89,0.20)' }} />}
                             </React.Fragment>
                           ))}
                         </div>
