@@ -56,8 +56,6 @@ function WinRow({ teamA, teamB, probs }) {
         boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 2px 0 rgba(255,255,255,0.50)',
       }}
     >
-      {/* top gloss */}
-      <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.20) 0%, transparent 100%)' }} />
       {[
         { l: teamA,  p: probs.home },
         { l: 'תיקו', p: probs.draw },
@@ -92,7 +90,6 @@ function ScoreRow({ topScores }) {
             boxShadow: '0 4px 12px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.45)',
           }}
         >
-          <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-full" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.22) 0%, transparent 100%)' }} />
           <span className="relative text-[11px] font-black text-white">{score}</span>
           <span className="relative text-[9px]" style={{ color: 'rgba(255,255,255,0.50)' }}>{pct}%</span>
         </div>
