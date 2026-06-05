@@ -49,11 +49,11 @@ function WinRow({ teamA, teamB, probs }) {
     <div
       className="flex w-full rounded-[16px] overflow-hidden relative"
       style={{
-        background: 'rgba(255,255,255,0.10)',
-        backdropFilter: 'blur(40px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-        border: '1px solid rgba(255,255,255,0.22)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 2px 0 rgba(255,255,255,0.50)',
+        background: 'rgba(255,255,255,0.06)',
+        backdropFilter: 'blur(16px) saturate(140%)',
+        WebkitBackdropFilter: 'blur(16px) saturate(140%)',
+        border: '1px solid rgba(255,255,255,0.12)',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.20)',
       }}
     >
       {[
@@ -83,11 +83,11 @@ function ScoreRow({ topScores }) {
           key={score}
           className="relative overflow-hidden flex items-center gap-1.5 px-2.5 py-1 rounded-full"
           style={{
-            background: 'rgba(255,255,255,0.10)',
-            backdropFilter: 'blur(32px) saturate(160%)',
-            WebkitBackdropFilter: 'blur(32px) saturate(160%)',
-            border: '1px solid rgba(255,255,255,0.22)',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.45)',
+            background: 'rgba(255,255,255,0.06)',
+            backdropFilter: 'blur(16px) saturate(140%)',
+            WebkitBackdropFilter: 'blur(16px) saturate(140%)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.20)',
           }}
         >
           <span className="relative text-[11px] font-black text-white">{score}</span>
