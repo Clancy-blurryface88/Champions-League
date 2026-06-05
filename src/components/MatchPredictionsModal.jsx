@@ -174,9 +174,9 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
 
         {/* Divider */}
         <div className="flex items-center gap-3 px-5 py-3 flex-shrink-0">
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/10" />
-          <span className="text-white/30 text-[10px] uppercase tracking-[0.2em] font-semibold">ניחושים</span>
-          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/10" />
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-400/50" />
+          <span className="text-amber-400/70 text-[10px] uppercase tracking-[0.2em] font-semibold">ניחושים</span>
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-400/50" />
         </div>
 
         {/* Predictions */}
