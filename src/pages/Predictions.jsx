@@ -55,6 +55,8 @@ export default function Predictions() {
   const [expandedDates, setExpandedDates] = useState(null); // null = not yet initialized
   const [activeDateKey, setActiveDateKey] = useState(null);
   const dateRefs = useRef({});
+  const scrollContainerRef = useRef(null);
+  const isProgrammaticScrollRef = useRef(false);
 
   const urlParams = new URLSearchParams(window.location.search);
   const roundId = urlParams.get('round_id');
@@ -154,6 +156,34 @@ export default function Predictions() {
       bgColor
     };
   };
+
+  // Scroll spy — update active date tab while scrolling
+  useEffect(() => {
+    if (expandedDates === null) return;
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (isProgrammaticScrollRef.current) return;
+        const visible = entries
+          .filter(e => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible.length > 0) {
+          const key = visible[0].target.dataset.spyKey;
+          if (key) setActiveDateKey(key);
+        }
+      },
+      { root: container, rootMargin: '-180px 0px -40% 0px', threshold: 0 }
+    );
+
+    const refs = dateRefs.current;
+    Object.entries(refs).forEach(([key, el]) => {
+      if (el) { el.dataset.spyKey = key; observer.observe(el); }
+    });
+
+    return () => observer.disconnect();
+  }, [expandedDates]);
 
   const loadRoundData = useCallback(async () => {
     try {
@@ -283,6 +313,7 @@ export default function Predictions() {
 
   const scrollToDate = (dateKey) => {
     setActiveDateKey(dateKey);
+    isProgrammaticScrollRef.current = true;
     // Ensure section is open
     setExpandedDates(prev => {
       const next = new Set(prev);
@@ -291,6 +322,7 @@ export default function Predictions() {
     });
     setTimeout(() => {
       dateRefs.current[dateKey]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => { isProgrammaticScrollRef.current = false; }, 900);
     }, 50);
   };
 
@@ -444,7 +476,7 @@ export default function Predictions() {
 
   return (
     <div className="fixed inset-0 flex flex-col" style={{ top: '36px' }}>
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0">
       <div className="max-w-4xl mx-auto px-4 py-4 pb-20" style={{ paddingTop: '84px' }}>
         {/* Header */}
         <div className="flex items-center gap-4 mb-8 pt-8">
