@@ -844,55 +844,51 @@ export default function MyStats() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-              {/* Average Points Per Match Card */}
-              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-white flex items-center justify-center gap-2">
-                    ממוצע נקודות למשחק
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-blue-400 mb-2">
-                      <SlidingNumber
-                        number={averagePointsPerMatch}
-                        className="text-4xl font-bold"
-                        duration={1.0}
-                        delay={0.2}
-                        showDecimals={true}
-                      />
-                    </div>
-                    <p className="text-slate-400 text-sm">
-                    </p>
+              className="rounded-2xl overflow-hidden"
+              style={{ background: '#0f0800', boxShadow: '0 8px 32px rgba(0,0,0,0.6)', border: '1px solid rgba(200,140,10,0.2)' }}>
+              {/* Ticket gold header */}
+              <div className="px-4 py-2.5 flex items-center justify-between"
+                style={{ background: 'linear-gradient(90deg,#a06808,#e09818,#a06808)' }}>
+                <div>
+                  <p className="text-amber-100/60 font-bold tracking-widest" style={{ fontSize: 8 }}>FIFA WORLD CUP™</p>
+                  <p className="text-white font-black text-sm leading-tight">2026</p>
+                </div>
+                <p className="text-white/60 text-xs tracking-wide">ממוצע נקודות</p>
+              </div>
+              {/* Two stats with perforated divider */}
+              <div className="flex">
+                <div className="flex-1 flex flex-col items-center justify-center py-7 px-4">
+                  <p className="text-amber-200/35 text-xs mb-2 tracking-widest">למשחק</p>
+                  <div className="text-4xl font-bold" style={{ color: '#fde68a', textShadow: '0 0 28px rgba(253,230,138,0.9), 0 0 56px rgba(253,230,138,0.4)' }}>
+                    <SlidingNumber
+                      number={averagePointsPerMatch}
+                      className="text-4xl font-bold"
+                      duration={1.0}
+                      delay={0.2}
+                      showDecimals={true}
+                    />
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Average Points Per Round Card */}
-              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-white flex items-center justify-center gap-2">
-                    ממוצע נקודות למחזור
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-green-400 mb-2">
-                      <SlidingNumber
-                        number={averagePointsPerRound}
-                        className="text-4xl font-bold"
-                        duration={1.0}
-                        delay={0.4}
-                        showDecimals={true}
-                      />
-                    </div>
-                    <p className="text-slate-400 text-sm">
-                    </p>
+                </div>
+                <div className="flex flex-col justify-evenly items-center py-3"
+                  style={{ borderLeft: '2px dashed rgba(200,140,10,0.2)' }}>
+                  {Array.from({ length: 7 }).map((_, i) => (
+                    <div key={i} className="w-1.5 h-1.5 rounded-full mx-1.5"
+                      style={{ background: '#0f0800', border: '1px solid rgba(200,140,10,0.25)' }} />
+                  ))}
+                </div>
+                <div className="flex-1 flex flex-col items-center justify-center py-7 px-4">
+                  <p className="text-amber-200/35 text-xs mb-2 tracking-widest">למחזור</p>
+                  <div className="text-4xl font-bold" style={{ color: '#fde68a', textShadow: '0 0 28px rgba(253,230,138,0.9), 0 0 56px rgba(253,230,138,0.4)' }}>
+                    <SlidingNumber
+                      number={averagePointsPerRound}
+                      className="text-4xl font-bold"
+                      duration={1.0}
+                      delay={0.4}
+                      showDecimals={true}
+                    />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </motion.div>
 
             {/* Best Match Card - Only team logos */}
@@ -902,75 +898,74 @@ export default function MyStats() {
               transition={{ delay: 0.3 }}
               className="mt-6">
 
-              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-white flex items-center justify-center gap-2">
-                    <FlexibleIcon
-                      src="/wc-trophy.png"
-                      alt="גביע"
-                      size="large"
-                    />
-                    המשחק הכי טוב שלך
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {bestMatch ?
-                    <div className="space-y-6">
-                      {/* Match Teams - Only logos */}
-                      <div className="flex items-center justify-between gap-4">
-                        {/* Team A Logo */}
-                        <div className="flex items-center justify-center flex-1">
-                          <TeamFlag logo={bestMatch.match.team_a_logo} name={bestMatch.match.team_a} className="w-12 h-12 " />
-                        </div>
+              <div className="rounded-2xl overflow-hidden"
+                style={{ background: '#0f0800', boxShadow: '0 8px 32px rgba(0,0,0,0.6)', border: '1px solid rgba(200,140,10,0.2)' }}>
+                {/* Ticket gold header — no trophy icon */}
+                <div className="px-4 py-2.5 flex items-center justify-between"
+                  style={{ background: 'linear-gradient(90deg,#a06808,#e09818,#a06808)' }}>
+                  <div>
+                    <p className="text-amber-100/60 font-bold tracking-widest" style={{ fontSize: 8 }}>FIFA WORLD CUP™</p>
+                    <p className="text-white font-black text-sm leading-tight">2026</p>
+                  </div>
+                  <p className="text-white/70 text-sm font-semibold">המשחק הכי טוב שלך</p>
+                </div>
 
-                        {/* Score in center */}
-                        <div className="bg-slate-700 px-4 py-2 rounded-lg flex-shrink-0">
-                          <span className="text-white font-bold text-xl">
+                <div className="p-5">
+                  {bestMatch ?
+                    <div className="space-y-4">
+                      {/* Flags + Score — flags only, no text names */}
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center justify-center flex-1">
+                          <TeamFlag logo={bestMatch.match.team_a_logo} name={bestMatch.match.team_a} className="w-14 h-14" />
+                        </div>
+                        <div className="px-4 py-2 rounded-xl flex-shrink-0"
+                          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(200,140,10,0.2)' }}>
+                          <span className="font-bold text-xl" style={{ color: '#fde68a', textShadow: '0 0 16px rgba(253,230,138,0.7)' }}>
                             {bestMatch.match.actual_score_a} - {bestMatch.match.actual_score_b}
                           </span>
                         </div>
-
-                        {/* Team B Logo */}
                         <div className="flex items-center justify-center flex-1">
-                          <TeamFlag logo={bestMatch.match.team_b_logo} name={bestMatch.match.team_b} className="w-12 h-12 " />
+                          <TeamFlag logo={bestMatch.match.team_b_logo} name={bestMatch.match.team_b} className="w-14 h-14" />
                         </div>
                       </div>
 
-                      {/* Prediction Details */}
-                      <div className="bg-slate-700/50 rounded-lg p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
-                          <div>
-                            <p className="text-slate-400 text-sm">הניחוש שלך</p>
-                            <p className="text-white font-bold text-lg">
-                              {bestMatch.prediction.predicted_score_a} - {bestMatch.prediction.predicted_score_b}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-slate-400 text-sm">נקודות</p>
-                            <Badge className="bg-green-600/20 text-green-300 text-lg px-3 py-1">
-                              {bestMatch.prediction.points_earned}
-                            </Badge>
-                          </div>
+                      {/* Perforated divider */}
+                      <div style={{ borderTop: '2px dashed rgba(200,140,10,0.2)' }} />
+
+                      {/* Prediction stub */}
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-amber-200/35 text-xs mb-0.5 tracking-wide">הניחוש שלך</p>
+                          <p className="font-bold text-lg text-white">
+                            {bestMatch.prediction.predicted_score_a} - {bestMatch.prediction.predicted_score_b}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-amber-200/35 text-xs mb-0.5 tracking-wide">נקודות</p>
+                          <p className="text-3xl font-black" style={{ color: '#fde68a', textShadow: '0 0 24px rgba(253,230,138,0.9), 0 0 50px rgba(253,230,138,0.4)' }}>
+                            {bestMatch.prediction.points_earned}
+                          </p>
                         </div>
                       </div>
 
-                      {/* Match Date */}
-                      <div className="flex items-center justify-center gap-2 text-slate-400">
-                        <Calendar className="w-4 h-4" />
-                        <span>{new Date(bestMatch.match.match_date).toLocaleDateString('he-IL')}</span>
+                      {/* Date */}
+                      <div className="flex items-center gap-2 pt-2" style={{ borderTop: '1px solid rgba(200,140,10,0.1)' }}>
+                        <Calendar className="w-3 h-3" style={{ color: 'rgba(253,230,138,0.3)' }} />
+                        <span className="text-xs" style={{ color: 'rgba(253,230,138,0.3)' }}>
+                          {new Date(bestMatch.match.match_date).toLocaleDateString('he-IL')}
+                        </span>
                       </div>
                     </div> :
 
                     <div className="text-center py-8">
-                      <div className="text-6xl mb-4">🏆</div>
-                      <p className="text-slate-400 text-lg"></p>
-                      <p className="text-slate-500 text-sm mt-2">
+                      <div className="text-6xl mb-4 opacity-30">⚽</div>
+                      <p className="text-amber-200/30 text-sm">
                         המשחק הטוב ביותר שלך יופיע כאן ברגע שתצבור נקודות
                       </p>
                     </div>
                   }
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </motion.div>
 
 
