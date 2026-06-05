@@ -17,6 +17,7 @@ import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminAppleLiquidGlassDemo from "../components/admin/AdminAppleLiquidGlassDemo";
+import AdminTimerColorDemo from "../components/admin/AdminTimerColorDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -77,6 +78,7 @@ export default function Admin() {
       case 'import': return <AdminImportMatches />;
       case 'reset': return <AdminReset />;
       case 'liquid-glass-demo': return <AdminAppleLiquidGlassDemo />;
+      case 'timer-color-demo': return <AdminTimerColorDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -93,6 +95,7 @@ export default function Admin() {
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset', label: 'Reset Center', icon: RotateCcw },
     { id: 'liquid-glass-demo', label: 'Liquid Glass Demo', icon: Layers },
+    { id: 'timer-color-demo', label: 'Timer Color Demo', icon: Target },
   ];
 
   return (
