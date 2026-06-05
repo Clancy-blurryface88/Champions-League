@@ -36,16 +36,16 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
       <div className="w-12 h-20 md:w-14 md:h-24 flex items-center justify-center rounded-[20px] relative overflow-hidden"
         style={{
           background: hasError && isUndefined
-            ? 'rgba(248,113,113,0.10)'
-            : 'rgba(255,255,255,0.10)',
-          backdropFilter: 'blur(40px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+            ? 'rgba(248,113,113,0.07)'
+            : 'rgba(255,255,255,0.06)',
+          backdropFilter: 'blur(16px) saturate(140%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(140%)',
           border: hasError && isUndefined
-            ? '1px solid rgba(248,113,113,0.45)'
+            ? '1px solid rgba(248,113,113,0.35)'
             : isUndefined
-              ? '1px solid rgba(255,255,255,0.14)'
-              : '1px solid rgba(255,255,255,0.28)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 2px 0 rgba(255,255,255,0.50), inset 0 -1px 0 rgba(0,0,0,0.15)',
+              ? '1px solid rgba(255,255,255,0.10)'
+              : '1px solid rgba(255,255,255,0.18)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.25)',
         }}>
         {/* glass top gloss */}
         <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"
