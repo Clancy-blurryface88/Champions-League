@@ -31,7 +31,7 @@ function GlassBadge({ label, pct }) {
       className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl flex-1"
       style={{
         background: 'rgba(0,0,0,0)',
-        border: '1px solid rgba(255,255,255,0.12)',
+        border: '0.5px solid rgba(255,255,255,0.12)',
       }}
     >
       <span className="text-[9px] font-medium text-white/50 text-center leading-tight">{label}</span>
