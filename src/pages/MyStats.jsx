@@ -814,11 +814,13 @@ export default function MyStats() {
 
           </TabsContent>
 
-          <TabsContent value="stats" forceMount className="data-[state=inactive]:hidden">
-            <div className="space-y-3 pt-1">
-
-            {/* World Cup Reel */}
-            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
+          <TabsContent value="stats" forceMount className="space-y-6 data-[state=inactive]:hidden">
+            {/* World Cup Reel Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
               <div
                 onClick={() => window.dispatchEvent(new Event('openYearlySummaryPanel'))}
                 className="group relative grid w-full cursor-pointer overflow-hidden rounded-2xl px-4 py-5 shadow-[0_1000px_0_0_hsl(0_0%_20%)_inset] transition-colors duration-200"
@@ -837,122 +839,217 @@ export default function MyStats() {
               </div>
             </motion.div>
 
-            {/* Averages — scoreboard split */}
-            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.08 }}>
-              <div className="grid grid-cols-2 divide-x divide-white/[0.06] rounded-2xl overflow-hidden border border-white/[0.08]" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                <div className="px-5 py-7 flex flex-col gap-1">
-                  <p className="text-[10px] uppercase tracking-[0.18em] font-semibold" style={{ color: 'rgba(245,197,24,0.55)' }}>ממוצע למשחק</p>
-                  <div className="text-5xl font-bold text-white mt-2 tabular-nums leading-none">
-                    <SlidingNumber number={averagePointsPerMatch} className="text-5xl font-bold" duration={1.0} delay={0.2} showDecimals={true} />
+            {/* Combined Average Statistics Cards */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-white flex items-center justify-center gap-2">
+                    ממוצע נקודות למשחק
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-blue-400 mb-2">
+                      <SlidingNumber number={averagePointsPerMatch} className="text-4xl font-bold" duration={1.0} delay={0.2} showDecimals={true} />
+                    </div>
+                    <p className="text-slate-400 text-sm"></p>
                   </div>
-                  <p className="text-white/20 text-xs mt-1.5">נקודות</p>
-                </div>
-                <div className="px-5 py-7 flex flex-col gap-1">
-                  <p className="text-[10px] uppercase tracking-[0.18em] font-semibold" style={{ color: 'rgba(245,197,24,0.55)' }}>ממוצע למחזור</p>
-                  <div className="text-5xl font-bold text-white mt-2 tabular-nums leading-none">
-                    <SlidingNumber number={averagePointsPerRound} className="text-5xl font-bold" duration={1.0} delay={0.4} showDecimals={true} />
+                </CardContent>
+              </Card>
+
+              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-white flex items-center justify-center gap-2">
+                    ממוצע נקודות למחזור
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-green-400 mb-2">
+                      <SlidingNumber number={averagePointsPerRound} className="text-4xl font-bold" duration={1.0} delay={0.4} showDecimals={true} />
+                    </div>
+                    <p className="text-slate-400 text-sm"></p>
                   </div>
-                  <p className="text-white/20 text-xs mt-1.5">נקודות</p>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </motion.div>
 
-            {/* Best Match */}
-            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.16 }}>
-              <div className="rounded-2xl border border-white/[0.08] overflow-hidden" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                {/* Section header */}
-                <div className="px-5 py-3.5 flex items-center justify-between border-b border-white/[0.05]">
-                  <p className="text-[10px] uppercase tracking-[0.18em] font-semibold" style={{ color: 'rgba(245,197,24,0.55)' }}>המשחק הכי טוב שלך</p>
-                  {bestMatch && (
-                    <p className="text-white/20 text-xs tabular-nums">
-                      {new Date(bestMatch.match.match_date).toLocaleDateString('he-IL')}
-                    </p>
-                  )}
-                </div>
+            {/* Best Match Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mt-6">
 
-                {bestMatch ? (
-                  <div className="p-5 space-y-4">
-                    {/* Teams + score */}
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <TeamFlag logo={bestMatch.match.team_a_logo} name={bestMatch.match.team_a} className="w-10 h-10 flex-shrink-0" />
-                        <span className="text-white/40 text-xs truncate">{bestMatch.match.team_a}</span>
+              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-white flex items-center justify-center gap-2">
+                    <FlexibleIcon src="/wc-trophy.png" alt="גביע" size="large" />
+                    המשחק הכי טוב שלך
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {bestMatch ?
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center justify-center flex-1">
+                          <TeamFlag logo={bestMatch.match.team_a_logo} name={bestMatch.match.team_a} className="w-12 h-12 " />
+                        </div>
+                        <div className="bg-slate-700 px-4 py-2 rounded-lg flex-shrink-0">
+                          <span className="text-white font-bold text-xl">
+                            {bestMatch.match.actual_score_a} - {bestMatch.match.actual_score_b}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-center flex-1">
+                          <TeamFlag logo={bestMatch.match.team_b_logo} name={bestMatch.match.team_b} className="w-12 h-12 " />
+                        </div>
                       </div>
-                      <div className="flex-shrink-0 px-4 py-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                        <span className="text-white font-bold text-xl tabular-nums tracking-tight">
-                          {bestMatch.match.actual_score_a} – {bestMatch.match.actual_score_b}
-                        </span>
+                      <div className="bg-slate-700/50 rounded-lg p-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
+                          <div>
+                            <p className="text-slate-400 text-sm">הניחוש שלך</p>
+                            <p className="text-white font-bold text-lg">
+                              {bestMatch.prediction.predicted_score_a} - {bestMatch.prediction.predicted_score_b}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-slate-400 text-sm">נקודות</p>
+                            <Badge className="bg-green-600/20 text-green-300 text-lg px-3 py-1">
+                              {bestMatch.prediction.points_earned}
+                            </Badge>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-1 min-w-0 flex-row-reverse">
-                        <TeamFlag logo={bestMatch.match.team_b_logo} name={bestMatch.match.team_b} className="w-10 h-10 flex-shrink-0" />
-                        <span className="text-white/40 text-xs truncate text-right">{bestMatch.match.team_b}</span>
+                      <div className="flex items-center justify-center gap-2 text-slate-400">
+                        <Calendar className="w-4 h-4" />
+                        <span>{new Date(bestMatch.match.match_date).toLocaleDateString('he-IL')}</span>
                       </div>
+                    </div> :
+                    <div className="text-center py-8">
+                      <div className="text-6xl mb-4">🏆</div>
+                      <p className="text-slate-400 text-lg"></p>
+                      <p className="text-slate-500 text-sm mt-2">
+                        המשחק הטוב ביותר שלך יופיע כאן ברגע שתצבור נקודות
+                      </p>
                     </div>
-                    {/* Prediction + points */}
-                    <div className="grid grid-cols-2 divide-x divide-white/[0.05] rounded-xl border border-white/[0.06]" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <div className="px-4 py-3 text-center">
-                        <p className="text-[10px] uppercase tracking-widest text-white/25 mb-1.5">ניחוש</p>
-                        <p className="text-white font-bold text-lg tabular-nums">
-                          {bestMatch.prediction.predicted_score_a} – {bestMatch.prediction.predicted_score_b}
-                        </p>
-                      </div>
-                      <div className="px-4 py-3 text-center">
-                        <p className="text-[10px] uppercase tracking-widest text-white/25 mb-1.5">נקודות</p>
-                        <p className="text-white font-bold text-2xl tabular-nums leading-none">
-                          {bestMatch.prediction.points_earned}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="px-5 py-10 text-center">
-                    <p className="text-white/20 text-sm">המשחק הטוב ביותר שלך יופיע כאן ברגע שתצבור נקודות</p>
-                  </div>
-                )}
-              </div>
+                  }
+                </CardContent>
+              </Card>
             </motion.div>
 
 
 
 
 
-            {/* Charts */}
-            {[
-              { title: 'נקודות לפי מחזור', data: chartData, map: (d) => ({ label: d.round, progress: d.roundPoints || 0 }), delay: 0.24 },
-              { title: 'אחוז צבירת נקודות', data: pointsPercentageChartData, map: (d) => ({ label: d.round, progress: d.percentage || 0 }), colorScheme: 'blue', valueSuffix: '%', valueLabel: false, delay: 0.32 },
-              { title: 'פגיעות לפי מחזור', data: exactHitsChartData, map: (d) => ({ label: d.round, progress: d.exactHits || 0 }), colorScheme: 'green', delay: 0.40 },
-            ].map(({ title, data, map, delay, colorScheme, valueSuffix, valueLabel }) => (
-              <motion.div key={title} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay }}>
-                <div className="rounded-2xl border border-white/[0.08] overflow-hidden" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                  <div className="px-5 py-3.5 border-b border-white/[0.05]">
-                    <p className="text-[10px] uppercase tracking-[0.18em] font-semibold" style={{ color: 'rgba(245,197,24,0.55)' }}>{title}</p>
-                  </div>
-                  <div className="p-5">
-                    {data.length > 0 ? (
+            {/* Points Progression Chart */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="mt-6">
+              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-white flex items-center justify-center gap-2">
+                    <FlexibleIcon src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/1cf56a1b1_game-coin_17879858.png" alt="התפתחות נקודות" size="medium" />
+                    נקודות לפי מחזור
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {chartData.length > 0 ?
+                    <div className="bg-slate-700/30 rounded-lg p-6">
                       <div className="relative h-48 w-full overflow-x-auto">
-                        <BarChart height={100} items={data.map(map)} colorScheme={colorScheme} valueSuffix={valueSuffix} valueLabel={valueLabel} />
+                        <BarChart height={100} items={chartData.map((d) => ({ label: d.round, progress: d.roundPoints || 0 }))} />
                       </div>
-                    ) : (
-                      <p className="text-white/20 text-sm text-center py-6">הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                      <div className="mt-6 text-center"><p className="text-slate-400 text-sm">נקודות שהושגו בכל מחזור</p></div>
+                    </div> :
+                    <div className="text-center py-8">
+                      <p className="text-slate-400">אין נתונים זמינים עדיין</p>
+                      <p className="text-slate-500 text-sm mt-2">הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
+                    </div>
+                  }
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Points Percentage Chart */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.75 }}
+              className="mt-6">
+              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-white flex items-center justify-center gap-2">
+                    <FlexibleIcon src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/cdffab42c_pie-chart_603148.png" alt="אחוז צבירת נקודות" size="medium" />
+                    אחוז צבירת נקודות ממקסימום אפשרי
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {pointsPercentageChartData.length > 0 ?
+                    <div className="bg-slate-700/30 rounded-lg p-6">
+                      <div className="relative h-48 w-full overflow-x-auto">
+                        <BarChart height={100} items={pointsPercentageChartData.map((d) => ({ label: d.round, progress: d.percentage || 0 }))} colorScheme="blue" valueSuffix="%" valueLabel={false} />
+                      </div>
+                      <div className="mt-6 text-center"><p className="text-slate-400 text-sm">אחוז הנקודות שהושגו מתוך המקסימום האפשרי בכל מחזור</p></div>
+                    </div> :
+                    <div className="text-center py-8">
+                      <p className="text-slate-400">אין נתונים זמינים עדיין</p>
+                      <p className="text-slate-500 text-sm mt-2">הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
+                    </div>
+                  }
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Exact Hits Chart */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="mt-6">
+              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-white flex items-center justify-center gap-2">
+                    <FlexibleIcon src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/7ec75a888_target_5987470.png" alt="פגיעות מדויקות" size="medium" />
+                    פגיעות לפי מחזור
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {exactHitsChartData.length > 0 ?
+                    <div className="bg-slate-700/30 rounded-lg p-6">
+                      <div className="relative h-48 w-full overflow-x-auto">
+                        <BarChart height={100} items={exactHitsChartData.map((d) => ({ label: d.round, progress: d.exactHits || 0 }))} colorScheme="green" />
+                      </div>
+                      <div className="mt-6 text-center"><p className="text-slate-400 text-sm">פגיעות מדויקות בכל מחזור</p></div>
+                    </div> :
+                    <div className="text-center py-8">
+                      <p className="text-slate-400">אין נתונים זמינים עדיין</p>
+                      <p className="text-slate-500 text-sm mt-2">הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
+                    </div>
+                  }
+                </CardContent>
+              </Card>
+            </motion.div>
 
             {/* Predictions Heatmap */}
-            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.48 }}>
-              <div className="rounded-2xl border border-white/[0.08] overflow-hidden" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                <div className="px-5 py-3.5 border-b border-white/[0.05]">
-                  <p className="text-[10px] uppercase tracking-[0.18em] font-semibold" style={{ color: 'rgba(245,197,24,0.55)' }}>מפת ניחושים</p>
-                </div>
-                <div className="p-5">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center justify-center gap-2">
+                    <span>🗺️</span>
+                    מפת ניחושים
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
                   <PredictionsHeatmap heatmapData={heatmapData} />
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </motion.div>
-
-            </div>
           </TabsContent>
 
           <TabsContent value="head2head" forceMount className="space-y-6 data-[state=inactive]:hidden">
