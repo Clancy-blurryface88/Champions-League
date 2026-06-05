@@ -53,6 +53,7 @@ export default function Predictions() {
   const [selectedMatchForBrief, setSelectedMatchForBrief] = useState(null);
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const [expandedDates, setExpandedDates] = useState(null); // null = not yet initialized
+  const [forcedClosed, setForcedClosed] = useState(new Set());
   const [activeDateKey, setActiveDateKey] = useState(null);
   const dateRefs = useRef({});
   const dateTabRefs = useRef({});
@@ -315,12 +316,16 @@ export default function Predictions() {
   }, [sortedDateKeys.join(',')]);
 
   const toggleDate = (dateKey) => {
-    setExpandedDates(prev => {
-      const next = new Set(prev);
-      if (next.has(dateKey)) next.delete(dateKey);
-      else next.add(dateKey);
-      return next;
-    });
+    const hasLocked = matchesByDate[dateKey]?.some(m => isMatchLocked(m.match_date));
+    const currentlyOpen = !forcedClosed.has(dateKey) && (expandedDates?.has(dateKey) || hasLocked);
+
+    if (currentlyOpen) {
+      setForcedClosed(prev => new Set([...prev, dateKey]));
+      setExpandedDates(prev => { const next = new Set(prev); next.delete(dateKey); return next; });
+    } else {
+      setForcedClosed(prev => { const next = new Set(prev); next.delete(dateKey); return next; });
+      setExpandedDates(prev => new Set([...prev, dateKey]));
+    }
   };
 
   const scrollToDate = (dateKey) => {
@@ -629,8 +634,7 @@ export default function Predictions() {
             const lockedCount = dayMatches.filter(m => isMatchLocked(m.match_date)).length;
             const allLocked = lockedCount === dayMatches.length;
             const hasLockedMatches = lockedCount > 0;
-            // Always show open if has locked/finished matches
-            const isOpen = expandedDates.has(dateKey) || hasLockedMatches;
+            const isOpen = !forcedClosed.has(dateKey) && (expandedDates.has(dateKey) || hasLockedMatches);
             const openCount = dayMatches.length - lockedCount;
 
             const dayOfWeek = moment(dateKey).locale('he').format('dddd');
