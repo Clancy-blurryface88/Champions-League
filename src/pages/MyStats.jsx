@@ -856,37 +856,35 @@ export default function MyStats() {
               className="grid grid-cols-2 gap-6">
 
               {/* Avg per match — Apple Liquid Glass */}
-              <div className="rounded-[20px] p-5 text-center relative overflow-hidden" style={{
+              <div className="rounded-[20px] p-7 text-center relative overflow-hidden" style={{
                 background: 'rgba(255,255,255,0.10)',
                 backdropFilter: 'blur(40px) saturate(180%)',
                 WebkitBackdropFilter: 'blur(40px) saturate(180%)',
                 border: '1px solid rgba(255,255,255,0.22)',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)',
               }}>
-                {/* Glass top gloss */}
                 <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)' }} />
-                <p className="relative text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.45)', letterSpacing: '0.12em' }}>ממוצע למשחק</p>
-                <div className="relative text-4xl font-bold tabular-nums" style={{ color: '#007AFF' }}>
-                  <SlidingNumber number={averagePointsPerMatch} className="text-4xl font-bold" duration={1.0} delay={0.2} showDecimals={true} />
+                <p className="relative text-[10px] font-semibold uppercase tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.45)', letterSpacing: '0.12em' }}>ממוצע למשחק</p>
+                <div className="relative text-5xl font-bold tabular-nums" style={{ color: '#007AFF' }}>
+                  <SlidingNumber number={averagePointsPerMatch} className="text-5xl font-bold" duration={1.0} delay={0.2} showDecimals={true} />
                 </div>
-                <p className="relative text-xs mt-2" style={{ color: 'rgba(255,255,255,0.28)' }}>נקודות</p>
+                <p className="relative text-sm font-semibold mt-3" style={{ color: '#007AFF', opacity: 0.7 }}>נקודות</p>
               </div>
 
               {/* Avg per round — Apple Liquid Glass (green accent) */}
-              <div className="rounded-[20px] p-5 text-center relative overflow-hidden" style={{
+              <div className="rounded-[20px] p-7 text-center relative overflow-hidden" style={{
                 background: 'rgba(255,255,255,0.10)',
                 backdropFilter: 'blur(40px) saturate(180%)',
                 WebkitBackdropFilter: 'blur(40px) saturate(180%)',
                 border: '1px solid rgba(255,255,255,0.22)',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)',
               }}>
-                {/* Glass top gloss */}
                 <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)' }} />
-                <p className="relative text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.45)', letterSpacing: '0.12em' }}>ממוצע למחזור</p>
-                <div className="relative text-4xl font-bold tabular-nums" style={{ color: '#34C759' }}>
-                  <SlidingNumber number={averagePointsPerRound} className="text-4xl font-bold" duration={1.0} delay={0.4} showDecimals={true} />
+                <p className="relative text-[10px] font-semibold uppercase tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.45)', letterSpacing: '0.12em' }}>ממוצע למחזור</p>
+                <div className="relative text-5xl font-bold tabular-nums" style={{ color: '#34C759' }}>
+                  <SlidingNumber number={averagePointsPerRound} className="text-5xl font-bold" duration={1.0} delay={0.4} showDecimals={true} />
                 </div>
-                <p className="relative text-xs mt-2" style={{ color: 'rgba(255,255,255,0.28)' }}>נקודות</p>
+                <p className="relative text-sm font-semibold mt-3" style={{ color: '#34C759', opacity: 0.7 }}>נקודות</p>
               </div>
             </motion.div>
 
