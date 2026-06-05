@@ -756,10 +756,10 @@ export default function Predictions() {
                         </div> :
 
                         <div dir="rtl" className="relative overflow-hidden flex rounded-2xl" style={{
-                          background: 'rgba(0,122,255,0.10)',
+                          background: 'rgba(255,255,255,0.08)',
                           backdropFilter: 'blur(32px) saturate(180%)',
                           WebkitBackdropFilter: 'blur(32px) saturate(180%)',
-                          border: '1px solid rgba(0,122,255,0.28)',
+                          border: '1px solid rgba(255,255,255,0.22)',
                           boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.40)',
                         }}>
                           {/* gloss */}
@@ -772,10 +772,10 @@ export default function Predictions() {
                           ].map((item, i) => (
                             <React.Fragment key={item.label}>
                               <div className="relative flex flex-col items-center px-3 py-2">
-                                <span className="font-extrabold leading-none mb-0.5" style={{ fontSize: "1.05rem", color: '#007AFF' }}>{item.val}</span>
-                                <span className="text-[9px] font-semibold" style={{ color: 'rgba(0,122,255,0.70)' }}>{item.label}</span>
+                                <span className="font-extrabold leading-none mb-0.5" style={{ fontSize: "1.05rem", color: '#ffffff' }}>{item.val}</span>
+                                <span className="text-[9px] font-semibold" style={{ color: 'rgba(255,255,255,0.60)' }}>{item.label}</span>
                               </div>
-                              {i < 3 && <div className="self-center" style={{ width: 1, height: 24, background: 'rgba(0,122,255,0.20)' }} />}
+                              {i < 3 && <div className="self-center" style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.15)' }} />}
                             </React.Fragment>
                           ))}
                         </div>
