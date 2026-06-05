@@ -180,7 +180,7 @@ export default function Predictions() {
     const onScroll = () => {
       if (isProgrammaticScrollRef.current) return;
       const containerRect = container.getBoundingClientRect();
-      const threshold = containerRect.top + 220; // below sticky header
+      const threshold = containerRect.top + 220;
 
       let activeKey = null;
       for (const [key, el] of Object.entries(dateRefs.current)) {
@@ -195,7 +195,7 @@ export default function Predictions() {
 
     container.addEventListener('scroll', onScroll, { passive: true });
     return () => container.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [loading]); // re-attach after loading completes and DOM is ready
 
   const loadRoundData = useCallback(async () => {
     try {
