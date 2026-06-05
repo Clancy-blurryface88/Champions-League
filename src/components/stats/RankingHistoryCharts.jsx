@@ -89,7 +89,10 @@ export default function RankingHistoryCharts() {
         const predictionsMap = {};
         predictionsData.forEach((p) => {
           if (!predictionsMap[p.match_id]) predictionsMap[p.match_id] = {};
-          predictionsMap[p.match_id][p.user_id] = p;
+          const existing = predictionsMap[p.match_id][p.user_id];
+          if (!existing || new Date(p.created_date) > new Date(existing.created_date)) {
+            predictionsMap[p.match_id][p.user_id] = p;
+          }
         });
 
         const processedData = [];
@@ -123,30 +126,26 @@ export default function RankingHistoryCharts() {
             });
           });
 
-          // Sort by points descending (Cumulative)
+          // Sort by cumulative points descending
           userPointsInRound.sort((a, b) => b.points - a.points);
 
-          // Calculate ranks
           const roundData = {
             name: round.name.replace(/Group Stage - /i, 'מחזור '),
             roundId: round.id
           };
 
           for (let i = 0; i < userPointsInRound.length; i++) {
-            let rank;
             if (i > 0 && userPointsInRound[i].points === userPointsInRound[i - 1].points) {
-              // Find rank of previous user with same points
-              // This is tricky because we need to look up the rank we assigned to the previous user
-              // Easier: store rank in the object
               userPointsInRound[i].rank = userPointsInRound[i - 1].rank;
             } else {
               userPointsInRound[i].rank = i + 1;
             }
-
             roundData[userPointsInRound[i].userId] = userPointsInRound[i].rank;
           }
 
-          processedData.push(roundData);
+          // Only add data point if at least one user has points (round was actually scored)
+          const hasAnyPoints = userPointsInRound.some(u => u.points > 0);
+          if (hasAnyPoints) processedData.push(roundData);
         });
 
         setChartData(processedData);

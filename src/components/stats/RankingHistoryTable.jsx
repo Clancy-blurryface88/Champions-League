@@ -67,11 +67,14 @@ export default function RankingHistoryTable() {
                 // Wait, we need points per round.
                 // Let's iterate rounds, then users.
                 
-                // Pre-process predictions: map[matchId][userId] = prediction
-                const predictionsMap = {}; 
+                // Pre-process predictions: keep most recent per user per match
+                const predictionsMap = {};
                 predictionsData.forEach(p => {
                     if (!predictionsMap[p.match_id]) predictionsMap[p.match_id] = {};
-                    predictionsMap[p.match_id][p.user_id] = p;
+                    const existing = predictionsMap[p.match_id][p.user_id];
+                    if (!existing || new Date(p.created_date) > new Date(existing.created_date)) {
+                        predictionsMap[p.match_id][p.user_id] = p;
+                    }
                 });
 
                 sortedRounds.forEach(round => {
