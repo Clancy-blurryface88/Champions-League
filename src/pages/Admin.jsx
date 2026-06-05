@@ -16,8 +16,6 @@ import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
-import AdminPointsBreakdownDemo from "../components/admin/AdminPointsBreakdownDemo";
-import AdminExactHitsDemo from "../components/admin/AdminExactHitsDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -76,9 +74,7 @@ export default function Admin() {
       case 'scoring': return <AdminScoring onUpdateComplete={() => {}} />;
       case 'live-data': return <AdminLiveData />;
       case 'import': return <AdminImportMatches />;
-      case 'reset':          return <AdminReset />;
-      case 'points-breakdown': return <AdminPointsBreakdownDemo />;
-      case 'exact-hits-demo':  return <AdminExactHitsDemo />;
+      case 'reset': return <AdminReset />;
       default: return <AdminRounds />;
     }
   };
@@ -93,9 +89,7 @@ export default function Admin() {
     { id: 'scoring', label: 'Calculate Scores', icon: Calculator },
     { id: 'live-data', label: 'Live Data Test', icon: BarChart3 },
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
-    { id: 'reset',           label: 'Reset Center',       icon: RotateCcw },
-    { id: 'points-breakdown',label: '📊 Points Breakdown', icon: BarChart3 },
-    { id: 'exact-hits-demo', label: '🎯 Exact Hits Demo',  icon: Target },
+    { id: 'reset', label: 'Reset Center', icon: RotateCcw },
   ];
 
   return (
