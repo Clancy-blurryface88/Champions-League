@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
 import AdminMatches from "../components/admin/AdminMatches";
@@ -16,6 +16,7 @@ import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
+import AdminAppleLiquidGlassDemo from "../components/admin/AdminAppleLiquidGlassDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -75,6 +76,7 @@ export default function Admin() {
       case 'live-data': return <AdminLiveData />;
       case 'import': return <AdminImportMatches />;
       case 'reset': return <AdminReset />;
+      case 'liquid-glass-demo': return <AdminAppleLiquidGlassDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -90,6 +92,7 @@ export default function Admin() {
     { id: 'live-data', label: 'Live Data Test', icon: BarChart3 },
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset', label: 'Reset Center', icon: RotateCcw },
+    { id: 'liquid-glass-demo', label: 'Liquid Glass Demo', icon: Layers },
   ];
 
   return (
