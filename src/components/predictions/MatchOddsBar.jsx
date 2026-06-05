@@ -75,20 +75,27 @@ function ScoreBadge({ score, pct }) {
   );
 }
 
-function CollapseSection({ title, children }) {
+
+export default function MatchOddsBar({ scoreOdds, teamA, teamB }) {
+  const probs = useMemo(() => calculateProbabilities(scoreOdds), [scoreOdds]);
+  const topScores = useMemo(() => getTopScores(scoreOdds, 5), [scoreOdds]);
   const [open, setOpen] = useState(false);
+
+  if (!probs) return null;
+
   return (
-    <div className="flex flex-col items-center gap-2 w-full">
+    <div className="mt-3 flex flex-col items-center gap-2">
       <button
         onClick={() => setOpen(o => !o)}
         className="flex items-center gap-1 transition-opacity hover:opacity-80"
       >
-        <span className="text-[10px] font-semibold tracking-wide text-yellow-400">{title}</span>
+        <span className="text-[10px] font-semibold tracking-wide text-yellow-400">תחזית המשחק</span>
         <ChevronDown
           className="w-3 h-3 text-yellow-400 transition-transform duration-300"
           style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
         />
       </button>
+
       <AnimatePresence initial={false}>
         {open && (
           <motion.div
@@ -96,41 +103,27 @@ function CollapseSection({ title, children }) {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="overflow-hidden w-full"
+            className="overflow-hidden w-full flex flex-col gap-2"
           >
-            {children}
+            <div className="flex items-stretch gap-2 w-full">
+              <GlassBadge label={teamA} pct={probs.home} />
+              <GlassBadge label="תיקו" pct={probs.draw} />
+              <GlassBadge label={teamB} pct={probs.away} />
+            </div>
+
+            {topScores.length > 0 && (
+              <>
+                <span className="text-[10px] font-semibold tracking-wide text-yellow-400 text-center">הסתברות תוצאות</span>
+                <div className="flex items-stretch gap-1.5 w-full">
+                  {topScores.map(({ score, pct }) => (
+                    <ScoreBadge key={score} score={score} pct={pct} />
+                  ))}
+                </div>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
-  );
-}
-
-export default function MatchOddsBar({ scoreOdds, teamA, teamB }) {
-  const probs = useMemo(() => calculateProbabilities(scoreOdds), [scoreOdds]);
-  const topScores = useMemo(() => getTopScores(scoreOdds, 5), [scoreOdds]);
-
-  if (!probs) return null;
-
-  return (
-    <div className="mt-3 flex flex-col items-center gap-2">
-      <CollapseSection title="תחזית המשחק">
-        <div className="flex items-stretch gap-2 w-full">
-          <GlassBadge label={teamA} pct={probs.home} />
-          <GlassBadge label="תיקו" pct={probs.draw} />
-          <GlassBadge label={teamB} pct={probs.away} />
-        </div>
-      </CollapseSection>
-
-      {topScores.length > 0 && (
-        <CollapseSection title="תוצאות סבירות">
-          <div className="flex items-stretch gap-1.5 w-full">
-            {topScores.map(({ score, pct }) => (
-              <ScoreBadge key={score} score={score} pct={pct} />
-            ))}
-          </div>
-        </CollapseSection>
-      )}
     </div>
   );
 }
