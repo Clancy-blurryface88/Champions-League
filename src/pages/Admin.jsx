@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, Palette } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
 import AdminMatches from "../components/admin/AdminMatches";
@@ -16,9 +16,6 @@ import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
-import AdminOddsDemo from "../components/admin/AdminOddsDemo";
-import AdminScoresDemo from "../components/admin/AdminScoresDemo";
-import AdminPredictionsRowDemo from "../components/admin/AdminPredictionsRowDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -78,9 +75,6 @@ export default function Admin() {
       case 'live-data': return <AdminLiveData />;
       case 'import': return <AdminImportMatches />;
       case 'reset': return <AdminReset />;
-      case 'odds-demo': return <AdminOddsDemo />;
-      case 'scores-demo': return <AdminScoresDemo />;
-      case 'predictions-row-demo': return <AdminPredictionsRowDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -96,9 +90,6 @@ export default function Admin() {
     { id: 'live-data', label: 'Live Data Test', icon: BarChart3 },
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset', label: 'Reset Center', icon: RotateCcw },
-    { id: 'odds-demo', label: 'עיצובי תחזית', icon: Palette },
-    { id: 'scores-demo', label: 'עיצובי תוצאות', icon: Palette },
-    { id: 'predictions-row-demo', label: 'עיצובי ניחושים', icon: Palette },
   ];
 
   return (
