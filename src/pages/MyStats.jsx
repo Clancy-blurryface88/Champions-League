@@ -864,7 +864,7 @@ export default function MyStats() {
                 boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)',
               }}>
                 <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)' }} />
-                <p className="relative text-[10px] font-semibold uppercase tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.45)', letterSpacing: '0.12em' }}>ממוצע למשחק</p>
+                <p className="relative text-sm font-semibold mb-4" style={{ color: '#007AFF', opacity: 0.7 }}>ממוצע למשחק</p>
                 <div className="relative text-5xl font-bold tabular-nums" style={{ color: '#007AFF' }}>
                   <SlidingNumber number={averagePointsPerMatch} className="text-5xl font-bold" duration={1.0} delay={0.2} showDecimals={true} />
                 </div>
@@ -880,7 +880,7 @@ export default function MyStats() {
                 boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)',
               }}>
                 <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)' }} />
-                <p className="relative text-[10px] font-semibold uppercase tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.45)', letterSpacing: '0.12em' }}>ממוצע למחזור</p>
+                <p className="relative text-sm font-semibold mb-4" style={{ color: '#34C759', opacity: 0.7 }}>ממוצע למחזור</p>
                 <div className="relative text-5xl font-bold tabular-nums" style={{ color: '#34C759' }}>
                   <SlidingNumber number={averagePointsPerRound} className="text-5xl font-bold" duration={1.0} delay={0.4} showDecimals={true} />
                 </div>
