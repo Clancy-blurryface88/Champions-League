@@ -835,14 +835,28 @@ export default function Predictions() {
                             </>
                           ) : (
                             <>
-                              <div className="w-10 h-10 bg-slate-700/50 rounded-lg flex items-center justify-center">
-                                <span className="text-slate-400 text-lg font-bold">
+                              <div className="w-10 h-16 relative overflow-hidden flex items-center justify-center rounded-[14px]" style={{
+                                background: 'rgba(255,255,255,0.10)',
+                                backdropFilter: 'blur(40px) saturate(180%)',
+                                WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+                                border: '1px solid rgba(255,255,255,0.22)',
+                                boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 2px 0 rgba(255,255,255,0.50), inset 0 -1px 0 rgba(0,0,0,0.15)',
+                              }}>
+                                <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.22) 0%, transparent 100%)' }} />
+                                <span className="relative text-white text-lg font-bold">
                                   {prediction.predicted_score_a !== undefined && prediction.predicted_score_a !== null ? prediction.predicted_score_a : '?'}
                                 </span>
                               </div>
                               <span className="text-slate-400 font-bold text-lg">-</span>
-                              <div className="w-10 h-10 bg-slate-700/50 rounded-lg flex items-center justify-center">
-                                <span className="text-slate-400 text-lg font-bold">
+                              <div className="w-10 h-16 relative overflow-hidden flex items-center justify-center rounded-[14px]" style={{
+                                background: 'rgba(255,255,255,0.10)',
+                                backdropFilter: 'blur(40px) saturate(180%)',
+                                WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+                                border: '1px solid rgba(255,255,255,0.22)',
+                                boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 2px 0 rgba(255,255,255,0.50), inset 0 -1px 0 rgba(0,0,0,0.15)',
+                              }}>
+                                <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.22) 0%, transparent 100%)' }} />
+                                <span className="relative text-white text-lg font-bold">
                                   {prediction.predicted_score_b !== undefined && prediction.predicted_score_b !== null ? prediction.predicted_score_b : '?'}
                                 </span>
                               </div>
