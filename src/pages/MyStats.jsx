@@ -738,16 +738,25 @@ export default function MyStats() {
   }, [user, userStats, pointsBreakdownData, bestMatch, myRank, comparisonMyStats]);
 
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <CircleLoader size={60} />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen">
+    <AnimatePresence mode="wait">
+      {loading ? (
+        <motion.div
+          key="loader"
+          className="min-h-screen flex items-center justify-center"
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+        >
+          <CircleLoader size={60} />
+        </motion.div>
+      ) : (
+      <motion.div
+        key="content"
+        className="min-h-screen"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header with improved mobile spacing and reduced top padding */}
         <div className="flex items-center gap-4 mb-4 pt-4">
@@ -1651,6 +1660,8 @@ export default function MyStats() {
         </Tabs>
 
       </div>
-    </div>
+      </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
