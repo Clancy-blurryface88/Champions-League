@@ -839,73 +839,107 @@ export default function MyStats() {
               </div>
             </motion.div>
 
-            {/* Averages — bento grid */}
+            {/* Combined Average Statistics Cards */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="grid grid-cols-2 gap-3">
+              className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-              <div className="rounded-2xl bg-white/[0.03] border border-white/[0.07] p-5 flex flex-col gap-2">
-                <p className="text-neutral-500 text-[10px] uppercase tracking-widest font-medium">ממוצע למשחק</p>
-                <div className="text-white font-bold text-4xl leading-none">
-                  <SlidingNumber number={averagePointsPerMatch} className="text-4xl font-bold" duration={1.0} delay={0.2} showDecimals={true} />
-                </div>
-                <p className="text-neutral-600 text-xs">נקודות</p>
-              </div>
-
-              <div className="rounded-2xl bg-white/[0.03] border border-white/[0.07] p-5 flex flex-col gap-2">
-                <p className="text-neutral-500 text-[10px] uppercase tracking-widest font-medium">ממוצע למחזור</p>
-                <div className="text-white font-bold text-4xl leading-none">
-                  <SlidingNumber number={averagePointsPerRound} className="text-4xl font-bold" duration={1.0} delay={0.4} showDecimals={true} />
-                </div>
-                <p className="text-neutral-600 text-xs">נקודות</p>
-              </div>
-            </motion.div>
-
-            {/* Best Match */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}>
-
-              <div className="rounded-2xl bg-white/[0.03] border border-white/[0.07] p-5">
-                <p className="text-neutral-500 text-[10px] uppercase tracking-widest font-medium mb-5">המשחק הכי טוב שלך</p>
-                {bestMatch ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <TeamFlag logo={bestMatch.match.team_a_logo} name={bestMatch.match.team_a} className="w-11 h-11" />
-                      <div className="flex-1 text-center">
-                        <span className="text-white font-bold text-xl tabular-nums">
-                          {bestMatch.match.actual_score_a} – {bestMatch.match.actual_score_b}
-                        </span>
-                      </div>
-                      <TeamFlag logo={bestMatch.match.team_b_logo} name={bestMatch.match.team_b} className="w-11 h-11" />
+              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-white flex items-center justify-center gap-2">
+                    ממוצע נקודות למשחק
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-blue-400 mb-2">
+                      <SlidingNumber number={averagePointsPerMatch} className="text-4xl font-bold" duration={1.0} delay={0.2} showDecimals={true} />
                     </div>
-                    <div className="h-px bg-white/[0.06]" />
-                    <div className="flex justify-between items-end">
-                      <div>
-                        <p className="text-neutral-600 text-[10px] uppercase tracking-widest mb-1">ניחוש</p>
-                        <p className="text-neutral-300 font-semibold tabular-nums">
-                          {bestMatch.prediction.predicted_score_a} – {bestMatch.prediction.predicted_score_b}
-                        </p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-neutral-600 text-[10px] uppercase tracking-widest mb-1">נקודות</p>
-                        <p className="text-white font-bold text-3xl leading-none tabular-nums">{bestMatch.prediction.points_earned}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-neutral-600 text-[10px] uppercase tracking-widest mb-1">תאריך</p>
-                        <p className="text-neutral-500 text-sm">{new Date(bestMatch.match.match_date).toLocaleDateString('he-IL')}</p>
-                      </div>
+                    <p className="text-slate-400 text-sm"></p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-white flex items-center justify-center gap-2">
+                    ממוצע נקודות למחזור
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-green-400 mb-2">
+                      <SlidingNumber number={averagePointsPerRound} className="text-4xl font-bold" duration={1.0} delay={0.4} showDecimals={true} />
                     </div>
+                    <p className="text-slate-400 text-sm"></p>
                   </div>
-                ) : (
-                  <div className="text-center py-6">
-                    <p className="text-neutral-600 text-sm">המשחק הטוב ביותר שלך יופיע כאן ברגע שתצבור נקודות</p>
-                  </div>
-                )}
-              </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Best Match Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mt-6">
+
+              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-white flex items-center justify-center gap-2">
+                    <FlexibleIcon src="/wc-trophy.png" alt="גביע" size="large" />
+                    המשחק הכי טוב שלך
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {bestMatch ?
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center justify-center flex-1">
+                          <TeamFlag logo={bestMatch.match.team_a_logo} name={bestMatch.match.team_a} className="w-12 h-12 " />
+                        </div>
+                        <div className="bg-slate-700 px-4 py-2 rounded-lg flex-shrink-0">
+                          <span className="text-white font-bold text-xl">
+                            {bestMatch.match.actual_score_a} - {bestMatch.match.actual_score_b}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-center flex-1">
+                          <TeamFlag logo={bestMatch.match.team_b_logo} name={bestMatch.match.team_b} className="w-12 h-12 " />
+                        </div>
+                      </div>
+                      <div className="bg-slate-700/50 rounded-lg p-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
+                          <div>
+                            <p className="text-slate-400 text-sm">הניחוש שלך</p>
+                            <p className="text-white font-bold text-lg">
+                              {bestMatch.prediction.predicted_score_a} - {bestMatch.prediction.predicted_score_b}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-slate-400 text-sm">נקודות</p>
+                            <Badge className="bg-green-600/20 text-green-300 text-lg px-3 py-1">
+                              {bestMatch.prediction.points_earned}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-center gap-2 text-slate-400">
+                        <Calendar className="w-4 h-4" />
+                        <span>{new Date(bestMatch.match.match_date).toLocaleDateString('he-IL')}</span>
+                      </div>
+                    </div> :
+                    <div className="text-center py-8">
+                      <div className="text-6xl mb-4">🏆</div>
+                      <p className="text-slate-400 text-lg"></p>
+                      <p className="text-slate-500 text-sm mt-2">
+                        המשחק הטוב ביותר שלך יופיע כאן ברגע שתצבור נקודות
+                      </p>
+                    </div>
+                  }
+                </CardContent>
+              </Card>
             </motion.div>
 
 
@@ -915,89 +949,156 @@ export default function MyStats() {
 
 
 
-
-            {/* Points per round */}
+            {/* Points Progression Chart */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}>
-              <div className="rounded-2xl bg-white/[0.03] border border-white/[0.07] p-5">
-                <p className="text-neutral-500 text-[10px] uppercase tracking-widest font-medium mb-4">נקודות לפי מחזור</p>
-                {chartData.length > 0 ? (
-                  <div className="relative h-48 w-full overflow-x-auto">
-                    <BarChart
-                      height={100}
-                      items={chartData.map((data) => ({
-                        label: data.round,
-                        progress: data.roundPoints || 0
-                      }))}
+              transition={{ delay: 0.7 }}
+              className="mt-6">
+
+              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-white flex items-center justify-center gap-2">
+                    <FlexibleIcon
+                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/1cf56a1b1_game-coin_17879858.png"
+                      alt="התפתחות נקודות"
+                      size="medium"
                     />
-                  </div>
-                ) : (
-                  <p className="text-neutral-600 text-sm text-center py-6">הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
-                )}
-              </div>
+                    נקודות לפי מחזור
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {chartData.length > 0 ?
+                    <div className="bg-slate-700/30 rounded-lg p-6">
+                      <div className="relative h-48 w-full overflow-x-auto">
+                        <BarChart
+                          height={100}
+                          items={chartData.map((data) => ({
+                            label: data.round,
+                            progress: data.roundPoints || 0
+                          }))}
+                        />
+                      </div>
+                      <div className="mt-6 text-center">
+                        <p className="text-slate-400 text-sm">נקודות שהושגו בכל מחזור</p>
+                      </div>
+                    </div> :
+                    <div className="text-center py-8">
+                      <p className="text-slate-400">אין נתונים זמינים עדיין</p>
+                      <p className="text-slate-500 text-sm mt-2">הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
+                    </div>
+                  }
+                </CardContent>
+              </Card>
             </motion.div>
 
-            {/* Points percentage */}
+            {/* Points Percentage Chart */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}>
-              <div className="rounded-2xl bg-white/[0.03] border border-white/[0.07] p-5">
-                <p className="text-neutral-500 text-[10px] uppercase tracking-widest font-medium mb-4">אחוז צבירת נקודות ממקסימום אפשרי</p>
-                {pointsPercentageChartData.length > 0 ? (
-                  <div className="relative h-48 w-full overflow-x-auto">
-                    <BarChart
-                      height={100}
-                      items={pointsPercentageChartData.map((data) => ({
-                        label: data.round,
-                        progress: data.percentage || 0
-                      }))}
-                      colorScheme="blue"
-                      valueSuffix="%"
-                      valueLabel={false}
+              transition={{ delay: 0.75 }}
+              className="mt-6">
+
+              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-white flex items-center justify-center gap-2">
+                    <FlexibleIcon
+                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/cdffab42c_pie-chart_603148.png"
+                      alt="אחוז צבירת נקודות"
+                      size="medium"
                     />
-                  </div>
-                ) : (
-                  <p className="text-neutral-600 text-sm text-center py-6">הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
-                )}
-              </div>
+                    אחוז צבירת נקודות ממקסימום אפשרי
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {pointsPercentageChartData.length > 0 ?
+                    <div className="bg-slate-700/30 rounded-lg p-6">
+                      <div className="relative h-48 w-full overflow-x-auto">
+                        <BarChart
+                          height={100}
+                          items={pointsPercentageChartData.map((data) => ({
+                            label: data.round,
+                            progress: data.percentage || 0
+                          }))}
+                          colorScheme="blue"
+                          valueSuffix="%"
+                          valueLabel={false}
+                        />
+                      </div>
+                      <div className="mt-6 text-center">
+                        <p className="text-slate-400 text-sm">אחוז הנקודות שהושגו מתוך המקסימום האפשרי בכל מחזור</p>
+                      </div>
+                    </div> :
+                    <div className="text-center py-8">
+                      <p className="text-slate-400">אין נתונים זמינים עדיין</p>
+                      <p className="text-slate-500 text-sm mt-2">הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
+                    </div>
+                  }
+                </CardContent>
+              </Card>
             </motion.div>
 
-            {/* Exact hits */}
+            {/* Exact Hits Chart */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}>
-              <div className="rounded-2xl bg-white/[0.03] border border-white/[0.07] p-5">
-                <p className="text-neutral-500 text-[10px] uppercase tracking-widest font-medium mb-4">פגיעות לפי מחזור</p>
-                {exactHitsChartData.length > 0 ? (
-                  <div className="relative h-48 w-full overflow-x-auto">
-                    <BarChart
-                      height={100}
-                      items={exactHitsChartData.map((data) => ({
-                        label: data.round,
-                        progress: data.exactHits || 0
-                      }))}
-                      colorScheme="green"
+              transition={{ delay: 0.8 }}
+              className="mt-6">
+
+              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-white flex items-center justify-center gap-2">
+                    <FlexibleIcon
+                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/7ec75a888_target_5987470.png"
+                      alt="פגיעות מדויקות"
+                      size="medium"
                     />
-                  </div>
-                ) : (
-                  <p className="text-neutral-600 text-sm text-center py-6">הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
-                )}
-              </div>
+                    פגיעות לפי מחזור
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {exactHitsChartData.length > 0 ?
+                    <div className="bg-slate-700/30 rounded-lg p-6">
+                      <div className="relative h-48 w-full overflow-x-auto">
+                        <BarChart
+                          height={100}
+                          items={exactHitsChartData.map((data) => ({
+                            label: data.round,
+                            progress: data.exactHits || 0
+                          }))}
+                          colorScheme="green"
+                        />
+                      </div>
+                      <div className="mt-6 text-center">
+                        <p className="text-slate-400 text-sm">פגיעות מדויקות בכל מחזור</p>
+                      </div>
+                    </div> :
+                    <div className="text-center py-8">
+                      <p className="text-slate-400">אין נתונים זמינים עדיין</p>
+                      <p className="text-slate-500 text-sm mt-2">הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
+                    </div>
+                  }
+                </CardContent>
+              </Card>
             </motion.div>
 
             {/* Predictions Heatmap */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}>
-              <div className="rounded-2xl bg-white/[0.03] border border-white/[0.07] p-5">
-                <p className="text-neutral-500 text-[10px] uppercase tracking-widest font-medium mb-4">מפת ניחושים</p>
-                <PredictionsHeatmap heatmapData={heatmapData} />
-              </div>
+              transition={{ delay: 0.5 }}
+            >
+              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center justify-center gap-2">
+                    <span>🗺️</span>
+                    מפת ניחושים
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PredictionsHeatmap heatmapData={heatmapData} />
+                </CardContent>
+              </Card>
             </motion.div>
           </TabsContent>
 
