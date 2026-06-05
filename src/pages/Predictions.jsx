@@ -23,6 +23,7 @@ import { useNavigate } from 'react-router-dom';
 import MatchScoringRulesModal from "../components/MatchScoringRulesModal";
 import MatchPredictionsModal from "../components/MatchPredictionsModal"; // ADDED MatchPredictionsModal import
 import CrowdWisdomStats from "../components/predictions/CrowdWisdomStats"; // ADDED CrowdWisdomStats import
+import MatchOddsBar from "../components/predictions/MatchOddsBar";
 import { RevealText } from "@/components/magicui/reveal-text";
 import TeamFlag from "@/components/TeamFlag";
 import GroupStandingsModal from "@/components/GroupStandingsModal";
@@ -878,6 +879,15 @@ export default function Predictions() {
                         </div>
                       </div>
                     }
+
+                    {/* Odds Probabilities */}
+                    {match.score_odds && (
+                      <MatchOddsBar
+                        scoreOdds={match.score_odds}
+                        teamA={match.team_a}
+                        teamB={match.team_b}
+                      />
+                    )}
 
                     {/* Footer: Date & Location */}
                     <div className="pt-3 space-y-1">
