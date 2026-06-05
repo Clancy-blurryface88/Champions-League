@@ -25,10 +25,10 @@ function calculateProbabilities(scoreOdds) {
   return { home: homePct, draw: drawPct, away: awayPct };
 }
 
-function Badge({ label, pct }) {
+function GlassBadge({ label, pct }) {
   return (
     <div
-      className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-2xl min-w-[80px]"
+      className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-2xl flex-1"
       style={{
         background: 'rgba(255,255,255,0.08)',
         border: '1px solid rgba(255,255,255,0.18)',
@@ -43,6 +43,21 @@ function Badge({ label, pct }) {
   );
 }
 
+function DrawBadge({ pct }) {
+  return (
+    <div
+      className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-full"
+      style={{
+        background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1d4ed8 100%)',
+        boxShadow: '0 0 14px rgba(59,130,246,0.4)',
+      }}
+    >
+      <span className="text-[10px] font-semibold text-white/80 leading-tight">תיקו</span>
+      <span className="text-sm font-black text-white leading-none">{pct}%</span>
+    </div>
+  );
+}
+
 export default function MatchOddsBar({ scoreOdds, teamA, teamB }) {
   const probs = useMemo(() => calculateProbabilities(scoreOdds), [scoreOdds]);
 
@@ -51,10 +66,10 @@ export default function MatchOddsBar({ scoreOdds, teamA, teamB }) {
   return (
     <div className="mt-3 flex flex-col items-center gap-2">
       <span className="text-[10px] font-semibold text-white/40 tracking-wide">תחזית המשחק</span>
-      <div className="flex items-stretch justify-center gap-2 w-full">
-        <Badge label={`ניצחון ${teamA}`} pct={probs.home} />
-        <Badge label="תיקו" pct={probs.draw} />
-        <Badge label={`ניצחון ${teamB}`} pct={probs.away} />
+      <DrawBadge pct={probs.draw} />
+      <div className="flex items-stretch gap-2 w-full">
+        <GlassBadge label={teamA} pct={probs.home} />
+        <GlassBadge label={teamB} pct={probs.away} />
       </div>
     </div>
   );
