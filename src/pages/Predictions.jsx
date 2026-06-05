@@ -55,6 +55,8 @@ export default function Predictions() {
   const [expandedDates, setExpandedDates] = useState(null); // null = not yet initialized
   const [activeDateKey, setActiveDateKey] = useState(null);
   const dateRefs = useRef({});
+  const dateTabRefs = useRef({});
+  const dateStripRef = useRef(null);
   const scrollContainerRef = useRef(null);
   const isProgrammaticScrollRef = useRef(false);
 
@@ -156,6 +158,19 @@ export default function Predictions() {
       bgColor
     };
   };
+
+  // Auto-scroll the date strip to keep active tab visible
+  useEffect(() => {
+    if (!activeDateKey || !dateStripRef.current) return;
+    const tab = dateTabRefs.current[activeDateKey];
+    if (!tab) return;
+    const strip = dateStripRef.current;
+    const tabLeft = tab.offsetLeft;
+    const tabWidth = tab.offsetWidth;
+    const stripWidth = strip.offsetWidth;
+    const scrollLeft = tabLeft - stripWidth / 2 + tabWidth / 2;
+    strip.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+  }, [activeDateKey]);
 
   // Scroll spy — update active date tab while scrolling
   useEffect(() => {
@@ -557,7 +572,7 @@ export default function Predictions() {
               borderBottom: '1px solid rgba(255,255,255,0.07)',
             }}
           >
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
+          <div ref={dateStripRef} className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
             {sortedDateKeys.map(dateKey => {
               const isActive = activeDateKey === dateKey;
               const isToday  = moment(dateKey).isSame(moment(), 'day');
@@ -570,6 +585,7 @@ export default function Predictions() {
               return (
                 <button
                   key={dateKey}
+                  ref={el => dateTabRefs.current[dateKey] = el}
                   onClick={() => scrollToDate(dateKey)}
                   className="relative flex-shrink-0 flex flex-col items-center gap-1 pt-2 pb-2.5 px-3 rounded-2xl transition-all duration-250"
                   style={{
