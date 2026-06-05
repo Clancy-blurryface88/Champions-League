@@ -174,31 +174,28 @@ export default function Predictions() {
 
   // Scroll spy — update active date tab while scrolling
   useEffect(() => {
-    if (expandedDates === null) return;
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (isProgrammaticScrollRef.current) return;
-        const visible = entries
-          .filter(e => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        if (visible.length > 0) {
-          const key = visible[0].target.dataset.spyKey;
-          if (key) setActiveDateKey(key);
+    const onScroll = () => {
+      if (isProgrammaticScrollRef.current) return;
+      const containerRect = container.getBoundingClientRect();
+      const threshold = containerRect.top + 220; // below sticky header
+
+      let activeKey = null;
+      for (const [key, el] of Object.entries(dateRefs.current)) {
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= threshold) {
+          activeKey = key;
         }
-      },
-      { root: container, rootMargin: '-180px 0px -40% 0px', threshold: 0 }
-    );
+      }
+      if (activeKey) setActiveDateKey(activeKey);
+    };
 
-    const refs = dateRefs.current;
-    Object.entries(refs).forEach(([key, el]) => {
-      if (el) { el.dataset.spyKey = key; observer.observe(el); }
-    });
-
-    return () => observer.disconnect();
-  }, [expandedDates]);
+    container.addEventListener('scroll', onScroll, { passive: true });
+    return () => container.removeEventListener('scroll', onScroll);
+  }, []);
 
   const loadRoundData = useCallback(async () => {
     try {
