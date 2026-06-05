@@ -855,36 +855,38 @@ export default function MyStats() {
               transition={{ delay: 0.2 }}
               className="grid grid-cols-2 gap-6">
 
-              {/* Avg per match — blue glassmorphism + neon */}
-              <div className="rounded-2xl p-5 text-center relative overflow-hidden" style={{
-                background: 'rgba(59,130,246,0.07)',
-                backdropFilter: 'blur(24px)',
-                WebkitBackdropFilter: 'blur(24px)',
-                border: '1px solid rgba(59,130,246,0.28)',
-                boxShadow: '0 0 32px rgba(59,130,246,0.12), inset 0 1px 0 rgba(255,255,255,0.07)',
+              {/* Avg per match — Apple Liquid Glass */}
+              <div className="rounded-[20px] p-5 text-center relative overflow-hidden" style={{
+                background: 'rgba(255,255,255,0.10)',
+                backdropFilter: 'blur(40px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+                border: '1px solid rgba(255,255,255,0.22)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)',
               }}>
-                <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 60%, rgba(59,130,246,0.18) 0%, transparent 70%)' }} />
-                <p className="relative text-blue-300/60 text-[10px] uppercase tracking-widest mb-3">ממוצע למשחק</p>
-                <div className="relative text-4xl font-bold tabular-nums" style={{ color: '#60a5fa', textShadow: '0 0 18px rgba(96,165,250,0.85), 0 0 40px rgba(96,165,250,0.4)' }}>
+                {/* Glass top gloss */}
+                <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)' }} />
+                <p className="relative text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.45)', letterSpacing: '0.12em' }}>ממוצע למשחק</p>
+                <div className="relative text-4xl font-bold tabular-nums" style={{ color: '#007AFF' }}>
                   <SlidingNumber number={averagePointsPerMatch} className="text-4xl font-bold" duration={1.0} delay={0.2} showDecimals={true} />
                 </div>
-                <p className="relative text-blue-300/25 text-xs mt-2">נקודות</p>
+                <p className="relative text-xs mt-2" style={{ color: 'rgba(255,255,255,0.28)' }}>נקודות</p>
               </div>
 
-              {/* Avg per round — green glassmorphism + neon */}
-              <div className="rounded-2xl p-5 text-center relative overflow-hidden" style={{
-                background: 'rgba(16,185,129,0.07)',
-                backdropFilter: 'blur(24px)',
-                WebkitBackdropFilter: 'blur(24px)',
-                border: '1px solid rgba(16,185,129,0.28)',
-                boxShadow: '0 0 32px rgba(16,185,129,0.12), inset 0 1px 0 rgba(255,255,255,0.07)',
+              {/* Avg per round — Apple Liquid Glass (green accent) */}
+              <div className="rounded-[20px] p-5 text-center relative overflow-hidden" style={{
+                background: 'rgba(255,255,255,0.10)',
+                backdropFilter: 'blur(40px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+                border: '1px solid rgba(255,255,255,0.22)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)',
               }}>
-                <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 60%, rgba(16,185,129,0.18) 0%, transparent 70%)' }} />
-                <p className="relative text-emerald-300/60 text-[10px] uppercase tracking-widest mb-3">ממוצע למחזור</p>
-                <div className="relative text-4xl font-bold tabular-nums" style={{ color: '#34d399', textShadow: '0 0 18px rgba(52,211,153,0.85), 0 0 40px rgba(52,211,153,0.4)' }}>
+                {/* Glass top gloss */}
+                <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)' }} />
+                <p className="relative text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.45)', letterSpacing: '0.12em' }}>ממוצע למחזור</p>
+                <div className="relative text-4xl font-bold tabular-nums" style={{ color: '#34C759' }}>
                   <SlidingNumber number={averagePointsPerRound} className="text-4xl font-bold" duration={1.0} delay={0.4} showDecimals={true} />
                 </div>
-                <p className="relative text-emerald-300/25 text-xs mt-2">נקודות</p>
+                <p className="relative text-xs mt-2" style={{ color: 'rgba(255,255,255,0.28)' }}>נקודות</p>
               </div>
             </motion.div>
 
