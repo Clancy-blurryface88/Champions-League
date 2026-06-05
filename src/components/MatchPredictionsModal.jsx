@@ -194,29 +194,34 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
               <p className="text-white/25 text-sm">אין ניחושים למשחק זה</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-5">
               {grouped.map((group, gi) => (
                 <div key={`${group.scoreA}-${group.scoreB}`} className="space-y-1.5">
                   {group.users.map((name, ui) => {
                     const rowDelay = gi * 0.15 + ui * 0.08;
+                    const gradientOpacity = Math.max(0.05, 0.15 - gi * 0.025);
                     return (
                       <motion.div
                         key={`${gi}-${ui}`}
                         initial={{ opacity: 0, x: 20, filter: 'blur(6px)' }}
                         animate={{ opacity: 1, x: 0,  filter: 'blur(0px)' }}
                         transition={{ delay: rowDelay, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                        className="flex items-center justify-between px-4 py-3 rounded-2xl"
+                        className="relative flex items-center justify-between px-4 py-3 rounded-2xl overflow-hidden"
                         style={{
-                          background: 'rgba(255,255,255,0.04)',
                           border: '1px solid rgba(255,255,255,0.08)',
                           backdropFilter: 'blur(12px)',
                           boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
                         }}
                       >
-                        <span className="text-white/85 text-sm font-semibold truncate flex-1 min-w-0">
+                        {/* Background gradient — progress style, no effect on score */}
+                        <div
+                          className="absolute inset-0 pointer-events-none"
+                          style={{ background: `linear-gradient(90deg, rgba(59,130,246,${gradientOpacity}) 0%, transparent 65%)` }}
+                        />
+                        <span className="relative text-white/85 text-sm font-semibold truncate flex-1 min-w-0">
                           {name}
                         </span>
-                        <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className="relative flex items-center gap-2 flex-shrink-0">
                           <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5 opacity-75" />
                           {/* Slot Machine — delay based on group, not per user row */}
                           <SlotScore scoreA={group.scoreA} scoreB={group.scoreB} delay={gi * 0.15 + 0.1} />
