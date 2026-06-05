@@ -28,17 +28,14 @@ function calculateProbabilities(scoreOdds) {
 function GlassBadge({ label, pct }) {
   return (
     <div
-      className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-2xl flex-1"
+      className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl flex-1"
       style={{
-        background: 'rgba(255,255,255,0.08)',
-        border: '1px solid rgba(255,255,255,0.18)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        boxShadow: '0 2px 12px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.12)',
+        background: 'rgba(0,0,0,0)',
+        border: '1px solid rgba(255,255,255,0.12)',
       }}
     >
-      <span className="text-[10px] font-medium text-white/60 text-center leading-tight">{label}</span>
-      <span className="text-base font-black text-white leading-none">{pct}%</span>
+      <span className="text-[9px] font-medium text-white/50 text-center leading-tight">{label}</span>
+      <span className="text-sm font-black text-white leading-none">{pct}%</span>
     </div>
   );
 }
