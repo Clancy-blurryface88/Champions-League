@@ -18,6 +18,7 @@ import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminOddsDemo from "../components/admin/AdminOddsDemo";
 import AdminScoresDemo from "../components/admin/AdminScoresDemo";
+import AdminPredictionsRowDemo from "../components/admin/AdminPredictionsRowDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -79,6 +80,7 @@ export default function Admin() {
       case 'reset': return <AdminReset />;
       case 'odds-demo': return <AdminOddsDemo />;
       case 'scores-demo': return <AdminScoresDemo />;
+      case 'predictions-row-demo': return <AdminPredictionsRowDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -96,6 +98,7 @@ export default function Admin() {
     { id: 'reset', label: 'Reset Center', icon: RotateCcw },
     { id: 'odds-demo', label: 'עיצובי תחזית', icon: Palette },
     { id: 'scores-demo', label: 'עיצובי תוצאות', icon: Palette },
+    { id: 'predictions-row-demo', label: 'עיצובי ניחושים', icon: Palette },
   ];
 
   return (
