@@ -113,7 +113,6 @@ export default function MatchOddsBar({ scoreOdds, teamA, teamB }) {
 
             {topScores.length > 0 && (
               <>
-                <span className="text-[10px] font-semibold tracking-wide text-yellow-400 text-center">הסתברות תוצאות</span>
                 <div className="flex items-stretch gap-1.5 w-full">
                   {topScores.map(({ score, pct }) => (
                     <ScoreBadge key={score} score={score} pct={pct} />
