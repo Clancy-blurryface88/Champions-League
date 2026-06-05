@@ -43,21 +43,6 @@ function GlassBadge({ label, pct }) {
   );
 }
 
-function DrawBadge({ pct }) {
-  return (
-    <div
-      className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-full"
-      style={{
-        background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1d4ed8 100%)',
-        boxShadow: '0 0 14px rgba(59,130,246,0.4)',
-      }}
-    >
-      <span className="text-[10px] font-semibold text-white/80 leading-tight">תיקו</span>
-      <span className="text-sm font-black text-white leading-none">{pct}%</span>
-    </div>
-  );
-}
-
 export default function MatchOddsBar({ scoreOdds, teamA, teamB }) {
   const probs = useMemo(() => calculateProbabilities(scoreOdds), [scoreOdds]);
 
@@ -65,10 +50,19 @@ export default function MatchOddsBar({ scoreOdds, teamA, teamB }) {
 
   return (
     <div className="mt-3 flex flex-col items-center gap-2">
-      <span className="text-[10px] font-semibold text-white/40 tracking-wide">תחזית המשחק</span>
-      <DrawBadge pct={probs.draw} />
+      <span
+        className="text-[10px] font-semibold tracking-wide"
+        style={{
+          background: 'linear-gradient(135deg, #60a5fa, #3b82f6, #1d4ed8)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+        }}
+      >
+        תחזית המשחק
+      </span>
       <div className="flex items-stretch gap-2 w-full">
         <GlassBadge label={teamA} pct={probs.home} />
+        <GlassBadge label="תיקו" pct={probs.draw} />
         <GlassBadge label={teamB} pct={probs.away} />
       </div>
     </div>
