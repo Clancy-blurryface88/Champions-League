@@ -895,60 +895,79 @@ export default function MyStats() {
               transition={{ delay: 0.3 }}
               className="mt-6">
 
-              <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-white flex items-center justify-center gap-2">
+              {/* Liquid Mercury card */}
+              <div className="rounded-[20px] relative overflow-hidden" style={{
+                background: 'linear-gradient(160deg, rgba(200,200,210,0.18) 0%, rgba(120,120,135,0.10) 50%, rgba(200,200,210,0.16) 100%)',
+                backdropFilter: 'blur(40px) saturate(140%)',
+                WebkitBackdropFilter: 'blur(40px) saturate(140%)',
+                border: '1px solid rgba(200,200,215,0.30)',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.20)',
+              }}>
+                {/* gloss */}
+                <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)' }} />
+
+                <div className="relative px-6 pt-6 pb-2 text-center">
+                  <div className="flex items-center justify-center gap-2">
                     <FlexibleIcon src="/wc-trophy.png" alt="גביע" size="large" />
-                    המשחק הכי טוב שלך
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+                    <h3 className="font-bold text-lg" style={{ color: '#E8E8E8' }}>המשחק הכי טוב שלך</h3>
+                  </div>
+                </div>
+
+                <div className="relative px-6 pb-6 pt-4">
                   {bestMatch ?
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center justify-center flex-1">
-                          <TeamFlag logo={bestMatch.match.team_a_logo} name={bestMatch.match.team_a} className="w-12 h-12 " />
+                          <TeamFlag logo={bestMatch.match.team_a_logo} name={bestMatch.match.team_a} className="w-12 h-12" />
                         </div>
-                        <div className="bg-slate-700 px-4 py-2 rounded-lg flex-shrink-0">
-                          <span className="text-white font-bold text-xl">
+                        <div className="px-5 py-2 rounded-xl flex-shrink-0" style={{
+                          background: 'rgba(255,255,255,0.10)',
+                          border: '1px solid rgba(255,255,255,0.20)',
+                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.30)',
+                        }}>
+                          <span className="font-bold text-xl" style={{ color: '#E8E8E8' }}>
                             {bestMatch.match.actual_score_a} - {bestMatch.match.actual_score_b}
                           </span>
                         </div>
                         <div className="flex items-center justify-center flex-1">
-                          <TeamFlag logo={bestMatch.match.team_b_logo} name={bestMatch.match.team_b} className="w-12 h-12 " />
+                          <TeamFlag logo={bestMatch.match.team_b_logo} name={bestMatch.match.team_b} className="w-12 h-12" />
                         </div>
                       </div>
-                      <div className="bg-slate-700/50 rounded-lg p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
+
+                      <div className="rounded-xl p-4" style={{
+                        background: 'rgba(255,255,255,0.07)',
+                        border: '1px solid rgba(255,255,255,0.14)',
+                      }}>
+                        <div className="grid grid-cols-2 gap-4 text-center">
                           <div>
-                            <p className="text-slate-400 text-sm">הניחוש שלך</p>
-                            <p className="text-white font-bold text-lg">
+                            <p className="text-sm mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>הניחוש שלך</p>
+                            <p className="font-bold text-lg" style={{ color: '#C0C0C0' }}>
                               {bestMatch.prediction.predicted_score_a} - {bestMatch.prediction.predicted_score_b}
                             </p>
                           </div>
                           <div>
-                            <p className="text-slate-400 text-sm">נקודות</p>
-                            <Badge className="bg-green-600/20 text-green-300 text-lg px-3 py-1">
+                            <p className="text-sm mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>נקודות</p>
+                            <span className="font-bold text-lg" style={{ color: '#E8E8E8' }}>
                               {bestMatch.prediction.points_earned}
-                            </Badge>
+                            </span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center justify-center gap-2 text-slate-400">
+
+                      <div className="flex items-center justify-center gap-2" style={{ color: 'rgba(255,255,255,0.35)' }}>
                         <Calendar className="w-4 h-4" />
-                        <span>{new Date(bestMatch.match.match_date).toLocaleDateString('he-IL')}</span>
+                        <span className="text-sm">{new Date(bestMatch.match.match_date).toLocaleDateString('he-IL')}</span>
                       </div>
                     </div> :
                     <div className="text-center py-8">
                       <div className="text-6xl mb-4">🏆</div>
-                      <p className="text-slate-400 text-lg"></p>
-                      <p className="text-slate-500 text-sm mt-2">
+                      <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.35)' }}>
                         המשחק הטוב ביותר שלך יופיע כאן ברגע שתצבור נקודות
                       </p>
                     </div>
                   }
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </motion.div>
 
 
