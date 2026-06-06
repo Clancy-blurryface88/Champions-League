@@ -107,7 +107,7 @@ export default function PlayerStatsModal({ isOpen, onClose, selectedPlayer: init
                                             }}>
                                                 {p.position}
                                             </div>
-                                            <span className={`text-sm font-medium ${isSelected ? 'text-white' : 'text-slate-200'}`}>
+                                            <span className={`text-sm font-medium text-center flex-1 ${isSelected ? 'text-white' : 'text-slate-200'}`}>
                                                 {p.full_name}
                                             </span>
                                         </div>
