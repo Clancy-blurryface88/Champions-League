@@ -33,9 +33,14 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
       .finally(() => setLoadingMatches(false));
   }, [roundId]);
 
-  // Iterate over sorted matches (not predictions) so order is guaranteed
-  // and match.id lookup works regardless of string/number type coercion
+  const isMatchLocked = (matchDate) => {
+    const lockTime = new Date(new Date(matchDate).getTime() - 15 * 60 * 1000);
+    return new Date() >= lockTime;
+  };
+
+  // Only show unlocked matches — locked matches are silently skipped during save anyway
   const predictionsList = matches
+    .filter(match => !isMatchLocked(match.match_date))
     .map(match => ({ match, prediction: predictions[match.id] }))
     .filter(({ prediction }) =>
       prediction &&
