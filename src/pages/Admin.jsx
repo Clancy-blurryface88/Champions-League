@@ -16,8 +16,6 @@ import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
-import AdminBgDemo from "../components/admin/AdminBgDemo";
-import AdminBgDemo2 from "../components/admin/AdminBgDemo2";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -77,8 +75,6 @@ export default function Admin() {
       case 'live-data': return <AdminLiveData />;
       case 'import': return <AdminImportMatches />;
       case 'reset':   return <AdminReset />;
-      case 'bg-demo':  return <AdminBgDemo />;
-      case 'bg-demo2': return <AdminBgDemo2 />;
 default: return <AdminRounds />;
     }
   };
@@ -94,8 +90,6 @@ default: return <AdminRounds />;
     { id: 'live-data', label: 'Live Data Test', icon: BarChart3 },
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',   label: 'Reset Center',  icon: RotateCcw },
-    { id: 'bg-demo',  label: 'Background Demo',   icon: Image },
-    { id: 'bg-demo2', label: 'Background Demo 2', icon: Image },
   ];
 
   return (
