@@ -613,7 +613,6 @@ export default function PredictionsResults() {
                   boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)',
                 }}
               >
-                <div className="absolute inset-x-0 top-0 h-1/3 pointer-events-none rounded-t-2xl" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 100%)' }} />
                 {/* Header with View Mode Toggle */}
                 <div className="px-4 py-5">
                   {/* Glass tab bar */}
