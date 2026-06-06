@@ -114,10 +114,10 @@ function ScoreBreakdownAnimated({ prediction, match, outcomeType }) {
             transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
             className="flex justify-between items-center py-1.5 px-2 rounded-lg"
           >
-            <span className="text-white/70 text-xs">{row.label}</span>
             <span className={`text-xs font-bold tabular-nums ${pts > 0 ? c.text : 'text-slate-600'}`}>
               {pts > 0 ? `+${pts.toFixed(2)}` : '+0.00'}
             </span>
+            <span className="text-white/70 text-xs">{row.label}</span>
           </motion.div>
         );
       })}
@@ -132,10 +132,10 @@ function ScoreBreakdownAnimated({ prediction, match, outcomeType }) {
           >
             <div className={`h-px mx-2 mb-2 ${c.divider}`} />
             <div className="flex justify-between items-center px-2">
-              <span className="text-white text-xs font-semibold">סה"כ</span>
               <span className={`text-sm font-bold tabular-nums ${c.text}`}>
                 {(prediction.points_earned || 0).toFixed(2)}
               </span>
+              <span className="text-white text-xs font-semibold">סה"כ</span>
             </div>
           </motion.div>
         )}
@@ -149,9 +149,8 @@ function ScoreBreakdownAnimated({ prediction, match, outcomeType }) {
             transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
             className="flex items-center gap-4 pt-3 px-2"
           >
-            <AnimatedDonut percentage={percentage} size={72} outcomeType={outcomeType} />
             <motion.div
-              className="flex flex-col items-end flex-1"
+              className="flex flex-col items-start flex-1"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
@@ -164,6 +163,7 @@ function ScoreBreakdownAnimated({ prediction, match, outcomeType }) {
                 <span className="text-white/30 text-sm font-semibold">/ {maxPoints.toFixed(2)}</span>
               </div>
             </motion.div>
+            <AnimatedDonut percentage={percentage} size={72} outcomeType={outcomeType} />
           </motion.div>
         )}
       </AnimatePresence>
