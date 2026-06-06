@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const mockPlayers = [
   { rank: 1, name: 'שחקן 2', pts: 165.55 },
@@ -13,16 +13,11 @@ const rc  = r => r===1?gold:r===2?silver:r===3?bronze:'rgba(255,255,255,0.45)';
 const rb  = r => r===1?'rgba(255,215,0,0.12)':r===2?'rgba(192,192,192,0.08)':r===3?'rgba(205,127,50,0.12)':'rgba(255,255,255,0.04)';
 const top = r => r <= 3;
 
-const css = `
-@keyframes aurora2 { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-@keyframes fire2   { 0%,100%{background-position:50% 0%} 50%{background-position:50% 100%} }
-@keyframes scan    { 0%{transform:translateY(-100%)} 100%{transform:translateY(600%)} }
-@keyframes shimmer2{ 0%{transform:translateX(-100%)} 100%{transform:translateX(200%)} }
-@keyframes blink   { 0%,100%{opacity:1} 50%{opacity:0.3} }
-@keyframes equalizer{ 0%,100%{height:4px} 50%{height:20px} }
-@property --conic-angle { syntax:'<angle>'; inherits:false; initial-value:0deg; }
-@keyframes spin-conic { to { --conic-angle: 360deg; } }
-.conic-border { animation: spin-conic 3s linear infinite; border: 2px solid transparent; background-clip: padding-box; }
+// scoped keyframes injected into a shadow-like wrapper — no global class selectors
+const SCOPED_CSS = `
+  @keyframes lb2-aurora { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+  @keyframes lb2-fire   { 0%,100%{background-position:50% 0%} 50%{background-position:50% 100%} }
+  @keyframes lb2-eq     { 0%,100%{height:4px} 50%{height:20px} }
 `;
 
 const designs = [
@@ -83,7 +78,7 @@ const designs = [
       const aurora = 'linear-gradient(270deg,#00ff87,#60efff,#a855f7,#00ff87)';
       return (
         <div style={{ background: top(p.rank)?'transparent':'rgba(255,255,255,0.03)', border:`1px solid rgba(255,255,255,0.12)`, borderRadius:12, padding:2, marginBottom:8 }}>
-          {top(p.rank) && <div style={{ position:'absolute', inset:0, borderRadius:12, background:aurora, backgroundSize:'400% 400%', animation:'aurora2 4s ease infinite', opacity:0.25, pointerEvents:'none' }} />}
+          {top(p.rank) && <div style={{ position:'absolute', inset:0, borderRadius:12, background:aurora, backgroundSize:'400% 400%', animation:'lb2-aurora 4s ease infinite', opacity:0.25, pointerEvents:'none' }} />}
           <div style={{ position:'relative', background:'rgba(2,8,20,0.88)', borderRadius:10, padding:'10px 14px', display:'flex', alignItems:'center', gap:12 }}>
             <span style={{ color:rc(p.rank), fontWeight:900, fontSize:17, minWidth:20, textAlign:'center' }}>{p.rank}</span>
             <div style={{ flex:1, textAlign:'center' }}>
@@ -127,7 +122,7 @@ const designs = [
         ? 'linear-gradient(180deg,#e05000,#993300,#440000)'
         : 'rgba(255,255,255,0.04)';
       return (
-        <div style={{ background: top(p.rank)?fireGrad:'rgba(255,255,255,0.04)', backgroundSize:'100% 200%', animation: top(p.rank)?'fire2 3s ease-in-out infinite':'none', border:`1px solid ${top(p.rank)?'#ff6b0066':'rgba(255,255,255,0.1)'}`, borderRadius:10, padding:'10px 16px', marginBottom:8, display:'flex', alignItems:'center', gap:12 }}>
+        <div style={{ background: top(p.rank)?fireGrad:'rgba(255,255,255,0.04)', backgroundSize:'100% 200%', animation: top(p.rank)?'lb2-fire 3s ease-in-out infinite':'none', border:`1px solid ${top(p.rank)?'#ff6b0066':'rgba(255,255,255,0.1)'}`, borderRadius:10, padding:'10px 16px', marginBottom:8, display:'flex', alignItems:'center', gap:12 }}>
           <span style={{ color: top(p.rank)?'#fff':rc(p.rank), fontWeight:900, fontSize:17, minWidth:20, textAlign:'center', textShadow: top(p.rank)?'0 0 8px #ff6b00':'' }}>{p.rank}</span>
           <div style={{ flex:1, textAlign:'center' }}>
             <div style={{ color:'#fff', fontWeight:700, fontSize:13, textShadow: top(p.rank)?'0 1px 4px rgba(0,0,0,0.6)':'' }}>{p.name}</div>
@@ -500,7 +495,7 @@ const designs = [
           {top(p.rank) && (
             <div style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', display:'flex', alignItems:'flex-end', gap:2, height:24, opacity:0.2 }}>
               {[...Array(barCount)].map((_,i) => (
-                <div key={i} style={{ width:3, background:rc(p.rank), borderRadius:1, height:`${30+Math.sin(i*1.3)*50}%`, animation:`equalizer ${0.5+i*0.15}s ease-in-out infinite alternate` }} />
+                <div key={i} style={{ width:3, background:rc(p.rank), borderRadius:1, height:`${30+Math.sin(i*1.3)*50}%`, animation:`lb2-eq ${0.5+i*0.15}s ease-in-out infinite alternate` }} />
               ))}
             </div>
           )}
@@ -668,7 +663,7 @@ export default function AdminLeaderboardDemo2() {
 
   return (
     <div dir="rtl" style={{ color:'#fff', fontFamily:'system-ui,sans-serif' }}>
-      <style>{css}</style>
+      <style>{SCOPED_CSS}</style>
       <h1 style={{ fontSize:22, fontWeight:900, marginBottom:4 }}>30 רעיונות נוספים — שורת לידרבורד (#31–60)</h1>
       <p style={{ color:'rgba(255,255,255,0.45)', fontSize:13, marginBottom:20 }}>
         סדרה שנייה של עיצובים יצירתיים. לחץ לסינון לפי קטגוריה.
