@@ -756,15 +756,14 @@ export default function Predictions() {
                         </div> :
 
                         <div dir="rtl" className="relative overflow-hidden flex rounded-2xl" style={{
-                          background: 'rgba(127,255,212,0.07)',
+                          background: 'rgba(255,255,255,0.06)',
                           backdropFilter: 'blur(40px) saturate(180%)',
                           WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-                          border: '1px solid rgba(127,255,212,0.22)',
-                          boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.40), 0 0 32px rgba(127,255,212,0.18), 0 0 8px rgba(127,255,212,0.12)',
-                          filter: 'drop-shadow(0 0 10px rgba(127,255,212,0.20))',
+                          border: '1px solid rgba(255,255,255,0.18)',
+                          boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.35)',
                         }}>
                           {/* gloss */}
-                          <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 100%)', borderRadius: '16px 16px 0 0' }} />
+                          <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.14) 0%, transparent 100%)', borderRadius: '16px 16px 0 0' }} />
                           {[
                             { val: timeInfo.seconds, label: "שניות" },
                             { val: timeInfo.minutes, label: "דקות" },
@@ -773,10 +772,10 @@ export default function Predictions() {
                           ].map((item, i) => (
                             <React.Fragment key={item.label}>
                               <div className="relative flex flex-col items-center px-3 py-2">
-                                <span className="font-extrabold leading-none mb-0.5" style={{ fontSize: "1.05rem", color: '#7fffd4' }}>{item.val}</span>
-                                <span className="text-[9px] font-semibold" style={{ color: 'rgba(127,255,212,0.60)' }}>{item.label}</span>
+                                <span className="font-extrabold leading-none mb-0.5" style={{ fontSize: "1.05rem", color: 'rgba(255,255,255,0.92)' }}>{item.val}</span>
+                                <span className="text-[9px] font-semibold" style={{ color: 'rgba(255,255,255,0.45)' }}>{item.label}</span>
                               </div>
-                              {i < 3 && <div className="self-center" style={{ width: 1, height: 24, background: 'rgba(127,255,212,0.16)' }} />}
+                              {i < 3 && <div className="self-center" style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.12)' }} />}
                             </React.Fragment>
                           ))}
                         </div>
@@ -945,20 +944,20 @@ export default function Predictions() {
 
                     {/* Footer bar */}
                     <div className="-mx-5 -mb-5 mt-3 flex overflow-hidden rounded-b-xl relative">
-                      <div className="absolute top-0 left-4 right-4 h-[2px] pointer-events-none"
-                        style={{ background:'linear-gradient(90deg, transparent, rgba(255,200,50,0.5) 20%, rgba(255,200,50,0.5) 80%, transparent)' }} />
+                      <div className="absolute top-0 left-6 right-6 h-px pointer-events-none"
+                        style={{ background:'linear-gradient(90deg, transparent, rgba(255,255,255,0.22) 20%, rgba(255,255,255,0.22) 80%, transparent)' }} />
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
                         className="flex-1 flex items-center justify-center py-3 text-xs font-bold transition-colors"
-                        style={{ color:'rgba(255,200,50,0.9)', textShadow:'0 0 12px rgba(255,200,50,0.6)' }}
+                        style={{ color:'rgba(255,255,255,0.75)' }}
                       >
                         1 X 2
                       </button>
-                      <div className="w-[2px] my-1.5" style={{ background:'rgba(255,200,50,0.45)' }} />
+                      <div className="w-px my-2.5" style={{ background:'rgba(255,255,255,0.14)' }} />
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
                         className="flex-1 flex items-center justify-center py-3 text-xs font-bold transition-colors"
-                        style={{ color:'rgba(255,200,50,0.9)', textShadow:'0 0 12px rgba(255,200,50,0.6)' }}
+                        style={{ color:'rgba(255,255,255,0.75)' }}
                       >
                         ניחושים
                       </button>
