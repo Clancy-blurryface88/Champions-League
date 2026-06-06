@@ -83,6 +83,23 @@ function calcStandings(matches) {
 
 const ALL_GROUPS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
 
+// Returns the 12 third-place teams sorted by Pts → GD → GF (FIFA criteria)
+function calcBest3rd(allMatches) {
+  return ALL_GROUPS
+    .map(letter => {
+      const standings = calcStandings(allMatches[letter] || []);
+      if (standings.length < 3) return null;
+      return { ...standings[2], group: letter };
+    })
+    .filter(Boolean)
+    .sort((a, b) =>
+      (b.Pts - a.Pts) ||
+      (b.GD  - a.GD)  ||
+      (b.GF  - a.GF)  ||
+      a.name.localeCompare(b.name)
+    );
+}
+
 const toLetter = (g) => g.replace('Group ', '').trim();
 
 export default function GroupStandingsModal({ group: initialGroup, onClose }) {
@@ -132,8 +149,10 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
     }
   }, [activeGroup]);
 
-  const matches = allMatches[activeGroup] || [];
-  const standings = calcStandings(matches);
+  const isBest3 = activeGroup === 'best3';
+  const matches = isBest3 ? [] : (allMatches[activeGroup] || []);
+  const standings = isBest3 ? [] : calcStandings(matches);
+  const best3Standings = isBest3 ? calcBest3rd(allMatches) : [];
 
   return (
     <AnimatePresence>
@@ -159,13 +178,34 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
           {/* Header */}
           <div className="sticky top-0 z-10 bg-slate-900 border-b border-slate-700">
             <div className="flex items-center justify-between px-5 py-3">
-              <h2 className="text-white font-bold text-lg">Group {activeGroup}</h2>
+              <h2 className="text-white font-bold text-lg">{isBest3 ? '8 הטובות מקום 3' : `Group ${activeGroup}`}</h2>
               <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             {/* Group selector A–L */}
             <div ref={scrollContainerRef} className="flex gap-1.5 px-4 pb-3 overflow-x-auto scrollbar-hide">
+              {/* Best 3rd place button */}
+              <button
+                ref={isBest3 ? activeButtonRef : null}
+                onClick={() => setActiveGroup('best3')}
+                className="relative flex-shrink-0 w-9 h-9 rounded-lg text-sm font-bold border border-slate-600"
+              >
+                {isBest3 && (
+                  <motion.div
+                    layoutId="group-active"
+                    className="absolute inset-0 rounded-lg bg-yellow-400/20 border border-yellow-400"
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span className={`relative z-10 transition-colors duration-150 ${isBest3 ? 'text-yellow-400' : 'text-slate-300'}`}>
+                  8
+                </span>
+              </button>
+
+              {/* Divider */}
+              <div className="flex-shrink-0 w-px bg-slate-700 self-stretch my-1" />
+
               {ALL_GROUPS.map((letter) => (
                 <button
                   key={letter}
@@ -194,6 +234,64 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
             {loading ? (
               <div className="py-16 flex items-center justify-center">
                 <OrbitSpinner size={40} />
+              </div>
+            ) : isBest3 ? (
+              /* ── Best 3rd Place Table ── */
+              <div>
+                <h3 className="text-yellow-400 font-semibold text-sm uppercase tracking-wider mb-1 text-center">
+                  8 הטובות מקום 3
+                </h3>
+                <p className="text-slate-500 text-[10px] text-center mb-3">
+                  מיון לפי נקודות ← הפרש שערים ← שערים
+                </p>
+                <div className="overflow-x-auto rounded-xl border border-slate-700">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-slate-800 text-slate-400 text-xs">
+                        <th className="text-left px-3 py-2">#</th>
+                        <th className="text-left px-2 py-2">בית</th>
+                        <th className="text-left px-3 py-2">קבוצה</th>
+                        <th className="text-center px-2 py-2">P</th>
+                        <th className="text-center px-2 py-2">W</th>
+                        <th className="text-center px-2 py-2">D</th>
+                        <th className="text-center px-2 py-2">L</th>
+                        <th className="text-center px-2 py-2">GD</th>
+                        <th className="text-center px-2 py-2 font-bold text-yellow-400">Pts</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {best3Standings.map((team, i) => {
+                        const advances = i < 8;
+                        return (
+                          <tr key={team.name} className={`border-t border-slate-700/50 ${advances ? 'bg-green-500/5' : 'bg-red-500/5'}`}>
+                            <td className="px-3 py-2.5 text-xs">
+                              <span className={`font-bold ${advances ? 'text-green-400' : 'text-red-400'}`}>{i + 1}</span>
+                            </td>
+                            <td className="px-2 py-2.5">
+                              <span className="text-xs font-bold text-slate-400">{team.group}</span>
+                            </td>
+                            <td className="px-3 py-2.5">
+                              <div className="flex items-center gap-2">
+                                <TeamFlag logo={team.logo} name={team.name} className="w-5 h-5" />
+                                <span className="text-white text-xs font-medium truncate max-w-[90px]">{team.name}</span>
+                              </div>
+                            </td>
+                            <td className="text-center px-2 py-2.5 text-slate-300">{team.P}</td>
+                            <td className="text-center px-2 py-2.5 text-green-400">{team.W}</td>
+                            <td className="text-center px-2 py-2.5 text-slate-300">{team.D}</td>
+                            <td className="text-center px-2 py-2.5 text-red-400">{team.L}</td>
+                            <td className="text-center px-2 py-2.5 text-slate-300">{team.GD > 0 ? `+${team.GD}` : team.GD}</td>
+                            <td className="text-center px-2 py-2.5 font-bold text-yellow-400">{team.Pts}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="flex gap-3 mt-2 px-1 text-[10px]">
+                  <span className="text-green-400">🟢 עולה לשלב הבא (8 הטובות)</span>
+                  <span className="text-red-400">🔴 מודחת</span>
+                </div>
               </div>
             ) : (
               <>
