@@ -1100,17 +1100,17 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
                           className="flex-1 flex flex-col items-center py-4 px-2"
                         >
                           {/* Category label on top */}
-                          <span className="text-slate-400 text-xs font-medium text-center leading-tight mb-2">
+                          <span className="text-xs font-semibold text-center leading-tight mb-2" style={{ color: 'rgba(255,255,255,0.80)' }}>
                             {stat.label}
                           </span>
                           {/* Value */}
                           {stat.isText ? (
-                            <div className="flex flex-col items-center gap-0.5">
-                              <span style={{ ...orbitron, ...goldGrad, fontSize: "0.75rem", fontWeight: 700, lineHeight: 1.3 }}>
+                            <div className="flex flex-col items-center gap-1">
+                              <span style={{ ...orbitron, ...goldGrad, fontSize: "0.82rem", fontWeight: 700, lineHeight: 1.3 }}>
                                 {stat.bestMain}
                               </span>
                               {stat.bestYear && (
-                                <span style={{ fontSize: "0.58rem", color: "#FFD700aa" }}>{stat.bestYear}</span>
+                                <span style={{ fontSize: "0.72rem", color: "#FFD700cc", fontWeight: 600 }}>{stat.bestYear}</span>
                               )}
                             </div>
                           ) : (
