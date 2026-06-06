@@ -865,8 +865,8 @@ export default function MyStats() {
               }}>
                 <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)' }} />
                 <p className="relative text-sm font-semibold mb-4" style={{ color: '#0A84FF' }}>ממוצע למשחק</p>
-                <div className="relative text-5xl font-bold tabular-nums" style={{ color: '#0A84FF' }}>
-                  <SlidingNumber number={averagePointsPerMatch} className="text-5xl font-bold" duration={1.0} delay={0.2} showDecimals={true} />
+                <div className="relative text-3xl font-bold tabular-nums" style={{ color: '#0A84FF' }}>
+                  <SlidingNumber number={averagePointsPerMatch} className="text-3xl font-bold" duration={1.0} delay={0.2} showDecimals={true} />
                 </div>
                 <p className="relative text-sm font-semibold mt-3" style={{ color: '#0A84FF', opacity: 0.7 }}>נקודות</p>
               </div>
@@ -881,8 +881,8 @@ export default function MyStats() {
               }}>
                 <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)' }} />
                 <p className="relative text-sm font-semibold mb-4" style={{ color: '#34C759' }}>ממוצע למחזור</p>
-                <div className="relative text-5xl font-bold tabular-nums" style={{ color: '#34C759' }}>
-                  <SlidingNumber number={averagePointsPerRound} className="text-5xl font-bold" duration={1.0} delay={0.4} showDecimals={true} />
+                <div className="relative text-3xl font-bold tabular-nums" style={{ color: '#34C759' }}>
+                  <SlidingNumber number={averagePointsPerRound} className="text-3xl font-bold" duration={1.0} delay={0.4} showDecimals={true} />
                 </div>
                 <p className="relative text-sm font-semibold mt-3" style={{ color: '#34C759', opacity: 0.7 }}>נקודות</p>
               </div>
