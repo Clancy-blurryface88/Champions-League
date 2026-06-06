@@ -1008,6 +1008,11 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                                         '❌';
 
               const off = scatterOffsets[index] ?? { x: 0, y: 0, rotate: 0, scale: 1 };
+              const accentBg  = !isFinished ? 'rgba(100,116,139,0.18)' : detail.exactScore ? 'rgba(16,185,129,0.18)' : detail.correctOutcome ? 'rgba(245,158,11,0.18)' : 'rgba(239,68,68,0.14)';
+              const accentFg  = !isFinished ? '#64748b' : detail.exactScore ? '#10b981' : detail.correctOutcome ? '#f59e0b' : '#ef4444';
+              const matchMax  = calculateMatchMaxPotentialPoints(match);
+              const matchPct  = matchMax > 0 ? Math.round((detail.points / matchMax) * 100) : 0;
+
               return (
                 <motion.div
                   key={detail.matchId}
@@ -1015,75 +1020,44 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                   whileInView={{ opacity: 1, x: 0, y: 0, rotate: 0, scale: 1 }}
                   viewport={{ once: true, amount: 0.25 }}
                   transition={{ type: 'spring', stiffness: 130, damping: 16 }}
-                  className={`rounded-xl overflow-hidden border ${verdictBorder} ${verdictGlow}`}
-                  style={{ background: 'rgba(255,255,255,0.03)' }}
+                  className="rounded-2xl p-3 flex gap-3"
+                  style={{ background: '#12181f', border: `1px solid ${accentFg}33` }}
                 >
-                  {/* Teams row */}
-                  <div className="flex items-center px-3 pt-3 pb-1">
-                    {/* Teams centered */}
-                    <div className="flex-1 flex items-center justify-center gap-2">
-                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5" rounded="sm" />
-                      <span className="text-white/70 text-xs font-medium">{match.team_a}</span>
-                      <span className="text-amber-400/50 text-[10px] font-bold tracking-widest">VS</span>
-                      <span className="text-white/70 text-xs font-medium">{match.team_b}</span>
-                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5" rounded="sm" />
+                  {/* Left — team names */}
+                  <div className="flex flex-col justify-center gap-1 min-w-[80px]">
+                    <div className="flex items-center gap-1.5">
+                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-4 h-4" rounded="sm" />
+                      <span className="text-white/75 text-[11px] font-semibold leading-tight truncate">{match.team_a}</span>
                     </div>
-                    {/* Status icon — right */}
-                    <span className="text-base w-6 text-right flex-shrink-0">
-                      {statusIcon || ''}
-                    </span>
-                  </div>
-
-                  {/* Split card: prediction vs actual */}
-                  <div className="flex mx-3 mb-3 mt-1 rounded-lg overflow-hidden border border-white/8">
-                    {/* My prediction */}
-                    <div className="flex-1 flex flex-col items-center py-2.5 px-2 bg-blue-900/20">
-                      <span className="text-[9px] text-blue-400 uppercase tracking-widest font-semibold mb-1">הניחוש שלי</span>
-                      <span className="text-white font-bold text-lg tabular-nums leading-none">{detail.prediction}</span>
-                    </div>
-                    {/* Divider */}
-                    <div className="w-px bg-white/8 self-stretch" />
-                    {/* Actual result */}
-                    <div className={`flex-1 flex flex-col items-center py-2.5 px-2 ${
-                      !isFinished ? 'bg-slate-800/30' :
-                      detail.exactScore     ? 'bg-emerald-900/25' :
-                      detail.correctOutcome ? 'bg-amber-900/20' :
-                                              'bg-red-900/15'
-                    }`}>
-                      <span className={`text-[9px] uppercase tracking-widest font-semibold mb-1 ${
-                        !isFinished ? 'text-slate-500' :
-                        detail.exactScore     ? 'text-emerald-400' :
-                        detail.correctOutcome ? 'text-amber-400' :
-                                                'text-red-400'
-                      }`}>תוצאה</span>
-                      <span className="text-white font-bold text-lg tabular-nums leading-none">
-                        {isFinished ? detail.actual : '–'}
-                      </span>
+                    <span className="text-white/25 text-[9px] font-bold px-1">vs</span>
+                    <div className="flex items-center gap-1.5">
+                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-4 h-4" rounded="sm" />
+                      <span className="text-white/75 text-[11px] font-semibold leading-tight truncate">{match.team_b}</span>
                     </div>
                   </div>
 
-                  {/* Points bar */}
-                  {isFinished && (() => {
-                    const matchMax = calculateMatchMaxPotentialPoints(match);
-                    const matchPct = matchMax > 0 ? Math.round((detail.points / matchMax) * 100) : 0;
-                    const colorClass =
-                      detail.exactScore     ? 'bg-emerald-500/15 text-emerald-300' :
-                      detail.correctOutcome ? 'bg-amber-500/15 text-amber-300' :
-                                              'bg-red-500/15 text-red-300';
-                    const pctC =
-                      detail.exactScore     ? 'text-emerald-400' :
-                      detail.correctOutcome ? 'text-amber-400' :
-                                              'text-red-400';
-                    return (
-                      <div className="px-3 pb-2.5 flex justify-center items-center gap-2">
-                        <span className={`text-xs font-bold tabular-nums px-2.5 py-1 rounded-full ${colorClass}`}>
-                          {detail.points.toFixed(2)} pts
-                        </span>
-                        <span className="text-white/55 text-xs">מתוך {matchMax.toFixed(2)}</span>
-                        <span className={`text-xs font-bold tabular-nums ${pctC}`}>({matchPct}%)</span>
-                      </div>
-                    );
-                  })()}
+                  {/* Middle — prediction / result grid */}
+                  <div className="flex-1 grid grid-cols-2 gap-2">
+                    <div className="rounded-xl flex flex-col items-center justify-center py-2.5" style={{ background: 'rgba(59,130,246,0.12)' }}>
+                      <span className="text-[8px] text-blue-400 font-bold uppercase tracking-wider mb-1">הניחוש</span>
+                      <span className="text-white font-black text-lg tabular-nums leading-none">{detail.prediction}</span>
+                    </div>
+                    <div className="rounded-xl flex flex-col items-center justify-center py-2.5" style={{ background: accentBg }}>
+                      <span className="text-[8px] font-bold uppercase tracking-wider mb-1" style={{ color: accentFg }}>תוצאה</span>
+                      <span className="text-white font-black text-lg tabular-nums leading-none">{isFinished ? detail.actual : '–'}</span>
+                    </div>
+                  </div>
+
+                  {/* Right — icon + points */}
+                  <div className="flex flex-col items-center justify-center gap-1 min-w-[36px]">
+                    <span className="text-base leading-none">{statusIcon || '⏳'}</span>
+                    {isFinished && (
+                      <>
+                        <span className="text-[11px] font-black tabular-nums" style={{ color: accentFg }}>{detail.points.toFixed(1)}</span>
+                        <span className="text-[9px] font-semibold" style={{ color: accentFg, opacity: 0.65 }}>{matchPct}%</span>
+                      </>
+                    )}
+                  </div>
                 </motion.div>
               );
           })}
