@@ -756,12 +756,12 @@ export default function Predictions() {
                         </div> :
 
                         <div dir="rtl" className="relative overflow-hidden flex rounded-2xl" style={{
-                          background: 'rgba(34,197,94,0.07)',
+                          background: 'rgba(127,255,212,0.07)',
                           backdropFilter: 'blur(40px) saturate(180%)',
                           WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-                          border: '1px solid rgba(34,197,94,0.25)',
-                          boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.40), 0 0 32px rgba(34,197,94,0.18), 0 0 8px rgba(34,197,94,0.12)',
-                          filter: 'drop-shadow(0 0 10px rgba(34,197,94,0.22))',
+                          border: '1px solid rgba(127,255,212,0.22)',
+                          boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.40), 0 0 32px rgba(127,255,212,0.18), 0 0 8px rgba(127,255,212,0.12)',
+                          filter: 'drop-shadow(0 0 10px rgba(127,255,212,0.20))',
                         }}>
                           {/* gloss */}
                           <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 100%)', borderRadius: '16px 16px 0 0' }} />
@@ -773,10 +773,10 @@ export default function Predictions() {
                           ].map((item, i) => (
                             <React.Fragment key={item.label}>
                               <div className="relative flex flex-col items-center px-3 py-2">
-                                <span className="font-extrabold leading-none mb-0.5" style={{ fontSize: "1.05rem", background: 'linear-gradient(135deg, #16a34a, #22c55e)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{item.val}</span>
-                                <span className="text-[9px] font-semibold" style={{ color: 'rgba(34,197,94,0.70)' }}>{item.label}</span>
+                                <span className="font-extrabold leading-none mb-0.5" style={{ fontSize: "1.05rem", color: '#7fffd4' }}>{item.val}</span>
+                                <span className="text-[9px] font-semibold" style={{ color: 'rgba(127,255,212,0.60)' }}>{item.label}</span>
                               </div>
-                              {i < 3 && <div className="self-center" style={{ width: 1, height: 24, background: 'rgba(34,197,94,0.18)' }} />}
+                              {i < 3 && <div className="self-center" style={{ width: 1, height: 24, background: 'rgba(127,255,212,0.16)' }} />}
                             </React.Fragment>
                           ))}
                         </div>
