@@ -772,11 +772,13 @@ export default function MyStats() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList
-            className="flex w-full justify-between mb-6 relative p-1 rounded-xl"
+            className="flex w-full justify-between mb-6 relative p-1 rounded-xl overflow-hidden"
             style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(245,197,24,0.45)',
-              backdropFilter: 'blur(12px)',
+              background: 'rgba(255,255,255,0.10)',
+              backdropFilter: 'blur(40px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+              border: '1px solid rgba(255,255,255,0.22)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)',
             }}
           >
             {[
@@ -784,12 +786,15 @@ export default function MyStats() {
               { id: "ranking", label: "דירוג" },
               { id: "tables", label: "טבלאות" },
               { id: "head2head", label: "ראש בראש" }
-            ].map((tab) => (
+            ].map((tab, index, arr) => (
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
                 className="flex-1 relative z-10 data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:data-[state=active]:bg-transparent rounded-lg"
-                style={{ color: activeTab === tab.id ? '#000' : 'rgba(255,255,255,0.72)' }}
+                style={{
+                  color: activeTab === tab.id ? '#000' : 'rgba(255,255,255,0.72)',
+                  borderRight: index < arr.length - 1 ? '1px solid rgba(255,255,255,0.14)' : 'none',
+                }}
               >
                 {activeTab === tab.id && (
                   <motion.div
