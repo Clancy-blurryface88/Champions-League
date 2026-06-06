@@ -604,14 +604,16 @@ export default function PredictionsResults() {
                 <p className="text-slate-400">אין משחקים שהסתיימו במחזור זה</p>
               </div> :
               <div
-                className="rounded-2xl overflow-hidden mt-6"
+                className="rounded-2xl overflow-hidden mt-6 relative"
                 style={{
-                  background: 'rgba(8,15,35,0.72)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  backdropFilter: 'blur(20px)',
-                  boxShadow: '0 0 0 1px rgba(245,197,24,0.06), 0 24px 48px rgba(0,0,0,0.5)',
+                  background: 'rgba(255,255,255,0.10)',
+                  backdropFilter: 'blur(40px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+                  border: '1px solid rgba(255,255,255,0.22)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)',
                 }}
               >
+                <div className="absolute inset-x-0 top-0 h-1/3 pointer-events-none rounded-t-2xl" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 100%)' }} />
                 {/* Header with View Mode Toggle */}
                 <div className="px-4 py-5">
                   {/* Glass tab bar */}
@@ -627,14 +629,17 @@ export default function PredictionsResults() {
                       { key: 'all_predictions', label: 'כל הניחושים'  },
                       { key: 'my_predictions',  label: 'הניחושים שלי' },
                       { key: 'leaderboard',     label: 'דירוג המחזור' },
-                    ].map((tab) => {
+                    ].map((tab, i, arr) => {
                       const active = viewMode === tab.key;
                       return (
                         <button
                           key={tab.key}
                           onClick={() => setViewMode(tab.key)}
                           className="relative flex-1 flex items-center justify-center py-2.5 px-1 rounded-xl transition-colors z-10"
-                          style={{ color: active ? '#000' : 'rgba(255,255,255,0.72)' }}
+                          style={{
+                            color: active ? '#000' : '#f5c518',
+                            borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.14)' : 'none',
+                          }}
                         >
                           {active && (
                             <motion.div
@@ -664,7 +669,8 @@ export default function PredictionsResults() {
                         const r = 18, c = 22, stroke = 2.5, circ = 2 * Math.PI * r;
                         return (
                           <button onClick={nextMatch} disabled={finishedMatches.length <= 1}
-                            className="relative w-11 h-11 flex items-center justify-center disabled:opacity-30">
+                            className="relative w-11 h-11 flex items-center justify-center disabled:opacity-30 rounded-full"
+                            style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(255,255,255,0.18)' }}>
                             <svg width={c*2} height={c*2} className="absolute" style={{ transform:'rotate(-90deg)' }}>
                               <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
                               <circle cx={c} cy={c} r={r} fill="none" stroke="#f5c518" strokeWidth={stroke}
@@ -715,7 +721,8 @@ export default function PredictionsResults() {
                         const r = 18, c = 22, stroke = 2.5, circ = 2 * Math.PI * r;
                         return (
                           <button onClick={prevMatch} disabled={finishedMatches.length <= 1}
-                            className="relative w-11 h-11 flex items-center justify-center disabled:opacity-30">
+                            className="relative w-11 h-11 flex items-center justify-center disabled:opacity-30 rounded-full"
+                            style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(255,255,255,0.18)' }}>
                             <svg width={c*2} height={c*2} className="absolute" style={{ transform:'rotate(-90deg)' }}>
                               <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
                               <circle cx={c} cy={c} r={r} fill="none" stroke="#f5c518" strokeWidth={stroke}
