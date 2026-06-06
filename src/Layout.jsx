@@ -456,7 +456,7 @@ export default function Layout({ children, currentPageName }) {
             animation: shine 2s linear infinite;
           }
         `}</style>
-        <div className="min-h-screen text-white relative overflow-hidden" style={{ background: 'linear-gradient(135deg,#050d1a 0%,#0f2040 50%,#1a1a2e 100%)' }}>
+        <div className="min-h-screen text-white relative overflow-hidden" style={{ background: '#030d0a' }}>
           <div className="relative z-10 text-center">
             <LoaderBar text="LOADING" />
           </div>
@@ -490,7 +490,7 @@ export default function Layout({ children, currentPageName }) {
       `}</style>
       <div
         className="min-h-screen text-white relative overflow-x-clip"
-        style={{ background: 'linear-gradient(135deg,#050d1a 0%,#0f2040 50%,#1a1a2e 100%)', fontFamily: "'Outfit', sans-serif" }}
+        style={{ background: '#030d1a', fontFamily: "'Outfit', sans-serif" }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}>
