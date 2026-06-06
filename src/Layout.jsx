@@ -619,11 +619,11 @@ export default function Layout({ children, currentPageName }) {
                   }}
                   className="inline-flex animate-shine items-center justify-start rounded-xl text-sm border border-neutral-800 bg-[linear-gradient(110deg,rgba(0,1,3,0.7),45%,rgba(30,38,49,0.9),55%,rgba(0,1,3,0.7))] bg-[length:200%_100%] p-6 font-medium text-neutral-400 transition-colors cursor-pointer hover:scale-105 flex-col text-center h-40">
 
-                    <div className="h-14 flex items-center justify-center mb-4 shrink-0">
+                    <div className="h-16 flex items-center justify-center mb-4 shrink-0">
                       <img
                       src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/04dbdbc00_web_15025147.png"
                       alt="Stats"
-                      className="w-10 h-10 object-contain" />
+                      className="w-12 h-12 object-contain" />
                     </div>
 
                     <div className="flex-1 flex items-start justify-center">
@@ -651,7 +651,7 @@ export default function Layout({ children, currentPageName }) {
                     <img
                     src="/icon-scoreboard.png"
                     alt="Predictions Results"
-                    className="w-14 h-14 object-contain mb-4 shrink-0" />
+                    className="w-16 h-16 object-contain mb-4 shrink-0" />
 
                     <div className="flex-1 flex items-start justify-center">
                       <h3 className="text-white text-base font-semibold leading-tight">ניחושים ותוצאות</h3>
