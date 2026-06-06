@@ -213,7 +213,7 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
           <button
             onClick={onCancel}
             disabled={saving}
-            className="py-2.5 px-10 rounded-2xl text-sm font-bold transition-opacity disabled:opacity-40"
+            className="py-3 px-10 rounded-2xl text-base font-bold transition-opacity disabled:opacity-40"
             style={{
               background: 'linear-gradient(rgba(4,10,22,0.98), rgba(4,10,22,0.98)) padding-box, linear-gradient(90deg, #b91c1c, #ef4444) border-box',
               border: '1.5px solid transparent',
