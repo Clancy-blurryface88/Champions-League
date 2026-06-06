@@ -1143,11 +1143,11 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
           outcomeStatus?.type === 'wrong'   ? { background:'rgba(239,68,68,0.07)',   backdropFilter:'blur(20px)', border:'1px solid rgba(248,113,113,0.25)', boxShadow:'0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(248,113,113,0.08)' } :
                                               { background:'rgba(255,255,255,0.04)', backdropFilter:'blur(20px)', border:'1px solid rgba(255,255,255,0.09)', boxShadow:'0 4px 24px rgba(0,0,0,0.3),  inset 0 1px 0 rgba(255,255,255,0.06)'  };
 
-        const rankBg =
-          outcomeStatus?.type === 'exact'   ? 'bg-emerald-500' :
-          outcomeStatus?.type === 'correct' ? 'bg-amber-500' :
-          outcomeStatus?.type === 'wrong'   ? 'bg-red-600' :
-          'bg-blue-600';
+        const rankStyle =
+          outcomeStatus?.type === 'exact'   ? { background:'transparent', border:'1.5px solid rgba(52,211,153,0.6)',  color:'#6ee7b7' } :
+          outcomeStatus?.type === 'correct' ? { background:'transparent', border:'1.5px solid rgba(251,191,36,0.6)',  color:'#fde68a' } :
+          outcomeStatus?.type === 'wrong'   ? { background:'transparent', border:'1.5px solid rgba(248,113,113,0.6)', color:'#fca5a5' } :
+                                              { background:'transparent', border:'1.5px solid rgba(255,255,255,0.2)', color:'#94a3b8' };
 
         const ptsBadgeStyle =
           outcomeStatus?.type === 'exact'   ? { background:'rgba(16,185,129,0.15)',  border:'1px solid rgba(52,211,153,0.35)',  color:'#6ee7b7' } :
@@ -1207,7 +1207,8 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setExpandedPrediction(isExpanded ? null : prediction.id)}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold transition-colors hover:opacity-80 ${rankBg}`}>
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-opacity hover:opacity-70 flex-shrink-0"
+                    style={rankStyle}>
                     {index + 1}
                   </button>
 
