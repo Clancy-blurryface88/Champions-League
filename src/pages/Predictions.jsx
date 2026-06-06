@@ -757,10 +757,11 @@ export default function Predictions() {
 
                         <div dir="rtl" className="relative overflow-hidden flex rounded-2xl" style={{
                           background: 'rgba(127,255,212,0.07)',
-                          backdropFilter: 'blur(32px) saturate(180%)',
-                          WebkitBackdropFilter: 'blur(32px) saturate(180%)',
+                          backdropFilter: 'blur(40px) saturate(180%)',
+                          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
                           border: '1px solid rgba(127,255,212,0.22)',
-                          boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.40)',
+                          boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.40), 0 0 32px rgba(127,255,212,0.18), 0 0 8px rgba(127,255,212,0.12)',
+                          filter: 'drop-shadow(0 0 10px rgba(127,255,212,0.20))',
                         }}>
                           {/* gloss */}
                           <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 100%)', borderRadius: '16px 16px 0 0' }} />
