@@ -621,7 +621,6 @@ export default function PredictionsResults() {
                     style={{
                       background: 'transparent',
                       border: '1px solid rgba(245,197,24,0.45)',
-                      backdropFilter: 'blur(12px)',
                     }}
                   >
                     {[
