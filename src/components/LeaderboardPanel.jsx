@@ -265,7 +265,7 @@ export default function LeaderboardPanel({ onClose, user }) {
                           onMouseLeave={e => { e.currentTarget.style.transform = 'skewX(-6deg)'; e.currentTarget.style.boxShadow = 'none'; }}
                         >
                           {/* Ghost rank number */}
-                          <span style={{ position:'absolute', left:6, top:'50%', transform:'translateY(-50%) skewX(6deg)', fontSize:52, fontWeight:900, color:getRankColor(position), opacity:0.18, lineHeight:1, userSelect:'none', pointerEvents:'none' }}>
+                          <span style={{ position:'absolute', left:18, top:'50%', transform:'translateY(-50%) skewX(6deg)', fontSize:52, fontWeight:900, color:getRankColor(position), opacity:0.18, lineHeight:1, userSelect:'none', pointerEvents:'none' }}>
                             {position}
                           </span>
 
