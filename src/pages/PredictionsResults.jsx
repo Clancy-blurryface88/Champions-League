@@ -721,11 +721,13 @@ export default function PredictionsResults() {
                           <button onClick={prevMatch} disabled={finishedMatches.length <= 1}
                             className="relative w-11 h-11 flex items-center justify-center disabled:opacity-30 rounded-full"
                             style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(255,255,255,0.18)' }}>
-                            <svg width={c*2} height={c*2} className="absolute" style={{ transform:'rotate(-90deg) scaleX(-1)', transformOrigin:`${c}px ${c}px` }}>
-                              <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
-                              <circle cx={c} cy={c} r={r} fill="none" stroke="#f5c518" strokeWidth={stroke}
-                                strokeDasharray={`${circ*pct} ${circ}`} strokeLinecap="round" />
-                            </svg>
+                            <div className="absolute" style={{ transform:'scaleX(-1)' }}>
+                              <svg width={c*2} height={c*2} style={{ transform:'rotate(-90deg)' }}>
+                                <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
+                                <circle cx={c} cy={c} r={r} fill="none" stroke="#f5c518" strokeWidth={stroke}
+                                  strokeDasharray={`${circ*pct} ${circ}`} strokeLinecap="round" />
+                              </svg>
+                            </div>
                             <ChevronRight className="w-5 h-5 text-white relative z-10" />
                           </button>
                         );
