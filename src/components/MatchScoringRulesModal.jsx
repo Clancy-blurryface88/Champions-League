@@ -334,12 +334,12 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
                 <div className="grid grid-cols-3 gap-2">
                   {oddsColumns.map(({ label, filter, sort }) => (
                     <div key={label}>
-                      <div className="text-center text-[9px] font-bold text-white/25 uppercase tracking-widest mb-1.5">{label}</div>
+                      <div className="text-center text-[9px] font-bold text-white/45 uppercase tracking-widest mb-1.5">{label}</div>
                       <div className="space-y-1">
                         {Object.entries(match.score_odds).filter(filter).sort(sort).map(([score, pts]) => (
                           <div key={score} className="flex justify-between items-center rounded-lg bg-amber-500/6 border border-amber-500/15 px-2 py-1.5">
                             <span className="text-amber-400 font-bold text-xs tabular-nums">{pts}</span>
-                            <span className="text-white/40 text-xs font-mono">{score}</span>
+                            <span className="text-white/60 text-xs font-mono">{score}</span>
                           </div>
                         ))}
                       </div>
@@ -350,7 +350,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
                 {'other' in match.score_odds && (
                   <div className="flex justify-between items-center rounded-lg bg-amber-500/6 border border-amber-500/15 px-3 py-2.5">
                     <span className="text-amber-400 font-bold text-sm tabular-nums">{match.score_odds['other']}</span>
-                    <span className="text-white/40 text-xs">כל תוצאה אחרת</span>
+                    <span className="text-white/60 text-xs">כל תוצאה אחרת</span>
                   </div>
                 )}
               </div>
