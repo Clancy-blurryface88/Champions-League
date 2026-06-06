@@ -178,7 +178,14 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
           {/* Header */}
           <div className="sticky top-0 z-10 bg-slate-900 border-b border-slate-700">
             <div className="flex items-center justify-between px-5 py-3">
-              <h2 className="text-white font-bold text-lg">{isBest3 ? '8 הטובות מקום 3' : `Group ${activeGroup}`}</h2>
+              {isBest3 ? (
+                <h2 className="flex items-baseline gap-1 text-white font-bold text-lg">
+                  הטובות מקום
+                  <span className="text-yellow-400 text-base font-black">3</span>
+                </h2>
+              ) : (
+                <h2 className="text-white font-bold text-lg">Group {activeGroup}</h2>
+              )}
               <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
                 <X className="w-5 h-5" />
               </button>
@@ -238,8 +245,9 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
             ) : isBest3 ? (
               /* ── Best 3rd Place Table ── */
               <div>
-                <h3 className="text-yellow-400 font-semibold text-sm uppercase tracking-wider mb-1 text-center">
-                  8 הטובות מקום 3
+                <h3 className="flex items-baseline justify-center gap-1 text-yellow-400 font-semibold text-sm uppercase tracking-wider mb-1">
+                  הטובות מקום
+                  <span className="font-black">3</span>
                 </h3>
                 <p className="text-slate-500 text-[10px] text-center mb-3">
                   מיון לפי נקודות ← הפרש שערים ← שערים
@@ -341,7 +349,6 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
                   </div>
                   <div className="flex gap-3 mt-2 px-1 text-[10px]">
                     <span className="text-green-400">🟢 עולה לשלב הבא</span>
-                    <span className="text-yellow-400">🟡 המקום ה-3 הטוב ביותר</span>
                     <span className="text-red-400">🔴 מודחת</span>
                   </div>
                 </div>
