@@ -99,7 +99,7 @@ export default function PlayerStatsModal({ isOpen, onClose, selectedPlayer: init
                                             position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
                                             fontSize: 44, fontWeight: 900, lineHeight: 1,
                                             color: p.position === 1 ? '#FFD700' : p.position === 2 ? '#C0C0C0' : p.position === 3 ? '#CD7F32' : 'rgba(255,255,255,0.5)',
-                                            opacity: 0.11, userSelect: 'none', pointerEvents: 'none',
+                                            opacity: 0.18, userSelect: 'none', pointerEvents: 'none',
                                         }}>
                                             {p.position}
                                         </span>
