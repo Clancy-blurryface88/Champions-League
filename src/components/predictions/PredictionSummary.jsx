@@ -186,38 +186,42 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
 
         {/* Footer */}
         <div
-          className="px-4 pt-3 pb-6 space-y-2 flex-shrink-0"
+          className="px-4 pt-3 pb-6 space-y-2 flex-shrink-0 flex flex-col items-center"
           style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
         >
           <button
             onClick={onConfirm}
             disabled={saving || loadingMatches}
-            className="w-full py-3.5 rounded-2xl font-bold text-base text-white transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            className="py-3 px-10 rounded-2xl font-bold text-base transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
-              background: 'linear-gradient(90deg, #16a34a, #22c55e)',
-              boxShadow: (saving || loadingMatches) ? 'none' : '0 4px 20px rgba(34,197,94,0.35)',
+              background: 'linear-gradient(rgba(4,10,22,0.98), rgba(4,10,22,0.98)) padding-box, linear-gradient(90deg, #16a34a, #22c55e) border-box',
+              border: '1.5px solid transparent',
             }}
           >
             {saving ? (
-              <span className="flex items-center justify-center gap-2">
+              <span className="flex items-center justify-center gap-2" style={{ color: '#22c55e' }}>
                 <OrbitSpinner size={18} />
                 שומר...
               </span>
             ) : (
-              'אישור ושליחה'
+              <span style={{ background: 'linear-gradient(90deg, #16a34a, #22c55e)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                אישור ושליחה
+              </span>
             )}
           </button>
 
           <button
             onClick={onCancel}
             disabled={saving}
-            className="w-full py-2.5 rounded-2xl text-sm font-bold text-white transition-opacity disabled:opacity-40"
+            className="py-2.5 px-10 rounded-2xl text-sm font-bold transition-opacity disabled:opacity-40"
             style={{
-              background: 'linear-gradient(90deg, #b91c1c, #ef4444)',
-              boxShadow: '0 4px 20px rgba(239,68,68,0.25)',
+              background: 'linear-gradient(rgba(4,10,22,0.98), rgba(4,10,22,0.98)) padding-box, linear-gradient(90deg, #b91c1c, #ef4444) border-box',
+              border: '1.5px solid transparent',
             }}
           >
-            ביטול
+            <span style={{ background: 'linear-gradient(90deg, #b91c1c, #ef4444)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              ביטול
+            </span>
           </button>
         </div>
       </motion.div>
