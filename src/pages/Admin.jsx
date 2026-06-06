@@ -16,9 +16,7 @@ import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
-import AdminMyPredictionsDemo from "../components/admin/AdminMyPredictionsDemo";
-import AdminLeaderboardDemo from "../components/admin/AdminLeaderboardDemo";
-import AdminLeaderboardDemo2 from "../components/admin/AdminLeaderboardDemo2";
+import AdminExactHitsDemo from "../components/admin/AdminExactHitsDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -78,9 +76,7 @@ export default function Admin() {
       case 'live-data': return <AdminLiveData />;
       case 'import': return <AdminImportMatches />;
       case 'reset': return <AdminReset />;
-      case 'my-predictions-demo': return <AdminMyPredictionsDemo />;
-      case 'leaderboard-demo': return <AdminLeaderboardDemo />;
-      case 'leaderboard-demo2': return <AdminLeaderboardDemo2 />;
+      case 'exact-hits-demo': return <AdminExactHitsDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -96,9 +92,7 @@ export default function Admin() {
     { id: 'live-data', label: 'Live Data Test', icon: BarChart3 },
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset', label: 'Reset Center', icon: RotateCcw },
-    { id: 'my-predictions-demo', label: 'My Predictions Demo', icon: Target },
-    { id: 'leaderboard-demo', label: 'Leaderboard Demo', icon: Trophy },
-    { id: 'leaderboard-demo2', label: 'Leaderboard Demo 2', icon: Trophy },
+    { id: 'exact-hits-demo', label: 'Exact Hits Demo', icon: Target },
   ];
 
   return (
