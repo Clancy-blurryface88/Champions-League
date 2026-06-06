@@ -2,6 +2,14 @@ import React, { useState, useEffect } from "react";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import { motion, AnimatePresence } from "framer-motion";
 
+const BOKEH = [
+  { size: 220, x: "8%",  y: "15%", color: "rgba(56,120,255,0.07)"  },
+  { size: 180, x: "85%", y: "8%",  color: "rgba(80,200,120,0.055)" },
+  { size: 200, x: "75%", y: "78%", color: "rgba(80,60,200,0.07)"   },
+  { size: 160, x: "18%", y: "82%", color: "rgba(40,160,255,0.05)"  },
+  { size: 140, x: "50%", y: "45%", color: "rgba(60,100,200,0.04)"  },
+];
+
 export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser }) {
   const [displayName, setDisplayName] = useState('');
   const [saving, setSaving] = useState(false);
@@ -39,65 +47,121 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 bg-black/60 backdrop-blur-md z-50"
+            className="fixed inset-0 z-50"
+            style={{ background: "#04050a" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.4 }}
           />
 
+          {/* Bokeh circles */}
+          {BOKEH.map((b, i) => (
+            <motion.div
+              key={i}
+              className="fixed z-50 rounded-full pointer-events-none"
+              style={{
+                width:  b.size,
+                height: b.size,
+                left:   b.x,
+                top:    b.y,
+                transform: "translate(-50%, -50%)",
+                background: `radial-gradient(${b.color} 0%, transparent 70%)`,
+                filter: "blur(2px)",
+              }}
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.9, delay: i * 0.08, ease: "easeOut" }}
+            />
+          ))}
+
+          {/* Card */}
           <motion.div
             className="fixed inset-0 flex items-center justify-center z-50 p-4"
-            initial={{ opacity: 0, y: 16, scale: 0.97 }}
+            initial={{ opacity: 0, y: 18, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.97 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            exit={{ opacity: 0, y: 18, scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 380, damping: 30, delay: 0.1 }}
           >
-            <div className="w-full max-w-sm bg-[#111] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
-
+            <div
+              className="w-full max-w-sm overflow-hidden"
+              style={{
+                background:       "rgba(255,255,255,0.055)",
+                backdropFilter:   "blur(28px) saturate(1.6)",
+                WebkitBackdropFilter: "blur(28px) saturate(1.6)",
+                border:           "1px solid rgba(255,255,255,0.09)",
+                borderRadius:     "1.25rem",
+                boxShadow:        "0 32px 64px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.06)",
+              }}
+            >
               {/* Header */}
-              <div className="px-8 pt-8 pb-6 text-center border-b border-white/[0.06]">
+              <div
+                className="px-8 pt-9 pb-7 text-center"
+                style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+              >
                 <motion.img
                   src="/trophy.png"
                   alt="Trophy"
-                  className="w-16 h-auto mx-auto mb-5 drop-shadow-lg"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.15, type: "spring", stiffness: 300, damping: 20 }}
+                  className="w-14 h-auto mx-auto mb-6"
+                  initial={{ opacity: 0, scale: 0.75, y: 6 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ delay: 0.22, type: "spring", stiffness: 280, damping: 22 }}
                 />
-                <h2 className="text-white text-xl font-semibold tracking-tight">
+                <h2 className="text-white text-[18px] font-semibold tracking-tight">
                   World Cup 2026
                 </h2>
-                <p className="text-white/40 text-sm mt-1">
+                <p className="text-white/35 text-[12px] mt-1.5">
                   שמך בטורניר
                 </p>
               </div>
 
               {/* Body */}
-              <div className="px-8 py-6 space-y-4">
-                <div className="space-y-2">
-                  <input
-                    value={displayName}
-                    onChange={e => setDisplayName(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="השם שלך..."
-                    maxLength={20}
-                    disabled={saving}
-                    autoFocus
-                    className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none text-center transition-all duration-200 focus:border-white/25 focus:bg-white/[0.08]"
-                    dir="rtl"
-                  />
-                  {userEmail && (
-                    <p className="text-white/25 text-xs text-center">{userEmail}</p>
-                  )}
-                </div>
+              <div className="px-8 py-7 space-y-3.5">
+                <input
+                  value={displayName}
+                  onChange={e => setDisplayName(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="השם שלך..."
+                  maxLength={20}
+                  disabled={saving}
+                  autoFocus
+                  dir="rtl"
+                  className="w-full text-sm text-center text-white placeholder:text-white/25 outline-none transition-all duration-200"
+                  style={{
+                    background:  "rgba(255,255,255,0.04)",
+                    border:      "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: "0.75rem",
+                    padding:     "12px 16px",
+                  }}
+                  onFocus={e => {
+                    e.target.style.background = "rgba(255,255,255,0.07)";
+                    e.target.style.borderColor = "rgba(255,255,255,0.15)";
+                  }}
+                  onBlur={e => {
+                    e.target.style.background = "rgba(255,255,255,0.04)";
+                    e.target.style.borderColor = "rgba(255,255,255,0.08)";
+                  }}
+                />
+
+                {userEmail && (
+                  <p className="text-white/25 text-[11px] text-center">{userEmail}</p>
+                )}
 
                 <motion.button
                   onClick={handleSave}
                   disabled={!displayName.trim() || saving}
-                  className="w-full bg-white text-black text-sm font-semibold py-3 rounded-xl transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/90 active:scale-[0.98]"
+                  className="w-full text-[13px] font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                  style={{
+                    background:   "white",
+                    color:        "black",
+                    borderRadius: "0.75rem",
+                    padding:      "12px 16px",
+                  }}
                   whileTap={{ scale: 0.98 }}
+                  whileHover={{ background: "rgba(240,240,240,1)" }}
                 >
                   {saving ? (
                     <div className="flex items-center justify-center gap-2">
@@ -109,7 +173,6 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                   )}
                 </motion.button>
               </div>
-
             </div>
           </motion.div>
         </>
