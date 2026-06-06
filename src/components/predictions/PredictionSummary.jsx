@@ -117,59 +117,64 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                   initial="hidden"
                   whileInView="visible"
                   viewport={{ once: true, amount: 0.4, root: scrollRef }}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-2xl overflow-hidden"
                   style={{
+                    borderRadius: 0,
                     background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    border: 'none',
+                    borderLeft: '4px solid #f5c518',
+                    transform: 'skewX(-6deg)',
+                    overflow: 'hidden',
                   }}
                 >
-                  {/* Team A — נכנסת מימין */}
-                  <motion.div
-                    variants={teamAVariants}
-                    className="flex items-center gap-1.5 flex-1 min-w-0 justify-end"
-                  >
-                    <span className="text-white/80 text-xs font-semibold truncate text-right">{match.team_a}</span>
-                    <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-7 h-7 flex-shrink-0" />
-                  </motion.div>
-
-                  {/* Score pill — מופיע אחרי הדגלים */}
-                  <motion.div
-                    variants={scoreVariants}
-                    className="flex flex-col items-center flex-shrink-0 w-[72px]"
-                  >
-                    <div
-                      className="w-full flex items-center justify-center px-2 py-1 rounded-xl"
-                      style={{
-                        background: 'rgba(245,197,24,0.11)',
-                        border: '1px solid rgba(245,197,24,0.32)',
-                        boxShadow: '0 0 12px rgba(245,197,24,0.10)',
-                      }}
+                  <div className="flex items-center gap-2 px-3" style={{ paddingTop: 10, paddingBottom: 10, transform: 'skewX(6deg)' }}>
+                    {/* Team A — נכנסת מימין */}
+                    <motion.div
+                      variants={teamAVariants}
+                      className="flex items-center gap-1.5 flex-1 min-w-0 justify-end"
                     >
-                      <span
-                        className="font-black text-sm tabular-nums"
+                      <span className="text-white/80 text-xs font-semibold truncate text-right">{match.team_a}</span>
+                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-7 h-7 flex-shrink-0" />
+                    </motion.div>
+
+                    {/* Score pill — מופיע אחרי הדגלים */}
+                    <motion.div
+                      variants={scoreVariants}
+                      className="flex flex-col items-center flex-shrink-0 w-[72px]"
+                    >
+                      <div
+                        className="w-full flex items-center justify-center px-2 py-1 rounded-xl"
                         style={{
-                          background: 'linear-gradient(90deg, #f5c518, #fde68a)',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                          backgroundClip: 'text',
+                          background: 'rgba(245,197,24,0.11)',
+                          border: '1px solid rgba(245,197,24,0.32)',
+                          boxShadow: '0 0 12px rgba(245,197,24,0.10)',
                         }}
                       >
-                        {prediction.predicted_score_a} – {prediction.predicted_score_b}
-                      </span>
-                    </div>
-                    {match.league && (
-                      <span className="text-[9px] text-amber-400/45 font-medium mt-0.5 tracking-wide">{match.league}</span>
-                    )}
-                  </motion.div>
+                        <span
+                          className="font-black text-sm tabular-nums"
+                          style={{
+                            background: 'linear-gradient(90deg, #f5c518, #fde68a)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text',
+                          }}
+                        >
+                          {prediction.predicted_score_a} – {prediction.predicted_score_b}
+                        </span>
+                      </div>
+                      {match.league && (
+                        <span className="text-[9px] text-amber-400/45 font-medium mt-0.5 tracking-wide">{match.league}</span>
+                      )}
+                    </motion.div>
 
-                  {/* Team B — נכנסת משמאל */}
-                  <motion.div
-                    variants={teamBVariants}
-                    className="flex items-center gap-1.5 flex-1 min-w-0 justify-start"
-                  >
-                    <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-7 h-7 flex-shrink-0" />
-                    <span className="text-white/80 text-xs font-semibold truncate">{match.team_b}</span>
-                  </motion.div>
+                    {/* Team B — נכנסת משמאל */}
+                    <motion.div
+                      variants={teamBVariants}
+                      className="flex items-center gap-1.5 flex-1 min-w-0 justify-start"
+                    >
+                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-7 h-7 flex-shrink-0" />
+                      <span className="text-white/80 text-xs font-semibold truncate">{match.team_b}</span>
+                    </motion.div>
+                  </div>
                 </motion.div>
               ))}
             </div>
