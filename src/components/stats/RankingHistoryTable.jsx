@@ -10,6 +10,31 @@ import { LoaderBar } from "@/components/ui/LoaderBar";
 import { FlexibleIcon } from "@/components/ui/FlexibleIcon";
 import { motion } from "framer-motion";
 
+// ── SparkLine ─────────────────────────────────────────────────────────────────
+const SparkLine = ({ ranksByRound, rounds, totalUsers }) => {
+  const W = 56, H = 22, PAD = 3;
+  const values = rounds.map(r => ranksByRound[r.id]).filter(v => v != null);
+  if (values.length < 2) return null;
+  const xStep = (W - PAD * 2) / (values.length - 1);
+  const yStep = (H - PAD * 2) / Math.max(totalUsers - 1, 1);
+  const pts = values.map((v, i) => [PAD + i * xStep, PAD + (v - 1) * yStep]);
+  const last = values[values.length - 1];
+  const first = values[0];
+  const trend = last < first ? '#22c55e' : last > first ? '#ef4444' : '#94a3b8';
+  return (
+    <svg width={W} height={H} style={{ display: 'block' }}>
+      <polyline
+        points={pts.map(p => p.join(',')).join(' ')}
+        fill="none" stroke={trend} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"
+        opacity={0.7}
+      />
+      {pts.map(([x, y], i) => (
+        <circle key={i} cx={x} cy={y} r={i === pts.length - 1 ? 2.5 : 1.8} fill={trend} opacity={i === pts.length - 1 ? 1 : 0.5} />
+      ))}
+    </svg>
+  );
+};
+
 export default function RankingHistoryTable() {
     const [loading, setLoading] = useState(true);
     const [rankingData, setRankingData] = useState({ rounds: [], users: [], ranks: {} });
@@ -175,6 +200,7 @@ export default function RankingHistoryTable() {
                                     <TableHead className="text-left text-slate-300 font-bold min-w-[120px] sticky left-0 bg-slate-900/95 z-10 border-r border-slate-700">
                                         משתתף
                                     </TableHead>
+                                    <TableHead className="text-center text-slate-400 text-xs min-w-[68px] px-1">מגמה</TableHead>
                                     {rankingData.rounds.map(round => (
                                         <TableHead key={round.id} className="text-center text-slate-300 min-w-[60px] px-2">
                                             <div className="flex flex-col items-center justify-center">
@@ -202,23 +228,38 @@ export default function RankingHistoryTable() {
                                                     {isCurrentUser && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />}
                                                 </div>
                                             </TableCell>
-                                            
+
+                                            {/* Sparkline column */}
+                                            <TableCell className="text-center p-1">
+                                                <div className="flex justify-center">
+                                                    <SparkLine
+                                                        ranksByRound={rankingData.ranks[rankingData.rounds[0]?.id] ? Object.fromEntries(rankingData.rounds.map(r => [r.id, rankingData.ranks[r.id]?.[userProfile.user_id]])) : {}}
+                                                        rounds={rankingData.rounds}
+                                                        totalUsers={rankingData.users.length}
+                                                    />
+                                                </div>
+                                            </TableCell>
+
                                             {rankingData.rounds.map(round => {
                                                 const rank = rankingData.ranks[round.id]?.[userProfile.user_id];
-                                                
-                                                // Determine color based on rank
-                                                let rankBadgeClass = "bg-slate-700/50 text-slate-400"; // Default
-                                                if (rank === 1) rankBadgeClass = "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
-                                                else if (rank === 2) rankBadgeClass = "bg-slate-300/20 text-slate-300 border-slate-400/30";
-                                                else if (rank === 3) rankBadgeClass = "bg-amber-600/20 text-amber-500 border-amber-600/30";
-                                                else if (rank <= 10) rankBadgeClass = "bg-blue-500/10 text-blue-300 border-blue-500/20";
-                                                
+                                                const glowColor = rank===1?'rgba(250,204,21,0.6)':rank===2?'rgba(192,192,192,0.5)':rank===3?'rgba(205,127,50,0.5)':rank<=10?'rgba(96,165,250,0.4)':'rgba(100,116,139,0.3)';
+                                                const borderColor = rank===1?'#FFD700':rank===2?'#C0C0C0':rank===3?'#CD7F32':rank<=10?'#60a5fa':'#475569';
+                                                const textColor = rank===1?'#FFD700':rank===2?'#C0C0C0':rank===3?'#CD7F32':rank<=10?'#93c5fd':'#94a3b8';
+                                                const bg = rank===1?'rgba(250,204,21,0.12)':rank===2?'rgba(192,192,192,0.1)':rank===3?'rgba(205,127,50,0.1)':rank<=10?'rgba(96,165,250,0.07)':'rgba(71,85,105,0.3)';
+
                                                 return (
                                                     <TableCell key={round.id} className="text-center p-2">
                                                         {rank ? (
-                                                            <div className={`w-8 h-8 mx-auto flex items-center justify-center rounded-full text-sm font-bold border ${rankBadgeClass}`}>
+                                                            <motion.div
+                                                                animate={{ boxShadow: [`0 0 4px ${glowColor}`, `0 0 10px ${glowColor}`, `0 0 4px ${glowColor}`] }}
+                                                                transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+                                                                style={{ width: 32, height: 32, margin: '0 auto', borderRadius: '50%',
+                                                                    background: bg, border: `1px solid ${borderColor}55`,
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                    fontWeight: 800, fontSize: 13, color: textColor }}
+                                                            >
                                                                 {rank}
-                                                            </div>
+                                                            </motion.div>
                                                         ) : (
                                                             <span className="text-slate-600">-</span>
                                                         )}
