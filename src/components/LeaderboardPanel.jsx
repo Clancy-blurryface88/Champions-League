@@ -127,13 +127,13 @@ export default function LeaderboardPanel({ onClose, user }) {
     loadLeaderboard();
   }, []);
 
-  // הפעל shockwave אחרי שמקום 1 נחשף + ScoreCounter מסיים
+  // הפעל cascade glow אחרי שמקום 1 נחשף + ScoreCounter מסיים
   useEffect(() => {
     if (participants.length === 0) return;
     const total = participants.length;
     const rank1AnimDelay = Math.pow(total - 1, 1.6) * 0.38 + 0.6;
-    const shockAt = rank1AnimDelay + 1.5 + 0.25 + 0.4; // card + score duration + buffer
-    const timer = setTimeout(() => setShockwaveActive(true), shockAt * 1000);
+    const glowAt = rank1AnimDelay + 1.5 + 0.25 + 0.4;
+    const timer = setTimeout(() => setShockwaveActive(true), glowAt * 1000);
     return () => clearTimeout(timer);
   }, [participants]);
 
@@ -236,35 +236,13 @@ export default function LeaderboardPanel({ onClose, user }) {
                       }}>
 
                         <div className="relative">
-                          {/* Shockwave rings — רק על מקום ראשון */}
-                          {position === 1 && shockwaveActive && (
-                            <>
-                              <motion.div
-                                key="sw-ring1"
-                                initial={{ opacity: 0.9, scale: 1 }}
-                                animate={{ opacity: 0, scale: 2.0 }}
-                                transition={{ duration: 0.85, ease: 'easeOut' }}
-                                className="absolute inset-0 rounded-2xl pointer-events-none"
-                                style={{ border: '2px solid rgba(250,204,21,0.8)', zIndex: 10 }}
-                              />
-                              <motion.div
-                                key="sw-ring2"
-                                initial={{ opacity: 0.5, scale: 1 }}
-                                animate={{ opacity: 0, scale: 1.6 }}
-                                transition={{ duration: 0.65, delay: 0.15, ease: 'easeOut' }}
-                                className="absolute inset-0 rounded-2xl pointer-events-none"
-                                style={{ border: '2px solid rgba(250,204,21,0.4)', zIndex: 10 }}
-                              />
-                            </>
-                          )}
-
                           {/* Cascade glow על כל הקלפים */}
                           {shockwaveActive && (
                             <motion.div
                               key={`glow-${participant.id}`}
                               initial={{ opacity: 0 }}
                               animate={{ opacity: [0, 0.2, 0] }}
-                              transition={{ duration: 0.45, delay: shockDelay, ease: 'easeOut' }}
+                              transition={{ duration: 0.60, delay: shockDelay, ease: 'easeOut' }}
                               className="absolute inset-0 rounded-2xl pointer-events-none"
                               style={{ background: 'rgba(250,204,21,0.22)', zIndex: 5 }}
                             />
