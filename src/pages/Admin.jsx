@@ -18,6 +18,7 @@ import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminMyPredictionsDemo from "../components/admin/AdminMyPredictionsDemo";
 import AdminLeaderboardDemo from "../components/admin/AdminLeaderboardDemo";
+import AdminLeaderboardDemo2 from "../components/admin/AdminLeaderboardDemo2";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -79,6 +80,7 @@ export default function Admin() {
       case 'reset': return <AdminReset />;
       case 'my-predictions-demo': return <AdminMyPredictionsDemo />;
       case 'leaderboard-demo': return <AdminLeaderboardDemo />;
+      case 'leaderboard-demo2': return <AdminLeaderboardDemo2 />;
       default: return <AdminRounds />;
     }
   };
@@ -96,6 +98,7 @@ export default function Admin() {
     { id: 'reset', label: 'Reset Center', icon: RotateCcw },
     { id: 'my-predictions-demo', label: 'My Predictions Demo', icon: Target },
     { id: 'leaderboard-demo', label: 'Leaderboard Demo', icon: Trophy },
+    { id: 'leaderboard-demo2', label: 'Leaderboard Demo 2', icon: Trophy },
   ];
 
   return (
