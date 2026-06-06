@@ -864,11 +864,11 @@ export default function MyStats() {
                 boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)',
               }}>
                 <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)' }} />
-                <p className="relative text-sm font-semibold mb-4" style={{ color: '#0A84FF' }}>ממוצע למשחק</p>
-                <div className="relative text-3xl font-bold tabular-nums" style={{ color: '#0A84FF' }}>
+                <p className="relative text-sm font-semibold mb-4" style={{ color: '#5AC8FA' }}>ממוצע למשחק</p>
+                <div className="relative text-3xl font-bold tabular-nums" style={{ color: '#5AC8FA' }}>
                   <SlidingNumber number={averagePointsPerMatch} className="text-3xl font-bold" duration={1.0} delay={0.2} showDecimals={true} />
                 </div>
-                <p className="relative text-sm font-semibold mt-3" style={{ color: '#0A84FF', opacity: 0.7 }}>נקודות</p>
+                <p className="relative text-sm font-semibold mt-3" style={{ color: '#5AC8FA', opacity: 0.7 }}>נקודות</p>
               </div>
 
               {/* Avg per round — Apple Liquid Glass (green accent) */}
