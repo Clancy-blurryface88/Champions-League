@@ -38,18 +38,19 @@ export default function MatchTickerBar({ onClick }) {
 
   return (
     <div
-      onClick={onClick}
       dir="rtl"
-      className="fixed top-0 left-0 right-0 z-50 cursor-pointer overflow-hidden flex items-center"
+      className="fixed top-0 left-0 right-0 z-50 overflow-hidden flex items-center"
       style={{ height: '36px', background: 'rgba(3,13,26,0.97)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(245,197,24,0.22)', boxShadow: '0 1px 20px rgba(245,197,24,0.06)' }}
     >
-      {/* Fixed label — clickable, appears on the right in RTL */}
-      <div onClick={onClick} className="flex-shrink-0 flex items-center gap-1.5 px-3 border-l border-amber-400/30 h-full cursor-pointer hover:bg-amber-400/10 transition-colors">
+      {/* Date button — full height, easy tap target */}
+      <button
+        onClick={onClick}
+        className="flex-shrink-0 flex items-center justify-center gap-1.5 px-4 self-stretch border-l border-amber-400/30 cursor-pointer hover:bg-amber-400/12 active:bg-amber-400/20 transition-colors"
+        style={{ minWidth: 64 }}
+      >
         <span className="text-amber-400 text-[11px] font-bold whitespace-nowrap">{dateLabel}</span>
-        <span className="text-amber-400/50 text-[10px]">▼</span>
-      </div>
-
-      {/* Scrolling matches — click anywhere to open */}
+        <span className="text-amber-400/60 text-[9px] leading-none">▼</span>
+      </button>
 
       {/* Scrolling matches */}
       <div className="flex-1 overflow-hidden h-full relative" dir="ltr">
