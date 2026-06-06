@@ -292,23 +292,18 @@ export default function LeaderboardPanel({ onClose, user }) {
                           </span>
 
                           {/* Content — counter-skewed */}
-                          <div style={{ transform:'skewX(6deg)', padding:'8px 16px', display:'flex', alignItems:'center', gap:8 }}>
-                            <div style={{ width:28, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                              <span style={{ color:getRankColor(position), fontWeight:900, fontSize:17, lineHeight:1 }}>{position}</span>
-                            </div>
-                            <div style={{ flex:1, minWidth:0, textAlign:'center' }}>
-                              <p className="truncate" style={{ color:'#e2e8f0', fontSize:14, fontWeight:600, marginBottom:2 }}>
-                                {participant.full_name}
-                              </p>
-                              <span style={{ color:'#4ade80', fontSize:12, fontWeight:700 }}>
-                                <ScoreCounter
-                                  value={participant.total_points}
-                                  duration={1.5}
-                                  delay={scoreAnimationDelay}
-                                  showDecimals={true} />
-                                {' '}Pts
-                              </span>
-                            </div>
+                          <div style={{ transform:'skewX(6deg)', padding:'8px 16px', textAlign:'center' }}>
+                            <p className="truncate" style={{ color:'#e2e8f0', fontSize:14, fontWeight:600, marginBottom:2 }}>
+                              {participant.full_name}
+                            </p>
+                            <span style={{ color:'#4ade80', fontSize:12, fontWeight:700 }}>
+                              <ScoreCounter
+                                value={participant.total_points}
+                                duration={1.5}
+                                delay={scoreAnimationDelay}
+                                showDecimals={true} />
+                              {' '}Pts
+                            </span>
                           </div>
                         </div>
                         </div>
