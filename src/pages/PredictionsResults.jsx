@@ -180,7 +180,8 @@ function FlipBoardPicker({ rounds, value, onChange }) {
     <div className="flex flex-col items-center gap-2 w-full">
       <div className="flex items-center gap-3 w-full justify-center">
         <button onClick={() => canPrev && onChange(rounds[idx - 1].id)} disabled={!canPrev}
-          className="w-9 h-9 flex items-center justify-center rounded-full border border-slate-700 text-slate-400 disabled:opacity-20 hover:border-amber-400/50 hover:text-amber-400 transition-all">
+          className="w-9 h-9 flex items-center justify-center rounded-full disabled:opacity-20 hover:text-amber-400 transition-all"
+          style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.70)' }}>
           <ChevronUp className="w-5 h-5" />
         </button>
         <AnimatePresence mode="wait">
@@ -195,7 +196,8 @@ function FlipBoardPicker({ rounds, value, onChange }) {
           </motion.div>
         </AnimatePresence>
         <button onClick={() => canNext && onChange(rounds[idx + 1].id)} disabled={!canNext}
-          className="w-9 h-9 flex items-center justify-center rounded-full border border-slate-700 text-slate-400 disabled:opacity-20 hover:border-amber-400/50 hover:text-amber-400 transition-all">
+          className="w-9 h-9 flex items-center justify-center rounded-full disabled:opacity-20 hover:text-amber-400 transition-all"
+          style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.70)' }}>
           <ChevronDown className="w-5 h-5" />
         </button>
       </div>
@@ -578,13 +580,16 @@ export default function PredictionsResults() {
         <>
             {/* Round Selector */}
             <div
-              className="mb-6 flex flex-col items-center gap-2 px-4 py-3 rounded-2xl"
+              className="mb-6 flex flex-col items-center gap-2 px-4 py-3 rounded-2xl relative overflow-hidden"
               style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                backdropFilter: 'blur(12px)',
+                background: 'rgba(255,255,255,0.10)',
+                backdropFilter: 'blur(40px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+                border: '1px solid rgba(255,255,255,0.22)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)',
               }}
             >
+              <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-2xl" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 100%)' }} />
               <span className="text-base uppercase tracking-[0.16em] text-amber-400/70 font-bold">בחר מחזור</span>
               <FlipBoardPicker
                 rounds={availableRounds}
