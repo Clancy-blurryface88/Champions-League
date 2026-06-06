@@ -196,16 +196,16 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
               <button
                 ref={isBest3 ? activeButtonRef : null}
                 onClick={() => setActiveGroup('best3')}
-                className="relative flex-shrink-0 w-9 h-9 rounded-lg text-sm font-bold border border-slate-600"
+                className="relative flex-shrink-0 w-9 h-9 rounded-lg text-sm font-bold border border-green-600"
               >
                 {isBest3 && (
                   <motion.div
                     layoutId="group-active"
-                    className="absolute inset-0 rounded-lg bg-yellow-400/20 border border-yellow-400"
+                    className="absolute inset-0 rounded-lg bg-green-500/20 border border-green-400"
                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                   />
                 )}
-                <span className={`relative z-10 transition-colors duration-150 ${isBest3 ? 'text-yellow-400' : 'text-slate-300'}`}>
+                <span className={`relative z-10 transition-colors duration-150 ${isBest3 ? 'text-green-400' : 'text-green-500'}`}>
                   8
                 </span>
               </button>
