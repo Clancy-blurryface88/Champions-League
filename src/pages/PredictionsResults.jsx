@@ -1024,15 +1024,15 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                   style={{ background: '#12181f', border: `1px solid ${accentFg}33` }}
                 >
                   {/* Left — team names */}
-                  <div className="flex flex-col justify-center gap-1 min-w-[80px]">
+                  <div className="flex flex-col justify-center gap-1 w-[90px] shrink-0">
                     <div className="flex items-center gap-1.5">
-                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-4 h-4" rounded="sm" />
-                      <span className="text-white/75 text-[11px] font-semibold leading-tight truncate">{match.team_a}</span>
+                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-4 h-4 shrink-0" rounded="sm" />
+                      <span className="text-white/75 text-[11px] font-semibold leading-tight break-words">{match.team_a}</span>
                     </div>
                     <span className="text-white/25 text-[9px] font-bold px-1">vs</span>
                     <div className="flex items-center gap-1.5">
-                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-4 h-4" rounded="sm" />
-                      <span className="text-white/75 text-[11px] font-semibold leading-tight truncate">{match.team_b}</span>
+                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-4 h-4 shrink-0" rounded="sm" />
+                      <span className="text-white/75 text-[11px] font-semibold leading-tight break-words">{match.team_b}</span>
                     </div>
                   </div>
 
@@ -1049,11 +1049,11 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                   </div>
 
                   {/* Right — icon + points */}
-                  <div className="flex flex-col items-center justify-center gap-1 min-w-[36px]">
+                  <div className="flex flex-col items-center justify-center gap-0.5 w-[44px] shrink-0">
                     <span className="text-base leading-none">{statusIcon || '⏳'}</span>
                     {isFinished && (
                       <>
-                        <span className="text-[11px] font-black tabular-nums" style={{ color: accentFg }}>{detail.points.toFixed(1)}</span>
+                        <span className="text-[11px] font-black tabular-nums" style={{ color: accentFg }}>{detail.points.toFixed(2)}</span>
                         <span className="text-[9px] font-semibold" style={{ color: accentFg, opacity: 0.65 }}>{matchPct}%</span>
                       </>
                     )}
