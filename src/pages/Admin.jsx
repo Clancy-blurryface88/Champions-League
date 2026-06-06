@@ -18,6 +18,7 @@ import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminSummaryCardDemo from "../components/admin/AdminSummaryCardDemo";
 import AdminSummaryCardDemo2 from "../components/admin/AdminSummaryCardDemo2";
+import AdminRankingHistoryDemo from "../components/admin/AdminRankingHistoryDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -79,6 +80,7 @@ export default function Admin() {
       case 'reset':   return <AdminReset />;
       case 'card-demo': return <AdminSummaryCardDemo />;
       case 'card-demo2': return <AdminSummaryCardDemo2 />;
+      case 'ranking-demo': return <AdminRankingHistoryDemo />;
 default: return <AdminRounds />;
     }
   };
@@ -96,6 +98,7 @@ default: return <AdminRounds />;
     { id: 'reset',   label: 'Reset Center',  icon: RotateCcw },
     { id: 'card-demo', label: 'Summary Card Demo', icon: Image },
     { id: 'card-demo2', label: 'Card Demo 2 (51–100)', icon: Image },
+    { id: 'ranking-demo', label: 'Ranking History Demo', icon: BarChart3 },
   ];
 
   return (
