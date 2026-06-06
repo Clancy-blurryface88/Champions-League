@@ -806,12 +806,12 @@ export default function PredictionsResults() {
 }
 
 function PodiumStand({ entry, position, isCurrentUser, baseDelay = 0 }) {
-  const configs = {
-    1: { height: 'h-24', bg: 'bg-amber-500/15', border: 'border-amber-400/40', medal: '🥇', label: 'text-amber-400', pts: 'text-amber-300' },
-    2: { height: 'h-16', bg: 'bg-slate-400/10',  border: 'border-slate-400/30', medal: '🥈', label: 'text-slate-300', pts: 'text-slate-300' },
-    3: { height: 'h-12', bg: 'bg-amber-700/10',  border: 'border-amber-700/30', medal: '🥉', label: 'text-amber-600', pts: 'text-amber-600' },
-  };
-  const c = configs[position];
+  const rankColor  = position === 1 ? '#f59e0b' : position === 2 ? '#94a3b8' : '#b45309';
+  const rankBg     = position === 1 ? 'rgba(245,158,11,0.1)'   : position === 2 ? 'rgba(148,163,184,0.07)' : 'rgba(180,83,9,0.1)';
+  const rankBorder = position === 1 ? 'rgba(245,158,11,0.3)'   : position === 2 ? 'rgba(148,163,184,0.2)'  : 'rgba(180,83,9,0.25)';
+  const rankGlow   = position === 1 ? 'rgba(245,158,11,0.35)'  : position === 2 ? 'rgba(148,163,184,0.18)' : 'rgba(180,83,9,0.28)';
+  const heights    = { 1: 96, 2: 64, 3: 48 };
+
   if (!entry) return <div className="flex-1" />;
 
   const podiumDelay = baseDelay + (position === 1 ? 0.7 : position === 2 ? 0.35 : 0.1);
@@ -819,18 +819,44 @@ function PodiumStand({ entry, position, isCurrentUser, baseDelay = 0 }) {
   return (
     <motion.div
       className="flex-1 flex flex-col items-center gap-1"
-      initial={{ opacity: 0, y: 30, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0,  scale: 1 }}
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ delay: podiumDelay, duration: 0.55, ease: [0.23, 1, 0.32, 1] }}
     >
-      <span className="text-[11px] font-semibold text-white/80 text-center leading-tight max-w-[72px] truncate">
+      {/* Name — rank color */}
+      <span style={{ color: rankColor, fontSize: 11, fontWeight: 600, textAlign: 'center',
+        maxWidth: 72, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        display: 'block', lineHeight: 1.3 }}>
         {entry.displayName}
       </span>
-      <span className={`text-xs font-bold tabular-nums ${c.pts}`}>
+      {/* Points — rank color, slightly dimmer */}
+      <span style={{ color: rankColor, opacity: 0.72, fontSize: 11, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
         {entry.totalPoints.toFixed(2)}
       </span>
-      <div className={`w-full ${c.height} rounded-t-xl border ${c.bg} ${c.border} flex items-center justify-center ${isCurrentUser ? 'ring-2 ring-blue-400/50' : ''}`}>
-        <span className="text-2xl">{c.medal}</span>
+      {/* Olympic Classic platform */}
+      <div style={{
+        width: '100%',
+        height: heights[position],
+        position: 'relative',
+        overflow: 'hidden',
+        background: rankBg,
+        borderTop: `3px solid ${rankColor}`,
+        borderLeft: `1px solid ${rankBorder}`,
+        borderRight: `1px solid ${rankBorder}`,
+        borderRadius: '4px 4px 0 0',
+        boxShadow: `0 -4px 16px ${rankGlow}, inset 0 2px 8px rgba(255,255,255,0.04)`,
+        ...(isCurrentUser ? { outline: '2px solid rgba(96,165,250,0.45)', outlineOffset: 2 } : {}),
+      }}>
+        {/* Ghost rank number */}
+        <span style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 58, fontWeight: 900,
+          color: rankColor, opacity: 0.15,
+          lineHeight: 1, userSelect: 'none', pointerEvents: 'none',
+        }}>
+          {position}
+        </span>
       </div>
     </motion.div>
   );
