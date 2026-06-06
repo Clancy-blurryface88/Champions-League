@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { User } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
 import { UserStats } from "@/api/entities";
@@ -106,24 +105,25 @@ export default function ExactHitsPanel({ onClose, user }) {
     loadExactHitsLeaderboard();
   }, []);
 
-  const getPositionIcon = (position) => {
-    const colors = { 1: '#FFD700', 2: '#C0C0C0', 3: '#CD7F32' };
-    if (colors[position]) return <span className="font-black text-lg leading-none" style={{ color: colors[position] }}>{position}</span>;
-    return <span className="w-10 h-10 flex items-center justify-center text-slate-400 font-bold text-xl">{position}</span>;
+  const getRankColor = (position) => {
+    if (position === 1) return '#FFD700';
+    if (position === 2) return '#C0C0C0';
+    if (position === 3) return '#CD7F32';
+    return 'rgba(255,255,255,0.5)';
   };
 
-  const getBorderColor = (position, isCurrentUser) => {
-    if (position === 1) return "border-yellow-400";
-    if (position === 2) return "border-gray-300";
-    if (position === 3) return "border-amber-600";
-    return isCurrentUser ? "border-blue-400" : "border-slate-600";
+  const getRankBorder = (position, isCurrentUser) => {
+    if (position === 1) return '#FFD700';
+    if (position === 2) return '#D1D5DB';
+    if (position === 3) return '#D97706';
+    return isCurrentUser ? '#60A5FA' : '#475569';
   };
 
-  const getBackgroundColor = (position) => {
-    if (position === 1) return "bg-gradient-to-br from-orange-400/20 to-red-500/20";
-    if (position === 2) return "bg-gradient-to-br from-gray-300/20 to-gray-400/20";
-    if (position === 3) return "bg-gradient-to-br from-amber-500/20 to-amber-600/20";
-    return "bg-slate-800/60";
+  const getRankBg = (position) => {
+    if (position === 1) return 'linear-gradient(135deg,rgba(250,204,21,0.22),rgba(245,158,11,0.22))';
+    if (position === 2) return 'linear-gradient(135deg,rgba(209,213,219,0.18),rgba(156,163,175,0.18))';
+    if (position === 3) return 'linear-gradient(135deg,rgba(245,158,11,0.20),rgba(217,119,6,0.20))';
+    return 'rgba(30,41,59,0.60)';
   };
 
   return (
@@ -197,47 +197,48 @@ export default function ExactHitsPanel({ onClose, user }) {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.3 }}>
-                    
-                      <Card 
-                        onClick={() => {
-                          setSelectedUserId(participant.id);
-                          setSelectedUserName(participant.full_name);
-                          setSelectedUserExactHitsCount(participant.exact_hits_count);
-                          setSelectedUserTotalPredictions(participant.total_predictions_count);
-                          setIsModalOpen(true);
-                        }}
-                        className={`
-                        ${getBackgroundColor(position)} 
-                        border-2 ${getBorderColor(position, isCurrentUser)}
-                        hover:scale-105 transition-all duration-200 cursor-pointer
-                      `}>
-                        <CardContent className="bg-white/[0.04] px-4 py-2">
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 flex-shrink-0 flex items-center justify-center">
-                              {getPositionIcon(position)}
-                            </div>
-                            
-                            <div className="flex-1 min-w-0 text-center">
-                              <div className="mb-1">
-                                <p className="text-slate-200 text-lg font-semibold truncate">
-                                  {participant.full_name}
-                                </p>
-                              </div>
-                              <div className="text-green-500 flex items-center justify-center gap-1">
-                                <span className="text-base font-bold">
-                                  <SlidingNumber 
-                                    number={participant.exact_hits_count}
-                                    className="text-base font-bold"
-                                    duration={0.6}
-                                    delay={index * 0.1}
-                                  />
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>);
+
+                    <div
+                      onClick={() => {
+                        setSelectedUserId(participant.id);
+                        setSelectedUserName(participant.full_name);
+                        setSelectedUserExactHitsCount(participant.exact_hits_count);
+                        setSelectedUserTotalPredictions(participant.total_predictions_count);
+                        setIsModalOpen(true);
+                      }}
+                      style={{
+                        transform: 'skewX(-6deg)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        borderRadius: 8,
+                        border: `2px solid ${getRankBorder(position, isCurrentUser)}`,
+                        background: getRankBg(position),
+                        cursor: 'pointer',
+                        transition: 'transform 0.18s ease, box-shadow 0.18s ease',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.transform = 'skewX(-6deg) scale(1.04)'; e.currentTarget.style.boxShadow = `0 0 18px ${getRankColor(position)}44`; }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = 'skewX(-6deg)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    >
+                      {/* Ghost rank number */}
+                      <span style={{ position:'absolute', left:6, top:'50%', transform:'translateY(-50%) skewX(6deg)', fontSize:52, fontWeight:900, color:getRankColor(position), opacity:0.11, lineHeight:1, userSelect:'none', pointerEvents:'none' }}>
+                        {position}
+                      </span>
+                      {/* Counter-skewed content */}
+                      <div style={{ transform:'skewX(6deg)', padding:'8px 16px', textAlign:'center' }}>
+                        <p className="truncate" style={{ color:'#e2e8f0', fontSize:14, fontWeight:600, marginBottom:2 }}>
+                          {participant.full_name}
+                        </p>
+                        <span style={{ color:'#4ade80', fontSize:12, fontWeight:700 }}>
+                          <SlidingNumber
+                            number={participant.exact_hits_count}
+                            className="text-base font-bold"
+                            duration={0.6}
+                            delay={index * 0.1}
+                          />
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>);
 
               })}
               </div>
