@@ -126,6 +126,7 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                     overflow: 'hidden',
                     backdropFilter: 'blur(8px)',
                     WebkitBackdropFilter: 'blur(8px)',
+                    boxShadow: '4px 4px 10px rgba(0,0,0,0.45), -2px -2px 6px rgba(255,255,255,0.05)',
                   }}
                 >
                   <div className="flex items-center gap-2 px-3" style={{ paddingTop: 10, paddingBottom: 10, transform: 'skewX(6deg)' }}>
