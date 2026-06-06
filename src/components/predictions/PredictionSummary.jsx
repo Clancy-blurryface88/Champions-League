@@ -189,10 +189,11 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
           className="px-4 pt-3 pb-6 space-y-2 flex-shrink-0 flex flex-col items-center"
           style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
         >
+          <div className="flex flex-col gap-2 w-52">
           <button
             onClick={onConfirm}
             disabled={saving || loadingMatches}
-            className="py-3 px-10 rounded-2xl font-bold text-base transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 rounded-2xl font-bold text-base transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               background: 'linear-gradient(rgba(4,10,22,0.98), rgba(4,10,22,0.98)) padding-box, linear-gradient(90deg, #16a34a, #22c55e) border-box',
               border: '1.5px solid transparent',
@@ -213,7 +214,7 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
           <button
             onClick={onCancel}
             disabled={saving}
-            className="py-3 px-10 rounded-2xl text-base font-bold transition-opacity disabled:opacity-40"
+            className="w-full py-3 rounded-2xl text-base font-bold transition-opacity disabled:opacity-40"
             style={{
               background: 'linear-gradient(rgba(4,10,22,0.98), rgba(4,10,22,0.98)) padding-box, linear-gradient(90deg, #b91c1c, #ef4444) border-box',
               border: '1.5px solid transparent',
@@ -223,6 +224,7 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
               ביטול
             </span>
           </button>
+          </div>
         </div>
       </motion.div>
     </motion.div>
