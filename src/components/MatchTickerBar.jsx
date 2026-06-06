@@ -42,15 +42,26 @@ export default function MatchTickerBar({ onClick }) {
       className="fixed top-0 left-0 right-0 z-50 overflow-hidden flex items-center"
       style={{ height: '36px', background: 'rgba(3,13,26,0.97)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(245,197,24,0.22)', boxShadow: '0 1px 20px rgba(245,197,24,0.06)' }}
     >
-      {/* Date button — full height, easy tap target */}
-      <button
+      {/* Date button — inline style guarantees full 36px height tap target */}
+      <div
         onClick={onClick}
-        className="flex-shrink-0 flex items-center justify-center gap-1.5 px-4 self-stretch border-l border-amber-400/30 cursor-pointer hover:bg-amber-400/12 active:bg-amber-400/20 transition-colors"
-        style={{ minWidth: 64 }}
+        style={{
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 6,
+          padding: '0 14px',
+          height: '36px',
+          minWidth: 64,
+          cursor: 'pointer',
+          borderLeft: '1px solid rgba(245,197,24,0.3)',
+          pointerEvents: 'all',
+        }}
       >
-        <span className="text-amber-400 text-[11px] font-bold whitespace-nowrap">{dateLabel}</span>
-        <span className="text-amber-400/60 text-[9px] leading-none">▼</span>
-      </button>
+        <span style={{ color: '#fbbf24', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', pointerEvents: 'none' }}>{dateLabel}</span>
+        <span style={{ color: 'rgba(251,191,36,0.5)', fontSize: 9, lineHeight: 1, pointerEvents: 'none' }}>▼</span>
+      </div>
 
       {/* Scrolling matches */}
       <div className="flex-1 overflow-hidden h-full relative" dir="ltr">
