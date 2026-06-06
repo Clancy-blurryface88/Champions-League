@@ -119,11 +119,13 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                   viewport={{ once: true, amount: 0.4, root: scrollRef }}
                   style={{
                     borderRadius: 0,
-                    background: 'rgba(255,255,255,0.04)',
-                    border: 'none',
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.02) 50%)',
+                    border: '1px solid rgba(255,255,255,0.09)',
                     borderLeft: '4px solid #f5c518',
                     transform: 'skewX(-6deg)',
                     overflow: 'hidden',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
                   }}
                 >
                   <div className="flex items-center gap-2 px-3" style={{ paddingTop: 10, paddingBottom: 10, transform: 'skewX(6deg)' }}>
