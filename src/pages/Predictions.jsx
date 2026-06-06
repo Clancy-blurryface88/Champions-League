@@ -751,8 +751,8 @@ export default function Predictions() {
                           border: '1px solid rgba(255,255,255,0.15)',
                           boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.30)',
                         }}>
-                          <Lock className="w-3.5 h-3.5" style={{ color: 'rgba(255,255,255,0.50)' }} />
-                          <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.55)' }}>{timeInfo.text}</span>
+                          <Lock className="w-3.5 h-3.5" style={{ color: 'rgba(255,255,255,0.75)' }} />
+                          <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.80)' }}>{timeInfo.text}</span>
                         </div> :
 
                         <div dir="rtl" className="relative overflow-hidden flex rounded-2xl" style={{
