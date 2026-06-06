@@ -20,6 +20,7 @@ import AdminAppleLiquidGlassDemo from "../components/admin/AdminAppleLiquidGlass
 import AdminTimerColorDemo from "../components/admin/AdminTimerColorDemo";
 import AdminTimerGreenDemo from "../components/admin/AdminTimerGreenDemo";
 import AdminDateStripDemo from "../components/admin/AdminDateStripDemo";
+import AdminRoundPickerDemo from "../components/admin/AdminRoundPickerDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -83,6 +84,7 @@ export default function Admin() {
       case 'timer-color-demo': return <AdminTimerColorDemo />;
       case 'timer-green-demo': return <AdminTimerGreenDemo />;
       case 'date-strip-demo': return <AdminDateStripDemo />;
+      case 'round-picker-demo': return <AdminRoundPickerDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -102,6 +104,7 @@ export default function Admin() {
     { id: 'timer-color-demo', label: 'Timer Color Demo', icon: Target },
     { id: 'timer-green-demo', label: 'Timer Green Demo', icon: Target },
     { id: 'date-strip-demo', label: 'Date Strip Demo', icon: Target },
+    { id: 'round-picker-demo', label: 'Round Picker Demo', icon: Target },
   ];
 
   return (
