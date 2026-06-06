@@ -81,13 +81,13 @@ export default function AdminPredictions() {
     userPredictions.forEach(prediction => {
       const key = `${prediction.user_id}_${prediction.match_id}`;
       
-      // Only keep the LATEST prediction for each user-match combination (by created_date)
-      if (!uniquePredictionsMap[key] || 
-          new Date(prediction.created_date) > new Date(uniquePredictionsMap[key].created_date)) {
+      // Only keep the LATEST prediction for each user-match combination (by created_at)
+      if (!uniquePredictionsMap[key] ||
+          new Date(prediction.created_at) > new Date(uniquePredictionsMap[key].created_at)) {
         uniquePredictionsMap[key] = prediction;
-        console.log(`AdminPredictions: Selected prediction ${prediction.id} (created: ${prediction.created_date}) for match ${prediction.match_id}`);
+        console.log(`AdminPredictions: Selected prediction ${prediction.id} (created: ${prediction.created_at}) for match ${prediction.match_id}`);
       } else {
-        console.log(`AdminPredictions: Skipped older prediction ${prediction.id} (created: ${prediction.created_date}) for match ${prediction.match_id}`);
+        console.log(`AdminPredictions: Skipped older prediction ${prediction.id} (created: ${prediction.created_at}) for match ${prediction.match_id}`);
       }
     });
     
@@ -497,7 +497,7 @@ export default function AdminPredictions() {
                     {/* Add prediction ID for debugging/verification */}
                     {prediction && (
                       <div className="mt-2 text-xs text-slate-500">
-                        ID ניחוש: {prediction.id} | נוצר: {new Date(prediction.created_date).toLocaleString('he-IL')} ⭐ נבחר לחישוב
+                        ID ניחוש: {prediction.id} | נוצר: {new Date(prediction.created_at).toLocaleString('he-IL')} ⭐ נבחר לחישוב
                       </div>
                     )}
                   </div>
