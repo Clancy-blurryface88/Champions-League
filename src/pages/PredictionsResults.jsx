@@ -619,7 +619,7 @@ export default function PredictionsResults() {
                   <div
                     className="relative flex p-1 mb-4 rounded-2xl"
                     style={{
-                      background: 'rgba(255,255,255,0.04)',
+                      background: 'rgba(255,255,255,0.01)',
                       border: '1px solid rgba(245,197,24,0.45)',
                       backdropFilter: 'blur(12px)',
                     }}
