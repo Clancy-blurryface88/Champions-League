@@ -17,6 +17,7 @@ import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminSummaryCardDemo from "../components/admin/AdminSummaryCardDemo";
+import AdminSummaryCardDemo2 from "../components/admin/AdminSummaryCardDemo2";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -77,6 +78,7 @@ export default function Admin() {
       case 'import': return <AdminImportMatches />;
       case 'reset':   return <AdminReset />;
       case 'card-demo': return <AdminSummaryCardDemo />;
+      case 'card-demo2': return <AdminSummaryCardDemo2 />;
 default: return <AdminRounds />;
     }
   };
@@ -93,6 +95,7 @@ default: return <AdminRounds />;
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',   label: 'Reset Center',  icon: RotateCcw },
     { id: 'card-demo', label: 'Summary Card Demo', icon: Image },
+    { id: 'card-demo2', label: 'Card Demo 2 (51–100)', icon: Image },
   ];
 
   return (
