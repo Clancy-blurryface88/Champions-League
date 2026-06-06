@@ -17,6 +17,7 @@ import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminTimerDemo from "../components/admin/AdminTimerDemo";
+import AdminTimerDemo2 from "../components/admin/AdminTimerDemo2";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -77,6 +78,7 @@ export default function Admin() {
       case 'import': return <AdminImportMatches />;
       case 'reset':    return <AdminReset />;
       case 'timer-demo': return <AdminTimerDemo />;
+      case 'timer-demo2': return <AdminTimerDemo2 />;
 default: return <AdminRounds />;
     }
   };
@@ -92,7 +94,8 @@ default: return <AdminRounds />;
     { id: 'live-data', label: 'Live Data Test', icon: BarChart3 },
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',      label: 'Reset Center',    icon: RotateCcw },
-    { id: 'timer-demo', label: '⏱ Timer Styles',   icon: BarChart3 },
+    { id: 'timer-demo', label: '⏱ Timer Styles',    icon: BarChart3 },
+    { id: 'timer-demo2', label: '⏱ Timer Vol.2',   icon: BarChart3 },
   ];
 
   return (
