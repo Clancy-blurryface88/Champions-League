@@ -8,7 +8,7 @@ import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Eye, Check } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Eye, Check, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -1001,12 +1001,6 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                 detail.exactScore        ? 'shadow-[0_0_16px_rgba(16,185,129,0.15)]' :
                 detail.correctOutcome    ? 'shadow-[0_0_16px_rgba(245,158,11,0.12)]' :
                                            'shadow-[0_0_16px_rgba(239,68,68,0.10)]';
-              const statusIcon =
-                !isFinished           ? null :
-                detail.exactScore     ? '🎯' :
-                detail.correctOutcome ? '⭐' :
-                                        '❌';
-
               const off = scatterOffsets[index] ?? { x: 0, y: 0, rotate: 0, scale: 1 };
               const accentBg  = !isFinished ? 'rgba(100,116,139,0.18)' : detail.exactScore ? 'rgba(16,185,129,0.18)' : detail.correctOutcome ? 'rgba(245,158,11,0.18)' : 'rgba(239,68,68,0.14)';
               const accentFg  = !isFinished ? '#64748b' : detail.exactScore ? '#10b981' : detail.correctOutcome ? '#f59e0b' : '#ef4444';
@@ -1048,14 +1042,22 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                     </div>
                   </div>
 
-                  {/* Right — icon + points */}
-                  <div className="flex flex-col items-center justify-center gap-0.5 w-[44px] shrink-0">
-                    <span className="text-base leading-none">{statusIcon || '⏳'}</span>
-                    {isFinished && (
-                      <>
-                        <span className="text-[11px] font-black tabular-nums" style={{ color: accentFg }}>{detail.points.toFixed(2)}</span>
-                        <span className="text-[9px] font-semibold" style={{ color: accentFg, opacity: 0.65 }}>{matchPct}%</span>
-                      </>
+                  {/* Right — badge */}
+                  <div className="flex flex-col items-center justify-center shrink-0">
+                    {isFinished ? (
+                      <div className="flex items-center rounded-xl overflow-hidden" style={{ border: `1px solid ${accentFg}55`, background: `${accentFg}10` }}>
+                        <span className="px-2 py-1.5 text-[10px] font-black tabular-nums leading-none" style={{ color: accentFg }}>
+                          {detail.points.toFixed(2)} PTS
+                        </span>
+                        <div className="flex items-center justify-center w-6 self-stretch" style={{ background: `${accentFg}28` }}>
+                          {(detail.exactScore || detail.correctOutcome)
+                            ? <Check size={11} strokeWidth={3} style={{ color: accentFg }} />
+                            : <X size={11} strokeWidth={3} style={{ color: accentFg }} />
+                          }
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-base leading-none">⏳</span>
                     )}
                   </div>
                 </motion.div>
