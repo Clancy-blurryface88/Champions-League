@@ -80,11 +80,17 @@ export default function PlayerStatsModal({ isOpen, onClose, selectedPlayer: init
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.03 }}
                                         onClick={() => setSelectedPlayer(p)}
-                                        className={`flex items-center justify-between rounded-xl px-4 py-2.5 border cursor-pointer transition-all ${
-                                            isSelected
-                                                ? 'bg-slate-800/80 border-slate-600 shadow-[0_0_10px_rgba(0,0,0,0.3)]'
-                                                : 'bg-slate-800/40 border-slate-700/50 hover:bg-slate-800/60'
-                                        }`}
+                                        className="flex items-center justify-between rounded-xl px-4 py-2.5 cursor-pointer transition-all"
+                                        style={{
+                                            background: isSelected
+                                                ? 'linear-gradient(90deg, rgba(245,197,24,0.16) 0%, rgba(255,255,255,0.05) 40%)'
+                                                : 'linear-gradient(90deg, rgba(245,197,24,0.08) 0%, rgba(255,255,255,0.02) 40%)',
+                                            border: '1px solid rgba(255,255,255,0.07)',
+                                            borderLeft: isSelected ? '3px solid rgba(245,197,24,0.85)' : '3px solid rgba(245,197,24,0.45)',
+                                            backdropFilter: 'blur(8px)',
+                                            WebkitBackdropFilter: 'blur(8px)',
+                                            boxShadow: isSelected ? '0 0 12px rgba(245,197,24,0.1)' : 'none',
+                                        }}
                                     >
                                         {/* Rank + Name */}
                                         <div className="flex items-center gap-3">
