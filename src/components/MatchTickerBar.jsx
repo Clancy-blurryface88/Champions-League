@@ -42,7 +42,7 @@ export default function MatchTickerBar({ onClick }) {
       className="fixed top-0 left-0 right-0 z-50 overflow-hidden flex items-center"
       style={{ height: '36px', background: 'rgba(3,13,26,0.97)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(245,197,24,0.22)', boxShadow: '0 1px 20px rgba(245,197,24,0.06)' }}
     >
-      {/* Date button — inline style guarantees full 36px height tap target */}
+      {/* Date button */}
       <div
         onClick={onClick}
         style={{
@@ -50,17 +50,16 @@ export default function MatchTickerBar({ onClick }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 6,
           padding: '0 14px',
           height: '36px',
-          minWidth: 64,
+          minWidth: 60,
           cursor: 'pointer',
           borderLeft: '1px solid rgba(245,197,24,0.3)',
-          pointerEvents: 'all',
+          position: 'relative',
+          zIndex: 1,
         }}
       >
-        <span style={{ color: '#fbbf24', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', pointerEvents: 'none' }}>{dateLabel}</span>
-        <span style={{ color: 'rgba(251,191,36,0.5)', fontSize: 9, lineHeight: 1, pointerEvents: 'none' }}>▼</span>
+        <span style={{ color: '#fbbf24', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>{dateLabel}</span>
       </div>
 
       {/* Scrolling matches */}
