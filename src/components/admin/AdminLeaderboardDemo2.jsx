@@ -77,7 +77,7 @@ const designs = [
     render(p) {
       const aurora = 'linear-gradient(270deg,#00ff87,#60efff,#a855f7,#00ff87)';
       return (
-        <div style={{ background: top(p.rank)?'transparent':'rgba(255,255,255,0.03)', border:`1px solid rgba(255,255,255,0.12)`, borderRadius:12, padding:2, marginBottom:8 }}>
+        <div style={{ position:'relative', background: top(p.rank)?'transparent':'rgba(255,255,255,0.03)', border:`1px solid rgba(255,255,255,0.12)`, borderRadius:12, padding:2, marginBottom:8, overflow:'hidden' }}>
           {top(p.rank) && <div style={{ position:'absolute', inset:0, borderRadius:12, background:aurora, backgroundSize:'400% 400%', animation:'lb2-aurora 4s ease infinite', opacity:0.25, pointerEvents:'none' }} />}
           <div style={{ position:'relative', background:'rgba(2,8,20,0.88)', borderRadius:10, padding:'10px 14px', display:'flex', alignItems:'center', gap:12 }}>
             <span style={{ color:rc(p.rank), fontWeight:900, fontSize:17, minWidth:20, textAlign:'center' }}>{p.rank}</span>
