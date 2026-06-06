@@ -16,8 +16,6 @@ import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
-import AdminExactHitsDemo from "../components/admin/AdminExactHitsDemo";
-import AdminExactHitsDemo2 from "../components/admin/AdminExactHitsDemo2";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -77,9 +75,7 @@ export default function Admin() {
       case 'live-data': return <AdminLiveData />;
       case 'import': return <AdminImportMatches />;
       case 'reset': return <AdminReset />;
-      case 'exact-hits-demo':  return <AdminExactHitsDemo />;
-      case 'exact-hits-demo2': return <AdminExactHitsDemo2 />;
-      default: return <AdminRounds />;
+default: return <AdminRounds />;
     }
   };
 
@@ -94,8 +90,6 @@ export default function Admin() {
     { id: 'live-data', label: 'Live Data Test', icon: BarChart3 },
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset', label: 'Reset Center', icon: RotateCcw },
-    { id: 'exact-hits-demo',  label: 'Exact Hits Demo',   icon: Target },
-    { id: 'exact-hits-demo2', label: 'Exact Hits Advanced', icon: Target },
   ];
 
   return (
