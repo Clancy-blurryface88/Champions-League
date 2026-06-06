@@ -615,8 +615,8 @@ export default function Predictions() {
                   <span className={`text-base font-black leading-none ${isActive ? 'text-black' : isPast ? 'text-slate-500' : 'text-white'}`}>
                     {dayNum}
                   </span>
-                  <span className={`text-[9px] font-bold leading-none ${isActive ? 'text-black/60' : isPast ? 'text-slate-600' : 'text-slate-400'}`}>
-                    משחקים {count}
+                  <span className={`flex items-center gap-0.5 text-[9px] font-bold leading-none ${isActive ? 'text-black/60' : isPast ? 'text-slate-600' : 'text-slate-400'}`}>
+                    <span>{count}</span><span>משחקים</span>
                   </span>
                 </button>
               );
