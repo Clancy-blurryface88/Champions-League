@@ -94,12 +94,17 @@ export default function PlayerStatsModal({ isOpen, onClose, selectedPlayer: init
                                     >
                                         {/* Rank + Name */}
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                                                p.position === 1 ? 'bg-yellow-500/20 text-yellow-400' :
-                                                p.position === 2 ? 'bg-gray-400/20 text-gray-300' :
-                                                p.position === 3 ? 'bg-amber-600/20 text-amber-500' :
-                                                'bg-slate-700/50 text-slate-400'
-                                            }`}>
+                                            <div style={{
+                                                width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontWeight: 700, fontSize: 11,
+                                                color: p.position === 1 ? '#FFD700' : p.position === 2 ? '#C0C0C0' : p.position === 3 ? '#CD7F32' : 'rgba(255,255,255,0.5)',
+                                                background: p.position === 1 ? 'linear-gradient(135deg,rgba(250,204,21,0.22),rgba(245,158,11,0.22))' :
+                                                            p.position === 2 ? 'linear-gradient(135deg,rgba(209,213,219,0.18),rgba(156,163,175,0.18))' :
+                                                            p.position === 3 ? 'linear-gradient(135deg,rgba(245,158,11,0.20),rgba(217,119,6,0.20))' :
+                                                            'rgba(30,41,59,0.60)',
+                                                border: `1px solid ${p.position === 1 ? '#FFD700' : p.position === 2 ? '#D1D5DB' : p.position === 3 ? '#D97706' : '#475569'}`,
+                                            }}>
                                                 {p.position}
                                             </div>
                                             <span className={`text-sm font-medium ${isSelected ? 'text-white' : 'text-slate-200'}`}>
