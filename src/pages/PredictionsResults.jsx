@@ -1004,7 +1004,7 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
               const statusIcon =
                 !isFinished           ? null :
                 detail.exactScore     ? '🎯' :
-                detail.correctOutcome ? '✅' :
+                detail.correctOutcome ? '⭐' :
                                         '❌';
 
               const off = scatterOffsets[index] ?? { x: 0, y: 0, rotate: 0, scale: 1 };
