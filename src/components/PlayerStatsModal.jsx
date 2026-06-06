@@ -82,33 +82,30 @@ export default function PlayerStatsModal({ isOpen, onClose, selectedPlayer: init
                                         onClick={() => setSelectedPlayer(p)}
                                         className="rounded-xl px-4 py-2.5 cursor-pointer transition-all"
                                         style={{
+                                            position: 'relative',
+                                            overflow: 'hidden',
                                             background: isSelected
                                                 ? 'linear-gradient(90deg, rgba(245,197,24,0.16) 0%, rgba(255,255,255,0.05) 40%)'
                                                 : 'linear-gradient(90deg, rgba(245,197,24,0.08) 0%, rgba(255,255,255,0.02) 40%)',
                                             border: '1px solid rgba(255,255,255,0.07)',
-                                            borderLeft: isSelected ? '3px solid rgba(245,197,24,0.85)' : '3px solid rgba(245,197,24,0.45)',
+                                            borderLeft: `3px solid ${p.position === 1 ? '#FFD700' : p.position === 2 ? '#D1D5DB' : p.position === 3 ? '#D97706' : isSelected ? '#60A5FA' : '#475569'}`,
                                             backdropFilter: 'blur(8px)',
                                             WebkitBackdropFilter: 'blur(8px)',
                                             boxShadow: isSelected ? '0 0 12px rgba(245,197,24,0.1)' : 'none',
                                         }}
                                     >
-                                        {/* Grid: badge | name | points */}
-                                        <div style={{ display: 'grid', gridTemplateColumns: '38px 1fr auto', alignItems: 'center', gap: 10, width: '100%' }}>
-                                            {/* Badge */}
-                                            <div style={{
-                                                width: 38, height: 38, borderRadius: 8, flexShrink: 0,
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                fontWeight: 800, fontSize: 15,
-                                                color: p.position === 1 ? '#FFD700' : p.position === 2 ? '#C0C0C0' : p.position === 3 ? '#CD7F32' : 'rgba(255,255,255,0.5)',
-                                                background: p.position === 1 ? 'linear-gradient(135deg,rgba(250,204,21,0.22),rgba(245,158,11,0.22))' :
-                                                            p.position === 2 ? 'linear-gradient(135deg,rgba(209,213,219,0.18),rgba(156,163,175,0.18))' :
-                                                            p.position === 3 ? 'linear-gradient(135deg,rgba(245,158,11,0.20),rgba(217,119,6,0.20))' :
-                                                            'rgba(30,41,59,0.60)',
-                                                border: `2px solid ${p.position === 1 ? '#FFD700' : p.position === 2 ? '#D1D5DB' : p.position === 3 ? '#D97706' : '#475569'}`,
-                                            }}>
-                                                {p.position}
-                                            </div>
+                                        {/* Ghost position number — כמו בטבלה הרגילה */}
+                                        <span style={{
+                                            position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
+                                            fontSize: 44, fontWeight: 900, lineHeight: 1,
+                                            color: p.position === 1 ? '#FFD700' : p.position === 2 ? '#C0C0C0' : p.position === 3 ? '#CD7F32' : 'rgba(255,255,255,0.5)',
+                                            opacity: 0.11, userSelect: 'none', pointerEvents: 'none',
+                                        }}>
+                                            {p.position}
+                                        </span>
 
+                                        {/* Grid: name | points */}
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: 10, width: '100%' }}>
                                             {/* Name — centered */}
                                             <span style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: isSelected ? '#fff' : '#e2e8f0' }}>
                                                 {p.full_name}
