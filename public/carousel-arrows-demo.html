@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel – 50 סגנונות חצי קרוסלה | World Cup 2026</title>
+<style>
+  :root {
+    --gold: #f0c040;
+    --gold2: #ffd700;
+    --dark: #0d1117;
+    --card: #161b22;
+    --card2: #1c2230;
+    --border: #30363d;
+    --text: #e6edf3;
+    --green: #2ea043;
+    --red: #da3633;
+    --blue: #58a6ff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .header h1 {
+    font-size: 2rem;
+    background: linear-gradient(135deg, var(--gold), #fff, var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+  }
+  .header p { color: #8b949e; font-size: 0.9rem; }
+
+  /* ─── LIVE PREVIEW ─── */
+  .live-preview {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 32px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .preview-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--gold);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .carousel-demo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .match-card {
+    flex: 1;
+    background: var(--card2);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .match-title { font-size: 0.75rem; color: #8b949e; margin-bottom: 10px; }
+  .match-counter { font-size: 1.1rem; font-weight: 700; color: var(--gold); margin-bottom: 12px; }
+  .match-teams {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 1.5rem;
+  }
+  .score {
+    background: #0d1117;
+    padding: 4px 14px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border: 1px solid var(--border);
+  }
+  .active-style-info {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #8b949e;
+    margin-top: 8px;
+  }
+  .active-style-info span { color: var(--gold); font-weight: 600; }
+
+  /* ─── GRID ─── */
+  .grid-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .grid-header h2 { font-size: 1.1rem; color: var(--text); }
+  .filter-tabs {
+    display: flex;
+    gap: 8px;
+  }
+  .filter-tab {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: #8b949e;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-tab.active, .filter-tab:hover {
+    background: var(--gold);
+    color: #000;
+    border-color: var(--gold);
+  }
+
+  .styles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .style-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .style-card:hover {
+    border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(240,192,64,0.15);
+  }
+  .style-card.selected {
+    border-color: var(--gold);
+    background: rgba(240,192,64,0.08);
+    box-shadow: 0 0 0 2px rgba(240,192,64,0.4);
+  }
+  .style-card .style-num {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-size: 0.65rem;
+    color: #8b949e;
+  }
+  .style-card .style-name {
+    font-size: 0.7rem;
+    color: #8b949e;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .arrow-pair {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  /* ═══════════════════════════════════════
+     50 ARROW STYLES
+  ═══════════════════════════════════════ */
+
+  /* 1 – קלאסי זהב */
+  .s1 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; font-weight: 900;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .s1 .arr:hover { transform: scale(1.15); box-shadow: 0 4px 16px rgba(240,192,64,0.5); }
+
+  /* 2 – אאוטליין */
+  .s2 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .s2 .arr:hover { background: var(--gold); color: #000; }
+
+  /* 3 – גלו ניאון */
+  .s3 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: #000;
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    box-shadow: 0 0 8px var(--gold), inset 0 0 8px rgba(240,192,64,0.1);
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .s3 .arr:hover { box-shadow: 0 0 20px var(--gold), 0 0 40px var(--gold); transform: scale(1.1); }
+
+  /* 4 – מרובע מעוגל */
+  .s4 .arr {
+    width: 38px; height: 38px;
+    border-radius: 8px;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; font-weight: 900; cursor: pointer;
+    transition: border-radius 0.3s, transform 0.2s;
+  }
+  .s4 .arr:hover { border-radius: 50%; transform: rotate(15deg); }
+
+  /* 5 – גרדיאנט */
+  .s5 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f0c040, #ff6b35);
+    color: #fff;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .s5 .arr:hover { transform: scale(1.2) rotate(10deg); }
+
+  /* 6 – פולסינג */
+  .s6 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    animation: pulse6 2s infinite;
+  }
+  @keyframes pulse6 {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(240,192,64,0.6); }
+    50% { box-shadow: 0 0 0 10px rgba(240,192,64,0); }
+  }
+  .s6 .arr:hover { animation: none; transform: scale(1.15); }
+
+  /* 7 – 3D פרס */
+  .s7 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(to bottom, #ffd700, #b8860b);
+    color: #000;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    box-shadow: 0 6px 0 #7a5c00, 0 8px 8px rgba(0,0,0,0.4);
+    transition: box-shadow 0.1s, transform 0.1s;
+  }
+  .s7 .arr:active { box-shadow: 0 2px 0 #7a5c00; transform: translateY(4px); }
+
+  /* 8 – גלאס מורפיזם */
+  .s8 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.25);
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .s8 .arr:hover { background: rgba(240,192,64,0.3); border-color: var(--gold); transform: scale(1.1); }
+
+  /* 9 – שברון כפול */
+  .s9 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--card2);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    display: grid; place-items: center;
+    font-size: 0.75rem; cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: -4px;
+  }
+  .s9 .arr:hover { background: var(--gold); color: #000; }
+
+  /* 10 – ספינינג בורדר */
+  .s10 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--card2);
+    color: var(--gold);
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    position: relative;
+  }
+  .s10 .arr::before {
+    content: '';
+    position: absolute; inset: -2px;
+    border-radius: 50%;
+    background: conic-gradient(var(--gold), transparent, var(--gold));
+    animation: spin10 1.5s linear infinite;
+    z-index: -1;
+  }
+  .s10 .arr::after { content: ''; position: absolute; inset: 2px; border-radius: 50%; background: var(--card2); z-index: -1; }
+  @keyframes spin10 { to { transform: rotate(360deg); } }
+  .s10 .arr:hover { color: #fff; }
+
+  /* 11 – ריפל */
+  .s11 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    position: relative; overflow: hidden;
+  }
+  .s11 .arr::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    transform: scale(0);
+    transition: transform 0.3s, opacity 0.3s;
+    opacity: 0;
+  }
+  .s11 .arr:hover::after { transform: scale(2); opacity: 1; }
+
+  /* 12 – נאומורפיזם */
+  .s12 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: #1c2230;
+    color: var(--gold);
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    box-shadow: 4px 4px 8px rgba(0,0,0,0.5), -4px -4px 8px rgba(255,255,255,0.05);
+    transition: box-shadow 0.1s, transform 0.1s;
+  }
+  .s12 .arr:active { box-shadow: inset 4px 4px 8px rgba(0,0,0,0.5), inset -4px -4px 8px rgba(255,255,255,0.05); transform: scale(0.95); }
+
+  /* 13 – שדה כדורגל */
+  .s13 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: #2d5a27;
+    background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 8px);
+    color: #fff;
+    border: 2px solid #4a7c3f;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .s13 .arr:hover { background-color: #3d7a35; border-color: var(--gold); box-shadow: 0 0 12px rgba(240,192,64,0.4); }
+
+  /* 14 – גרדיאנט מסתובב */
+  .s14 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(0deg, #003087, #ce1126);
+    color: #fff;
+    border: 2px solid var(--gold);
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    transition: transform 0.3s;
+  }
+  .s14 .arr:hover { transform: rotate(360deg); }
+
+  /* 15 – קרוב אצבע */
+  .s15 .arr {
+    width: 38px; height: 38px;
+    border-radius: 12px;
+    background: var(--card2);
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    display: grid; place-items: center;
+    font-size: 1.2rem; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .s15 .arr:hover { background: var(--gold); color: #000; border-radius: 4px; }
+
+  /* 16 – פלאש חשמל */
+  .s16 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6a0dad, #ffd700);
+    color: #fff;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    position: relative; overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .s16 .arr::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 60%; height: 200%;
+    background: rgba(255,255,255,0.3);
+    transform: skewX(-20deg);
+    transition: left 0.3s;
+  }
+  .s16 .arr:hover::before { left: 130%; }
+  .s16 .arr:hover { transform: scale(1.1); }
+
+  /* 17 – בועות */
+  .s17 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--gold);
+    border: 2px dashed var(--gold);
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    animation: dash17 4s linear infinite;
+    transition: background 0.2s;
+  }
+  @keyframes dash17 { to { border-dash-offset: 20; transform: rotate(360deg); } }
+  .s17 .arr:hover { background: rgba(240,192,64,0.15); }
+
+  /* 18 – מיני-גביע */
+  .s18 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffe066, #b8860b);
+    color: transparent;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1.2rem; cursor: pointer;
+    transition: transform 0.2s;
+    text-shadow: none;
+  }
+  .s18 .arr::before { content: '🏆'; font-size: 0.9rem; }
+  .s18 .arr:hover { transform: scale(1.2) rotate(-10deg); }
+
+  /* 19 – נקודות */
+  .s19 .arr {
+    width: 42px; height: 38px;
+    border-radius: 8px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    display: grid; place-items: center;
+    cursor: pointer; gap: 2px;
+    transition: border-color 0.2s;
+    flex-direction: column;
+  }
+  .s19 .arr .dots { display: flex; gap: 3px; }
+  .s19 .arr .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); transition: transform 0.2s; }
+  .s19 .arr:hover { border-color: var(--gold); }
+  .s19 .arr:hover .dot { transform: scale(1.3); }
+  .s19 .arr-r .dots { flex-direction: row-reverse; }
+
+  /* 20 – משולש SVG */
+  .s20 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: none;
+    display: grid; place-items: center;
+    cursor: pointer;
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    transition: transform 0.3s;
+  }
+  .s20 .arr-l { clip-path: polygon(100% 0%, 0% 50%, 100% 100%); width: 28px; height: 38px; }
+  .s20 .arr-r { clip-path: polygon(0% 0%, 100% 50%, 0% 100%); width: 28px; height: 38px; }
+  .s20 .arr:hover { transform: scale(1.2); }
+
+  /* 21 – אש */
+  .s21 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 70%, #ff4500, #ff8c00, #ffd700);
+    color: #fff;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .s21 .arr:hover { transform: scale(1.15); box-shadow: 0 0 20px #ff4500, 0 0 40px rgba(255,69,0,0.4); }
+
+  /* 22 – קרח */
+  .s22 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #a8d8f0, #1e90ff, #003366);
+    color: #fff;
+    border: 1px solid #87ceeb;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    transition: all 0.3s;
+  }
+  .s22 .arr:hover { box-shadow: 0 0 16px #1e90ff, 0 0 32px rgba(30,144,255,0.3); transform: scale(1.1); }
+
+  /* 23 – מטריקס */
+  .s23 .arr {
+    width: 38px; height: 38px;
+    border-radius: 4px;
+    background: #000;
+    color: #00ff41;
+    border: 1px solid #00ff41;
+    display: grid; place-items: center;
+    font-family: monospace; font-size: 1rem; cursor: pointer;
+    box-shadow: 0 0 6px #00ff41;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .s23 .arr:hover { box-shadow: 0 0 16px #00ff41, 0 0 32px rgba(0,255,65,0.3); transform: scale(1.05); }
+
+  /* 24 – פיקסל */
+  .s24 .arr {
+    width: 38px; height: 38px;
+    border-radius: 0;
+    background: var(--gold);
+    color: #000;
+    border: 3px solid #000;
+    display: grid; place-items: center;
+    font-size: 1rem; font-weight: 900; cursor: pointer;
+    image-rendering: pixelated;
+    box-shadow: 4px 4px 0 #000;
+    transition: box-shadow 0.1s, transform 0.1s;
+  }
+  .s24 .arr:active { box-shadow: 2px 2px 0 #000; transform: translate(2px, 2px); }
+
+  /* 25 – גרדיאנט שקוף */
+  .s25 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(240,192,64,0.8), rgba(240,192,64,0.2));
+    color: #fff;
+    border: 1px solid rgba(240,192,64,0.5);
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s;
+  }
+  .s25 .arr:hover { background: linear-gradient(135deg, rgba(240,192,64,1), rgba(240,192,64,0.6)); transform: scale(1.1); }
+
+  /* 26 – לחצן פלאנג */
+  .s26 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--card2);
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .s26 .arr:hover { transform: scale(1.25) rotate(-5deg); background: var(--gold); color: #000; }
+
+  /* 27 – ריבאונד */
+  .s27 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  .s27 .arr:hover { transform: scale(1.3); }
+
+  /* 28 – ספוטלייט */
+  .s28 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), transparent 60%), var(--card2);
+    color: var(--gold);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .s28 .arr:hover { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5), transparent 60%), rgba(240,192,64,0.2); color: #fff; }
+
+  /* 29 – דיאמונד */
+  .s29 {
+    display: flex; gap: 16px; align-items: center;
+  }
+  .s29 .arr {
+    width: 34px; height: 34px;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 0.9rem; font-weight: 900; cursor: pointer;
+    transform: rotate(45deg);
+    transition: all 0.2s;
+    border-radius: 4px;
+  }
+  .s29 .arr span { transform: rotate(-45deg); display: block; }
+  .s29 .arr:hover { transform: rotate(45deg) scale(1.2); box-shadow: 0 0 16px rgba(240,192,64,0.5); }
+
+  /* 30 – פרפר */
+  .s30 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50% 0;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    transition: border-radius 0.3s, transform 0.3s;
+  }
+  .s30 .arr-l { border-radius: 0 50%; }
+  .s30 .arr:hover { border-radius: 50%; transform: scale(1.15); }
+
+  /* 31 – אייקון כדורגל */
+  .s31 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: #fff;
+    color: #000;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1.2rem; cursor: pointer;
+    background-image: radial-gradient(circle, #fff 60%, transparent 60%),
+      conic-gradient(#000 0deg 60deg, #fff 60deg 120deg, #000 120deg 180deg, #fff 180deg 240deg, #000 240deg 300deg, #fff 300deg 360deg);
+    transition: transform 0.3s;
+  }
+  .s31 .arr:hover { transform: rotate(360deg) scale(1.1); }
+
+  /* 32 – ספיינר ניאון */
+  .s32 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: transparent;
+    color: #ff00ff;
+    border: 2px solid transparent;
+    border-top-color: #ff00ff;
+    border-right-color: #00ffff;
+    display: grid; place-items: center;
+    font-size: 0.9rem; cursor: pointer;
+    animation: spin32 2s linear infinite;
+    box-shadow: 0 0 8px #ff00ff;
+  }
+  @keyframes spin32 { to { transform: rotate(360deg); } }
+  .s32 .arr:hover { animation-duration: 0.5s; }
+
+  /* 33 – קשת צבע */
+  .s33 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(90deg, #ff0000, #ff7700, #ffff00, #00ff00, #0000ff, #8b00ff);
+    color: #fff;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+    background-size: 200%;
+    animation: rainbow33 3s linear infinite;
+    text-shadow: 0 0 4px rgba(0,0,0,0.8);
+  }
+  @keyframes rainbow33 { 0% { background-position: 0%; } 100% { background-position: 200%; } }
+
+  /* 34 – ווי/אקסי */
+  .s34 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--card2);
+    border: 2px solid var(--gold);
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .s34 .arr-l { border-color: var(--red); color: var(--red); }
+  .s34 .arr-r { border-color: var(--green); color: var(--green); }
+  .s34 .arr:hover { transform: scale(1.15); }
+  .s34 .arr-l:hover { background: rgba(218,54,51,0.2); }
+  .s34 .arr-r:hover { background: rgba(46,160,67,0.2); }
+
+  /* 35 – סקיימורף */
+  .s35 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #1e2a3a, #0d1520);
+    color: var(--gold);
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    box-shadow: 6px 6px 12px rgba(0,0,0,0.7), -3px -3px 8px rgba(255,255,255,0.04);
+    transition: all 0.15s;
+  }
+  .s35 .arr:active { box-shadow: inset 3px 3px 6px rgba(0,0,0,0.7), inset -2px -2px 4px rgba(255,255,255,0.04); }
+
+  /* 36 – צלב */
+  .s36 .arr {
+    width: 38px; height: 38px;
+    background: var(--card2);
+    border: 1px solid var(--gold);
+    border-radius: 4px;
+    display: grid; place-items: center;
+    font-size: 0.8rem; font-weight: 900; cursor: pointer;
+    color: var(--gold);
+    clip-path: polygon(35% 0%, 65% 0%, 65% 35%, 100% 35%, 100% 65%, 65% 65%, 65% 100%, 35% 100%, 35% 65%, 0% 65%, 0% 35%, 35% 35%);
+    background: var(--gold);
+    color: #000;
+    transition: transform 0.3s;
+    overflow: visible;
+  }
+  .s36 .arr:hover { transform: rotate(90deg) scale(1.1); }
+
+  /* 37 – שיל גביע */
+  .s37 .arr {
+    width: 38px; height: 44px;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 50% 100%, 0% 75%);
+    transition: transform 0.2s, filter 0.2s;
+  }
+  .s37 .arr:hover { transform: scale(1.15); filter: brightness(1.2); }
+
+  /* 38 – כוכב */
+  .s38 .arr {
+    width: 38px; height: 38px;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 0.8rem; cursor: pointer;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    transition: transform 0.3s;
+  }
+  .s38 .arr:hover { transform: scale(1.3) rotate(72deg); }
+
+  /* 39 – בומרנג */
+  .s39 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: transparent;
+    border: 3px solid var(--gold);
+    border-right-color: transparent;
+    color: var(--gold);
+    display: grid; place-items: center;
+    font-size: 0.85rem; cursor: pointer;
+    transition: transform 0.3s;
+  }
+  .s39 .arr-r { border-right-color: var(--gold); border-left-color: transparent; }
+  .s39 .arr:hover { transform: rotate(360deg); }
+
+  /* 40 – מסגרת אנימציה */
+  .s40 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--card2);
+    color: var(--gold);
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    position: relative;
+  }
+  .s40 .arr::before {
+    content: '';
+    position: absolute; inset: -3px;
+    border-radius: 50%;
+    background: linear-gradient(90deg, var(--gold), transparent, var(--gold));
+    animation: borderRot40 1.5s linear infinite paused;
+    z-index: -1;
+  }
+  .s40 .arr:hover::before { animation-play-state: running; }
+
+  /* 41 – לחצן סוניק */
+  .s41 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    transition: transform 0.1s;
+    position: relative;
+    overflow: hidden;
+  }
+  .s41 .arr::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: -100%;
+    width: 60%; height: 100%;
+    background: rgba(255,255,255,0.4);
+    transform: skewX(-20deg) translateY(-50%);
+    transition: left 0.25s;
+  }
+  .s41 .arr:hover::after { left: 140%; }
+
+  /* 42 – מסך */
+  .s42 .arr {
+    width: 52px; height: 38px;
+    border-radius: 6px;
+    background: #111;
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    display: grid; place-items: center;
+    font-size: 0.8rem; cursor: pointer;
+    font-family: monospace;
+    letter-spacing: 1px;
+    box-shadow: inset 0 0 8px rgba(240,192,64,0.2);
+    transition: box-shadow 0.2s;
+  }
+  .s42 .arr:hover { box-shadow: inset 0 0 16px rgba(240,192,64,0.4), 0 0 8px rgba(240,192,64,0.3); }
+
+  /* 43 – חצי עיגול */
+  .s43 .arr {
+    width: 38px; height: 38px;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1.1rem; cursor: pointer;
+    border-radius: 0 50% 50% 0;
+    transition: width 0.2s, border-radius 0.2s;
+  }
+  .s43 .arr-l { border-radius: 50% 0 0 50%; }
+  .s43 .arr:hover { width: 46px; }
+
+  /* 44 – נוזלי */
+  .s44 .arr {
+    width: 38px; height: 38px;
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    animation: morph44 4s ease-in-out infinite;
+    transition: transform 0.2s;
+  }
+  @keyframes morph44 {
+    0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+    50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+  }
+  .s44 .arr:hover { transform: scale(1.15); }
+
+  /* 45 – לד */
+  .s45 .arr {
+    width: 38px; height: 38px;
+    border-radius: 8px;
+    background: #1a0a2e;
+    color: var(--gold);
+    border: 1px solid #4a1a6e;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    box-shadow: 0 0 8px rgba(180,0,255,0.4), inset 0 0 8px rgba(180,0,255,0.1);
+    transition: all 0.2s;
+  }
+  .s45 .arr:hover { box-shadow: 0 0 20px rgba(180,0,255,0.7), inset 0 0 16px rgba(180,0,255,0.2); color: #fff; }
+
+  /* 46 – הקסגון */
+  .s46 .arr {
+    width: 40px; height: 40px;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    transition: transform 0.3s, filter 0.2s;
+  }
+  .s46 .arr:hover { transform: scale(1.2) rotate(30deg); filter: brightness(1.15); }
+
+  /* 47 – קונפטי כפתור */
+  .s47 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+    background-size: 200% 200%;
+    color: #000;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+    animation: confetti47 3s ease infinite;
+  }
+  @keyframes confetti47 {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .s47 .arr:hover { transform: scale(1.15); filter: brightness(1.1); }
+
+  /* 48 – ריבועים */
+  .s48 {
+    display: flex; gap: 8px;
+  }
+  .s48 .arr {
+    width: 38px; height: 38px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: grid; place-items: center;
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: var(--gold);
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .s48 .arr::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--gold);
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.2s;
+    z-index: 0;
+  }
+  .s48 .arr:hover::before { transform: scaleY(1); }
+  .s48 .arr:hover { color: #000; border-color: var(--gold); }
+  .s48 .arr span { position: relative; z-index: 1; }
+
+  /* 49 – דגל */
+  .s49 .arr {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(to bottom, #003087 33%, #fff 33%, #fff 66%, #ce1126 66%);
+    color: transparent;
+    border: 2px solid rgba(255,255,255,0.3);
+    display: grid; place-items: center;
+    font-size: 1rem; cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .s49 .arr::after {
+    content: '›';
+    position: absolute;
+    color: rgba(0,0,0,0.7);
+    font-size: 1.4rem;
+    font-weight: 900;
+    text-shadow: 0 0 4px rgba(255,255,255,0.5);
+  }
+  .s49 .arr-l::after { content: '‹'; }
+  .s49 .arr:hover { transform: scale(1.1) rotate(5deg); }
+
+  /* 50 – מגה פרמיום */
+  .s50 .arr {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fffde7, #f9a825, #e65100);
+    color: #fff;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1.1rem; cursor: pointer;
+    box-shadow: 0 0 0 2px rgba(240,192,64,0.4), 0 0 16px rgba(240,192,64,0.3), 0 4px 12px rgba(0,0,0,0.5);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .s50 .arr:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 4px rgba(240,192,64,0.6), 0 0 30px rgba(240,192,64,0.5), 0 8px 20px rgba(0,0,0,0.5);
+  }
+
+  /* ─── SELECTED INDICATOR ─── */
+  .badge-selected {
+    position: absolute;
+    top: 4px; left: 4px;
+    width: 16px; height: 16px;
+    background: var(--gold);
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.55rem;
+    color: #000;
+    font-weight: 900;
+  }
+  .style-card.selected .badge-selected { display: flex; }
+
+  /* ─── ACTIVE ARROW CLASS (applied to live preview) ─── */
+  #preview-left, #preview-right {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 1.1rem; cursor: pointer;
+    font-weight: 700;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  #preview-left:hover, #preview-right:hover { transform: scale(1.15); }
+
+  /* bottom bar */
+  .bottom-bar {
+    position: sticky;
+    bottom: 0;
+    background: rgba(13,17,23,0.95);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 32px;
+    border-radius: 0 0 12px 12px;
+    gap: 12px;
+  }
+  .bottom-bar .style-info { font-size: 0.85rem; color: #8b949e; }
+  .bottom-bar .style-info strong { color: var(--gold); }
+  .btn-apply {
+    padding: 8px 20px;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-apply:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(240,192,64,0.4); }
+  .btn-copy {
+    padding: 8px 16px;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .btn-copy:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* toast */
+  .toast {
+    position: fixed;
+    bottom: 80px; right: 24px;
+    background: var(--gold);
+    color: #000;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 999;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚽ Admin Panel – Arrow Styles</h1>
+  <p>50 סגנונות חצי קרוסלה | בחר סגנון לצפייה חיה בפרויקט</p>
+</div>
+
+<!-- LIVE PREVIEW -->
+<div class="live-preview">
+  <div class="preview-label">תצוגה חיה</div>
+  <div class="carousel-demo">
+    <button id="preview-left" onclick="prevMatch()">&#8249;</button>
+    <div class="match-card">
+      <div class="match-title">משחק פרלימינרי</div>
+      <div class="match-counter" id="match-counter">משחק 1 מתוך 6</div>
+      <div class="match-teams">
+        <span id="team1-flag">🇪🇸</span>
+        <div class="score" id="match-score">3 – 1</div>
+        <span id="team2-flag">🇸🇦</span>
+      </div>
+    </div>
+    <button id="preview-right" onclick="nextMatch()">&#8250;</button>
+  </div>
+  <div class="active-style-info">סגנון פעיל: <span id="active-style-name">קלאסי זהב (#1)</span></div>
+</div>
+
+<!-- GRID HEADER -->
+<div class="grid-header">
+  <h2>כל הסגנונות (50)</h2>
+  <div class="filter-tabs">
+    <button class="filter-tab active" onclick="filterCat('all',this)">הכל</button>
+    <button class="filter-tab" onclick="filterCat('minimal',this)">מינימלי</button>
+    <button class="filter-tab" onclick="filterCat('animated',this)">אנימציה</button>
+    <button class="filter-tab" onclick="filterCat('bold',this)">בולד</button>
+  </div>
+</div>
+
+<!-- 50 STYLES GRID -->
+<div class="styles-grid" id="stylesGrid">
+
+  <!-- 1 -->
+  <div class="style-card selected" data-id="1" data-cat="minimal" onclick="selectStyle(1,'קלאסי זהב',this)">
+    <span class="style-num">#1</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s1">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">קלאסי זהב</span>
+  </div>
+
+  <!-- 2 -->
+  <div class="style-card" data-id="2" data-cat="minimal" onclick="selectStyle(2,'אאוטליין',this)">
+    <span class="style-num">#2</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s2">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">אאוטליין</span>
+  </div>
+
+  <!-- 3 -->
+  <div class="style-card" data-id="3" data-cat="animated" onclick="selectStyle(3,'גלו ניאון',this)">
+    <span class="style-num">#3</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s3">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">גלו ניאון</span>
+  </div>
+
+  <!-- 4 -->
+  <div class="style-card" data-id="4" data-cat="animated" onclick="selectStyle(4,'מרובע→עיגול',this)">
+    <span class="style-num">#4</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s4">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">מרובע → עיגול</span>
+  </div>
+
+  <!-- 5 -->
+  <div class="style-card" data-id="5" data-cat="bold" onclick="selectStyle(5,'גרדיאנט אש',this)">
+    <span class="style-num">#5</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s5">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">גרדיאנט אש</span>
+  </div>
+
+  <!-- 6 -->
+  <div class="style-card" data-id="6" data-cat="animated" onclick="selectStyle(6,'פולסינג',this)">
+    <span class="style-num">#6</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s6">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">פולסינג</span>
+  </div>
+
+  <!-- 7 -->
+  <div class="style-card" data-id="7" data-cat="bold" onclick="selectStyle(7,'3D פרס',this)">
+    <span class="style-num">#7</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s7">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">3D פרס</span>
+  </div>
+
+  <!-- 8 -->
+  <div class="style-card" data-id="8" data-cat="minimal" onclick="selectStyle(8,'גלאס מורפיזם',this)">
+    <span class="style-num">#8</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s8">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">גלאס מורפיזם</span>
+  </div>
+
+  <!-- 9 -->
+  <div class="style-card" data-id="9" data-cat="minimal" onclick="selectStyle(9,'שברון כפול',this)">
+    <span class="style-num">#9</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s9">
+      <button class="arr">«</button>
+      <button class="arr">»</button>
+    </div>
+    <span class="style-name">שברון כפול</span>
+  </div>
+
+  <!-- 10 -->
+  <div class="style-card" data-id="10" data-cat="animated" onclick="selectStyle(10,'בורדר מסתובב',this)">
+    <span class="style-num">#10</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s10">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">בורדר מסתובב</span>
+  </div>
+
+  <!-- 11 -->
+  <div class="style-card" data-id="11" data-cat="animated" onclick="selectStyle(11,'ריפל',this)">
+    <span class="style-num">#11</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s11">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">ריפל</span>
+  </div>
+
+  <!-- 12 -->
+  <div class="style-card" data-id="12" data-cat="minimal" onclick="selectStyle(12,'נאומורפיזם',this)">
+    <span class="style-num">#12</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s12">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">נאומורפיזם</span>
+  </div>
+
+  <!-- 13 -->
+  <div class="style-card" data-id="13" data-cat="bold" onclick="selectStyle(13,'שדה כדורגל',this)">
+    <span class="style-num">#13</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s13">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">שדה כדורגל</span>
+  </div>
+
+  <!-- 14 -->
+  <div class="style-card" data-id="14" data-cat="animated" onclick="selectStyle(14,'דגל סיבובי',this)">
+    <span class="style-num">#14</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s14">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">דגל סיבובי</span>
+  </div>
+
+  <!-- 15 -->
+  <div class="style-card" data-id="15" data-cat="animated" onclick="selectStyle(15,'ריבוע→אאוטליין',this)">
+    <span class="style-num">#15</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s15">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">ריבוע → אאוטליין</span>
+  </div>
+
+  <!-- 16 -->
+  <div class="style-card" data-id="16" data-cat="animated" onclick="selectStyle(16,'פלאש',this)">
+    <span class="style-num">#16</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s16">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">פלאש / שיין</span>
+  </div>
+
+  <!-- 17 -->
+  <div class="style-card" data-id="17" data-cat="animated" onclick="selectStyle(17,'מקווקו',this)">
+    <span class="style-num">#17</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s17">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">מקווקו</span>
+  </div>
+
+  <!-- 18 -->
+  <div class="style-card" data-id="18" data-cat="bold" onclick="selectStyle(18,'גביע',this)">
+    <span class="style-num">#18</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s18">
+      <button class="arr arr-l" style="transform:scaleX(-1)"></button>
+      <button class="arr arr-r"></button>
+    </div>
+    <span class="style-name">גביע 🏆</span>
+  </div>
+
+  <!-- 19 -->
+  <div class="style-card" data-id="19" data-cat="minimal" onclick="selectStyle(19,'נקודות',this)">
+    <span class="style-num">#19</span>
+    <div class="badge-selected">✓</div>
+    <div class="s19" style="display:flex;gap:6px">
+      <button class="arr arr-l">
+        <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      </button>
+      <button class="arr arr-r">
+        <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      </button>
+    </div>
+    <span class="style-name">נקודות</span>
+  </div>
+
+  <!-- 20 -->
+  <div class="style-card" data-id="20" data-cat="bold" onclick="selectStyle(20,'חץ SVG',this)">
+    <span class="style-num">#20</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s20">
+      <button class="arr arr-l">&#8249;</button>
+      <button class="arr arr-r">&#8250;</button>
+    </div>
+    <span class="style-name">חץ SVG</span>
+  </div>
+
+  <!-- 21 -->
+  <div class="style-card" data-id="21" data-cat="bold" onclick="selectStyle(21,'אש',this)">
+    <span class="style-num">#21</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s21">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">להבה 🔥</span>
+  </div>
+
+  <!-- 22 -->
+  <div class="style-card" data-id="22" data-cat="bold" onclick="selectStyle(22,'קרח',this)">
+    <span class="style-num">#22</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s22">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">קרח ❄️</span>
+  </div>
+
+  <!-- 23 -->
+  <div class="style-card" data-id="23" data-cat="bold" onclick="selectStyle(23,'מטריקס',this)">
+    <span class="style-num">#23</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s23">
+      <button class="arr">&lt;</button>
+      <button class="arr">&gt;</button>
+    </div>
+    <span class="style-name">מטריקס</span>
+  </div>
+
+  <!-- 24 -->
+  <div class="style-card" data-id="24" data-cat="bold" onclick="selectStyle(24,'פיקסל',this)">
+    <span class="style-num">#24</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s24">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">פיקסל ארט</span>
+  </div>
+
+  <!-- 25 -->
+  <div class="style-card" data-id="25" data-cat="minimal" onclick="selectStyle(25,'פרוסטד',this)">
+    <span class="style-num">#25</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s25">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">פרוסטד גלאס</span>
+  </div>
+
+  <!-- 26 -->
+  <div class="style-card" data-id="26" data-cat="animated" onclick="selectStyle(26,'ספרינג',this)">
+    <span class="style-num">#26</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s26">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">ספרינג</span>
+  </div>
+
+  <!-- 27 -->
+  <div class="style-card" data-id="27" data-cat="animated" onclick="selectStyle(27,'ריבאונד',this)">
+    <span class="style-num">#27</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s27">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">ריבאונד</span>
+  </div>
+
+  <!-- 28 -->
+  <div class="style-card" data-id="28" data-cat="minimal" onclick="selectStyle(28,'ספוטלייט',this)">
+    <span class="style-num">#28</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s28">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">ספוטלייט</span>
+  </div>
+
+  <!-- 29 -->
+  <div class="style-card" data-id="29" data-cat="bold" onclick="selectStyle(29,'יהלום',this)">
+    <span class="style-num">#29</span>
+    <div class="badge-selected">✓</div>
+    <div class="s29">
+      <button class="arr"><span>&#8249;</span></button>
+      <button class="arr"><span>&#8250;</span></button>
+    </div>
+    <span class="style-name">יהלום 💎</span>
+  </div>
+
+  <!-- 30 -->
+  <div class="style-card" data-id="30" data-cat="animated" onclick="selectStyle(30,'פרפר',this)">
+    <span class="style-num">#30</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s30">
+      <button class="arr arr-l">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">פרפר</span>
+  </div>
+
+  <!-- 31 -->
+  <div class="style-card" data-id="31" data-cat="animated" onclick="selectStyle(31,'כדורגל',this)">
+    <span class="style-num">#31</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s31">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">כדורגל ⚽</span>
+  </div>
+
+  <!-- 32 -->
+  <div class="style-card" data-id="32" data-cat="animated" onclick="selectStyle(32,'ניאון ספינר',this)">
+    <span class="style-num">#32</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s32">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">ניאון ספינר</span>
+  </div>
+
+  <!-- 33 -->
+  <div class="style-card" data-id="33" data-cat="animated" onclick="selectStyle(33,'קשת צבע',this)">
+    <span class="style-num">#33</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s33">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">קשת צבעים 🌈</span>
+  </div>
+
+  <!-- 34 -->
+  <div class="style-card" data-id="34" data-cat="minimal" onclick="selectStyle(34,'ווי/אקס',this)">
+    <span class="style-num">#34</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s34">
+      <button class="arr arr-l">✗</button>
+      <button class="arr arr-r">✓</button>
+    </div>
+    <span class="style-name">ווי / אקס</span>
+  </div>
+
+  <!-- 35 -->
+  <div class="style-card" data-id="35" data-cat="minimal" onclick="selectStyle(35,'סקיימורף',this)">
+    <span class="style-num">#35</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s35">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">סקיימורף</span>
+  </div>
+
+  <!-- 36 -->
+  <div class="style-card" data-id="36" data-cat="bold" onclick="selectStyle(36,'צלב',this)">
+    <span class="style-num">#36</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s36">
+      <button class="arr">+</button>
+      <button class="arr">+</button>
+    </div>
+    <span class="style-name">צלב / פלוס</span>
+  </div>
+
+  <!-- 37 -->
+  <div class="style-card" data-id="37" data-cat="bold" onclick="selectStyle(37,'שיל',this)">
+    <span class="style-num">#37</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s37">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">שיל מגן 🛡️</span>
+  </div>
+
+  <!-- 38 -->
+  <div class="style-card" data-id="38" data-cat="bold" onclick="selectStyle(38,'כוכב',this)">
+    <span class="style-num">#38</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s38">
+      <button class="arr">★</button>
+      <button class="arr">★</button>
+    </div>
+    <span class="style-name">כוכב ⭐</span>
+  </div>
+
+  <!-- 39 -->
+  <div class="style-card" data-id="39" data-cat="animated" onclick="selectStyle(39,'בומרנג',this)">
+    <span class="style-num">#39</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s39">
+      <button class="arr">&#8249;</button>
+      <button class="arr arr-r">&#8250;</button>
+    </div>
+    <span class="style-name">בומרנג</span>
+  </div>
+
+  <!-- 40 -->
+  <div class="style-card" data-id="40" data-cat="animated" onclick="selectStyle(40,'הובר בורדר',this)">
+    <span class="style-num">#40</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s40">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">הובר בורדר</span>
+  </div>
+
+  <!-- 41 -->
+  <div class="style-card" data-id="41" data-cat="animated" onclick="selectStyle(41,'שיין מהיר',this)">
+    <span class="style-num">#41</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s41">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">שיין מהיר</span>
+  </div>
+
+  <!-- 42 -->
+  <div class="style-card" data-id="42" data-cat="minimal" onclick="selectStyle(42,'תצוגה',this)">
+    <span class="style-num">#42</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s42">
+      <button class="arr">‹ PRV</button>
+      <button class="arr">NXT ›</button>
+    </div>
+    <span class="style-name">תצוגת מסך</span>
+  </div>
+
+  <!-- 43 -->
+  <div class="style-card" data-id="43" data-cat="animated" onclick="selectStyle(43,'חצי עיגול',this)">
+    <span class="style-num">#43</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s43">
+      <button class="arr arr-l">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">חצי עיגול</span>
+  </div>
+
+  <!-- 44 -->
+  <div class="style-card" data-id="44" data-cat="animated" onclick="selectStyle(44,'נוזלי',this)">
+    <span class="style-num">#44</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s44">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">נוזלי / Blob</span>
+  </div>
+
+  <!-- 45 -->
+  <div class="style-card" data-id="45" data-cat="bold" onclick="selectStyle(45,'לד סגול',this)">
+    <span class="style-num">#45</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s45">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">לד סגול 💜</span>
+  </div>
+
+  <!-- 46 -->
+  <div class="style-card" data-id="46" data-cat="bold" onclick="selectStyle(46,'הקסגון',this)">
+    <span class="style-num">#46</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s46">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">הקסגון ⬡</span>
+  </div>
+
+  <!-- 47 -->
+  <div class="style-card" data-id="47" data-cat="animated" onclick="selectStyle(47,'קונפטי',this)">
+    <span class="style-num">#47</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s47">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">קונפטי 🎉</span>
+  </div>
+
+  <!-- 48 -->
+  <div class="style-card" data-id="48" data-cat="animated" onclick="selectStyle(48,'פיל אפ',this)">
+    <span class="style-num">#48</span>
+    <div class="badge-selected">✓</div>
+    <div class="s48">
+      <button class="arr"><span>&#8249;</span></button>
+      <button class="arr"><span>&#8250;</span></button>
+    </div>
+    <span class="style-name">Fill Up</span>
+  </div>
+
+  <!-- 49 -->
+  <div class="style-card" data-id="49" data-cat="bold" onclick="selectStyle(49,'דגל',this)">
+    <span class="style-num">#49</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s49">
+      <button class="arr arr-l">‹</button>
+      <button class="arr">›</button>
+    </div>
+    <span class="style-name">דגל 🚩</span>
+  </div>
+
+  <!-- 50 -->
+  <div class="style-card" data-id="50" data-cat="bold" onclick="selectStyle(50,'מגה פרמיום ⭐',this)">
+    <span class="style-num">#50</span>
+    <div class="badge-selected">✓</div>
+    <div class="arrow-pair s50">
+      <button class="arr">&#8249;</button>
+      <button class="arr">&#8250;</button>
+    </div>
+    <span class="style-name">מגה פרמיום ⭐</span>
+  </div>
+
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <div class="style-info">נבחר: <strong id="bar-style-name">קלאסי זהב (#1)</strong></div>
+  <div style="display:flex;gap:8px">
+    <button class="btn-copy" onclick="copyCSS()">העתק CSS</button>
+    <button class="btn-apply" onclick="showApply()">החל בפרויקט ✓</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const matches = [
+    { counter: 'משחק 1 מתוך 6', t1: '🇪🇸', t2: '🇸🇦', score: '3 – 1' },
+    { counter: 'משחק 2 מתוך 6', t1: '🇩🇪', t2: '🇧🇷', score: '2 – 2' },
+    { counter: 'משחק 3 מתוך 6', t1: '🇫🇷', t2: '🇦🇷', score: '1 – 0' },
+    { counter: 'משחק 4 מתוך 6', t1: '🇵🇹', t2: '🇺🇸', score: '4 – 1' },
+    { counter: 'משחק 5 מתוך 6', t1: '🇮🇹', t2: '🇯🇵', score: '0 – 1' },
+    { counter: 'משחק 6 מתוך 6', t1: '🇳🇱', t2: '🇲🇦', score: '2 – 0' },
+  ];
+  let currentMatch = 0;
+
+  function updateMatch() {
+    const m = matches[currentMatch];
+    document.getElementById('match-counter').textContent = m.counter;
+    document.getElementById('team1-flag').textContent = m.t1;
+    document.getElementById('team2-flag').textContent = m.t2;
+    document.getElementById('match-score').textContent = m.score;
+  }
+
+  function nextMatch() {
+    currentMatch = (currentMatch + 1) % matches.length;
+    updateMatch();
+    animateCard('right');
+  }
+
+  function prevMatch() {
+    currentMatch = (currentMatch - 1 + matches.length) % matches.length;
+    updateMatch();
+    animateCard('left');
+  }
+
+  function animateCard(dir) {
+    const card = document.querySelector('.match-card');
+    const from = dir === 'right' ? '20px' : '-20px';
+    card.animate([
+      { opacity: 0, transform: `translateX(${from})` },
+      { opacity: 1, transform: 'translateX(0)' }
+    ], { duration: 250, easing: 'ease-out' });
+  }
+
+  let currentStyleId = 1;
+  let currentStyleName = 'קלאסי זהב';
+
+  const styleMap = {
+    1:  { btnClass: 's1 arr', bg:'#f0c040', color:'#000', radius:'50%', border:'none', extra:'' },
+    2:  { btnClass: 's2 arr', bg:'transparent', color:'#f0c040', radius:'50%', border:'2px solid #f0c040', extra:'' },
+    3:  { btnClass: 's3 arr', bg:'#000', color:'#f0c040', radius:'50%', border:'2px solid #f0c040', extra:'box-shadow:0 0 12px #f0c040' },
+    4:  { btnClass: 's4 arr', bg:'#f0c040', color:'#000', radius:'8px', border:'none', extra:'' },
+    5:  { btnClass: 's5 arr', bg:'linear-gradient(135deg,#f0c040,#ff6b35)', color:'#fff', radius:'50%', border:'none', extra:'' },
+    6:  { btnClass: 's6 arr', bg:'#f0c040', color:'#000', radius:'50%', border:'none', extra:'animation:pulse6 2s infinite' },
+    7:  { btnClass: 's7 arr', bg:'linear-gradient(to bottom,#ffd700,#b8860b)', color:'#000', radius:'50%', border:'none', extra:'box-shadow:0 6px 0 #7a5c00' },
+    8:  { btnClass: 's8 arr', bg:'rgba(255,255,255,0.1)', color:'#fff', radius:'50%', border:'1px solid rgba(255,255,255,0.25)', extra:'backdrop-filter:blur(10px)' },
+    50: { btnClass: 's50 arr', bg:'radial-gradient(circle at 35% 35%,#fffde7,#f9a825,#e65100)', color:'#fff', radius:'50%', border:'none', extra:'box-shadow:0 0 0 2px rgba(240,192,64,0.4),0 0 16px rgba(240,192,64,0.3)' }
+  };
+
+  function selectStyle(id, name, el) {
+    document.querySelectorAll('.style-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    currentStyleId = id;
+    currentStyleName = name;
+    document.getElementById('active-style-name').textContent = name + ' (#' + id + ')';
+    document.getElementById('bar-style-name').textContent = name + ' (#' + id + ')';
+
+    // Apply to live preview buttons
+    applyToPreview(id);
+  }
+
+  function applyToPreview(id) {
+    const left = document.getElementById('preview-left');
+    const right = document.getElementById('preview-right');
+
+    // reset
+    left.removeAttribute('style');
+    right.removeAttribute('style');
+    left.className = '';
+    right.className = '';
+    left.textContent = '‹';
+    right.textContent = '›';
+
+    const sEl = document.querySelector(`.style-card[data-id="${id}"] .arrow-pair, .style-card[data-id="${id}"] .s19, .style-card[data-id="${id}"] .s29, .style-card[data-id="${id}"] .s48`);
+    if (!sEl) return;
+
+    const clone = sEl.cloneNode(true);
+    const btns = clone.querySelectorAll('button');
+
+    if (btns.length >= 2) {
+      const styleAttr = btns[0].getAttribute('style') || '';
+      const classAttr = btns[0].className || '';
+
+      [left, right].forEach((btn, i) => {
+        const src = btns[i] || btns[0];
+        btn.className = src.className;
+        btn.innerHTML = src.innerHTML || (i === 0 ? '‹' : '›');
+        if (src.getAttribute('style')) btn.setAttribute('style', src.getAttribute('style'));
+        btn.style.width = '42px';
+        btn.style.height = '42px';
+        btn.style.cursor = 'pointer';
+      });
+    }
+  }
+
+  function filterCat(cat, btn) {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.style-card').forEach(card => {
+      if (cat === 'all' || card.dataset.cat === cat) {
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  function copyCSS() {
+    const css = `/* Style #${currentStyleId} – ${currentStyleName} */\n.carousel-btn {\n  /* See demo for full styles */\n}`;
+    navigator.clipboard.writeText(css).then(() => showToast('CSS הועתק! 📋'));
+  }
+
+  function showApply() {
+    showToast(`סגנון "${currentStyleName}" הוחל בפרויקט! ✓`);
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // init
+  applyToPreview(1);
+</script>
+</body>
+</html>
