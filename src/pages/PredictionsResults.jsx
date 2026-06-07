@@ -722,12 +722,14 @@ export default function PredictionsResults() {
                         const r = 24, c = 28, stroke = 3, circ = 2 * Math.PI * r;
                         return (
                           <div className="relative w-14 h-14 flex items-center justify-center flex-shrink-0">
-                            <svg width="56" height="56" className="absolute top-0 left-0 pointer-events-none" style={{ transform: 'rotate(-90deg)' }}>
-                              <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
-                              <circle cx={c} cy={c} r={r} fill="none" stroke="#f5c518" strokeWidth={stroke}
-                                strokeDasharray={`${circ * pct} ${circ}`} strokeLinecap="round"
-                                style={{ filter: 'drop-shadow(0 0 4px rgba(245,197,24,0.5))', transition: 'stroke-dasharray 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
-                            </svg>
+                            <div className="absolute top-0 left-0 pointer-events-none" style={{ transform: 'scaleX(-1)', width: 56, height: 56 }}>
+                              <svg width="56" height="56" style={{ transform: 'rotate(-90deg)' }}>
+                                <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
+                                <circle cx={c} cy={c} r={r} fill="none" stroke="#f5c518" strokeWidth={stroke}
+                                  strokeDasharray={`${circ * pct} ${circ}`} strokeLinecap="round"
+                                  style={{ filter: 'drop-shadow(0 0 4px rgba(245,197,24,0.5))', transition: 'stroke-dasharray 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
+                              </svg>
+                            </div>
                             <button onClick={prevMatch} disabled={finishedMatches.length <= 1}
                               className="relative w-10 h-10 flex items-center justify-center disabled:opacity-30 rounded-full z-10 transition-transform hover:scale-105 active:scale-95"
                               style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(255,255,255,0.18)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 8px rgba(0,0,0,0.3)' }}>
