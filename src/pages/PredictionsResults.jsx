@@ -992,6 +992,14 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                 <span className="text-white/65 text-sm">מתוך {maxPts.toFixed(2)} נקודות</span>
                 <span className={`text-sm font-bold tabular-nums ${pctColor}`}>({pct}%)</span>
               </div>
+              {roundStats.predictionDetails.length > 0 && (
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-white/40 text-xs">ממוצע למשחק</span>
+                  <span className="text-white/70 text-xs font-bold tabular-nums">
+                    {(earned / roundStats.predictionDetails.length).toFixed(2)} pts
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Rank */}
