@@ -268,6 +268,11 @@ export default function RoundInsightsTicker({ user }) {
           text: <><span className="text-white">אחוז הצבירה מסך הנקודות האפשרי:</span> <span className="text-emerald-400 font-bold">{hitPercentage}%</span></>,
           icon: <CircularProgress percentage={parseFloat(hitPercentage)} />
         },
+        ...(currentStats.totalFinishedPredictions > 0 ? [{
+          id: 45,
+          text: <><span className="text-white">ממוצע נקודות למשחק:</span> <span className="text-emerald-400 font-bold">{(userPoints / currentStats.totalFinishedPredictions).toFixed(2)} נק'</span></>,
+          icon: <img src="https://media.base44.com/images/public/68656264510003eeef16bac3/ec8635298_target_18283876.png" alt="Avg" className="w-[18px] h-[18px] object-contain" />
+        }] : []),
         {
           id: 5,
           text: <><span className="text-white">ניחושי כיוון:</span> <span className="text-emerald-400 font-bold">{currentStats.correctOutcomes}</span> <span className="text-slate-300 text-sm">מתוך {currentStats.totalFinishedPredictions}</span></>,
