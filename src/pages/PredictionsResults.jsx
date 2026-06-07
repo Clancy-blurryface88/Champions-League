@@ -664,18 +664,28 @@ export default function PredictionsResults() {
                       {/* Progress Arc — next */}
                       {(() => {
                         const pct = finishedMatches.length > 1 ? (currentMatchIndex + 1) / finishedMatches.length : 1;
-                        const r = 18, c = 22, stroke = 2.5, circ = 2 * Math.PI * r;
+                        const r = 24, c = 28, stroke = 3, circ = 2 * Math.PI * r;
+                        const dotAngle = pct * 2 * Math.PI - Math.PI / 2;
+                        const dotX = c + r * Math.cos(dotAngle);
+                        const dotY = c + r * Math.sin(dotAngle);
                         return (
-                          <button onClick={nextMatch} disabled={finishedMatches.length <= 1}
-                            className="relative w-11 h-11 flex items-center justify-center disabled:opacity-30 rounded-full"
-                            style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(255,255,255,0.18)' }}>
-                            <svg width={c*2} height={c*2} className="absolute" style={{ transform:'rotate(-90deg)' }}>
+                          <div className="relative w-14 h-14 flex items-center justify-center flex-shrink-0">
+                            <svg width="56" height="56" className="absolute top-0 left-0 pointer-events-none" style={{ transform: 'rotate(-90deg)' }}>
                               <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
                               <circle cx={c} cy={c} r={r} fill="none" stroke="#f5c518" strokeWidth={stroke}
-                                strokeDasharray={`${circ*pct} ${circ}`} strokeLinecap="round" />
+                                strokeDasharray={`${circ * pct} ${circ}`} strokeLinecap="round"
+                                style={{ filter: 'drop-shadow(0 0 4px rgba(245,197,24,0.5))', transition: 'stroke-dasharray 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
+                              {pct > 0.02 && (
+                                <circle cx={dotX} cy={dotY} r="3.5" fill="#f5c518"
+                                  style={{ filter: 'drop-shadow(0 0 4px rgba(245,197,24,0.9))' }} />
+                              )}
                             </svg>
-                            <ChevronLeft className="w-5 h-5 text-white relative z-10" />
-                          </button>
+                            <button onClick={nextMatch} disabled={finishedMatches.length <= 1}
+                              className="relative w-10 h-10 flex items-center justify-center disabled:opacity-30 rounded-full z-10 transition-transform hover:scale-105 active:scale-95"
+                              style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(255,255,255,0.18)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 8px rgba(0,0,0,0.3)' }}>
+                              <ChevronLeft className="w-5 h-5 text-white" />
+                            </button>
+                          </div>
                         );
                       })()}
 
@@ -716,20 +726,28 @@ export default function PredictionsResults() {
                       {/* Progress Arc — prev */}
                       {(() => {
                         const pct = finishedMatches.length > 1 ? (currentMatchIndex + 1) / finishedMatches.length : 1;
-                        const r = 18, c = 22, stroke = 2.5, circ = 2 * Math.PI * r;
+                        const r = 24, c = 28, stroke = 3, circ = 2 * Math.PI * r;
+                        const dotAngle = pct * 2 * Math.PI - Math.PI / 2;
+                        const dotX = c + r * Math.cos(dotAngle);
+                        const dotY = c + r * Math.sin(dotAngle);
                         return (
-                          <button onClick={prevMatch} disabled={finishedMatches.length <= 1}
-                            className="relative w-11 h-11 flex items-center justify-center disabled:opacity-30 rounded-full"
-                            style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(255,255,255,0.18)' }}>
-                            <div className="absolute" style={{ transform:'scaleX(-1)' }}>
-                              <svg width={c*2} height={c*2} style={{ transform:'rotate(-90deg)' }}>
-                                <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
-                                <circle cx={c} cy={c} r={r} fill="none" stroke="#f5c518" strokeWidth={stroke}
-                                  strokeDasharray={`${circ*pct} ${circ}`} strokeLinecap="round" />
-                              </svg>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-white relative z-10" />
-                          </button>
+                          <div className="relative w-14 h-14 flex items-center justify-center flex-shrink-0">
+                            <svg width="56" height="56" className="absolute top-0 left-0 pointer-events-none" style={{ transform: 'rotate(-90deg)' }}>
+                              <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
+                              <circle cx={c} cy={c} r={r} fill="none" stroke="#f5c518" strokeWidth={stroke}
+                                strokeDasharray={`${circ * pct} ${circ}`} strokeLinecap="round"
+                                style={{ filter: 'drop-shadow(0 0 4px rgba(245,197,24,0.5))', transition: 'stroke-dasharray 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
+                              {pct > 0.02 && (
+                                <circle cx={dotX} cy={dotY} r="3.5" fill="#f5c518"
+                                  style={{ filter: 'drop-shadow(0 0 4px rgba(245,197,24,0.9))' }} />
+                              )}
+                            </svg>
+                            <button onClick={prevMatch} disabled={finishedMatches.length <= 1}
+                              className="relative w-10 h-10 flex items-center justify-center disabled:opacity-30 rounded-full z-10 transition-transform hover:scale-105 active:scale-95"
+                              style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(255,255,255,0.18)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 8px rgba(0,0,0,0.3)' }}>
+                              <ChevronRight className="w-5 h-5 text-white" />
+                            </button>
+                          </div>
                         );
                       })()}
                     </div>
