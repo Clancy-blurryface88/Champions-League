@@ -271,7 +271,7 @@ export default function RoundInsightsTicker({ user }) {
         ...(currentStats.totalFinishedPredictions > 0 ? [{
           id: 45,
           text: <><span className="text-white">ממוצע נקודות למשחק:</span> <span className="text-emerald-400 font-bold">{(userPoints / currentStats.totalFinishedPredictions).toFixed(2)} נק'</span></>,
-          icon: <img src="https://media.base44.com/images/public/68656264510003eeef16bac3/ec8635298_target_18283876.png" alt="Avg" className="w-[18px] h-[18px] object-contain" />
+          icon: <Star className="w-[18px] h-[18px] text-amber-400" fill="#f59e0b" />
         }] : []),
         {
           id: 5,
