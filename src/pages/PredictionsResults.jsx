@@ -182,8 +182,8 @@ function ScoreBreakdownAnimated({ prediction, match, outcomeType }) {
               {pts > 0 ? `+${pts.toFixed(2)}` : '+0.00'}
             </span>
             <span className="text-white/70 text-xs inline-flex items-center gap-1">
-                {row.suffix && <span>{row.suffix}</span>}
                 <span>{row.label}</span>
+                {row.suffix && <span>{row.suffix}</span>}
               </span>
           </motion.div>
         );
