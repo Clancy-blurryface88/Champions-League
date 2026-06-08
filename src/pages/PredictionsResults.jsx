@@ -41,33 +41,97 @@ const OUTCOME_COLORS = {
 
 function AnimatedDonut({ percentage, size = 64, outcomeType }) {
   const [animPct, setAnimPct] = useState(0);
-  const radius = 24;
-  const circumference = 2 * Math.PI * radius;
 
   useEffect(() => {
     setAnimPct(0);
-    const timer = setTimeout(() => setAnimPct(percentage), 80);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => setAnimPct(percentage), 80);
+    return () => clearTimeout(t);
   }, [percentage]);
 
-  const offset = circumference - (animPct / 100) * circumference;
-  const color = (OUTCOME_COLORS[outcomeType] || OUTCOME_COLORS.default).hex;
+  // Traffic-light color based on score percentage
+  const color = percentage >= 70 ? '#22c55e' : percentage >= 40 ? '#f59e0b' : '#ef4444';
+
+  // Semicircle geometry: arc from 9 o'clock → 12 o'clock → 3 o'clock (top half)
+  const R = 30, cx = 40, cy = 38;
+  const fullC = 2 * Math.PI * R;
+  const arcLen = Math.PI * R;
+  const filledLen = (animPct / 100) * arcLen;
+
+  // Comet head tip position along the arc
+  // angle=π at 0% (9 o'clock), angle=0 at 100% (3 o'clock)
+  const angle = Math.PI * (1 - animPct / 100);
+  const tipX = cx + R * Math.cos(angle);
+  const tipY = cy - R * Math.sin(angle);
+
+  const uid = useRef(`sg${Math.random().toString(36).slice(2, 7)}`).current;
+  const W = size + 8;
+  const H = Math.round(W * 0.68);
 
   return (
-    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
-      <svg className="w-full h-full -rotate-90" viewBox="0 0 64 64">
-        <circle cx="32" cy="32" r={radius} fill="none" stroke="#334155" strokeWidth="6" />
-        <circle
-          cx="32" cy="32" r={radius} fill="none"
-          stroke={color} strokeWidth="6"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.23,1,0.32,1)' }}
-        />
+    <div className="relative flex-shrink-0" style={{ width: W, height: H }}>
+      <svg
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'visible' }}
+        viewBox="0 0 80 56"
+      >
+        <defs>
+          {/* Comet gradient: transparent at tail → bright at comet head */}
+          <linearGradient id={uid} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stopColor={color} stopOpacity="0.02" />
+            <stop offset="55%"  stopColor={color} stopOpacity="0.45" />
+            <stop offset="100%" stopColor={color} stopOpacity="1" />
+          </linearGradient>
+          <filter id={`${uid}f`} x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="2.5" result="b" />
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+
+        {/* Background track */}
+        <circle cx={cx} cy={cy} r={R} fill="none" stroke="#1e293b" strokeWidth="7"
+          strokeDasharray={`${arcLen} ${fullC - arcLen}`}
+          style={{ transform: `rotate(180deg)`, transformOrigin: `${cx}px ${cy}px` }} />
+
+        {/* Soft glow halo */}
+        <circle cx={cx} cy={cy} r={R} fill="none" stroke={color} strokeWidth="10"
+          strokeDasharray={`${filledLen} ${fullC - filledLen}`} strokeLinecap="round"
+          opacity="0.2" filter={`url(#${uid}f)`}
+          style={{
+            transform: `rotate(180deg)`, transformOrigin: `${cx}px ${cy}px`,
+            transition: 'stroke-dasharray 1.2s cubic-bezier(.23,1,.32,1)',
+          }} />
+
+        {/* Comet arc with fade gradient */}
+        <circle cx={cx} cy={cy} r={R} fill="none" stroke={`url(#${uid})`} strokeWidth="7"
+          strokeDasharray={`${filledLen} ${fullC - filledLen}`} strokeLinecap="round"
+          style={{
+            transform: `rotate(180deg)`, transformOrigin: `${cx}px ${cy}px`,
+            transition: 'stroke-dasharray 1.2s cubic-bezier(.23,1,.32,1)',
+          }} />
+
+        {/* Comet head — bright dot at the arc tip */}
+        <circle cx={cx} cy={cy} r="3.8" fill={color}
+          style={{
+            transform: `translate(${tipX - cx}px, ${tipY - cy}px)`,
+            opacity: animPct > 1 ? 1 : 0,
+            filter: `drop-shadow(0 0 4px ${color}) drop-shadow(0 0 9px ${color}90)`,
+            transition: 'transform 1.2s cubic-bezier(.23,1,.32,1), opacity 0.3s',
+          }} />
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-xs font-bold" style={{ color }}>{percentage}%</span>
+
+      {/* Percentage — centered symmetrically in the gauge mouth */}
+      <div style={{
+        position: 'absolute', bottom: 2, left: 0, right: 0,
+        textAlign: 'center', lineHeight: 1,
+      }}>
+        <span style={{
+          fontSize: Math.max(11, Math.round(W * 0.185)),
+          fontWeight: 800,
+          color,
+          textShadow: `0 0 10px ${color}55`,
+          transition: 'color 0.5s',
+        }}>
+          {percentage}%
+        </span>
       </div>
     </div>
   );
