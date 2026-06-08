@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 
 const CSS = `
 @keyframes wc-orbit { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
