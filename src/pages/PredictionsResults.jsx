@@ -140,7 +140,7 @@ function AnimatedDonut({ percentage, size = 64, outcomeType }) {
 const BREAKDOWN_ROWS = [
   { key: 'exact_score_points_earned',         label: 'תוצאה מדויקת', icon: '🎯' },
   { key: 'correct_outcome_points_earned',      label: 'כיוון נכון',    icon: '✅' },
-  { key: 'both_teams_scored_points_earned',    label: 'BTTS',          icon: '⚽' },
+  { key: 'both_teams_scored_points_earned',    label: 'הקבוצות כובשות 2', icon: '⚽' },
   { key: 'goals_range_points_earned',          label: 'טווח שערים',   icon: '📊' },
 ];
 
