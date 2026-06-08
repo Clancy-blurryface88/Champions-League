@@ -140,7 +140,7 @@ function AnimatedDonut({ percentage, size = 64, outcomeType }) {
 const BREAKDOWN_ROWS = [
   { key: 'exact_score_points_earned',         label: 'תוצאה מדויקת', icon: '🎯' },
   { key: 'correct_outcome_points_earned',      label: 'כיוון נכון',    icon: '✅' },
-  { key: 'both_teams_scored_points_earned',    label: 'הקבוצות כובשות 2', icon: '⚽' },
+  { key: 'both_teams_scored_points_earned',    label: 'הקבוצות כובשות', suffix: '2', icon: '⚽' },
   { key: 'goals_range_points_earned',          label: 'טווח שערים',   icon: '📊' },
 ];
 
@@ -181,7 +181,10 @@ function ScoreBreakdownAnimated({ prediction, match, outcomeType }) {
             <span className={`text-xs font-bold tabular-nums ${pts > 0 ? c.text : 'text-slate-600'}`}>
               {pts > 0 ? `+${pts.toFixed(2)}` : '+0.00'}
             </span>
-            <span className="text-white/70 text-xs">{row.label}</span>
+            <span className="text-white/70 text-xs inline-flex items-center gap-1">
+                {row.suffix && <span>{row.suffix}</span>}
+                <span>{row.label}</span>
+              </span>
           </motion.div>
         );
       })}
