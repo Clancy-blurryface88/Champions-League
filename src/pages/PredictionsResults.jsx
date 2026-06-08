@@ -48,8 +48,8 @@ function AnimatedDonut({ percentage, size = 64, outcomeType }) {
     return () => clearTimeout(t);
   }, [percentage]);
 
-  // Traffic-light color based on score percentage
-  const color = percentage >= 70 ? '#22c55e' : percentage >= 40 ? '#f59e0b' : '#ef4444';
+  // Color by outcome: exact=green, correct=yellow, wrong=red
+  const color = (OUTCOME_COLORS[outcomeType] || OUTCOME_COLORS.default).hex;
 
   // Semicircle geometry: arc from 9 o'clock → 12 o'clock → 3 o'clock (top half)
   const R = 30, cx = 40, cy = 38;
