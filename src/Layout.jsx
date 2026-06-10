@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, UserStats } from "@/api/entities";
-import { Settings, LogOut, PlayCircle } from "lucide-react";
+import { Settings, LogOut, PlayCircle, Bell, BellOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MatchesByDateSheet from "./components/MatchesByDateSheet";
 import {
@@ -37,6 +37,9 @@ export default function Layout({ children, currentPageName }) {
   const [showSidebar, setShowSidebar] = useState(false);
   const [showYearlySummary, setShowYearlySummary] = useState(false); // NEW: State for YearlySummaryPanel
   const [showPushBanner, setShowPushBanner] = useState(false);
+  const [notifPermission, setNotifPermission] = useState(
+    typeof Notification !== 'undefined' ? Notification.permission : 'default'
+  );
   const [showDateSheet, setShowDateSheet] = useState(false);
   const [touchEndY, setTouchEndY] = useState(null);
   const navigate = useNavigate();
@@ -677,7 +680,44 @@ export default function Layout({ children, currentPageName }) {
 
         {/* User Info & Admin Button */}
         {user &&
-        <div className="fixed top-[44px] right-4 z-40 flex items-center gap-3">
+        <div className="fixed top-[44px] right-4 z-40 flex items-center gap-2">
+
+            {/* Notification Bell */}
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              onClick={async () => {
+                const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+                const isStandalone = window.navigator.standalone === true;
+                if (isIOS && !isStandalone) {
+                  setShowPushBanner(true);
+                  return;
+                }
+                if (notifPermission !== 'granted' && window.OneSignal) {
+                  try {
+                    await window.OneSignal.Notifications.requestPermission();
+                    if (typeof Notification !== 'undefined') {
+                      setNotifPermission(Notification.permission);
+                    }
+                  } catch (e) {}
+                }
+              }}
+              className="flex items-center justify-center rounded-full w-9 h-9 transition-all duration-200"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(8,20,50,0.55) 100%)',
+                border: `1px solid ${notifPermission === 'granted' ? 'rgba(245,197,24,0.6)' : 'rgba(255,255,255,0.15)'}`,
+                backdropFilter: 'blur(28px) saturate(1.6)',
+                WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
+                boxShadow: notifPermission === 'granted'
+                  ? 'inset 0 1px 0 rgba(255,255,255,0.25), 0 0 10px rgba(245,197,24,0.25)'
+                  : 'inset 0 1px 0 rgba(255,255,255,0.15)',
+              }}
+            >
+              {notifPermission === 'granted'
+                ? <Bell className="w-4 h-4" style={{ color: '#f5c518' }} />
+                : <BellOff className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.45)' }} />
+              }
+            </motion.button>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <motion.button
