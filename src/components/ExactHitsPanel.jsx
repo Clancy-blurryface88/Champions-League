@@ -145,14 +145,14 @@ export default function ExactHitsPanel({ onClose, user }) {
         style={{ background: 'rgba(5,10,20,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
 
         <div className="h-full flex flex-col overflow-hidden">
-          <div className="p-6 border-b border-white/10">
+          <div className="p-3 border-b border-white/10">
             <div className="flex items-start justify-between">
               <div className="flex flex-col w-full">
-                <div className="flex items-center gap-3">
-                  <img src={EXACT_HITS_ICON_URL} alt="Exact Hits" className="w-8 h-8 object-contain" />
-                  <h2 className="text-xl font-bold text-white">Exact Hits</h2>
+                <div className="flex items-center gap-2">
+                  <img src={EXACT_HITS_ICON_URL} alt="Exact Hits" className="w-6 h-6 object-contain" />
+                  <h2 className="text-lg font-bold text-white">Exact Hits</h2>
                 </div>
-                <div className="text-sm text-slate-300 mt-2 font-small whitespace-nowrap" dir="rtl">לחץ על משתתף לפרטים נוספים</div>
+                <div className="text-xs text-slate-400 mt-1 whitespace-nowrap" dir="rtl">לחץ על משתתף לפרטים נוספים</div>
               </div>
               <Button
                 variant="ghost"
@@ -164,17 +164,17 @@ export default function ExactHitsPanel({ onClose, user }) {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-2">
             {error &&
-            <div className="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-lg">
-                <p className="text-red-300 text-sm text-center">{error}</p>
+            <div className="mb-3 p-2 bg-red-900/50 border border-red-700 rounded-lg">
+                <p className="text-red-300 text-xs text-center">{error}</p>
               </div>
             }
-            
+
             {loading ?
-            <div className="space-y-3">
+            <div className="space-y-2">
                 {Array(5).fill(0).map((_, i) =>
-              <div key={i} className="h-16 bg-slate-800/50 rounded-2xl animate-pulse" />
+              <div key={i} className="h-10 bg-slate-800/50 rounded-xl animate-pulse" />
               )}
               </div> :
             participants.length === 0 ?
@@ -186,7 +186,7 @@ export default function ExactHitsPanel({ onClose, user }) {
                 </p>
               </div> :
 
-            <div className="space-y-3">
+            <div className="space-y-1.5">
                 {participants.map((participant, index) => {
                 const position = participant.position;
                 const isCurrentUser = participant.is_current_user;
@@ -220,15 +220,15 @@ export default function ExactHitsPanel({ onClose, user }) {
                       onMouseLeave={e => { e.currentTarget.style.transform = 'skewX(-6deg)'; e.currentTarget.style.boxShadow = 'none'; }}
                     >
                       {/* Ghost rank number */}
-                      <span style={{ position:'absolute', left:6, top:'50%', transform:'translateY(-50%) skewX(6deg)', fontSize:52, fontWeight:900, color:getRankColor(position), opacity:0.18, lineHeight:1, userSelect:'none', pointerEvents:'none' }}>
+                      <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%) skewX(6deg)', fontSize:36, fontWeight:900, color:getRankColor(position), opacity:0.18, lineHeight:1, userSelect:'none', pointerEvents:'none' }}>
                         {position}
                       </span>
                       {/* Counter-skewed content */}
-                      <div style={{ transform:'skewX(6deg)', padding:'8px 16px', textAlign:'center' }}>
-                        <p className="truncate" style={{ color:'#e2e8f0', fontSize:14, fontWeight:600, marginBottom:2 }}>
+                      <div style={{ transform:'skewX(6deg)', padding:'5px 12px', textAlign:'center' }}>
+                        <p className="truncate" style={{ color:'#e2e8f0', fontSize:12, fontWeight:600, marginBottom:1 }}>
                           {participant.full_name}
                         </p>
-                        <span style={{ color:'#4ade80', fontSize:12, fontWeight:700 }}>
+                        <span style={{ color:'#4ade80', fontSize:11, fontWeight:700 }}>
                           <SlidingNumber
                             number={participant.exact_hits_count}
                             className="text-base font-bold"
