@@ -88,7 +88,7 @@ function MatchCard({ match, index }) {
 
           {/* Score */}
           <div className="flex flex-col items-center flex-shrink-0 min-w-[64px]">
-            {hasScore ? (
+            {(hasScore || isLive) ? (
               <motion.div
                 className="flex items-center gap-1"
                 animate={isLive ? { opacity: [1, 0.75, 1] } : {}}
@@ -107,7 +107,7 @@ function MatchCard({ match, index }) {
                     backgroundClip: 'text',
                   }}
                 >
-                  {homeScore}
+                  {homeScore ?? 0}
                 </span>
                 <span className="text-white/30 text-lg font-light">–</span>
                 <span
@@ -123,7 +123,7 @@ function MatchCard({ match, index }) {
                     backgroundClip: 'text',
                   }}
                 >
-                  {awayScore}
+                  {awayScore ?? 0}
                 </span>
               </motion.div>
             ) : (
