@@ -177,10 +177,10 @@ export default function LeaderboardPanel({ onClose, user }) {
         style={{ background: 'rgba(5,10,20,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>
 
         <div className="h-full flex flex-col overflow-hidden">
-          <div className="p-6 border-b border-white/10">
+          <div className="p-3 border-b border-white/10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-bold text-yellow-400">Leaderboard</h2>
+                <h2 className="text-lg font-bold text-yellow-400">Leaderboard</h2>
               </div>
               <Button
                 variant="ghost"
@@ -193,7 +193,7 @@ export default function LeaderboardPanel({ onClose, user }) {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-2">
             {error &&
             <div className="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-lg">
                 <p className="text-red-300 text-sm text-center">{error}</p>
@@ -201,9 +201,9 @@ export default function LeaderboardPanel({ onClose, user }) {
             }
             
             {loading ?
-            <div className="space-y-3">
+            <div className="space-y-2">
                 {Array(5).fill(0).map((_, i) =>
-              <div key={i} className="h-16 bg-slate-800/50 rounded-2xl animate-pulse" />
+              <div key={i} className="h-10 bg-slate-800/50 rounded-xl animate-pulse" />
               )}
               </div> :
             participants.length === 0 ?
@@ -211,7 +211,7 @@ export default function LeaderboardPanel({ onClose, user }) {
                 <p className="text-slate-400 text-lg">אין משתתפים עדיין</p>
               </div> :
 
-            <div className="space-y-3">
+            <div className="space-y-1.5">
                 {(() => {
                 const totalParticipants = participants.length;
                 return participants.map((participant, index) => {
@@ -265,16 +265,16 @@ export default function LeaderboardPanel({ onClose, user }) {
                           onMouseLeave={e => { e.currentTarget.style.transform = 'skewX(-6deg)'; e.currentTarget.style.boxShadow = 'none'; }}
                         >
                           {/* Ghost rank number */}
-                          <span style={{ position:'absolute', left:18, top:'50%', transform:'translateY(-50%) skewX(6deg)', fontSize:52, fontWeight:900, color:getRankColor(position), opacity:0.18, lineHeight:1, userSelect:'none', pointerEvents:'none' }}>
+                          <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%) skewX(6deg)', fontSize:36, fontWeight:900, color:getRankColor(position), opacity:0.18, lineHeight:1, userSelect:'none', pointerEvents:'none' }}>
                             {position}
                           </span>
 
                           {/* Content — counter-skewed */}
-                          <div style={{ transform:'skewX(6deg)', padding:'8px 16px', textAlign:'center' }}>
-                            <p className="truncate" style={{ color:'#e2e8f0', fontSize:14, fontWeight:600, marginBottom:2 }}>
+                          <div style={{ transform:'skewX(6deg)', padding:'5px 12px', textAlign:'center' }}>
+                            <p className="truncate" style={{ color:'#e2e8f0', fontSize:12, fontWeight:600, marginBottom:1 }}>
                               {participant.full_name}
                             </p>
-                            <span style={{ color:'#4ade80', fontSize:12, fontWeight:700 }}>
+                            <span style={{ color:'#4ade80', fontSize:11, fontWeight:700 }}>
                               <ScoreCounter
                                 value={participant.total_points}
                                 duration={1.5}
