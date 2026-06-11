@@ -885,7 +885,7 @@ function PodiumStand({ entry, position, isCurrentUser, baseDelay = 0 }) {
   const rankBg     = position === 1 ? 'rgba(245,158,11,0.1)'   : position === 2 ? 'rgba(148,163,184,0.07)' : 'rgba(180,83,9,0.1)';
   const rankBorder = position === 1 ? 'rgba(245,158,11,0.3)'   : position === 2 ? 'rgba(148,163,184,0.2)'  : 'rgba(180,83,9,0.25)';
   const rankGlow   = position === 1 ? 'rgba(245,158,11,0.35)'  : position === 2 ? 'rgba(148,163,184,0.18)' : 'rgba(180,83,9,0.28)';
-  const heights    = { 1: 96, 2: 64, 3: 48 };
+  const heights    = { 1: 56, 2: 38, 3: 28 };
 
   if (!entry) return <div className="flex-1" />;
 
@@ -926,7 +926,7 @@ function PodiumStand({ entry, position, isCurrentUser, baseDelay = 0 }) {
         <span style={{
           position: 'absolute', inset: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 58, fontWeight: 900,
+          fontSize: 36, fontWeight: 900,
           color: rankColor, opacity: 0.15,
           lineHeight: 1, userSelect: 'none', pointerEvents: 'none',
         }}>
