@@ -1,4 +1,4 @@
-// Vercel Serverless Function — proxies api-football.com via RapidAPI
+// Vercel Serverless Function — proxies free-api-live-football-data via RapidAPI
 export default async function handler(req, res) {
   const { filter = 'LIVE' } = req.query;
 
@@ -10,28 +10,20 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Missing RAPIDAPI_KEY' });
   }
 
-  const HOST   = 'api-football-v1.p.rapidapi.com';
-  const LEAGUE = 1;     // FIFA World Cup
-  const SEASON = 2026;
-  const today  = new Date().toISOString().split('T')[0];
+  const HOST  = 'free-api-live-football-data.p.rapidapi.com';
+  const today = new Date().toISOString().split('T')[0].replace(/-/g, ''); // YYYYMMDD
 
   try {
-    let url;
-    if (filter === 'LIVE') {
-      url = `https://${HOST}/v3/fixtures?live=all&league=${LEAGUE}&season=${SEASON}`;
-    } else if (filter === 'FINISHED') {
-      url = `https://${HOST}/v3/fixtures?date=${today}&league=${LEAGUE}&season=${SEASON}&status=FT-AET-PEN`;
-    } else {
-      // TODAY — all matches for today
-      url = `https://${HOST}/v3/fixtures?date=${today}&league=${LEAGUE}&season=${SEASON}`;
-    }
+    const url = filter === 'LIVE'
+      ? `https://${HOST}/football-current-live`
+      : `https://${HOST}/football-get-matches-by-date?date=${today}`;
 
     console.log(`[football API] filter=${filter} url=${url}`);
 
     const response = await fetch(url, {
       headers: {
-        'X-RapidAPI-Key': apiKey,
-        'X-RapidAPI-Host': HOST,
+        'x-rapidapi-key':  apiKey,
+        'x-rapidapi-host': HOST,
       },
     });
 
@@ -43,34 +35,31 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // Transform api-football response → our internal format
-    const matches = (data.response || []).map(item => ({
-      id:      item.fixture.id,
-      utcDate: item.fixture.date,
-      status:  mapStatus(item.fixture.status.short),
-      minute:  item.fixture.status.elapsed,
-      homeTeam: {
-        name:  item.teams.home.name,
-        crest: item.teams.home.logo,
-      },
-      awayTeam: {
-        name:  item.teams.away.name,
-        crest: item.teams.away.logo,
-      },
-      score: {
-        fullTime: {
-          home: item.goals.home,
-          away: item.goals.away,
-        },
-        halfTime: {
-          home: item.score?.halftime?.home ?? null,
-          away: item.score?.halftime?.away ?? null,
-        },
-      },
-    }));
+    // Extract matches array — try different possible response shapes
+    const raw = data.response?.live
+      || data.response?.matches
+      || data.response
+      || data.result
+      || data.matches
+      || [];
 
-    console.log(`[football API] returned ${matches.length} matches`);
-    return res.status(200).json({ success: true, matches });
+    const rawArray = Array.isArray(raw) ? raw : Object.values(raw);
+
+    const matches = rawArray.map(transformMatch).filter(Boolean);
+
+    // Filter for FINISHED tab
+    const result = filter === 'FINISHED'
+      ? matches.filter(m => m.status === 'FINISHED')
+      : matches;
+
+    console.log(`[football API] returning ${result.length} matches`);
+
+    // Include _debug on first call to help identify response shape
+    return res.status(200).json({
+      success: true,
+      matches: result,
+      _debug: { keys: Object.keys(data), rawLength: rawArray.length },
+    });
 
   } catch (err) {
     console.error(`[football API] exception: ${err.message}`);
@@ -78,9 +67,64 @@ export default async function handler(req, res) {
   }
 }
 
-function mapStatus(short) {
-  if (['1H', '2H', 'ET', 'BT', 'P', 'INT', 'LIVE'].includes(short)) return 'IN_PLAY';
-  if (short === 'HT') return 'PAUSED';
-  if (['FT', 'AET', 'PEN', 'AWD', 'WO'].includes(short)) return 'FINISHED';
+function transformMatch(m) {
+  if (!m) return null;
+
+  // ── Shape A: api-football style (fixture/teams/goals) ──────────────────────
+  if (m.fixture) {
+    return {
+      id:      m.fixture.id,
+      utcDate: m.fixture.date,
+      status:  mapStatusShort(m.fixture.status?.short),
+      minute:  m.fixture.status?.elapsed ?? null,
+      homeTeam: { name: m.teams?.home?.name, crest: m.teams?.home?.logo },
+      awayTeam: { name: m.teams?.away?.name, crest: m.teams?.away?.logo },
+      score: {
+        fullTime: { home: m.goals?.home,              away: m.goals?.away },
+        halfTime: { home: m.score?.halftime?.home ?? null, away: m.score?.halftime?.away ?? null },
+      },
+    };
+  }
+
+  // ── Shape B: match_hometeam_name style ─────────────────────────────────────
+  const homeScore = m.match_hometeam_score !== '' && m.match_hometeam_score != null
+    ? parseInt(m.match_hometeam_score) : null;
+  const awayScore = m.match_awayteam_score !== '' && m.match_awayteam_score != null
+    ? parseInt(m.match_awayteam_score) : null;
+
+  return {
+    id:      m.match_id || m.id,
+    utcDate: m.match_date ? `${m.match_date}T${m.match_time || '00:00'}:00Z` : null,
+    status:  mapStatusString(m.match_status || m.status),
+    minute:  /^\d+$/.test(String(m.match_status)) ? parseInt(m.match_status) : (m.match_elapsed ?? null),
+    homeTeam: {
+      name:  m.match_hometeam_name  || m.homeTeam?.name,
+      crest: m.team_home_badge      || m.homeTeam?.logo,
+    },
+    awayTeam: {
+      name:  m.match_awayteam_name  || m.awayTeam?.name,
+      crest: m.team_away_badge      || m.awayTeam?.logo,
+    },
+    score: {
+      fullTime: { home: homeScore, away: awayScore },
+      halfTime: { home: null,      away: null },
+    },
+  };
+}
+
+function mapStatusShort(s) {
+  if (!s) return 'TIMED';
+  if (['1H','2H','ET','BT','P','INT','LIVE'].includes(s)) return 'IN_PLAY';
+  if (s === 'HT') return 'PAUSED';
+  if (['FT','AET','PEN','AWD','WO'].includes(s)) return 'FINISHED';
+  return 'TIMED';
+}
+
+function mapStatusString(s) {
+  if (!s) return 'TIMED';
+  const str = String(s).trim();
+  if (/^\d+$/.test(str) && parseInt(str) > 0) return 'IN_PLAY';
+  if (str === 'HT') return 'PAUSED';
+  if (['FT','AET','Finished','FINISHED','FT_PEN'].includes(str)) return 'FINISHED';
   return 'TIMED';
 }
