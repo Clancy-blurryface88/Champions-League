@@ -48,6 +48,12 @@ export default async function handler(req, res) {
 
     const rawArray = Array.isArray(raw) ? raw : Object.values(raw);
 
+    // Log first match structure to identify field names
+    if (rawArray.length > 0) {
+      console.log(`[football API] first match keys: ${Object.keys(rawArray[0]).join(', ')}`);
+      console.log(`[football API] first match sample: ${JSON.stringify(rawArray[0]).slice(0, 400)}`);
+    }
+
     const matches = rawArray.map(transformMatch).filter(Boolean);
 
     // Filter for FINISHED tab
