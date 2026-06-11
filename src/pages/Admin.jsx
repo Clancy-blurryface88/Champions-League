@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, Percent } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, Percent, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
 import AdminMatches from "../components/admin/AdminMatches";
@@ -17,6 +17,7 @@ import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminPercentageDemos from "../components/admin/AdminPercentageDemos";
+import AdminTitleEffectDemos from "../components/admin/AdminTitleEffectDemos";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -77,6 +78,7 @@ export default function Admin() {
       case 'import': return <AdminImportMatches />;
       case 'reset':      return <AdminReset />;
       case 'pct-demos': return <AdminPercentageDemos />;
+      case 'title-effects': return <AdminTitleEffectDemos />;
 default: return <AdminRounds />;
     }
   };
@@ -93,6 +95,7 @@ default: return <AdminRounds />;
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',       label: 'Reset Center',   icon: RotateCcw },
     { id: 'pct-demos',  label: '% Demos (50)',    icon: Percent },
+    { id: 'title-effects', label: 'Title Effects (25)', icon: Type },
   ];
 
   return (
