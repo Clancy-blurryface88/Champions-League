@@ -34,7 +34,6 @@ export default function MatchTickerBar({ onClick }) {
   if (matches.length === 0) return null;
 
   const single = matches.length === 1;
-  const items = single ? matches : [...matches, ...matches];
 
   const MatchItem = ({ match, i }) => {
     const time = new Date(match.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
@@ -85,16 +84,16 @@ export default function MatchTickerBar({ onClick }) {
           <MatchItem match={matches[0]} i={0} />
         </div>
       ) : (
-        /* Multiple matches — scrolling loop */
+        /* Multiple matches — scrolling, no duplication */
         <div className="flex-1 overflow-hidden h-full relative" dir="ltr">
           <div
             className="ticker-track"
-            style={{ display: 'flex', alignItems: 'center', height: '100%', gap: '20px', paddingLeft: '12px', width: 'max-content' }}
+            style={{ position: 'absolute', top: 0, display: 'flex', alignItems: 'center', height: '100%', gap: '20px', whiteSpace: 'nowrap' }}
           >
-            {items.map((match, i) => (
+            {matches.map((match, i) => (
               <React.Fragment key={`${match.id}-${i}`}>
                 <MatchItem match={match} i={i} />
-                <span className="text-slate-600 text-xs mx-1">|</span>
+                {i < matches.length - 1 && <span className="text-slate-600 text-xs mx-1">|</span>}
               </React.Fragment>
             ))}
           </div>
@@ -104,11 +103,11 @@ export default function MatchTickerBar({ onClick }) {
       <style>{`
         .ticker-track {
           animation: ticker-scroll linear infinite;
-          animation-duration: ${Math.max(matches.length * 8, 16)}s;
+          animation-duration: ${Math.max(matches.length * 10, 20)}s;
         }
         @keyframes ticker-scroll {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+          from { transform: translateX(100vw); }
+          to   { transform: translateX(-100%); }
         }
         .ticker-track:hover {
           animation-play-state: paused;
