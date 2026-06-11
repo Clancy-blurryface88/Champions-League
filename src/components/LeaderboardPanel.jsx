@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PublicProfile } from "@/api/entities";
 import { User } from "@/api/entities";
 import { UserStats } from "@/api/entities";
-import ScoreCounter from "./ScoreCounter";
+import BlurScoreCounter from "./BlurScoreCounter";
 import PlayerStatsModal from "./PlayerStatsModal";
 
 const LEADERBOARD_ICON_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/a99a73381_image.png";
@@ -275,7 +275,7 @@ export default function LeaderboardPanel({ onClose, user }) {
                               {participant.full_name}
                             </p>
                             <span style={{ color:'#4ade80', fontSize:12, fontWeight:700 }}>
-                              <ScoreCounter
+                              <BlurScoreCounter
                                 value={participant.total_points}
                                 duration={1.5}
                                 delay={scoreAnimationDelay}
