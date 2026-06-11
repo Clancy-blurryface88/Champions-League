@@ -1,4 +1,4 @@
-// Vercel Serverless Function — proxies free-api-live-football-data via RapidAPI
+// Vercel Serverless Function — proxies free-api-live-football-data via RapidAPI v2
 export default async function handler(req, res) {
   const { filter = 'LIVE' } = req.query;
 
@@ -9,6 +9,9 @@ export default async function handler(req, res) {
   if (!apiKey) {
     return res.status(500).json({ error: 'Missing RAPIDAPI_KEY' });
   }
+
+  // Debug: log first/last 4 chars of key to verify correct key is loaded
+  console.log(`[football API] key=${apiKey.slice(0,4)}...${apiKey.slice(-4)} len=${apiKey.length}`);
 
   const HOST  = 'free-api-live-football-data.p.rapidapi.com';
   const today = new Date().toISOString().split('T')[0].replace(/-/g, ''); // YYYYMMDD
