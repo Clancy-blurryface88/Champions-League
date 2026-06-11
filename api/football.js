@@ -17,8 +17,9 @@ export default async function handler(req, res) {
       const today = new Date().toISOString().split('T')[0];
       url = `https://api.football-data.org/v4/competitions/${competition}/matches?dateFrom=${today}&dateTo=${today}`;
     } else if (filter === 'LIVE') {
-      // Fetch both IN_PLAY and PAUSED explicitly — free tier sometimes misses the LIVE shorthand
-      url = `https://api.football-data.org/v4/competitions/${competition}/matches?status=IN_PLAY,PAUSED`;
+      // Free tier doesn't update status in real-time — fetch today's matches and infer live by time
+      const today = new Date().toISOString().split('T')[0];
+      url = `https://api.football-data.org/v4/competitions/${competition}/matches?dateFrom=${today}&dateTo=${today}`;
     } else {
       url = `https://api.football-data.org/v4/competitions/${competition}/matches?status=${filter}`;
     }
@@ -36,8 +37,32 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    console.log(`[football API] returned ${data.matches?.length ?? 0} matches`);
-    return res.status(200).json({ success: true, matches: data.matches || [] });
+    let matches = data.matches || [];
+
+    // For LIVE filter: infer live status by time since free tier has delayed status updates
+    if (filter === 'LIVE') {
+      const now = new Date();
+      const MATCH_DURATION_MS = 110 * 60 * 1000; // 110 minutes covers 90min + extra time
+      matches = matches
+        .filter(m => {
+          const start = new Date(m.utcDate);
+          const isDone = ['FINISHED', 'AWARDED', 'CANCELLED', 'POSTPONED', 'SUSPENDED'].includes(m.status);
+          const hasStarted = now >= start;
+          const likelyStillPlaying = now - start < MATCH_DURATION_MS;
+          return m.status === 'IN_PLAY' || m.status === 'PAUSED' || (!isDone && hasStarted && likelyStillPlaying);
+        })
+        .map(m => {
+          // Override status to IN_PLAY if we inferred it from time
+          if (m.status !== 'IN_PLAY' && m.status !== 'PAUSED') {
+            const minutesElapsed = Math.floor((new Date() - new Date(m.utcDate)) / 60000);
+            return { ...m, status: 'IN_PLAY', minute: minutesElapsed };
+          }
+          return m;
+        });
+    }
+
+    console.log(`[football API] returned ${matches.length} matches`);
+    return res.status(200).json({ success: true, matches });
   } catch (err) {
     console.error(`[football API] exception: ${err.message}`);
     return res.status(500).json({ error: err.message });
