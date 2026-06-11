@@ -10,7 +10,9 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Missing FOOTBALL_DATA_API_KEY' });
   }
 
-  const today = new Date().toISOString().split('T')[0];
+  // Use client-supplied date (local timezone) or fall back to UTC
+  const { date: clientDate } = req.query;
+  const today = clientDate || new Date().toISOString().split('T')[0];
 
   try {
     let url;

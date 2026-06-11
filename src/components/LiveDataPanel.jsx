@@ -162,7 +162,8 @@ export default function LiveDataPanel({ onClose }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/football?competition=WC&filter=${filter}`);
+      const localDate = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD in local timezone
+      const res = await fetch(`/api/football?competition=WC&filter=${filter}&date=${localDate}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'שגיאה');
       setMatches(json.matches || []);
