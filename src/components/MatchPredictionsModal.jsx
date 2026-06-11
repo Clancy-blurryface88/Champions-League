@@ -113,7 +113,7 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="p-0 fixed left-[50%] top-[3%] z-50 translate-x-[-50%] shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-3xl max-w-sm w-full max-h-[94vh] overflow-hidden flex flex-col [&>button:last-child]:hidden border-0"
+        className="p-0 fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-3xl max-w-sm w-full max-h-[85vh] overflow-hidden flex flex-col [&>button:last-child]:hidden border-0"
         style={{
           background: 'rgba(5, 10, 25, 0.72)',
           backdropFilter: 'blur(40px) saturate(1.8)',
