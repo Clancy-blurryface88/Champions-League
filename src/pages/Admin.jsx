@@ -17,6 +17,7 @@ import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminScoreCounterDemos from "../components/admin/AdminScoreCounterDemos";
+import AdminScoreCounterDemos2 from "../components/admin/AdminScoreCounterDemos2";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -77,6 +78,7 @@ export default function Admin() {
       case 'import': return <AdminImportMatches />;
       case 'reset':      return <AdminReset />;
       case 'score-demos': return <AdminScoreCounterDemos />;
+      case 'score-demos2': return <AdminScoreCounterDemos2 />;
 default: return <AdminRounds />;
     }
   };
@@ -92,7 +94,8 @@ default: return <AdminRounds />;
     { id: 'live-data', label: 'Live Data Test', icon: BarChart3 },
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',       label: 'Reset Center',   icon: RotateCcw },
-    { id: 'score-demos', label: 'Score Demos (30)', icon: Hash },
+    { id: 'score-demos',  label: 'Score Demos (30)', icon: Hash },
+    { id: 'score-demos2', label: 'Blur Demos (25)',  icon: Hash },
   ];
 
   return (
