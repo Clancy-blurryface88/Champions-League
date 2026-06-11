@@ -33,8 +33,25 @@ export default function MatchTickerBar({ onClick }) {
 
   if (matches.length === 0) return null;
 
-  // always duplicate for seamless loop
-  const items = [...matches, ...matches];
+  const single = matches.length === 1;
+  const items = single ? matches : [...matches, ...matches];
+
+  const MatchItem = ({ match, i }) => {
+    const time = new Date(match.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+    return (
+      <div key={`${match.id}-${i}`} className="flex items-center gap-1.5 flex-shrink-0" dir="ltr">
+        <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-4 h-4" />
+        <span className="text-white text-xs font-medium">{match.team_a}</span>
+        {match.is_finished ? (
+          <span className="text-amber-400 text-xs font-bold mx-0.5">{match.actual_score_a ?? '-'} - {match.actual_score_b ?? '-'}</span>
+        ) : (
+          <span className="text-slate-400 text-xs mx-0.5">{time}</span>
+        )}
+        <span className="text-white text-xs font-medium">{match.team_b}</span>
+        <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-4 h-4" />
+      </div>
+    );
+  };
 
   return (
     <div
@@ -62,31 +79,27 @@ export default function MatchTickerBar({ onClick }) {
         <span style={{ color: '#fbbf24', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>{dateLabel}</span>
       </div>
 
-      {/* Scrolling matches */}
-      <div className="flex-1 overflow-hidden h-full relative" dir="ltr">
-        <div
-          className="ticker-track"
-          style={{ display: 'flex', alignItems: 'center', height: '100%', gap: '20px', paddingLeft: '12px', width: 'max-content' }}
-        >
-          {items.map((match, i) => {
-            const time = new Date(match.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
-            return (
-              <div key={`${match.id}-${i}`} className="flex items-center gap-1.5 flex-shrink-0" dir="ltr">
-                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-4 h-4" />
-                <span className="text-white text-xs font-medium">{match.team_a}</span>
-                {match.is_finished ? (
-                  <span className="text-amber-400 text-xs font-bold mx-0.5">{match.actual_score_a ?? '-'} - {match.actual_score_b ?? '-'}</span>
-                ) : (
-                  <span className="text-slate-400 text-xs mx-0.5">{time}</span>
-                )}
-                <span className="text-white text-xs font-medium">{match.team_b}</span>
-                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-4 h-4" />
-                <span className="text-slate-600 text-xs mx-1">|</span>
-              </div>
-            );
-          })}
+      {/* Single match — centered, no animation */}
+      {single ? (
+        <div className="flex-1 flex items-center justify-center h-full px-3">
+          <MatchItem match={matches[0]} i={0} />
         </div>
-      </div>
+      ) : (
+        /* Multiple matches — scrolling loop */
+        <div className="flex-1 overflow-hidden h-full relative" dir="ltr">
+          <div
+            className="ticker-track"
+            style={{ display: 'flex', alignItems: 'center', height: '100%', gap: '20px', paddingLeft: '12px', width: 'max-content' }}
+          >
+            {items.map((match, i) => (
+              <React.Fragment key={`${match.id}-${i}`}>
+                <MatchItem match={match} i={i} />
+                <span className="text-slate-600 text-xs mx-1">|</span>
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+      )}
 
       <style>{`
         .ticker-track {
