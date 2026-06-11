@@ -265,16 +265,16 @@ export default function LeaderboardPanel({ onClose, user }) {
                           onMouseLeave={e => { e.currentTarget.style.transform = 'skewX(-6deg)'; e.currentTarget.style.boxShadow = 'none'; }}
                         >
                           {/* Ghost rank number */}
-                          <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%) skewX(6deg)', fontSize:36, fontWeight:900, color:getRankColor(position), opacity:0.18, lineHeight:1, userSelect:'none', pointerEvents:'none' }}>
+                          <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%) skewX(6deg)', fontSize:38, fontWeight:900, color:getRankColor(position), opacity:0.18, lineHeight:1, userSelect:'none', pointerEvents:'none' }}>
                             {position}
                           </span>
 
                           {/* Content — counter-skewed */}
-                          <div style={{ transform:'skewX(6deg)', padding:'5px 12px', textAlign:'center' }}>
-                            <p className="truncate" style={{ color:'#e2e8f0', fontSize:12, fontWeight:600, marginBottom:1 }}>
+                          <div style={{ transform:'skewX(6deg)', padding:'5px 13px', textAlign:'center' }}>
+                            <p className="truncate" style={{ color:'#e2e8f0', fontSize:13, fontWeight:600, marginBottom:1 }}>
                               {participant.full_name}
                             </p>
-                            <span style={{ color:'#4ade80', fontSize:11, fontWeight:700 }}>
+                            <span style={{ color:'#4ade80', fontSize:12, fontWeight:700 }}>
                               <ScoreCounter
                                 value={participant.total_points}
                                 duration={1.5}
