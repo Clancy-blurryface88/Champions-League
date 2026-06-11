@@ -1211,7 +1211,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {sortedPredictions.map((prediction, index) => {
         const outcomeStatus = getOutcomeStatus(prediction, match);
         const isExpanded = expandedPrediction === prediction.id;
@@ -1283,12 +1283,12 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
             )}
 
             {/* פרטי הניחוש הבסיסיים */}
-            <div className="p-3">
+            <div className="py-2 px-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={() => setExpandedPrediction(isExpanded ? null : prediction.id)}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-opacity hover:opacity-70 flex-shrink-0"
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-opacity hover:opacity-70 flex-shrink-0"
                     style={rankStyle}>
                     {index + 1}
                   </button>
