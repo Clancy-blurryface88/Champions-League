@@ -5,6 +5,7 @@ import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
 import AdminMatches from "../components/admin/AdminMatches";
@@ -16,6 +17,7 @@ import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
+import AdminSpecialPredictionsDemo from "../components/admin/AdminSpecialPredictionsDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -75,6 +77,7 @@ export default function Admin() {
       case 'live-data': return <AdminLiveData />;
       case 'import': return <AdminImportMatches />;
       case 'reset':      return <AdminReset />;
+      case 'special-demo': return <AdminSpecialPredictionsDemo />;
 default: return <AdminRounds />;
     }
   };
@@ -89,7 +92,8 @@ default: return <AdminRounds />;
     { id: 'scoring', label: 'Calculate Scores', icon: Calculator },
     { id: 'live-data', label: 'Live Data Test', icon: BarChart3 },
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
-    { id: 'reset',       label: 'Reset Center',   icon: RotateCcw },
+    { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
+    { id: 'special-demo', label: 'Special Picks Demo', icon: Trophy },
   ];
 
   return (
