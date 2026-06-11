@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PublicProfile } from "@/api/entities";
 import { User } from "@/api/entities";
 import { UserStats } from "@/api/entities";
-import BlurScoreCounter from "./BlurScoreCounter";
+import ScoreCounter from "./ScoreCounter";
 import PlayerStatsModal from "./PlayerStatsModal";
 
 const LEADERBOARD_ICON_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/a99a73381_image.png";
@@ -271,11 +271,15 @@ export default function LeaderboardPanel({ onClose, user }) {
 
                           {/* Content — counter-skewed */}
                           <div style={{ transform:'skewX(6deg)', padding:'5px 13px', textAlign:'center' }}>
-                            <p className="truncate" style={{ color:'#e2e8f0', fontSize:13, fontWeight:600, marginBottom:1 }}>
+                            <p className="truncate" style={{
+                              color:'#e2e8f0', fontSize:13, fontWeight:600, marginBottom:1,
+                              animation: `lb-blur-focus 1.2s ease-out both`,
+                              animationDelay: `${cardAnimationDelay}s`,
+                            }}>
                               {participant.full_name}
                             </p>
                             <span style={{ color:'#4ade80', fontSize:12, fontWeight:700 }}>
-                              <BlurScoreCounter
+                              <ScoreCounter
                                 value={participant.total_points}
                                 duration={1.5}
                                 delay={scoreAnimationDelay}
@@ -294,7 +298,12 @@ export default function LeaderboardPanel({ onClose, user }) {
           </div>
         </div>
 
-        {/* הוספת סטיילים לאפקט Shiny עם צבע זהב */}
+        <style>{`
+          @keyframes lb-blur-focus {
+            from { filter: blur(10px); opacity: 0.2; }
+            to   { filter: blur(0px);  opacity: 1;   }
+          }
+        `}</style>
         <PlayerStatsModal 
           isOpen={isModalOpen} 
           onClose={() => setIsModalOpen(false)} 
