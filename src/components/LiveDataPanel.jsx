@@ -25,7 +25,7 @@ function StatusBadge({ status, minute }) {
     <div className="flex items-center gap-1.5">
       <span className={`w-1.5 h-1.5 rounded-full ${s.dot} ${s.pulse ? 'animate-pulse' : ''}`} />
       <span className={`text-[10px] font-bold tracking-widest uppercase ${s.text}`}>
-        {s.label}{minute && (status === 'IN_PLAY' || status === 'PAUSED') ? ` ${minute}'` : ''}
+        {s.label}{minute != null && (status === 'IN_PLAY' || status === 'PAUSED') ? ` ${minute}'` : ''}
       </span>
     </div>
   );
@@ -128,6 +128,12 @@ function MatchCard({ match, index }) {
               </motion.div>
             ) : (
               <span className="text-white/20 text-lg font-bold">vs</span>
+            )}
+            {/* Minute indicator */}
+            {isLive && match.minute != null && (
+              <span className="text-[10px] font-bold text-emerald-400/80 mt-0.5 tabular-nums">
+                {match.minute}'
+              </span>
             )}
           </div>
 
