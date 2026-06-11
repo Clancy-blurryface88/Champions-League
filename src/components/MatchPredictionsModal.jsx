@@ -5,7 +5,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Prediction } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock } from "lucide-react";
+import { Lock, ChevronRight } from "lucide-react";
 import { useModalBackButton } from "@/hooks/useModalBackButton";
 
 // ── Slot digit ────────────────────────────────────────────────────────────────
@@ -124,56 +124,47 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
         {/* Top gradient line */}
         <div className="h-px w-full bg-gradient-to-r from-transparent via-amber-400/70 to-transparent flex-shrink-0" />
 
-        {/* Back button */}
-        <div className="px-5 pt-4 pb-0 flex-shrink-0">
+        {/* Compact header: back arrow + match info */}
+        <div className="px-3 pt-3 pb-2 flex items-center gap-2 flex-shrink-0">
+          {/* Back arrow icon */}
           <button
             onClick={onClose}
-            className="w-full py-2.5 rounded-2xl text-sm font-medium transition-colors tracking-wide"
-            style={{
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: 'rgba(255,255,255,0.45)',
-            }}
+            className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl transition-colors"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.5)' }}
           >
-            חזרה לדף הקודם
+            <ChevronRight className="w-4 h-4" />
           </button>
-        </div>
 
-        {/* Match area — blue-gold gradient border */}
-        <div className="px-5 pt-4 pb-2 flex-shrink-0">
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(59,130,246,0.6) 0%, rgba(245,197,24,0.6) 100%)',
-            borderRadius: 20,
-            padding: 1.5,
+          {/* Match info row */}
+          <div className="flex-1" style={{
+            background: 'linear-gradient(135deg, rgba(59,130,246,0.55) 0%, rgba(245,197,24,0.55) 100%)',
+            borderRadius: 14,
+            padding: 1,
           }}>
             <div
-              className="rounded-[18px] px-5 py-4 flex items-center justify-between"
+              className="flex items-center justify-between px-3 py-2 rounded-[13px]"
               style={{ background: 'rgba(6,12,30,0.92)' }}
             >
               {/* Team A */}
-              <div className="flex flex-col items-center gap-2 flex-1">
-                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" />
-                <span className="text-white text-xs font-semibold text-center leading-tight">{match.team_a}</span>
-                <span className="text-white/65 text-[10px] font-medium">בית</span>
+              <div className="flex items-center gap-1.5 flex-1">
+                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-8 h-8" />
+                <span className="text-white text-xs font-semibold leading-tight">{match.team_a}</span>
               </div>
 
               {/* VS */}
-              <div className="flex flex-col items-center gap-1 px-3">
-                <span className="text-amber-400 font-bold text-base tracking-[0.2em]">VS</span>
-              </div>
+              <span className="text-amber-400 font-bold text-xs tracking-[0.2em] px-2 flex-shrink-0">VS</span>
 
               {/* Team B */}
-              <div className="flex flex-col items-center gap-2 flex-1">
-                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" />
-                <span className="text-white text-xs font-semibold text-center leading-tight">{match.team_b}</span>
-                <span className="text-white/65 text-[10px] font-medium">חוץ</span>
+              <div className="flex items-center gap-1.5 flex-1 justify-end">
+                <span className="text-white text-xs font-semibold leading-tight text-right">{match.team_b}</span>
+                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-8 h-8" />
               </div>
             </div>
           </div>
         </div>
 
         {/* Divider */}
-        <div className="flex items-center gap-3 px-5 py-3 flex-shrink-0">
+        <div className="flex items-center gap-3 px-5 py-2 flex-shrink-0">
           <div className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-400/50" />
           <span className="text-amber-400/70 text-[10px] uppercase tracking-[0.2em] font-semibold">ניחושים</span>
           <div className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-400/50" />
