@@ -111,8 +111,9 @@ function LiveLBTab() {
   const [liveInfo, setLiveInfo]           = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [lastUpdate, setLastUpdate]       = useState(null);
-  const hasShownInitial = useRef(false);
-  const dbRef           = useRef(null);
+  const hasShownInitial  = useRef(false);
+  const officialRankMap  = useRef({}); // userId → officialRank, set once from Phase 1
+  const dbRef            = useRef(null);
 
   const getName = useCallback(uid => {
     const profiles = dbRef.current?.profiles || [];
@@ -139,7 +140,11 @@ function LiveLBTab() {
           total: parseFloat((s.total_points || 0).toFixed(2)),
         }));
         official.sort((a, b) => b.total - a.total);
-        official.forEach((r, i) => { r.liveRank = i + 1; r.officialRank = i + 1; });
+        official.forEach((r, i) => {
+          r.liveRank = i + 1;
+          r.officialRank = i + 1;
+          officialRankMap.current[r.userId] = i + 1;
+        });
         hasShownInitial.current = true;
         setIsInitialLoad(true);   // reveal animation
         setRows(official);
@@ -191,9 +196,8 @@ function LiveLBTab() {
           built.push({ userId: s.user_id, name: getName(s.user_id), confirmed: parseFloat((s.total_points || 0).toFixed(2)), liveBonus: 0, total: parseFloat((s.total_points || 0).toFixed(2)), predicted: null });
       });
       built.sort((a, b) => b.total - a.total);
-      const byConf = [...built].sort((a, b) => b.confirmed - a.confirmed);
-      byConf.forEach((r, i) => { r.officialRank = i + 1; });
       built.forEach((r, i) => { r.liveRank = i + 1; });
+      built.forEach(r => { r.officialRank = officialRankMap.current[r.userId] ?? r.liveRank; });
 
       setIsInitialLoad(false);  // smooth reorder only, no re-reveal
       setRows(built);
