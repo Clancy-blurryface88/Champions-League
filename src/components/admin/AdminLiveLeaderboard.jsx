@@ -3,7 +3,7 @@ import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { UserStats } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
-import { RefreshCw, Zap, Trophy, AlertTriangle } from "lucide-react";
+import { RefreshCw, Zap, Trophy, AlertTriangle, Wifi, WifiOff } from "lucide-react";
 
 // Copied from AdminScoring — no changes to original
 function calculateScore(prediction, match) {
@@ -16,13 +16,8 @@ function calculateScore(prediction, match) {
   const actualA = match.actual_score_a;
   const actualB = match.actual_score_b;
 
-  let totalPoints = 0;
-  let exactScorePoints = 0;
-  let outcomePoints = 0;
-  let bttsPoints = 0;
-  let goalRangePoints = 0;
+  let totalPoints = 0, exactScorePoints = 0, outcomePoints = 0, bttsPoints = 0, goalRangePoints = 0;
 
-  // 1. exact score
   if (predictedA === actualA && predictedB === actualB) {
     if (match.score_odds) {
       const key = `${actualA}-${actualB}`;
@@ -33,7 +28,6 @@ function calculateScore(prediction, match) {
     totalPoints += exactScorePoints;
   }
 
-  // 2. correct outcome
   const predictedOutcome = predictedA > predictedB ? 'home' : predictedA < predictedB ? 'away' : 'draw';
   const actualOutcome    = actualA    > actualB    ? 'home' : actualA    < actualB    ? 'away' : 'draw';
   if (predictedOutcome === actualOutcome) {
@@ -43,7 +37,6 @@ function calculateScore(prediction, match) {
     totalPoints += outcomePoints;
   }
 
-  // 3. BTTS
   const actualBTTS    = actualA    > 0 && actualB    > 0;
   const predictedBTTS = predictedA > 0 && predictedB > 0;
   if (predictedBTTS === actualBTTS) {
@@ -51,42 +44,45 @@ function calculateScore(prediction, match) {
     totalPoints += bttsPoints;
   }
 
-  // 4. goals range
-  const totalGoals = actualA + actualB;
-  const actualRange    = totalGoals <= 2 ? '0-2' : totalGoals <= 4 ? '3-4' : '5+';
+  const totalGoals     = actualA + actualB;
   const predTotalGoals = predictedA + predictedB;
+  const actualRange    = totalGoals     <= 2 ? '0-2' : totalGoals     <= 4 ? '3-4' : '5+';
   const predictedRange = predTotalGoals <= 2 ? '0-2' : predTotalGoals <= 4 ? '3-4' : '5+';
   if (predictedRange === actualRange) {
-    if      (actualRange === '0-2') goalRangePoints = match.goals_0_2_points || 0;
-    else if (actualRange === '3-4') goalRangePoints = match.goals_3_4_points || 0;
+    if      (actualRange === '0-2') goalRangePoints = match.goals_0_2_points  || 0;
+    else if (actualRange === '3-4') goalRangePoints = match.goals_3_4_points  || 0;
     else                            goalRangePoints = match.goals_5_plus_points || 0;
     totalPoints += goalRangePoints;
   }
 
   return {
-    totalPoints:     parseFloat(totalPoints.toFixed(2)),
+    totalPoints:      parseFloat(totalPoints.toFixed(2)),
     exactScorePoints: parseFloat(exactScorePoints.toFixed(2)),
-    outcomePoints:   parseFloat(outcomePoints.toFixed(2)),
-    bttsPoints:      parseFloat(bttsPoints.toFixed(2)),
-    goalRangePoints: parseFloat(goalRangePoints.toFixed(2)),
+    outcomePoints:    parseFloat(outcomePoints.toFixed(2)),
+    bttsPoints:       parseFloat(bttsPoints.toFixed(2)),
+    goalRangePoints:  parseFloat(goalRangePoints.toFixed(2)),
   };
 }
 
 const MEDAL = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
 export default function AdminLiveLeaderboard() {
-  const [matches,      setMatches]      = useState([]);
-  const [profiles,     setProfiles]     = useState([]);
-  const [userStats,    setUserStats]    = useState([]);
-  const [predictions,  setPredictions]  = useState([]);
+  const [matches,         setMatches]         = useState([]);
+  const [profiles,        setProfiles]        = useState([]);
+  const [userStats,       setUserStats]       = useState([]);
+  const [predictions,     setPredictions]     = useState([]);
   const [selectedMatchId, setSelectedMatchId] = useState('');
-  const [scoreA,       setScoreA]       = useState(0);
-  const [scoreB,       setScoreB]       = useState(0);
-  const [leaderboard,  setLeaderboard]  = useState(null);
-  const [loading,      setLoading]      = useState(true);
-  const [calculating,  setCalculating]  = useState(false);
+  const [scoreA,          setScoreA]          = useState(0);
+  const [scoreB,          setScoreB]          = useState(0);
+  const [leaderboard,     setLeaderboard]     = useState(null);
+  const [loading,         setLoading]         = useState(true);
+  const [calculating,     setCalculating]     = useState(false);
 
-  // load base data once
+  // live API state
+  const [liveMatches,     setLiveMatches]     = useState([]);
+  const [liveLoading,     setLiveLoading]     = useState(false);
+  const [liveError,       setLiveError]       = useState(null);
+
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -108,6 +104,28 @@ export default function AdminLiveLeaderboard() {
     })();
   }, []);
 
+  const fetchLive = useCallback(async () => {
+    setLiveLoading(true);
+    setLiveError(null);
+    try {
+      const localDate = new Date().toLocaleDateString('sv-SE');
+      const res  = await fetch(`/api/football?competition=WC&filter=LIVE&date=${localDate}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'שגיאה');
+      setLiveMatches(json.matches || []);
+    } catch (e) {
+      setLiveError(e.message);
+    }
+    setLiveLoading(false);
+  }, []);
+
+  const applyLiveScore = (apiMatch) => {
+    const home = apiMatch.score?.fullTime?.home ?? apiMatch.score?.halfTime?.home ?? 0;
+    const away = apiMatch.score?.fullTime?.away ?? apiMatch.score?.halfTime?.away ?? 0;
+    setScoreA(home ?? 0);
+    setScoreB(away ?? 0);
+  };
+
   const getName = useCallback(uid =>
     profiles.find(p => p.user_id === uid)?.display_name || uid.slice(0, 6),
     [profiles]
@@ -122,28 +140,18 @@ export default function AdminLiveLeaderboard() {
     const dbMatch = matches.find(m => m.id === selectedMatchId);
     if (!dbMatch) { setCalculating(false); return; }
 
-    // treat live score as "actual" for calculation only
-    const liveMatch = {
-      ...dbMatch,
-      actual_score_a: scoreA,
-      actual_score_b: scoreB,
-      is_finished: true, // only for calculateScore logic
-    };
+    const liveMatch = { ...dbMatch, actual_score_a: scoreA, actual_score_b: scoreB, is_finished: true };
 
-    // latest prediction per user for this match
     const matchPreds = predictions.filter(p => p.match_id === selectedMatchId);
     const latestMap  = {};
     matchPreds.forEach(p => {
-      if (!latestMap[p.user_id] || new Date(p.created_at) > new Date(latestMap[p.user_id].created_at)) {
+      if (!latestMap[p.user_id] || new Date(p.created_at) > new Date(latestMap[p.user_id].created_at))
         latestMap[p.user_id] = p;
-      }
     });
 
-    // confirmed points per user (from user_stats)
     const confirmedMap = {};
     userStats.forEach(s => { confirmedMap[s.user_id] = s.total_points || 0; });
 
-    // build rows
     const rows = Object.values(latestMap).map(pred => {
       const { totalPoints } = calculateScore(pred, liveMatch);
       const confirmed = confirmedMap[pred.user_id] || 0;
@@ -157,7 +165,6 @@ export default function AdminLiveLeaderboard() {
       };
     });
 
-    // users who didn't predict: still appear with confirmed points
     const predictingUsers = new Set(Object.keys(latestMap));
     userStats.forEach(s => {
       if (!predictingUsers.has(s.user_id)) {
@@ -204,11 +211,74 @@ export default function AdminLiveLeaderboard() {
         </p>
       </div>
 
+      {/* Live API fetch */}
+      <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-slate-300 font-semibold text-sm">שלב 1 — שלוף תוצאות לייב מה-API</h3>
+          <button
+            onClick={fetchLive}
+            disabled={liveLoading}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium transition-colors disabled:opacity-50"
+          >
+            {liveLoading
+              ? <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              : <Wifi className="w-3.5 h-3.5 text-emerald-400" />
+            }
+            {liveLoading ? 'מושך...' : 'שלוף לייב'}
+          </button>
+        </div>
+
+        {liveError && (
+          <div className="flex items-center gap-2 text-red-400 text-xs">
+            <WifiOff className="w-3.5 h-3.5" /> {liveError}
+          </div>
+        )}
+
+        {liveMatches.length === 0 && !liveLoading && !liveError && (
+          <p className="text-slate-500 text-xs">לחץ "שלוף לייב" לראות משחקים חיים כרגע</p>
+        )}
+
+        {liveMatches.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-slate-500 text-xs">לחץ על משחק כדי לאמץ את התוצאה שלו:</p>
+            {liveMatches.map(m => {
+              const home = m.score?.fullTime?.home ?? m.score?.halfTime?.home ?? 0;
+              const away = m.score?.fullTime?.away ?? m.score?.halfTime?.away ?? 0;
+              const homeName = m.homeTeam?.shortName || m.homeTeam?.name || '?';
+              const awayName = m.awayTeam?.shortName || m.awayTeam?.name || '?';
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => applyLiveScore(m)}
+                  className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 hover:border-emerald-500/40 transition-all text-sm"
+                >
+                  <div className="flex items-center gap-2">
+                    {m.homeTeam?.crest && <img src={m.homeTeam.crest} className="w-5 h-5 object-contain" alt="" />}
+                    <span className="text-white/80">{homeName}</span>
+                  </div>
+                  <div className="flex items-center gap-2 font-black text-emerald-400">
+                    <span>{home ?? 0}</span>
+                    <span className="text-slate-500 font-light">–</span>
+                    <span>{away ?? 0}</span>
+                    {m.minute != null && (
+                      <span className="text-[10px] font-normal text-emerald-400/60">{m.minute}'</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-white/80">{awayName}</span>
+                    {m.awayTeam?.crest && <img src={m.awayTeam.crest} className="w-5 h-5 object-contain" alt="" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {/* Controls */}
       <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5 space-y-4">
-        <h3 className="text-slate-300 font-semibold text-sm">הגדר תרחיש</h3>
+        <h3 className="text-slate-300 font-semibold text-sm">שלב 2 — בחר משחק מה-DB וחשב</h3>
 
-        {/* Match selector */}
         <div>
           <label className="text-slate-400 text-xs mb-1.5 block">בחר משחק שטרם הסתיים</label>
           <select
@@ -224,14 +294,13 @@ export default function AdminLiveLeaderboard() {
               </option>
             ))}
           </select>
-          {unfinished.length === 0 && (
-            <p className="text-slate-500 text-xs mt-1">אין משחקים שלא הסתיימו במסד הנתונים</p>
-          )}
         </div>
 
-        {/* Score inputs */}
         <div>
-          <label className="text-slate-400 text-xs mb-1.5 block">תוצאה זמנית (בית – חוץ)</label>
+          <label className="text-slate-400 text-xs mb-1.5 block">
+            תוצאה (בית – חוץ)
+            <span className="text-slate-600 mr-1">— מולאה מ-API או הכנס ידנית</span>
+          </label>
           <div className="flex items-center gap-3">
             <input
               type="number" min="0" max="20"
@@ -288,7 +357,7 @@ export default function AdminLiveLeaderboard() {
                 return (
                   <tr
                     key={row.userId}
-                    className={`border-b border-slate-700/40 transition-colors ${rank <= 3 ? 'bg-amber-500/4' : ''}`}
+                    className={`border-b border-slate-700/40 ${rank <= 3 ? 'bg-amber-500/4' : ''}`}
                   >
                     <td className="px-4 py-3 text-center">
                       <span className="text-base leading-none">{MEDAL[rank] || rank}</span>
