@@ -139,7 +139,9 @@ function LiveLBTab() {
         setIsInitialLoad(true);   // reveal animation
         setRows(official);
         setStatus('done');
-        // React renders official rows here — live fetch runs next
+        // wait for reveal animation to complete before live update
+        const revealWait = Math.pow(Math.max(official.length - 1, 0), 1.4) * 0.22 + 2.2;
+        await new Promise(resolve => setTimeout(resolve, revealWait * 1000));
       }
 
       // ── Phase 2: fetch live API and smoothly reorder ──────────────────────────
