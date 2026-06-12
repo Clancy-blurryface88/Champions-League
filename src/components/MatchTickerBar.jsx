@@ -92,12 +92,14 @@ export default function MatchTickerBar({ onClick }) {
 
       {/* Single match — centered, no animation */}
       {single ? (
-        <div className="flex-1 flex items-center justify-center h-full px-3">
+        <div onClick={onClick} className="flex-1 flex items-center justify-center h-full px-3"
+          style={{ cursor: 'pointer', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}>
           <MatchItem match={matches[0]} i={0} />
         </div>
       ) : (
-        /* Multiple matches — scrolling, no duplication */
-        <div className="flex-1 overflow-hidden h-full relative" dir="ltr">
+        /* Multiple matches — scrolling, tappable */
+        <div onClick={onClick} className="flex-1 overflow-hidden h-full relative" dir="ltr"
+          style={{ cursor: 'pointer', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}>
           <div
             className="ticker-track"
             style={{ position: 'absolute', top: 0, display: 'flex', alignItems: 'center', height: '100%', gap: '20px', whiteSpace: 'nowrap' }}
