@@ -81,9 +81,9 @@ function RankCard({ row, index, total, isInitial }) {
         <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%) skewX(6deg)', fontSize: 28, fontWeight: 900, color: RANK_COLOR(row.liveRank), opacity: 0.15, lineHeight: 1, userSelect: 'none', pointerEvents: 'none', transition: 'color .5s ease' }}>
           {row.liveRank}
         </span>
-        <div style={{ transform: 'skewX(6deg)', padding: '13px 6px 13px 34px' }}>
+        <div style={{ transform: 'skewX(6deg)', padding: '16px 6px 16px 34px' }}>
           <div className="flex items-center gap-1">
-            <p className="flex-1 min-w-0 truncate text-xs font-semibold text-slate-200"
+            <p className="flex-1 min-w-0 truncate text-xs font-semibold text-slate-200 text-center"
               style={isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}}>
               {row.name}
             </p>
@@ -93,6 +93,11 @@ function RankCard({ row, index, total, isInitial }) {
             <div className="flex-shrink-0 w-10 flex justify-end">
               <DeltaIcon delta={delta} />
             </div>
+            {row.predicted ? (
+              <span className="text-[10px] text-slate-500 font-mono flex-shrink-0 w-8 text-right">{row.predicted}</span>
+            ) : (
+              <span className="w-8 flex-shrink-0" />
+            )}
           </div>
         </div>
       </div>
@@ -178,12 +183,12 @@ function LiveLBTab() {
       const built = Object.values(latestMap).map(pred => {
         const b = calculateScore(pred, liveMatch);
         const confirmed = confirmedMap[pred.user_id] || 0;
-        return { userId: pred.user_id, name: getName(pred.user_id), confirmed: parseFloat(confirmed.toFixed(2)), liveBonus: parseFloat(b.totalPoints.toFixed(2)), total: parseFloat((confirmed + b.totalPoints).toFixed(2)) };
+        return { userId: pred.user_id, name: getName(pred.user_id), confirmed: parseFloat(confirmed.toFixed(2)), liveBonus: parseFloat(b.totalPoints.toFixed(2)), total: parseFloat((confirmed + b.totalPoints).toFixed(2)), predicted: `${pred.predicted_score_a}-${pred.predicted_score_b}` };
       });
       const predUsers = new Set(Object.keys(latestMap));
       data.userStats.forEach(s => {
         if (!predUsers.has(s.user_id))
-          built.push({ userId: s.user_id, name: getName(s.user_id), confirmed: parseFloat((s.total_points || 0).toFixed(2)), liveBonus: 0, total: parseFloat((s.total_points || 0).toFixed(2)) });
+          built.push({ userId: s.user_id, name: getName(s.user_id), confirmed: parseFloat((s.total_points || 0).toFixed(2)), liveBonus: 0, total: parseFloat((s.total_points || 0).toFixed(2)), predicted: null });
       });
       built.sort((a, b) => b.total - a.total);
       const byConf = [...built].sort((a, b) => b.confirmed - a.confirmed);
