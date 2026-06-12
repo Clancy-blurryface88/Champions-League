@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { UserStats } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
-import { RefreshCw, Zap, Trophy, AlertTriangle, Wifi, WifiOff, Clock } from "lucide-react";
+import { RefreshCw, Zap, Trophy, AlertTriangle, Wifi, WifiOff, Clock, TrendingUp, TrendingDown, Minus, LayoutList, Layers } from "lucide-react";
+import ScoreCounter from "@/components/ScoreCounter";
 
 // Identical to AdminScoring — no changes to original file
 function calculateScore(prediction, match) {
@@ -62,23 +64,19 @@ function calculateScore(prediction, match) {
   };
 }
 
-// Normalize team name for fuzzy matching
 function normalizeName(name = '') {
   return name.toLowerCase().replace(/[^a-z0-9֐-׿]/g, '');
 }
-
 function matchTeams(apiName, dbName) {
   const a = normalizeName(apiName);
   const d = normalizeName(dbName);
   return a === d || a.includes(d) || d.includes(a);
 }
-
 function findDbMatch(apiMatch, dbMatches) {
   const homeApi = apiMatch.homeTeam?.name || '';
   const awayApi = apiMatch.awayTeam?.name || '';
   const homeShort = apiMatch.homeTeam?.shortName || '';
   const awayShort = apiMatch.awayTeam?.shortName || '';
-
   return dbMatches.find(m => {
     const homeOk = matchTeams(homeApi, m.team_a) || matchTeams(homeShort, m.team_a);
     const awayOk = matchTeams(awayApi, m.team_b) || matchTeams(awayShort, m.team_b);
@@ -113,7 +111,6 @@ function buildLeaderboard(dbMatch, homeScore, awayScore, predictions, userStats,
     };
   });
 
-  // users who didn't predict — still show with confirmed points
   const predUsers = new Set(Object.keys(latestMap));
   userStats.forEach(s => {
     if (!predUsers.has(s.user_id)) {
@@ -130,36 +127,123 @@ function buildLeaderboard(dbMatch, homeScore, awayScore, predictions, userStats,
   });
 
   rows.sort((a, b) => b.total - a.total || b.confirmed - a.confirmed);
+
+  // assign liveRank and officialRank for the card view
+  const byConfirmed = [...rows].sort((a, b) => b.confirmed - a.confirmed);
+  byConfirmed.forEach((r, i) => { r.officialRank = i + 1; });
+  rows.forEach((r, i) => { r.liveRank = i + 1; });
+
   return rows;
+}
+
+// ── Card view components ──────────────────────────────────────────────────────
+
+const RANK_COLOR  = r => r === 1 ? '#FFD700' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : 'rgba(255,255,255,.45)';
+const RANK_BORDER = r => r === 1 ? '#FFD700' : r === 2 ? '#D1D5DB' : r === 3 ? '#D97706' : '#475569';
+const RANK_BG     = r => r === 1 ? 'linear-gradient(135deg,rgba(250,204,21,.22),rgba(245,158,11,.22))'
+                       : r === 2 ? 'linear-gradient(135deg,rgba(209,213,219,.18),rgba(156,163,175,.18))'
+                       : r === 3 ? 'linear-gradient(135deg,rgba(245,158,11,.20),rgba(217,119,6,.20))'
+                       : 'rgba(30,41,59,.60)';
+
+function DeltaIcon({ delta }) {
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div key={delta}
+        initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -6 }}
+        transition={{ duration: 0.2 }}>
+        {delta > 0
+          ? <span className="flex items-center gap-0.5 text-emerald-400 text-[11px] font-bold"><TrendingUp className="w-3.5 h-3.5"/>+{delta}</span>
+          : delta < 0
+          ? <span className="flex items-center gap-0.5 text-red-400 text-[11px] font-bold"><TrendingDown className="w-3.5 h-3.5"/>{delta}</span>
+          : <Minus className="w-3.5 h-3.5 text-slate-600"/>
+        }
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+function RankCard({ row, index, total, isInitial }) {
+  const delta          = row.officialRank - row.liveRank;
+  const rankFromBottom = total - 1 - index;
+  const cardDelay      = isInitial ? Math.pow(rankFromBottom, 1.4) * 0.22 + (row.liveRank === 1 ? 0.3 : 0) : 0;
+  const scoreDuration  = isInitial ? 1.1 : 2.8;
+  const scoreDelay     = isInitial ? cardDelay + 0.2 : 0;
+  const border         = RANK_BORDER(row.liveRank);
+  const bg             = RANK_BG(row.liveRank);
+
+  return (
+    <motion.div layout layoutId={row.userId}
+      initial={isInitial ? { opacity: 0, y: 14 } : false}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        layout: { type: 'spring', stiffness: 30, damping: 16 },
+        ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}),
+      }}
+      className="relative mb-1">
+
+      <div style={{
+        transform: 'skewX(-6deg)', borderRadius: 8, overflow: 'hidden',
+        border: `2px solid ${border}`, background: bg,
+        transition: 'border-color .5s ease, background .5s ease',
+        position: 'relative',
+      }}>
+        <span style={{
+          position: 'absolute', left: 8, top: '50%',
+          transform: 'translateY(-50%) skewX(6deg)',
+          fontSize: 28, fontWeight: 900,
+          color: RANK_COLOR(row.liveRank),
+          opacity: 0.15, lineHeight: 1,
+          userSelect: 'none', pointerEvents: 'none',
+          transition: 'color .5s ease',
+        }}>
+          {row.liveRank}
+        </span>
+
+        <div style={{ transform: 'skewX(6deg)', padding: '9px 6px 9px 34px' }}>
+          <div className="flex items-center gap-1">
+            <p className="flex-1 min-w-0 truncate text-xs font-semibold text-slate-200"
+              style={isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}}>
+              {row.name}
+            </p>
+            <span className="text-[11px] font-bold text-emerald-400 tabular-nums flex-shrink-0">
+              <ScoreCounter value={row.total} duration={scoreDuration} delay={scoreDelay} showDecimals={true} />
+            </span>
+            <div className="flex-shrink-0 w-10 flex justify-end">
+              <DeltaIcon delta={delta} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
 }
 
 const MEDAL = { 1: '🥇', 2: '🥈', 3: '🥉' };
 const INTERVAL = 30000;
 
 export default function AdminLiveLeaderboard() {
-  const [dbData, setDbData] = useState(null); // { matches, predictions, userStats, profiles }
-  const [liveState, setLiveState] = useState(null); // { apiMatch, dbMatch, homeScore, awayScore, minute, rows }
-  const [loading, setLoading]   = useState(true);
+  const [dbData, setDbData]       = useState(null);
+  const [liveState, setLiveState] = useState(null);
+  const [loading, setLoading]     = useState(true);
   const [liveError, setLiveError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
-  const dbDataRef = useRef(null);
+  const [viewMode, setViewMode]   = useState('cards');
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const dbDataRef      = useRef(null);
+  const isInitialRef   = useRef(true);
 
   const getName = useCallback(uid => {
     const profiles = dbDataRef.current?.profiles || [];
     return profiles.find(p => p.user_id === uid)?.display_name || uid?.slice(0, 6) || '?';
   }, []);
 
-  // Load Supabase data once
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
         const [matches, profiles, userStats, predictions] = await Promise.all([
-          Match.list(),
-          PublicProfile.list(),
-          UserStats.list(),
-          Prediction.list(),
+          Match.list(), PublicProfile.list(), UserStats.list(), Prediction.list(),
         ]);
         const data = { matches, profiles, userStats, predictions };
         setDbData(data);
@@ -192,18 +276,14 @@ export default function AdminLiveLeaderboard() {
         return;
       }
 
-      // Try to auto-match first live match to a DB match
       const unfinished = data.matches.filter(m => !m.is_finished);
-      let matched = null;
-      let apiMatch = null;
-
+      let matched = null, apiMatch = null;
       for (const lm of liveMatches) {
         const found = findDbMatch(lm, unfinished);
         if (found) { matched = found; apiMatch = lm; break; }
       }
 
       if (!matched) {
-        // No auto-match — show live matches from API but can't calculate
         setLiveState({ apiMatches: liveMatches, dbMatch: null, rows: null });
         setLastUpdate(new Date());
         if (isManual) setRefreshing(false);
@@ -213,9 +293,11 @@ export default function AdminLiveLeaderboard() {
       const homeScore = apiMatch.score?.fullTime?.home ?? apiMatch.score?.halfTime?.home ?? 0;
       const awayScore = apiMatch.score?.fullTime?.away ?? apiMatch.score?.halfTime?.away ?? 0;
       const minute    = apiMatch.minute ?? null;
+      const rows      = buildLeaderboard(matched, homeScore, awayScore, data.predictions, data.userStats, getName);
 
-      const rows = buildLeaderboard(matched, homeScore, awayScore, data.predictions, data.userStats, getName);
-
+      const isInitial = isInitialRef.current;
+      isInitialRef.current = false;
+      setIsInitialLoad(isInitial);
       setLiveState({ apiMatch, dbMatch: matched, homeScore, awayScore, minute, rows, apiMatches: liveMatches });
       setLastUpdate(new Date());
     } catch (e) {
@@ -224,7 +306,6 @@ export default function AdminLiveLeaderboard() {
     if (isManual) setRefreshing(false);
   }, [getName]);
 
-  // Auto-refresh every 30s once DB data is loaded
   useEffect(() => {
     if (!dbData) return;
     fetchAndRecalc();
@@ -242,6 +323,13 @@ export default function AdminLiveLeaderboard() {
 
   return (
     <div className="space-y-6">
+      <style>{`
+        @keyframes lb-blur-focus {
+          from { filter: blur(6px); opacity: 0; }
+          to   { filter: blur(0);  opacity: 1; }
+        }
+      `}</style>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -260,11 +348,8 @@ export default function AdminLiveLeaderboard() {
               {lastUpdate.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </div>
           )}
-          <button
-            onClick={() => fetchAndRecalc(true)}
-            disabled={refreshing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium transition-colors disabled:opacity-50"
-          >
+          <button onClick={() => fetchAndRecalc(true)} disabled={refreshing}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium transition-colors disabled:opacity-50">
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
             {refreshing ? 'מרענן...' : 'רענן עכשיו'}
           </button>
@@ -295,7 +380,7 @@ export default function AdminLiveLeaderboard() {
         </div>
       )}
 
-      {/* Live matches from API but no DB match found */}
+      {/* API match found but no DB match */}
       {liveState && !dbMatch && apiMatches?.length > 0 && (
         <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700 space-y-3">
           <p className="text-amber-400 text-sm font-medium">נמצאו משחקים חיים ב-API אך לא הצלחתי להתאים אותם למשחקים ב-DB:</p>
@@ -313,17 +398,14 @@ export default function AdminLiveLeaderboard() {
         </div>
       )}
 
-      {/* Live match found + leaderboard */}
+      {/* Live match + leaderboard */}
       {liveState && dbMatch && rows && (
         <>
           {/* Live match card */}
-          <div
-            className="rounded-xl p-4 border"
-            style={{
-              background: 'linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(5,13,26,0.9) 100%)',
-              borderColor: 'rgba(16,185,129,0.25)',
-            }}
-          >
+          <div className="rounded-xl p-4 border" style={{
+            background: 'linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(5,13,26,0.9) 100%)',
+            borderColor: 'rgba(16,185,129,0.25)',
+          }}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
@@ -354,68 +436,98 @@ export default function AdminLiveLeaderboard() {
             </div>
           </div>
 
-          {/* Leaderboard table */}
-          <div className="bg-slate-800/60 border border-slate-700 rounded-xl overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-slate-700 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-amber-400" />
-                <span className="text-white font-semibold text-sm">
-                  {dbMatch.team_a} {homeScore}–{awayScore} {dbMatch.team_b}
-                </span>
-              </div>
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider">זמני · לא נשמר</span>
+          {/* View toggle */}
+          <div className="flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-amber-400" />
+            <span className="text-white font-semibold text-sm flex-1">
+              {dbMatch.team_a} {homeScore}–{awayScore} {dbMatch.team_b}
+            </span>
+            <div className="flex rounded-lg overflow-hidden border border-slate-700">
+              <button onClick={() => setViewMode('cards')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${viewMode === 'cards' ? 'bg-amber-500/20 text-amber-400' : 'text-slate-500 hover:text-slate-300'}`}>
+                <Layers className="w-3.5 h-3.5" /> קלפים
+              </button>
+              <button onClick={() => setViewMode('table')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors border-l border-slate-700 ${viewMode === 'table' ? 'bg-amber-500/20 text-amber-400' : 'text-slate-500 hover:text-slate-300'}`}>
+                <LayoutList className="w-3.5 h-3.5" /> טבלה
+              </button>
             </div>
-
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-slate-500 text-xs border-b border-slate-700/60">
-                  <th className="px-4 py-2.5 text-left w-8">#</th>
-                  <th className="px-4 py-2.5 text-left">שם</th>
-                  <th className="px-4 py-2.5 text-center">ניחוש</th>
-                  <th className="px-4 py-2.5 text-right">נק' רשמי</th>
-                  <th className="px-4 py-2.5 text-right">+לייב</th>
-                  <th className="px-4 py-2.5 text-right font-bold text-amber-400">סה"כ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row, i) => {
-                  const rank = i + 1;
-                  const b = row.breakdown;
-                  return (
-                    <React.Fragment key={row.userId}>
-                      <tr className={`border-b border-slate-700/20 ${rank <= 3 ? 'bg-amber-500/4' : ''}`}>
-                        <td className="px-4 py-2.5 text-center">
-                          <span className="text-base leading-none">{MEDAL[rank] || rank}</span>
-                        </td>
-                        <td className="px-4 py-2.5 text-white font-medium">{row.name}</td>
-                        <td className="px-4 py-2.5 text-center text-slate-400 font-mono text-xs">{row.predicted}</td>
-                        <td className="px-4 py-2.5 text-right text-slate-400">{row.confirmed}</td>
-                        <td className="px-4 py-2.5 text-right">
-                          <span className={row.liveBonus > 0 ? 'text-emerald-400 font-semibold' : 'text-slate-600'}>
-                            {row.liveBonus > 0 ? `+${row.liveBonus}` : '–'}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2.5 text-right font-bold text-white">{row.total}</td>
-                      </tr>
-                      {b && b.totalPoints > 0 && (
-                        <tr className={`border-b border-slate-700/40 ${rank <= 3 ? 'bg-amber-500/4' : ''}`}>
-                          <td />
-                          <td colSpan={5} className="px-4 pb-2">
-                            <div className="flex gap-3 text-[10px] text-slate-500">
-                              {b.exactScorePoints > 0 && <span>🎯 מדויק +{b.exactScorePoints}</span>}
-                              {b.outcomePoints    > 0 && <span>✅ כיוון +{b.outcomePoints}</span>}
-                              {b.bttsPoints       > 0 && <span>⚽ BTTS +{b.bttsPoints}</span>}
-                              {b.goalRangePoints  > 0 && <span>📊 טווח +{b.goalRangePoints}</span>}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
           </div>
+
+          {/* Card view */}
+          {viewMode === 'cards' && (
+            <div style={{ maxWidth: 340, margin: '0 auto' }}>
+              <AnimatePresence>
+                {rows.map((row, idx) => (
+                  <RankCard
+                    key={row.userId}
+                    row={row}
+                    index={idx}
+                    total={rows.length}
+                    isInitial={isInitialLoad}
+                  />
+                ))}
+              </AnimatePresence>
+            </div>
+          )}
+
+          {/* Table view */}
+          {viewMode === 'table' && (
+            <div className="bg-slate-800/60 border border-slate-700 rounded-xl overflow-hidden">
+              <div className="px-5 py-2 border-b border-slate-700 flex justify-end">
+                <span className="text-[10px] text-slate-500 uppercase tracking-wider">זמני · לא נשמר</span>
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-slate-500 text-xs border-b border-slate-700/60">
+                    <th className="px-4 py-2.5 text-left w-8">#</th>
+                    <th className="px-4 py-2.5 text-left">שם</th>
+                    <th className="px-4 py-2.5 text-center">ניחוש</th>
+                    <th className="px-4 py-2.5 text-right">נק' רשמי</th>
+                    <th className="px-4 py-2.5 text-right">+לייב</th>
+                    <th className="px-4 py-2.5 text-right font-bold text-amber-400">סה"כ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row, i) => {
+                    const rank = i + 1;
+                    const b = row.breakdown;
+                    return (
+                      <React.Fragment key={row.userId}>
+                        <tr className={`border-b border-slate-700/20 ${rank <= 3 ? 'bg-amber-500/4' : ''}`}>
+                          <td className="px-4 py-2.5 text-center">
+                            <span className="text-base leading-none">{MEDAL[rank] || rank}</span>
+                          </td>
+                          <td className="px-4 py-2.5 text-white font-medium">{row.name}</td>
+                          <td className="px-4 py-2.5 text-center text-slate-400 font-mono text-xs">{row.predicted}</td>
+                          <td className="px-4 py-2.5 text-right text-slate-400">{row.confirmed}</td>
+                          <td className="px-4 py-2.5 text-right">
+                            <span className={row.liveBonus > 0 ? 'text-emerald-400 font-semibold' : 'text-slate-600'}>
+                              {row.liveBonus > 0 ? `+${row.liveBonus}` : '–'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2.5 text-right font-bold text-white">{row.total}</td>
+                        </tr>
+                        {b && b.totalPoints > 0 && (
+                          <tr className={`border-b border-slate-700/40 ${rank <= 3 ? 'bg-amber-500/4' : ''}`}>
+                            <td />
+                            <td colSpan={5} className="px-4 pb-2">
+                              <div className="flex gap-3 text-[10px] text-slate-500">
+                                {b.exactScorePoints > 0 && <span>🎯 מדויק +{b.exactScorePoints}</span>}
+                                {b.outcomePoints    > 0 && <span>✅ כיוון +{b.outcomePoints}</span>}
+                                {b.bttsPoints       > 0 && <span>⚽ BTTS +{b.bttsPoints}</span>}
+                                {b.goalRangePoints  > 0 && <span>📊 טווח +{b.goalRangePoints}</span>}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </>
       )}
     </div>
