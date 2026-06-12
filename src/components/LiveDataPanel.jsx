@@ -57,9 +57,9 @@ function DeltaIcon({ delta }) {
     <AnimatePresence mode="wait">
       <motion.div key={delta} initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -6 }} transition={{ duration: 0.2 }}>
         {delta > 0
-          ? <span className="flex items-center gap-0.5 text-emerald-400 text-[11px] font-bold"><TrendingUp className="w-3.5 h-3.5"/>+{delta}</span>
+          ? <span className="flex items-center gap-1 text-emerald-400 text-[11px] font-bold"><TrendingUp className="w-3.5 h-3.5"/>+{delta}</span>
           : delta < 0
-          ? <span className="flex items-center gap-0.5 text-red-400 text-[11px] font-bold"><TrendingDown className="w-3.5 h-3.5"/>{delta}</span>
+          ? <span className="flex items-center gap-1 text-red-400 text-[11px] font-bold"><TrendingDown className="w-3.5 h-3.5"/>{delta}</span>
           : <Minus className="w-3.5 h-3.5 text-slate-600"/>}
       </motion.div>
     </AnimatePresence>
