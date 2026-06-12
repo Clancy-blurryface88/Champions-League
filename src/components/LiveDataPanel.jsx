@@ -88,8 +88,7 @@ function RankCard({ row, index, total, isInitial }) {
               style={isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}}>
               {row.name}
             </p>
-            <span className="text-[11px] font-bold tabular-nums flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg,#60a5fa,#818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+            <span className="text-[11px] font-bold text-emerald-400 tabular-nums flex-shrink-0">
               <ScoreCounter value={row.total} duration={scoreDur} delay={scoreDelay} showDecimals={true} />
             </span>
             <div className="flex-shrink-0 w-10 flex justify-end">
@@ -242,7 +241,10 @@ function LiveLBTab() {
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
             <TeamFlag logo={liveInfo.homeLogo} name={liveInfo.home} className="w-4 h-4 flex-shrink-0" />
             <span className="font-bold text-xs text-emerald-400">{liveInfo.home}</span>
-            <span className="font-bold text-xs text-white tabular-nums">{liveInfo.score}</span>
+            <span className="font-bold text-xs tabular-nums"
+              style={{ background: 'linear-gradient(135deg,#60a5fa,#818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              {liveInfo.score}
+            </span>
             <span className="font-bold text-xs text-emerald-400">{liveInfo.away}</span>
             <TeamFlag logo={liveInfo.awayLogo} name={liveInfo.away} className="w-4 h-4 flex-shrink-0" />
             {liveInfo.minute && <span className="text-slate-500 text-[10px] mr-1">{liveInfo.minute}'</span>}
