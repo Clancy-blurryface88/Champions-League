@@ -153,15 +153,22 @@ export default function AdminLiveLeaderboard() {
     userStats.forEach(s => { confirmedMap[s.user_id] = s.total_points || 0; });
 
     const rows = Object.values(latestMap).map(pred => {
-      const { totalPoints } = calculateScore(pred, liveMatch);
+      const breakdown = calculateScore(pred, liveMatch);
       const confirmed = confirmedMap[pred.user_id] || 0;
+      console.log('[LiveLB] user:', getName(pred.user_id),
+        'pred:', pred.predicted_score_a, pred.predicted_score_b,
+        'actual:', scoreA, scoreB,
+        'score_odds:', liveMatch.score_odds,
+        'exact_score_points:', liveMatch.exact_score_points,
+        'breakdown:', breakdown);
       return {
         userId:    pred.user_id,
         name:      getName(pred.user_id),
         confirmed: parseFloat(confirmed.toFixed(2)),
-        liveBonus: parseFloat(totalPoints.toFixed(2)),
-        total:     parseFloat((confirmed + totalPoints).toFixed(2)),
+        liveBonus: parseFloat(breakdown.totalPoints.toFixed(2)),
+        total:     parseFloat((confirmed + breakdown.totalPoints).toFixed(2)),
         predicted: `${pred.predicted_score_a}–${pred.predicted_score_b}`,
+        breakdown,
       };
     });
 
@@ -354,24 +361,37 @@ export default function AdminLiveLeaderboard() {
             <tbody>
               {leaderboard.rows.map((row, i) => {
                 const rank = i + 1;
+                const b = row.breakdown;
                 return (
-                  <tr
-                    key={row.userId}
-                    className={`border-b border-slate-700/40 ${rank <= 3 ? 'bg-amber-500/4' : ''}`}
-                  >
-                    <td className="px-4 py-3 text-center">
-                      <span className="text-base leading-none">{MEDAL[rank] || rank}</span>
-                    </td>
-                    <td className="px-4 py-3 text-white font-medium">{row.name}</td>
-                    <td className="px-4 py-3 text-center text-slate-400 font-mono text-xs">{row.predicted}</td>
-                    <td className="px-4 py-3 text-right text-slate-400">{row.confirmed}</td>
-                    <td className="px-4 py-3 text-right">
-                      <span className={row.liveBonus > 0 ? 'text-emerald-400 font-semibold' : 'text-slate-600'}>
-                        {row.liveBonus > 0 ? `+${row.liveBonus}` : '–'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right font-bold text-white">{row.total}</td>
-                  </tr>
+                  <React.Fragment key={row.userId}>
+                    <tr className={`border-b border-slate-700/20 ${rank <= 3 ? 'bg-amber-500/4' : ''}`}>
+                      <td className="px-4 py-2.5 text-center">
+                        <span className="text-base leading-none">{MEDAL[rank] || rank}</span>
+                      </td>
+                      <td className="px-4 py-2.5 text-white font-medium">{row.name}</td>
+                      <td className="px-4 py-2.5 text-center text-slate-400 font-mono text-xs">{row.predicted}</td>
+                      <td className="px-4 py-2.5 text-right text-slate-400">{row.confirmed}</td>
+                      <td className="px-4 py-2.5 text-right">
+                        <span className={row.liveBonus > 0 ? 'text-emerald-400 font-semibold' : 'text-slate-600'}>
+                          {row.liveBonus > 0 ? `+${row.liveBonus}` : '–'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 text-right font-bold text-white">{row.total}</td>
+                    </tr>
+                    {b && b.totalPoints > 0 && (
+                      <tr className={`border-b border-slate-700/40 ${rank <= 3 ? 'bg-amber-500/4' : ''}`}>
+                        <td />
+                        <td colSpan={5} className="px-4 pb-2">
+                          <div className="flex gap-3 text-[10px] text-slate-500">
+                            {b.exactScorePoints > 0  && <span>🎯 מדויק +{b.exactScorePoints}</span>}
+                            {b.outcomePoints > 0     && <span>✅ כיוון +{b.outcomePoints}</span>}
+                            {b.bttsPoints > 0        && <span>⚽ BTTS +{b.bttsPoints}</span>}
+                            {b.goalRangePoints > 0   && <span>📊 טווח +{b.goalRangePoints}</span>}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 );
               })}
             </tbody>
