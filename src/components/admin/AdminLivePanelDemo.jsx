@@ -147,11 +147,10 @@ function RankCard({ row, index, total, shockwave, isInitial }) {
       initial={isInitial ? { opacity: 0, y: 14 } : false}
       animate={{ opacity: 1, y: 0 }}
       transition={{
-        // Slower, more graceful reorder on live update
-        layout: { type: 'spring', stiffness: 160, damping: 26 },
+        layout: { type: 'spring', stiffness: 60, damping: 20 },
         ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}),
       }}
-      className="relative mb-1.5">
+      className="relative mb-1">
 
       {shockwave && isInitial && (
         <motion.div className="absolute inset-0 rounded-lg pointer-events-none"
@@ -171,7 +170,7 @@ function RankCard({ row, index, total, shockwave, isInitial }) {
         <span style={{
           position: 'absolute', left: 8, top: '50%',
           transform: 'translateY(-50%) skewX(6deg)',
-          fontSize: 36, fontWeight: 900,
+          fontSize: 28, fontWeight: 900,
           color: RANK_COLOR(row.liveRank),
           opacity: 0.15, lineHeight: 1,
           userSelect: 'none', pointerEvents: 'none',
@@ -181,8 +180,8 @@ function RankCard({ row, index, total, shockwave, isInitial }) {
         </span>
 
         {/* content row — counter-skewed, pl to avoid ghost overlap */}
-        <div style={{ transform: 'skewX(6deg)', padding: '6px 10px 6px 32px' }}>
-          <div className="flex items-center gap-2">
+        <div style={{ transform: 'skewX(6deg)', padding: '3px 6px 3px 24px' }}>
+          <div className="flex items-center gap-1">
 
             {/* name */}
             <p className="flex-1 min-w-0 truncate text-xs font-semibold text-slate-200"
