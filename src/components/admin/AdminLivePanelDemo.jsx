@@ -481,18 +481,20 @@ function LiveLBTab() {
       )}
 
       {/* leaderboard cards — rank 1 top, last place bottom */}
-      <AnimatePresence>
-        {rows.map((row, idx) => (
-          <RankCard
-            key={row.userId}
-            row={row}
-            index={idx}
-            total={rows.length}
-            shockwave={shockwave}
-            isInitial={isInitialLoad}
-          />
-        ))}
-      </AnimatePresence>
+      <div style={{ maxWidth: 340, margin: '0 auto' }}>
+        <AnimatePresence>
+          {rows.map((row, idx) => (
+            <RankCard
+              key={row.userId}
+              row={row}
+              index={idx}
+              total={rows.length}
+              shockwave={shockwave}
+              isInitial={isInitialLoad}
+            />
+          ))}
+        </AnimatePresence>
+      </div>
 
       {lastUpdate && (
         <p className="text-center text-slate-700 text-[10px] mt-3 flex items-center justify-center gap-1">
