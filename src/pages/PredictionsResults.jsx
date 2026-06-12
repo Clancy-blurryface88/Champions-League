@@ -672,7 +672,7 @@ export default function PredictionsResults() {
                 <p className="text-slate-400">אין משחקים שהסתיימו במחזור זה</p>
               </div> :
               <div
-                className="rounded-2xl overflow-hidden mt-6 relative"
+                className="rounded-2xl overflow-hidden mt-3 relative"
                 style={{
                   background: 'rgba(255,255,255,0.10)',
                   backdropFilter: 'blur(40px) saturate(180%)',
@@ -682,10 +682,10 @@ export default function PredictionsResults() {
                 }}
               >
                 {/* Header with View Mode Toggle */}
-                <div className="px-4 py-5">
+                <div className="px-4 py-3">
                   {/* Glass tab bar */}
                   <div
-                    className="relative flex p-1 mb-4 rounded-2xl"
+                    className="relative flex p-1 mb-2 rounded-2xl"
                     style={{
                       background: 'transparent',
                       border: '1px solid rgba(245,197,24,0.45)',
@@ -701,7 +701,7 @@ export default function PredictionsResults() {
                         <button
                           key={tab.key}
                           onClick={() => setViewMode(tab.key)}
-                          className="relative flex-1 flex items-center justify-center py-2.5 px-1 rounded-xl transition-colors z-10"
+                          className="relative flex-1 flex items-center justify-center py-1.5 px-1 rounded-xl transition-colors z-10"
                           style={{
                             color: active ? '#000' : '#f5c518',
                             borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.14)' : 'none',
