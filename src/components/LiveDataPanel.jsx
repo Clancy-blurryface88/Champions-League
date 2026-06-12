@@ -101,79 +101,101 @@ function RankCard({ row, index, total, isInitial }) {
 }
 
 function LiveLBTab() {
-  const [rows, setRows]           = useState([]);
-  const [status, setStatus]       = useState('loading');
-  const [liveInfo, setLiveInfo]   = useState(null);
+  const [rows, setRows]                   = useState([]);
+  const [status, setStatus]               = useState('loading');
+  const [liveInfo, setLiveInfo]           = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [lastUpdate, setLastUpdate] = useState(null);
-  const isInitialRef = useRef(true);
-  const dbRef        = useRef(null);
+  const [lastUpdate, setLastUpdate]       = useState(null);
+  const hasShownInitial = useRef(false);
+  const dbRef           = useRef(null);
 
   const getName = useCallback(uid => {
     const profiles = dbRef.current?.profiles || [];
     return profiles.find(p => p.user_id === uid)?.display_name || uid?.slice(0, 6) || '?';
   }, []);
 
-  const buildAndSet = useCallback((apiMatch, dbMatch, homeScore, awayScore, minute, data) => {
-    const liveMatch = { ...dbMatch, actual_score_a: homeScore, actual_score_b: awayScore };
-    const matchPreds = data.predictions.filter(p => p.match_id === dbMatch.id);
-    const latestMap = {};
-    matchPreds.forEach(p => {
-      if (!latestMap[p.user_id] || new Date(p.created_at) > new Date(latestMap[p.user_id].created_at))
-        latestMap[p.user_id] = p;
-    });
-    const confirmedMap = {};
-    data.userStats.forEach(s => { confirmedMap[s.user_id] = s.total_points || 0; });
-
-    const built = Object.values(latestMap).map(pred => {
-      const b = calculateScore(pred, liveMatch);
-      const confirmed = confirmedMap[pred.user_id] || 0;
-      return { userId: pred.user_id, name: getName(pred.user_id), confirmed, liveBonus: b.totalPoints, total: parseFloat((confirmed + b.totalPoints).toFixed(2)) };
-    });
-    const predUsers = new Set(Object.keys(latestMap));
-    data.userStats.forEach(s => {
-      if (!predUsers.has(s.user_id))
-        built.push({ userId: s.user_id, name: getName(s.user_id), confirmed: s.total_points || 0, liveBonus: 0, total: parseFloat((s.total_points || 0).toFixed(2)) });
-    });
-    built.sort((a, b) => b.total - a.total);
-    const byConfirmed = [...built].sort((a, b) => b.confirmed - a.confirmed);
-    byConfirmed.forEach((r, i) => { r.officialRank = i + 1; });
-    built.forEach((r, i) => { r.liveRank = i + 1; });
-
-    const isInitial = isInitialRef.current;
-    isInitialRef.current = false;
-    setIsInitialLoad(isInitial);
-    setRows(built);
-    setLiveInfo({ home: dbMatch.team_a, away: dbMatch.team_b, score: `${homeScore}–${awayScore}`, minute });
-    setLastUpdate(new Date());
-    setStatus('done');
-  }, [getName]);
-
   const load = useCallback(async () => {
     try {
+      // ── Phase 1: load Supabase once, show official scores with reveal animation ──
       if (!dbRef.current) {
-        const [matches, profiles, userStats, predictions] = await Promise.all([Match.list(), PublicProfile.list(), UserStats.list(), Prediction.list()]);
+        const [matches, profiles, userStats, predictions] = await Promise.all([
+          Match.list(), PublicProfile.list(), UserStats.list(), Prediction.list(),
+        ]);
         dbRef.current = { matches, profiles, userStats, predictions };
       }
       const data = dbRef.current;
+
+      if (!hasShownInitial.current) {
+        const official = data.userStats.map(s => ({
+          userId: s.user_id,
+          name: getName(s.user_id),
+          confirmed: parseFloat((s.total_points || 0).toFixed(2)),
+          liveBonus: 0,
+          total: parseFloat((s.total_points || 0).toFixed(2)),
+        }));
+        official.sort((a, b) => b.total - a.total);
+        official.forEach((r, i) => { r.liveRank = i + 1; r.officialRank = i + 1; });
+        hasShownInitial.current = true;
+        setIsInitialLoad(true);   // reveal animation
+        setRows(official);
+        setStatus('done');
+        // React renders official rows here — live fetch runs next
+      }
+
+      // ── Phase 2: fetch live API and smoothly reorder ──────────────────────────
       const localDate = new Date().toLocaleDateString('sv-SE');
       const res  = await fetch(`/api/football?competition=WC&filter=LIVE&date=${localDate}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
       const liveMatches = json.matches || [];
-      if (liveMatches.length === 0) { setStatus('no-live'); setLastUpdate(new Date()); return; }
+      setLastUpdate(new Date());
+
+      if (liveMatches.length === 0) { setLiveInfo(null); return; }
+
       const unfinished = data.matches.filter(m => !m.is_finished);
       let dbMatch = null, apiMatch = null;
-      for (const lm of liveMatches) { const f = findDbMatch(lm, unfinished); if (f) { dbMatch = f; apiMatch = lm; break; } }
-      if (!dbMatch) { setStatus('no-match'); setLastUpdate(new Date()); return; }
+      for (const lm of liveMatches) {
+        const f = findDbMatch(lm, unfinished);
+        if (f) { dbMatch = f; apiMatch = lm; break; }
+      }
+      if (!dbMatch) return;
+
       const homeScore = apiMatch.score?.fullTime?.home ?? apiMatch.score?.halfTime?.home ?? 0;
       const awayScore = apiMatch.score?.fullTime?.away ?? apiMatch.score?.halfTime?.away ?? 0;
-      buildAndSet(apiMatch, dbMatch, homeScore, awayScore, apiMatch.minute ?? null, data);
+      const liveMatch = { ...dbMatch, actual_score_a: homeScore, actual_score_b: awayScore };
+
+      const matchPreds = data.predictions.filter(p => p.match_id === dbMatch.id);
+      const latestMap  = {};
+      matchPreds.forEach(p => {
+        if (!latestMap[p.user_id] || new Date(p.created_at) > new Date(latestMap[p.user_id].created_at))
+          latestMap[p.user_id] = p;
+      });
+      const confirmedMap = {};
+      data.userStats.forEach(s => { confirmedMap[s.user_id] = s.total_points || 0; });
+
+      const built = Object.values(latestMap).map(pred => {
+        const b = calculateScore(pred, liveMatch);
+        const confirmed = confirmedMap[pred.user_id] || 0;
+        return { userId: pred.user_id, name: getName(pred.user_id), confirmed: parseFloat(confirmed.toFixed(2)), liveBonus: parseFloat(b.totalPoints.toFixed(2)), total: parseFloat((confirmed + b.totalPoints).toFixed(2)) };
+      });
+      const predUsers = new Set(Object.keys(latestMap));
+      data.userStats.forEach(s => {
+        if (!predUsers.has(s.user_id))
+          built.push({ userId: s.user_id, name: getName(s.user_id), confirmed: parseFloat((s.total_points || 0).toFixed(2)), liveBonus: 0, total: parseFloat((s.total_points || 0).toFixed(2)) });
+      });
+      built.sort((a, b) => b.total - a.total);
+      const byConf = [...built].sort((a, b) => b.confirmed - a.confirmed);
+      byConf.forEach((r, i) => { r.officialRank = i + 1; });
+      built.forEach((r, i) => { r.liveRank = i + 1; });
+
+      setIsInitialLoad(false);  // smooth reorder only, no re-reveal
+      setRows(built);
+      setLiveInfo({ home: dbMatch.team_a, away: dbMatch.team_b, score: `${homeScore}–${awayScore}`, minute: apiMatch.minute ?? null });
     } catch (e) {
       console.error('[LiveLBTab]', e);
-      setStatus('error');
+      if (!hasShownInitial.current) setStatus('error');
     }
-  }, [buildAndSet]);
+  }, [getName]);
 
   useEffect(() => {
     load();
@@ -184,17 +206,10 @@ function LiveLBTab() {
   if (status === 'loading') return (
     <div className="flex flex-col items-center justify-center py-20 gap-3">
       <div className="w-8 h-8 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
-      <span className="text-slate-500 text-xs">טוען טבלה לייב...</span>
+      <span className="text-slate-500 text-xs">טוען טבלה...</span>
     </div>
   );
-  if (status === 'no-live') return (
-    <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
-      <span className="text-4xl">⚽</span>
-      <p className="text-slate-400 text-sm font-medium">אין משחק חי כרגע</p>
-      <p className="text-slate-600 text-xs">הטבלה תעדכן כשמשחק יתחיל</p>
-    </div>
-  );
-  if (status === 'no-match' || status === 'error') return (
+  if (status === 'error') return (
     <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
       <WifiOff className="w-8 h-8 text-red-400/40" />
       <p className="text-slate-500 text-sm">לא ניתן לטעון את הטבלה</p>
@@ -204,20 +219,28 @@ function LiveLBTab() {
   return (
     <div>
       <style>{`@keyframes lb-blur-focus { from { filter: blur(6px); opacity: 0; } to { filter: blur(0); opacity: 1; } }`}</style>
-      {liveInfo && (
-        <div className="mb-3 px-3 py-2 rounded-xl flex items-center gap-2" style={{ background: 'rgba(52,211,153,.08)', border: '1px solid rgba(52,211,153,.25)' }}>
-          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
-          <span className="font-bold text-xs text-emerald-400">{liveInfo.home} {liveInfo.score} {liveInfo.away}</span>
-          {liveInfo.minute && <span className="text-slate-500 text-[10px]">{liveInfo.minute}'</span>}
-        </div>
-      )}
-      <div style={{ maxWidth: 280, margin: '0 auto' }}>
+
+      {/* live match chip */}
+      <AnimatePresence>
+        {liveInfo && (
+          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className="mb-3 px-3 py-2 rounded-xl flex items-center gap-2"
+            style={{ background: 'rgba(52,211,153,.08)', border: '1px solid rgba(52,211,153,.25)' }}>
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
+            <span className="font-bold text-xs text-emerald-400">{liveInfo.home} {liveInfo.score} {liveInfo.away}</span>
+            {liveInfo.minute && <span className="text-slate-500 text-[10px]">{liveInfo.minute}'</span>}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div style={{ maxWidth: 220, margin: '0 auto' }}>
         <AnimatePresence>
           {rows.map((row, idx) => (
             <RankCard key={row.userId} row={row} index={idx} total={rows.length} isInitial={isInitialLoad} />
           ))}
         </AnimatePresence>
       </div>
+
       {lastUpdate && (
         <p className="text-center text-slate-700 text-[10px] mt-3 flex items-center justify-center gap-1">
           <Clock className="w-3 h-3" /> עודכן {lastUpdate.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
