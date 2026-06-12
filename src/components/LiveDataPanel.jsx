@@ -96,7 +96,7 @@ function RankCard({ row, index, total, isInitial }) {
             </div>
             {row.predicted ? (
               <span className="text-[10px] font-mono flex-shrink-0 w-8 text-right"
-                style={{ background: 'linear-gradient(135deg,#38bdf8,#60a5fa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                style={{ color: '#7dd3fc' }}>
                 {row.predicted}
               </span>
             ) : (
