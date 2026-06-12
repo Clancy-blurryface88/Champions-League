@@ -18,17 +18,22 @@ export default function MatchTickerBar({ onClick }) {
   const [dateLabel, setDateLabel] = useState('');
 
   useEffect(() => {
-    Match.list().then(all => {
-      const todayKey = localDateKey(new Date());
-      const todays = all
-        .filter(m => localDateKey(new Date(m.match_date)) === todayKey)
-        .sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
+    const load = () => {
+      Match.list().then(all => {
+        const todayKey = localDateKey(new Date());
+        const todays = all
+          .filter(m => localDateKey(new Date(m.match_date)) === todayKey)
+          .sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
 
-      if (todays.length > 0) {
-        setMatches(todays);
-        setDateLabel(formatDate(todays[0].match_date));
-      }
-    }).catch(() => {});
+        if (todays.length > 0) {
+          setMatches(todays);
+          setDateLabel(formatDate(todays[0].match_date));
+        }
+      }).catch(() => {});
+    };
+    load();
+    const interval = setInterval(load, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   if (matches.length === 0) return null;
