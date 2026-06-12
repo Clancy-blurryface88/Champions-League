@@ -95,7 +95,10 @@ function RankCard({ row, index, total, isInitial }) {
               <DeltaIcon delta={delta} />
             </div>
             {row.predicted ? (
-              <span className="text-[10px] text-slate-500 font-mono flex-shrink-0 w-8 text-right">{row.predicted}</span>
+              <span className="text-[10px] font-mono flex-shrink-0 w-8 text-right"
+                style={{ background: 'linear-gradient(135deg,#38bdf8,#60a5fa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                {row.predicted}
+              </span>
             ) : (
               <span className="w-8 flex-shrink-0" />
             )}
