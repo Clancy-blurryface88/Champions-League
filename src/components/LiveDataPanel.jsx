@@ -1,13 +1,231 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, RefreshCw, Wifi, WifiOff, Clock } from "lucide-react";
+import { X, RefreshCw, Wifi, WifiOff, Clock, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import OrbitSpinner from "@/components/OrbitSpinner";
+import ScoreCounter from "@/components/ScoreCounter";
+import { Match, Prediction, UserStats, PublicProfile } from "@/api/entities";
 
 const FILTERS = [
-  { key: 'LIVE',     label: 'חי',      emoji: '🔴' },
-  { key: 'TODAY',    label: 'היום',    emoji: '📅' },
-  { key: 'FINISHED', label: 'הסתיים', emoji: '✅' },
+  { key: 'LIVE',     label: 'חי',       emoji: '🔴' },
+  { key: 'TODAY',    label: 'היום',     emoji: '📅' },
+  { key: 'FINISHED', label: 'הסתיים',  emoji: '✅' },
+  { key: 'LB',       label: 'טבלה',    emoji: '⚡' },
 ];
+
+// ── Live leaderboard helpers ──────────────────────────────────────────────────
+
+function calculateScore(prediction, match) {
+  if (match.actual_score_a === null || match.actual_score_b === null) return { totalPoints: 0 };
+  const pA = prediction.predicted_score_a, pB = prediction.predicted_score_b;
+  const aA = match.actual_score_a,         aB = match.actual_score_b;
+  let total = 0;
+  if (pA === aA && pB === aB) {
+    total += match.score_odds
+      ? (match.score_odds[`${aA}:${aB}`] ?? match.score_odds['other'] ?? 0)
+      : (match.exact_score_points || 0);
+  }
+  const pDir = pA > pB ? 'home' : pA < pB ? 'away' : 'draw';
+  const aDir = aA > aB ? 'home' : aA < aB ? 'away' : 'draw';
+  if (pDir === aDir) total += aDir === 'home' ? (match.home_win_points || 0) : aDir === 'away' ? (match.away_win_points || 0) : (match.draw_points || 0);
+  const aBTTS = aA > 0 && aB > 0, pBTTS = pA > 0 && pB > 0;
+  if (pBTTS === aBTTS) total += aBTTS ? (match.btts_yes_points || 0) : (match.btts_no_points || 0);
+  const aGoals = aA + aB, pGoals = pA + pB;
+  const aRange = aGoals <= 2 ? '0-2' : aGoals <= 4 ? '3-4' : '5+';
+  const pRange = pGoals <= 2 ? '0-2' : pGoals <= 4 ? '3-4' : '5+';
+  if (pRange === aRange) total += aRange === '0-2' ? (match.goals_0_2_points || 0) : aRange === '3-4' ? (match.goals_3_4_points || 0) : (match.goals_5_plus_points || 0);
+  return { totalPoints: parseFloat(total.toFixed(2)) };
+}
+
+function normTeam(n = '') { return n.toLowerCase().replace(/[^a-z0-9א-ת]/g, ''); }
+function teamsMatch(a, b) { const na = normTeam(a), nb = normTeam(b); return na === nb || na.includes(nb) || nb.includes(na); }
+function findDbMatch(apiMatch, dbMatches) {
+  const h = apiMatch.homeTeam?.name || '', hS = apiMatch.homeTeam?.shortName || '';
+  const a = apiMatch.awayTeam?.name || '', aS = apiMatch.awayTeam?.shortName || '';
+  return dbMatches.find(m => (teamsMatch(h, m.team_a) || teamsMatch(hS, m.team_a)) && (teamsMatch(a, m.team_b) || teamsMatch(aS, m.team_b))) || null;
+}
+
+const RANK_COLOR  = r => r === 1 ? '#FFD700' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : 'rgba(255,255,255,.45)';
+const RANK_BORDER = r => r === 1 ? '#FFD700' : r === 2 ? '#D1D5DB' : r === 3 ? '#D97706' : '#475569';
+const RANK_BG     = r => r === 1 ? 'linear-gradient(135deg,rgba(250,204,21,.22),rgba(245,158,11,.22))'
+                       : r === 2 ? 'linear-gradient(135deg,rgba(209,213,219,.18),rgba(156,163,175,.18))'
+                       : r === 3 ? 'linear-gradient(135deg,rgba(245,158,11,.20),rgba(217,119,6,.20))'
+                       : 'rgba(30,41,59,.60)';
+
+function DeltaIcon({ delta }) {
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div key={delta} initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -6 }} transition={{ duration: 0.2 }}>
+        {delta > 0
+          ? <span className="flex items-center gap-0.5 text-emerald-400 text-[11px] font-bold"><TrendingUp className="w-3.5 h-3.5"/>+{delta}</span>
+          : delta < 0
+          ? <span className="flex items-center gap-0.5 text-red-400 text-[11px] font-bold"><TrendingDown className="w-3.5 h-3.5"/>{delta}</span>
+          : <Minus className="w-3.5 h-3.5 text-slate-600"/>}
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+function RankCard({ row, index, total, isInitial }) {
+  const delta = row.officialRank - row.liveRank;
+  const rankFromBottom = total - 1 - index;
+  const cardDelay   = isInitial ? Math.pow(rankFromBottom, 1.4) * 0.22 + (row.liveRank === 1 ? 0.3 : 0) : 0;
+  const scoreDur    = isInitial ? 1.1 : 2.8;
+  const scoreDelay  = isInitial ? cardDelay + 0.2 : 0;
+  return (
+    <motion.div layout layoutId={`lb-${row.userId}`}
+      initial={isInitial ? { opacity: 0, y: 14 } : false}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ layout: { type: 'spring', stiffness: 30, damping: 16 }, ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}) }}
+      className="relative mb-1">
+      <div style={{ transform: 'skewX(-6deg)', borderRadius: 8, overflow: 'hidden', border: `2px solid ${RANK_BORDER(row.liveRank)}`, background: RANK_BG(row.liveRank), transition: 'border-color .5s ease, background .5s ease', position: 'relative' }}>
+        <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%) skewX(6deg)', fontSize: 28, fontWeight: 900, color: RANK_COLOR(row.liveRank), opacity: 0.15, lineHeight: 1, userSelect: 'none', pointerEvents: 'none', transition: 'color .5s ease' }}>
+          {row.liveRank}
+        </span>
+        <div style={{ transform: 'skewX(6deg)', padding: '9px 6px 9px 34px' }}>
+          <div className="flex items-center gap-1">
+            <p className="flex-1 min-w-0 truncate text-xs font-semibold text-slate-200"
+              style={isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}}>
+              {row.name}
+            </p>
+            <span className="text-[11px] font-bold text-emerald-400 tabular-nums flex-shrink-0">
+              <ScoreCounter value={row.total} duration={scoreDur} delay={scoreDelay} showDecimals={true} />
+            </span>
+            <div className="flex-shrink-0 w-10 flex justify-end">
+              <DeltaIcon delta={delta} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function LiveLBTab() {
+  const [rows, setRows]           = useState([]);
+  const [status, setStatus]       = useState('loading');
+  const [liveInfo, setLiveInfo]   = useState(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState(null);
+  const isInitialRef = useRef(true);
+  const dbRef        = useRef(null);
+
+  const getName = useCallback(uid => {
+    const profiles = dbRef.current?.profiles || [];
+    return profiles.find(p => p.user_id === uid)?.display_name || uid?.slice(0, 6) || '?';
+  }, []);
+
+  const buildAndSet = useCallback((apiMatch, dbMatch, homeScore, awayScore, minute, data) => {
+    const liveMatch = { ...dbMatch, actual_score_a: homeScore, actual_score_b: awayScore };
+    const matchPreds = data.predictions.filter(p => p.match_id === dbMatch.id);
+    const latestMap = {};
+    matchPreds.forEach(p => {
+      if (!latestMap[p.user_id] || new Date(p.created_at) > new Date(latestMap[p.user_id].created_at))
+        latestMap[p.user_id] = p;
+    });
+    const confirmedMap = {};
+    data.userStats.forEach(s => { confirmedMap[s.user_id] = s.total_points || 0; });
+
+    const built = Object.values(latestMap).map(pred => {
+      const b = calculateScore(pred, liveMatch);
+      const confirmed = confirmedMap[pred.user_id] || 0;
+      return { userId: pred.user_id, name: getName(pred.user_id), confirmed, liveBonus: b.totalPoints, total: parseFloat((confirmed + b.totalPoints).toFixed(2)) };
+    });
+    const predUsers = new Set(Object.keys(latestMap));
+    data.userStats.forEach(s => {
+      if (!predUsers.has(s.user_id))
+        built.push({ userId: s.user_id, name: getName(s.user_id), confirmed: s.total_points || 0, liveBonus: 0, total: parseFloat((s.total_points || 0).toFixed(2)) });
+    });
+    built.sort((a, b) => b.total - a.total);
+    const byConfirmed = [...built].sort((a, b) => b.confirmed - a.confirmed);
+    byConfirmed.forEach((r, i) => { r.officialRank = i + 1; });
+    built.forEach((r, i) => { r.liveRank = i + 1; });
+
+    const isInitial = isInitialRef.current;
+    isInitialRef.current = false;
+    setIsInitialLoad(isInitial);
+    setRows(built);
+    setLiveInfo({ home: dbMatch.team_a, away: dbMatch.team_b, score: `${homeScore}–${awayScore}`, minute });
+    setLastUpdate(new Date());
+    setStatus('done');
+  }, [getName]);
+
+  const load = useCallback(async () => {
+    try {
+      if (!dbRef.current) {
+        const [matches, profiles, userStats, predictions] = await Promise.all([Match.list(), PublicProfile.list(), UserStats.list(), Prediction.list()]);
+        dbRef.current = { matches, profiles, userStats, predictions };
+      }
+      const data = dbRef.current;
+      const localDate = new Date().toLocaleDateString('sv-SE');
+      const res  = await fetch(`/api/football?competition=WC&filter=LIVE&date=${localDate}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error);
+      const liveMatches = json.matches || [];
+      if (liveMatches.length === 0) { setStatus('no-live'); setLastUpdate(new Date()); return; }
+      const unfinished = data.matches.filter(m => !m.is_finished);
+      let dbMatch = null, apiMatch = null;
+      for (const lm of liveMatches) { const f = findDbMatch(lm, unfinished); if (f) { dbMatch = f; apiMatch = lm; break; } }
+      if (!dbMatch) { setStatus('no-match'); setLastUpdate(new Date()); return; }
+      const homeScore = apiMatch.score?.fullTime?.home ?? apiMatch.score?.halfTime?.home ?? 0;
+      const awayScore = apiMatch.score?.fullTime?.away ?? apiMatch.score?.halfTime?.away ?? 0;
+      buildAndSet(apiMatch, dbMatch, homeScore, awayScore, apiMatch.minute ?? null, data);
+    } catch (e) {
+      console.error('[LiveLBTab]', e);
+      setStatus('error');
+    }
+  }, [buildAndSet]);
+
+  useEffect(() => {
+    load();
+    const iv = setInterval(load, 30000);
+    return () => clearInterval(iv);
+  }, [load]);
+
+  if (status === 'loading') return (
+    <div className="flex flex-col items-center justify-center py-20 gap-3">
+      <div className="w-8 h-8 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+      <span className="text-slate-500 text-xs">טוען טבלה לייב...</span>
+    </div>
+  );
+  if (status === 'no-live') return (
+    <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
+      <span className="text-4xl">⚽</span>
+      <p className="text-slate-400 text-sm font-medium">אין משחק חי כרגע</p>
+      <p className="text-slate-600 text-xs">הטבלה תעדכן כשמשחק יתחיל</p>
+    </div>
+  );
+  if (status === 'no-match' || status === 'error') return (
+    <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
+      <WifiOff className="w-8 h-8 text-red-400/40" />
+      <p className="text-slate-500 text-sm">לא ניתן לטעון את הטבלה</p>
+    </div>
+  );
+
+  return (
+    <div>
+      <style>{`@keyframes lb-blur-focus { from { filter: blur(6px); opacity: 0; } to { filter: blur(0); opacity: 1; } }`}</style>
+      {liveInfo && (
+        <div className="mb-3 px-3 py-2 rounded-xl flex items-center gap-2" style={{ background: 'rgba(52,211,153,.08)', border: '1px solid rgba(52,211,153,.25)' }}>
+          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
+          <span className="font-bold text-xs text-emerald-400">{liveInfo.home} {liveInfo.score} {liveInfo.away}</span>
+          {liveInfo.minute && <span className="text-slate-500 text-[10px]">{liveInfo.minute}'</span>}
+        </div>
+      )}
+      <div style={{ maxWidth: 280, margin: '0 auto' }}>
+        <AnimatePresence>
+          {rows.map((row, idx) => (
+            <RankCard key={row.userId} row={row} index={idx} total={rows.length} isInitial={isInitialLoad} />
+          ))}
+        </AnimatePresence>
+      </div>
+      {lastUpdate && (
+        <p className="text-center text-slate-700 text-[10px] mt-3 flex items-center justify-center gap-1">
+          <Clock className="w-3 h-3" /> עודכן {lastUpdate.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+        </p>
+      )}
+    </div>
+  );
+}
 
 const STATUS_MAP = {
   IN_PLAY:   { label: 'LIVE',    dot: 'bg-red-500',    text: 'text-red-400',    pulse: true  },
@@ -159,10 +377,11 @@ export default function LiveDataPanel({ onClose }) {
   const [filter, setFilter] = useState('LIVE');
 
   const load = useCallback(async () => {
+    if (filter === 'LB') return;
     setLoading(true);
     setError(null);
     try {
-      const localDate = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD in local timezone
+      const localDate = new Date().toLocaleDateString('sv-SE');
       const res = await fetch(`/api/football?competition=WC&filter=${filter}&date=${localDate}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'שגיאה');
@@ -259,7 +478,7 @@ export default function LiveDataPanel({ onClose }) {
                   <motion.div
                     layoutId="filter-pill"
                     className="absolute inset-0 rounded-lg"
-                    style={{ background: 'linear-gradient(135deg, #f5c518, #fde68a)' }}
+                    style={{ background: f.key === 'LB' ? 'linear-gradient(135deg,#8b5cf6,#6366f1)' : 'linear-gradient(135deg, #f5c518, #fde68a)' }}
                     transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
                   />
                 )}
@@ -291,6 +510,9 @@ export default function LiveDataPanel({ onClose }) {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-white/10">
+          {filter === 'LB' ? (
+            <LiveLBTab />
+          ) : (
           <AnimatePresence mode="wait">
             {loading && matches.length === 0 ? (
               <motion.div
@@ -329,6 +551,7 @@ export default function LiveDataPanel({ onClose }) {
               </motion.div>
             )}
           </AnimatePresence>
+          )}
         </div>
 
         {/* Bottom gold line */}
