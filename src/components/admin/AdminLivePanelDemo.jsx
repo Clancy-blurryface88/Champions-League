@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { WifiOff, Clock, Zap, FlaskConical, Plus, Minus, RefreshCw } from "lucide-react";
+import { WifiOff, Clock, Zap, FlaskConical, Plus, Minus, RefreshCw, TrendingUp, TrendingDown } from "lucide-react";
 import { Match, Prediction, UserStats, PublicProfile } from "@/api/entities";
 import ScoreCounter from "@/components/ScoreCounter";
 
@@ -106,205 +106,105 @@ const RANK_BG     = r => r === 1 ? 'linear-gradient(135deg,rgba(250,204,21,.22),
                        : 'rgba(30,41,59,.60)';
 const MEDAL = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
-// ── Delta indicator — 4 styles ──────────────────────────────────────────────
-function DeltaIndicator({ delta, moved, style }) {
-  const up    = delta > 0;
-  const color = up ? '#4ade80' : '#f87171';
-  const n     = Math.abs(delta);
-
-  const inner = (() => {
-    if (delta === 0) return (
-      <span className="text-slate-600 text-xs font-bold">=</span>
-    );
-
-    if (style === 'bounce') return (
-      <div className="flex flex-col items-center">
-        <motion.span
-          animate={{ y: up ? [0,-4,0] : [0,4,0] }}
-          transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ fontSize: 26, lineHeight: 1, color, display: 'block' }}>
-          {up ? '↑' : '↓'}
-        </motion.span>
-        <span className="text-[9px] font-bold text-center leading-tight mt-0.5" style={{ color }}>{moved}</span>
-      </div>
-    );
-
-    if (style === 'badge') return (
-      <motion.div
-        className="w-10 h-10 rounded-full flex flex-col items-center justify-center"
-        animate={{ scale: [1, 1.12, 1] }} transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ background: `${color}18`, border: `2px solid ${color}55` }}>
-        <span style={{ fontSize: 11, color, fontWeight: 900, lineHeight: 1 }}>{up ? '▲' : '▼'}</span>
-        <span style={{ fontSize: 13, color, fontWeight: 900, lineHeight: 1 }}>{n}</span>
-      </motion.div>
-    );
-
-    if (style === 'bar') return (
-      <div className="flex flex-col items-center gap-1 w-full px-1">
-        <span className="text-[10px] font-black" style={{ color }}>{up ? '+' : '-'}{n}</span>
-        <div className="h-2 rounded-full w-full overflow-hidden bg-slate-700/60">
-          <motion.div className="h-full rounded-full"
-            style={{ background: `linear-gradient(90deg, ${color}99, ${color})` }}
-            initial={{ width: 0 }}
-            animate={{ width: `${Math.min(n * 28, 100)}%` }}
-            transition={{ duration: 0.5, ease: 'easeOut' }} />
-        </div>
-        <span className="text-[8px] font-bold leading-tight text-center" style={{ color }}>{moved}</span>
-      </div>
-    );
-
-    if (style === 'flame') return (
-      <div className="flex flex-col items-center gap-0.5">
-        <motion.span
-          animate={{ scale: [1, 1.2, 1], rotate: up ? [-5,5,-5] : [5,-5,5] }}
-          transition={{ duration: 1.0, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ fontSize: n >= 3 ? 22 : 16, lineHeight: 1 }}>
-          {up ? (n >= 3 ? '🚀' : '⬆️') : (n >= 3 ? '💀' : '⬇️')}
-        </motion.span>
-        <span className="text-[9px] font-bold text-center leading-tight" style={{ color }}>{moved}</span>
-      </div>
-    );
-  })();
-
+// ── Delta indicator — TrendingUp/Down + number (same as demo option 2) ──────
+function DeltaIcon({ delta }) {
   return (
     <AnimatePresence mode="wait">
-      <motion.div key={`${delta}-${style}`}
-        initial={{ opacity: 0, scale: .6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: .6 }}
-        transition={{ duration: 0.22, type: 'spring', stiffness: 400, damping: 18 }}
-        className="flex items-center justify-center w-full">
-        {inner}
+      <motion.div key={delta}
+        initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -6 }}
+        transition={{ duration: 0.2 }}>
+        {delta > 0
+          ? <span className="flex items-center gap-0.5 text-emerald-400 text-[11px] font-bold"><TrendingUp className="w-3.5 h-3.5"/>+{delta}</span>
+          : delta < 0
+          ? <span className="flex items-center gap-0.5 text-red-400 text-[11px] font-bold"><TrendingDown className="w-3.5 h-3.5"/>{delta}</span>
+          : <Minus className="w-3.5 h-3.5 text-slate-600"/>
+        }
       </motion.div>
     </AnimatePresence>
   );
 }
 
-// ── Rank card — 3 shapes ────────────────────────────────────────────────────
-function RankCard({ row, index, total, shockwave, isInitial, arrowStyle, cardShape }) {
+// ── Rank card ───────────────────────────────────────────────────────────────
+// Layout (LTR): [ghost rank] [name flex-1] [score] [delta icon]
+// Ghost rank = large translucent number, no medals
+// No bonus chip — points just count up to the new total
+function RankCard({ row, index, total, shockwave, isInitial }) {
   const delta          = row.officialRank - row.liveRank;
-  const moved          = deltaText(delta);
-  const rankFromBottom = total - 1 - index;
-  const cardDelay      = isInitial ? Math.pow(rankFromBottom, 1.6) * 0.36 + (row.liveRank === 1 ? 0.5 : 0) : 0;
-  // Initial reveal: 1.4s | Live update: 3.2s for suspense
-  const scoreDuration  = isInitial ? 1.4 : 3.2;
-  const scoreDelay     = isInitial ? cardDelay + 0.25 : 0;
-  const shockDelay     = (total - 1 - index) * 0.22;
+  const rankFromBottom = total - 1 - index; // 0=rank1 (longest delay)
+  // Faster initial: pow 1.4 * 0.26 instead of 1.6 * 0.36
+  const cardDelay      = isInitial ? Math.pow(rankFromBottom, 1.4) * 0.26 + (row.liveRank === 1 ? 0.4 : 0) : 0;
+  // Initial: 1.1s | Live update: 2.8s (suspense)
+  const scoreDuration  = isInitial ? 1.1 : 2.8;
+  const scoreDelay     = isInitial ? cardDelay + 0.2 : 0;
+  const shockDelay     = (total - 1 - index) * 0.18;
   const border         = RANK_BORDER(row.liveRank);
   const bg             = RANK_BG(row.liveRank);
 
-  const rankBadge = (
-    <span className="flex-shrink-0 text-center" style={{ width: 28, transition: 'all 0.4s ease' }}>
-      {MEDAL[row.liveRank] || <span style={{ color: RANK_COLOR(row.liveRank), fontSize: 13, fontWeight: 900 }}>{row.liveRank}</span>}
-    </span>
-  );
+  return (
+    <motion.div
+      layout
+      layoutId={row.userId}
+      initial={isInitial ? { opacity: 0, y: 14 } : false}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        // Slower, more graceful reorder on live update
+        layout: { type: 'spring', stiffness: 160, damping: 26 },
+        ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}),
+      }}
+      className="relative mb-1.5">
 
-  const nameAndPts = (compact = false) => (
-    <div className="flex-1 min-w-0">
-      <p className={`truncate font-semibold text-slate-200 ${compact ? 'text-[11px]' : 'text-xs'}`}
-        style={isInitial ? { animation: `lp-blur-focus 1.1s ease-out both`, animationDelay: `${cardDelay}s` } : {}}>
-        {row.name}
-      </p>
-      {!compact && (
-        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-          <span className="text-[11px] font-bold text-emerald-400">
-            <ScoreCounter value={row.total} duration={scoreDuration} delay={scoreDelay} showDecimals={true} /> Pts
-          </span>
-          <AnimatePresence mode="wait">
-            {row.liveBonus > 0 && (
-              <motion.span key={`b${row.liveBonus}`}
-                initial={{ opacity: 0, scale: .7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: .7 }}
-                transition={isInitial ? { delay: scoreDelay + .8, type: 'spring', stiffness: 350, damping: 18 } : { duration: 0.3 }}
-                className="text-[10px] font-bold rounded-full px-1.5 py-0.5"
-                style={{ background: 'rgba(52,211,153,.15)', color: '#34d399', border: '1px solid rgba(52,211,153,.3)' }}>
-                +{row.liveBonus}
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
-    </div>
-  );
-
-  const deltaCol = (
-    <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 52 }}>
-      <DeltaIndicator delta={delta} moved={moved} style={arrowStyle} />
-    </div>
-  );
-
-  const motionProps = {
-    layout: true,
-    layoutId: row.userId,
-    initial: isInitial ? { opacity: 0, y: 16 } : false,
-    animate: { opacity: 1, y: 0 },
-    transition: {
-      layout: { type: 'spring', stiffness: 320, damping: 32 },
-      ...(isInitial ? { delay: cardDelay, duration: 0.55, ease: 'easeOut' } : {}),
-    },
-    className: 'relative mb-1.5',
-  };
-
-  // ── Shape: skew (parallelogram) ──
-  if (cardShape === 'skew') return (
-    <motion.div {...motionProps}>
       {shockwave && isInitial && (
         <motion.div className="absolute inset-0 rounded-lg pointer-events-none"
-          initial={{ opacity: 0 }} animate={{ opacity: [0, .22, 0] }}
-          transition={{ duration: .6, delay: shockDelay }}
+          initial={{ opacity: 0 }} animate={{ opacity: [0, .2, 0] }}
+          transition={{ duration: .55, delay: shockDelay }}
           style={{ background: 'rgba(250,204,21,.22)', zIndex: 5 }} />
       )}
-      <div style={{ transform: 'skewX(-6deg)', borderRadius: 8, overflow: 'hidden', border: `2px solid ${border}`, background: bg, transition: 'border-color .5s,background .5s' }}>
-        <div style={{ transform: 'skewX(6deg)', padding: '5px 10px' }}>
-          <div className="flex items-center gap-2">{rankBadge}{nameAndPts()}{deltaCol}</div>
-        </div>
-      </div>
-    </motion.div>
-  );
 
-  // ── Shape: strip (straight + colored left border) ──
-  if (cardShape === 'strip') return (
-    <motion.div {...motionProps}>
-      {shockwave && isInitial && (
-        <motion.div className="absolute inset-0 rounded-lg pointer-events-none"
-          initial={{ opacity: 0 }} animate={{ opacity: [0, .22, 0] }}
-          transition={{ duration: .6, delay: shockDelay }}
-          style={{ background: 'rgba(250,204,21,.22)', zIndex: 5 }} />
-      )}
-      <div className="flex items-center overflow-hidden rounded-xl"
-        style={{ background: 'rgba(15,23,42,.7)', border: '1px solid rgba(255,255,255,.06)', transition: 'border-color .5s' }}>
-        <div className="w-1 self-stretch flex-shrink-0 rounded-l-xl" style={{ background: border, transition: 'background .5s' }} />
-        <div className="flex items-center gap-2 px-3 py-2.5 flex-1 min-w-0">{rankBadge}{nameAndPts()}{deltaCol}</div>
-      </div>
-    </motion.div>
-  );
-
-  // ── Shape: compact (thin pill row) ──
-  if (cardShape === 'compact') return (
-    <motion.div {...motionProps}>
-      <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl"
-        style={{ background: bg, border: `1px solid ${border}55`, transition: 'border-color .5s,background .5s' }}>
-        {rankBadge}
-        {nameAndPts(true)}
-        <span className="text-[11px] font-bold text-emerald-400 flex-shrink-0">
-          <ScoreCounter value={row.total} duration={scoreDuration} delay={scoreDelay} showDecimals={true} />
+      {/* parallelogram card */}
+      <div style={{
+        transform: 'skewX(-6deg)', borderRadius: 8, overflow: 'hidden',
+        border: `2px solid ${border}`, background: bg,
+        transition: 'border-color .5s ease, background .5s ease',
+        position: 'relative',
+      }}>
+        {/* ghost rank number — large, translucent, behind content */}
+        <span style={{
+          position: 'absolute', left: 8, top: '50%',
+          transform: 'translateY(-50%) skewX(6deg)',
+          fontSize: 36, fontWeight: 900,
+          color: RANK_COLOR(row.liveRank),
+          opacity: 0.15, lineHeight: 1,
+          userSelect: 'none', pointerEvents: 'none',
+          transition: 'color .5s ease',
+        }}>
+          {row.liveRank}
         </span>
-        <AnimatePresence mode="wait">
-          {row.liveBonus > 0 && (
-            <motion.span key={`b${row.liveBonus}`}
-              initial={{ opacity: 0, scale: .7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: .7 }}
-              transition={{ duration: 0.25 }}
-              className="text-[9px] font-bold rounded-full px-1 py-0.5 flex-shrink-0"
-              style={{ background: 'rgba(52,211,153,.15)', color: '#34d399' }}>
-              +{row.liveBonus}
-            </motion.span>
-          )}
-        </AnimatePresence>
-        <div className="flex-shrink-0 w-10">
-          <DeltaIndicator delta={delta} moved={moved} style={arrowStyle} />
+
+        {/* content row — counter-skewed, pl to avoid ghost overlap */}
+        <div style={{ transform: 'skewX(6deg)', padding: '6px 10px 6px 32px' }}>
+          <div className="flex items-center gap-2">
+
+            {/* name */}
+            <p className="flex-1 min-w-0 truncate text-xs font-semibold text-slate-200"
+              style={isInitial ? { animation: `lp-blur-focus 1.0s ease-out both`, animationDelay: `${cardDelay}s` } : {}}>
+              {row.name}
+            </p>
+
+            {/* score — right of name */}
+            <span className="text-[11px] font-bold text-emerald-400 tabular-nums flex-shrink-0">
+              <ScoreCounter value={row.total} duration={scoreDuration} delay={scoreDelay} showDecimals={true} />
+            </span>
+
+            {/* delta — right of score */}
+            <div className="flex-shrink-0 w-12 flex justify-end">
+              <DeltaIcon delta={delta} />
+            </div>
+
+          </div>
         </div>
       </div>
     </motion.div>
   );
-
-  return null;
 }
 
 // ── Live Leaderboard Tab ────────────────────────────────────────────────────
@@ -315,10 +215,6 @@ function LiveLBTab() {
   const [shockwave, setShockwave] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-
-  // display options
-  const [arrowStyle, setArrowStyle] = useState('bounce');
-  const [cardShape,  setCardShape]  = useState('skew');
 
   // simulation state
   const [simMode, setSimMode]   = useState(false);
@@ -585,52 +481,7 @@ function LiveLBTab() {
         </div>
       )}
 
-      {/* ── display options ── */}
-      <div className="mb-3 space-y-2 px-1">
-        <div>
-          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">צורת קלף</p>
-          <div className="flex gap-1.5">
-            {[
-              { k: 'skew',    label: 'מקבילית' },
-              { k: 'strip',   label: 'פס' },
-              { k: 'compact', label: 'קומפקטי' },
-            ].map(o => (
-              <button key={o.k} onClick={() => setCardShape(o.k)}
-                className="flex-1 py-1 rounded-lg text-[10px] font-bold border transition-all"
-                style={{
-                  background: cardShape === o.k ? 'rgba(139,92,246,.2)' : 'rgba(30,41,59,.5)',
-                  border: `1px solid ${cardShape === o.k ? 'rgba(139,92,246,.5)' : 'rgba(71,85,105,.4)'}`,
-                  color: cardShape === o.k ? '#a78bfa' : '#64748b',
-                }}>
-                {o.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div>
-          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">סגנון חץ</p>
-          <div className="flex gap-1.5">
-            {[
-              { k: 'bounce', label: '↑ קפצני' },
-              { k: 'badge',  label: '⬤ עיגול' },
-              { k: 'bar',    label: '▬ פס' },
-              { k: 'flame',  label: '🔥 אפקט' },
-            ].map(o => (
-              <button key={o.k} onClick={() => setArrowStyle(o.k)}
-                className="flex-1 py-1 rounded-lg text-[10px] font-bold border transition-all"
-                style={{
-                  background: arrowStyle === o.k ? 'rgba(52,211,153,.15)' : 'rgba(30,41,59,.5)',
-                  border: `1px solid ${arrowStyle === o.k ? 'rgba(52,211,153,.4)' : 'rgba(71,85,105,.4)'}`,
-                  color: arrowStyle === o.k ? '#34d399' : '#64748b',
-                }}>
-                {o.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* leaderboard cards */}
+      {/* leaderboard cards — rank 1 top, last place bottom */}
       <AnimatePresence>
         {rows.map((row, idx) => (
           <RankCard
@@ -640,8 +491,6 @@ function LiveLBTab() {
             total={rows.length}
             shockwave={shockwave}
             isInitial={isInitialLoad}
-            arrowStyle={arrowStyle}
-            cardShape={cardShape}
           />
         ))}
       </AnimatePresence>
