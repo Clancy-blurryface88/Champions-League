@@ -147,7 +147,7 @@ function RankCard({ row, index, total, shockwave, isInitial }) {
       initial={isInitial ? { opacity: 0, y: 14 } : false}
       animate={{ opacity: 1, y: 0 }}
       transition={{
-        layout: { type: 'spring', stiffness: 60, damping: 20 },
+        layout: { type: 'spring', stiffness: 30, damping: 16 },
         ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}),
       }}
       className="relative mb-1">
@@ -180,7 +180,7 @@ function RankCard({ row, index, total, shockwave, isInitial }) {
         </span>
 
         {/* content row — counter-skewed, pl to avoid ghost overlap */}
-        <div style={{ transform: 'skewX(6deg)', padding: '3px 6px 3px 24px' }}>
+        <div style={{ transform: 'skewX(6deg)', padding: '5px 4px 5px 22px' }}>
           <div className="flex items-center gap-1">
 
             {/* name */}
