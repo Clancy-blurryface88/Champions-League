@@ -19,6 +19,7 @@ import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminLiveLeaderboard from "../components/admin/AdminLiveLeaderboard";
 import AdminLiveLeaderboardDemo from "../components/admin/AdminLiveLeaderboardDemo";
+import AdminLivePanelDemo from "../components/admin/AdminLivePanelDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -80,6 +81,7 @@ export default function Admin() {
       case 'reset':      return <AdminReset />;
       case 'live-leaderboard': return <AdminLiveLeaderboard />;
       case 'live-lb-demo': return <AdminLiveLeaderboardDemo />;
+      case 'live-panel-demo': return <AdminLivePanelDemo />;
 default: return <AdminRounds />;
     }
   };
@@ -97,6 +99,7 @@ default: return <AdminRounds />;
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'live-leaderboard', label: 'Live Leaderboard', icon: Zap },
     { id: 'live-lb-demo',    label: 'Live LB — דמו',   icon: Zap },
+    { id: 'live-panel-demo', label: 'Live Panel — דמו', icon: Zap },
   ];
 
   return (
