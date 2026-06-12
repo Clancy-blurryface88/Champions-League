@@ -504,7 +504,7 @@ export default function Layout({ children, currentPageName }) {
             className="fixed left-0 right-0 pointer-events-none"
             style={{
               top: '36px',
-              height: '76px',
+              height: '60px',
               zIndex: 35,
               background: 'rgba(5,10,20,0.35)',
               backdropFilter: 'blur(28px) saturate(1.6)',
@@ -515,7 +515,7 @@ export default function Layout({ children, currentPageName }) {
         )}
 
         {/* כפתור המבורגר עם אייקון אסטרטגיה */}
-        <div className="fixed top-[44px] left-4 z-40">
+        <div className="fixed top-[38px] left-4 z-40">
           <Button
             variant="ghost"
             onClick={() => setShowSidebar(true)}
@@ -668,7 +668,7 @@ export default function Layout({ children, currentPageName }) {
 
         {/* כפתור כניסה כשאין משתמש מחובר */}
         {!user && !authLoading &&
-        <div className="fixed top-[44px] right-4 z-40">
+        <div className="fixed top-[38px] right-4 z-40">
           <Button
             onClick={handleLogin}
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-2 text-sm font-medium backdrop-blur-sm shadow-lg"
@@ -680,7 +680,7 @@ export default function Layout({ children, currentPageName }) {
 
         {/* User Info & Admin Button */}
         {user &&
-        <div className="fixed top-[44px] right-4 z-40 flex items-center gap-2">
+        <div className="fixed top-[38px] right-4 z-40 flex items-center gap-2">
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -690,7 +690,7 @@ export default function Layout({ children, currentPageName }) {
 
                   {/* Replaced AnimatedBorderButton with a simple div as per outline */}
                   <div
-                    className="flex items-center gap-2.5 rounded-full px-3 py-1.5 transition-all duration-200"
+                    className="flex items-center gap-2 rounded-full px-2.5 py-1 transition-all duration-200"
                     style={{
                       background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(8,20,50,0.55) 100%)',
                       border: '1px solid rgba(245,197,24,0.35)',
@@ -702,11 +702,11 @@ export default function Layout({ children, currentPageName }) {
                     <img
                       src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/8e94debbc_ssmvtnogc7ue0jufjd03h6mj89.png"
                       alt="User Profile"
-                      className="w-7 h-7 rounded-full object-cover flex-shrink-0"
+                      className="w-6 h-6 rounded-full object-cover flex-shrink-0"
                       style={{ boxShadow: '0 0 0 2px #f5c518' }}
                     />
                     <span
-                      className="text-amber-400 text-sm font-semibold"
+                      className="text-amber-400 text-xs font-semibold"
                       style={{ fontFamily: "'Outfit', sans-serif" }}
                     >
                       {user.display_name || user.full_name}
@@ -763,7 +763,7 @@ export default function Layout({ children, currentPageName }) {
 
         <MatchTickerBar onClick={() => setShowDateSheet(true)} />
 
-        <main className="relative pt-28 pb-20">
+        <main className="relative pt-24 pb-20">
           {children}
         </main>
 
