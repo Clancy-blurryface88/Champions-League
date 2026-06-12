@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, Zap } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, Zap, HelpCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
@@ -19,6 +19,7 @@ import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminLiveLeaderboard from "../components/admin/AdminLiveLeaderboard";
 import AdminLivePanelDemo from "../components/admin/AdminLivePanelDemo";
+import AdminTriviaDemo from "../components/admin/AdminTriviaDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -80,6 +81,7 @@ export default function Admin() {
       case 'reset':      return <AdminReset />;
       case 'live-leaderboard': return <AdminLiveLeaderboard />;
       case 'live-panel-demo': return <AdminLivePanelDemo />;
+      case 'trivia-demo': return <AdminTriviaDemo />;
 default: return <AdminRounds />;
     }
   };
@@ -97,6 +99,7 @@ default: return <AdminRounds />;
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'live-leaderboard', label: 'Live Leaderboard', icon: Zap },
     { id: 'live-panel-demo', label: 'Live Panel — דמו', icon: Zap },
+    { id: 'trivia-demo',     label: 'Trivia יומית — דמו', icon: HelpCircle },
   ];
 
   return (
