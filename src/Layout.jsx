@@ -504,7 +504,7 @@ export default function Layout({ children, currentPageName }) {
             className="fixed left-0 right-0 pointer-events-none"
             style={{
               top: '36px',
-              height: '60px',
+              height: '65px',
               zIndex: 35,
               background: 'rgba(5,10,20,0.35)',
               backdropFilter: 'blur(28px) saturate(1.6)',
