@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, XCircle, ChevronLeft, ChevronRight, RotateCcw, HelpCircle } from "lucide-react";
+import { CheckCircle2, XCircle, ChevronLeft, ChevronRight, RotateCcw, HelpCircle, CalendarCheck, CalendarX } from "lucide-react";
+
+const LS_KEY = () => `trivia_answered_${new Date().toLocaleDateString('sv-SE')}`;
 
 // ── Sample questions ──────────────────────────────────────────────────────────
 const QUESTIONS = [
@@ -208,12 +210,33 @@ function TriviaCard({ q, qIndex, total, onAnswer, onNext, onPrev, onReset }) {
 }
 
 export default function AdminTriviaDemo() {
-  const [qIndex, setQIndex]     = useState(0);
-  const [answered, setAnswered] = useState({}); // qIndex → true/false
-  const [key, setKey]           = useState(0);  // force remount on reset
+  const [qIndex, setQIndex]       = useState(0);
+  const [answered, setAnswered]   = useState({});
+  const [key, setKey]             = useState(0);
+  const [alreadyAnswered, setAlreadyAnswered] = useState(() => !!localStorage.getItem(LS_KEY()));
+
+  const refreshLsState = useCallback(() => {
+    setAlreadyAnswered(!!localStorage.getItem(LS_KEY()));
+  }, []);
+
+  const simulateNewDay = () => {
+    localStorage.removeItem(LS_KEY());
+    refreshLsState();
+    setAnswered({});
+    setKey(k => k + 1);
+    setQIndex(0);
+  };
+
+  const simulateAlreadyAnswered = () => {
+    localStorage.setItem(LS_KEY(), '1');
+    refreshLsState();
+  };
 
   const handleAnswer = (correct) => {
     setAnswered(prev => ({ ...prev, [qIndex]: correct }));
+    // simulate what the real app will do — write to localStorage
+    localStorage.setItem(LS_KEY(), '1');
+    refreshLsState();
   };
 
   const handleReset = () => {
@@ -224,6 +247,7 @@ export default function AdminTriviaDemo() {
 
   const score = Object.values(answered).filter(Boolean).length;
   const total = QUESTIONS.length;
+  const todayKey = LS_KEY();
 
   return (
     <div className="space-y-6">
@@ -236,6 +260,41 @@ export default function AdminTriviaDemo() {
           <h2 className="text-white font-bold text-lg">Trivia יומית — דמו</h2>
           <p className="text-slate-400 text-sm">תצוגה מקדימה של חלון השאלה היומית</p>
         </div>
+      </div>
+
+      {/* localStorage simulator */}
+      <div className="rounded-xl p-4 space-y-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">סימולטור "פעם אחת ביום"</p>
+
+        <div className="flex items-center gap-2.5">
+          <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${alreadyAnswered ? 'bg-emerald-400' : 'bg-slate-600'}`} />
+          <span className="text-xs text-slate-400 flex-1">
+            מפתח localStorage:&nbsp;
+            <code className="text-slate-300 bg-slate-800 px-1.5 py-0.5 rounded text-[11px]">{todayKey}</code>
+          </span>
+          <span className={`text-xs font-bold ${alreadyAnswered ? 'text-emerald-400' : 'text-slate-600'}`}>
+            {alreadyAnswered ? '✓ קיים' : '✗ לא קיים'}
+          </span>
+        </div>
+
+        <div className="flex gap-2">
+          <button type="button" onClick={simulateNewDay}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all flex-1 justify-center"
+            style={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.35)', color: '#818cf8' }}>
+            <CalendarX className="w-3.5 h-3.5" /> סמלץ יום חדש
+          </button>
+          <button type="button" onClick={simulateAlreadyAnswered} disabled={alreadyAnswered}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all flex-1 justify-center disabled:opacity-40"
+            style={{ background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.3)', color: '#34d399' }}>
+            <CalendarCheck className="w-3.5 h-3.5" /> סמלץ כבר נענה
+          </button>
+        </div>
+
+        <p className="text-slate-600 text-[11px]">
+          {alreadyAnswered
+            ? 'המשתמש כבר ענה היום — הטריוויה לא תוצג בכניסה.'
+            : 'המשתמש עוד לא ענה היום — הטריוויה תוצג בכניסה הבאה.'}
+        </p>
       </div>
 
       {/* Score strip */}
