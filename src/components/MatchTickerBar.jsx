@@ -64,24 +64,29 @@ export default function MatchTickerBar({ onClick }) {
       style={{ height: '36px', background: 'rgba(3,13,26,0.97)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(245,197,24,0.22)', boxShadow: '0 1px 20px rgba(245,197,24,0.06)' }}
     >
       {/* Date button */}
-      <div
+      <button
         onClick={onClick}
         style={{
           flexShrink: 0,
+          alignSelf: 'stretch',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '0 14px',
-          height: '36px',
-          minWidth: 60,
+          padding: '0 16px',
+          minWidth: 64,
           cursor: 'pointer',
+          borderLeft: '1px solid rgba(245,197,24,0.3)',
+          background: 'none',
+          border: 'none',
           borderLeft: '1px solid rgba(245,197,24,0.3)',
           position: 'relative',
           zIndex: 1,
+          touchAction: 'manipulation',
+          WebkitTapHighlightColor: 'transparent',
         }}
       >
         <span style={{ color: '#fbbf24', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>{dateLabel}</span>
-      </div>
+      </button>
 
       {/* Single match — centered, no animation */}
       {single ? (
