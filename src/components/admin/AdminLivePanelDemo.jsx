@@ -106,91 +106,101 @@ const RANK_BG     = r => r === 1 ? 'linear-gradient(135deg,rgba(250,204,21,.22),
                        : 'rgba(30,41,59,.60)';
 const MEDAL = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
-// index 0 = rank 1 (array sorted ascending) → gets LONGEST delay (appears last = most drama)
-// index N-1 = last place → gets delay 0 (appears first, at the bottom)
-function RankCard({ row, index, total, shockwave, animKey }) {
+// isInitial=true  → full reveal animation (delays, blur-focus, ScoreCounter from 0)
+// isInitial=false → layout-only (card slides to new position, ScoreCounter continues from prev value)
+function RankCard({ row, index, total, shockwave, isInitial }) {
   const delta      = row.officialRank - row.liveRank; // >0 = moved up
   const moved      = deltaText(delta);
-  const rankFromBottom = total - 1 - index; // 0 for rank 1, N-1 for last
-  const cardDelay  = Math.pow(rankFromBottom, 1.6) * 0.36 + (row.liveRank === 1 ? 0.5 : 0);
-  const scoreDelay = cardDelay + 0.25;
-  const arrowDelay = cardDelay + 0.6;
-  const shockDelay = (total - 1 - index) * 0.22; // glow goes from rank 1 downward
+  const rankFromBottom = total - 1 - index; // 0=rank1 (longest delay), N-1=last (instant)
+  const cardDelay  = isInitial ? Math.pow(rankFromBottom, 1.6) * 0.36 + (row.liveRank === 1 ? 0.5 : 0) : 0;
+  const scoreDelay = isInitial ? cardDelay + 0.25 : 0;
+  const shockDelay = (total - 1 - index) * 0.22;
 
   return (
     <motion.div
-      key={`${row.userId}-${animKey}`}
-      initial={{ opacity: 0, y: 16 }}
+      layout
+      layoutId={row.userId}
+      initial={isInitial ? { opacity: 0, y: 16 } : false}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: cardDelay, duration: 0.55, ease: 'easeOut' }}
+      transition={{
+        layout: { type: 'spring', stiffness: 320, damping: 32 },
+        ...(isInitial ? { delay: cardDelay, duration: 0.55, ease: 'easeOut' } : {}),
+      }}
       className="relative mb-2">
 
-      {shockwave && (
+      {/* cascade glow — only on initial reveal */}
+      {shockwave && isInitial && (
         <motion.div className="absolute inset-0 rounded-lg pointer-events-none"
           initial={{ opacity: 0 }} animate={{ opacity: [0, .22, 0] }}
-          transition={{ duration: .6, delay: shockDelay, ease: 'easeOut' }}
+          transition={{ duration: .6, delay: shockDelay }}
           style={{ background: 'rgba(250,204,21,.22)', zIndex: 5 }} />
       )}
 
-      <div style={{ transform: 'skewX(-6deg)', borderRadius: 8, overflow: 'hidden', border: `2px solid ${RANK_BORDER(row.liveRank)}`, background: RANK_BG(row.liveRank) }}>
+      <div style={{
+        transform: 'skewX(-6deg)', borderRadius: 8, overflow: 'hidden',
+        border: `2px solid ${RANK_BORDER(row.liveRank)}`,
+        background: RANK_BG(row.liveRank),
+        transition: 'border-color 0.5s ease, background 0.5s ease',
+      }}>
         <div style={{ transform: 'skewX(6deg)', padding: '6px 12px' }}>
           <div className="flex items-center gap-2">
 
-            {/* rank badge */}
-            <span className="text-lg w-7 flex-shrink-0 text-center">
+            {/* rank badge — transitions color when rank changes */}
+            <span className="text-lg w-7 flex-shrink-0 text-center" style={{ transition: 'all 0.4s ease' }}>
               {MEDAL[row.liveRank] || <span style={{ color: RANK_COLOR(row.liveRank), fontSize: 13, fontWeight: 900 }}>{row.liveRank}</span>}
             </span>
 
             {/* name + points */}
             <div className="flex-1 min-w-0">
               <p className="truncate text-xs font-semibold text-slate-200"
-                style={{ animation: `lp-blur-focus 1.1s ease-out both`, animationDelay: `${cardDelay}s` }}>
+                style={isInitial ? { animation: `lp-blur-focus 1.1s ease-out both`, animationDelay: `${cardDelay}s` } : {}}>
                 {row.name}
               </p>
               <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                 <span className="text-[11px] font-bold text-emerald-400">
-                  <ScoreCounter value={row.total} duration={1.4} delay={scoreDelay} showDecimals={true} /> Pts
+                  {/* ScoreCounter keeps previous value and animates to new — no remount needed */}
+                  <ScoreCounter value={row.total} duration={1.0} delay={scoreDelay} showDecimals={true} /> Pts
                 </span>
-                {row.liveBonus > 0 && (
-                  <motion.span
-                    initial={{ opacity: 0, scale: .6 }} animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: scoreDelay + .6, type: 'spring', stiffness: 350, damping: 18 }}
-                    className="text-[10px] font-bold rounded-full px-1.5 py-0.5"
-                    style={{ background: 'rgba(52,211,153,.15)', color: '#34d399', border: '1px solid rgba(52,211,153,.3)' }}>
-                    +{row.liveBonus}
-                  </motion.span>
-                )}
+                <AnimatePresence mode="wait">
+                  {row.liveBonus > 0 && (
+                    <motion.span key={`bonus-${row.liveBonus}`}
+                      initial={{ opacity: 0, scale: .7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: .7 }}
+                      transition={isInitial ? { delay: scoreDelay + .6, type: 'spring', stiffness: 350, damping: 18 } : { duration: 0.25 }}
+                      className="text-[10px] font-bold rounded-full px-1.5 py-0.5"
+                      style={{ background: 'rgba(52,211,153,.15)', color: '#34d399', border: '1px solid rgba(52,211,153,.3)' }}>
+                      +{row.liveBonus}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
 
-            {/* rank change */}
-            <motion.div
-              initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: arrowDelay, duration: .35 }}
-              className="flex flex-col items-center flex-shrink-0 w-[52px]">
-              {delta !== 0 ? (
-                <>
-                  <motion.span
-                    initial={{ scale: .3, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: arrowDelay + .1, type: 'spring', stiffness: 420, damping: 14 }}
-                    style={{ fontSize: 24, lineHeight: 1, color: delta > 0 ? '#4ade80' : '#f87171' }}>
-                    {delta > 0 ? '↑' : '↓'}
+            {/* rank delta — AnimatePresence so it fades when value changes */}
+            <div className="flex flex-col items-center flex-shrink-0 w-[52px]">
+              <AnimatePresence mode="wait">
+                {delta !== 0 ? (
+                  <motion.div key={`d${delta}`}
+                    initial={{ opacity: 0, scale: .6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: .6 }}
+                    transition={{ duration: 0.22, type: 'spring', stiffness: 400, damping: 18 }}
+                    className="flex flex-col items-center">
+                    <span style={{ fontSize: 24, lineHeight: 1, color: delta > 0 ? '#4ade80' : '#f87171' }}>
+                      {delta > 0 ? '↑' : '↓'}
+                    </span>
+                    <span className="text-[9px] font-bold text-center leading-tight mt-0.5"
+                      style={{ color: delta > 0 ? '#4ade80' : '#f87171' }}>
+                      {moved}
+                    </span>
+                  </motion.div>
+                ) : (
+                  <motion.span key="d0"
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="text-slate-600 text-xs font-bold">
+                    =
                   </motion.span>
-                  <motion.span
-                    initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: arrowDelay + .28 }}
-                    className="text-[9px] font-bold text-center leading-tight mt-0.5"
-                    style={{ color: delta > 0 ? '#4ade80' : '#f87171' }}>
-                    {moved}
-                  </motion.span>
-                </>
-              ) : (
-                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: arrowDelay }}
-                  className="text-slate-600 text-xs font-bold">
-                  =
-                </motion.span>
-              )}
-            </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
           </div>
         </div>
@@ -201,18 +211,19 @@ function RankCard({ row, index, total, shockwave, animKey }) {
 
 // ── Live Leaderboard Tab ────────────────────────────────────────────────────
 function LiveLBTab() {
-  const [status, setStatus]     = useState('idle');
-  const [rows, setRows]         = useState([]);
-  const [liveInfo, setLiveInfo] = useState(null);
+  const [status, setStatus]       = useState('idle');
+  const [rows, setRows]           = useState([]);
+  const [liveInfo, setLiveInfo]   = useState(null);
   const [shockwave, setShockwave] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const [animKey, setAnimKey]   = useState(0);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // simulation state
   const [simMode, setSimMode]   = useState(false);
   const [simScore, setSimScore] = useState({ h: 1, a: 1 });
-  const dbRef = useRef(null); // stores all base data after first load
-  const glowTimer = useRef(null);
+  const dbRef        = useRef(null);
+  const isInitialRef = useRef(true); // true only for the very first buildAndSet call
+  const glowTimer    = useRef(null);
 
   const triggerGlow = (total) => {
     if (glowTimer.current) clearTimeout(glowTimer.current);
@@ -221,6 +232,9 @@ function LiveLBTab() {
   };
 
   const buildAndSet = useCallback((uniqueStats, officialRankMap, getName, liveBonus, liveMatchInfo) => {
+    const isInitial = isInitialRef.current;
+    isInitialRef.current = false;
+
     const built = uniqueStats.map(s => {
       const bonus     = liveBonus[s.user_id] || 0;
       const confirmed = s.total_points || 0;
@@ -233,18 +247,18 @@ function LiveLBTab() {
         officialRank: officialRankMap[s.user_id] || 99,
       };
     });
-    // assign live ranks
     built.sort((a, b) => b.total - a.total);
     built.forEach((r, i) => { r.liveRank = i + 1; });
-    // display order: rank 1 first (top), last rank at bottom
-    built.sort((a, b) => a.liveRank - b.liveRank);
+    built.sort((a, b) => a.liveRank - b.liveRank); // rank 1 first
 
+    setIsInitialLoad(isInitial);
     setRows(built);
     setLiveInfo(liveMatchInfo);
     setLastUpdate(new Date());
-    setShockwave(false);
-    setAnimKey(k => k + 1);
-    triggerGlow(built.length);
+    if (isInitial) {
+      setShockwave(false);
+      triggerGlow(built.length);
+    }
   }, []);
 
   // apply simulated score to stored data
@@ -469,16 +483,17 @@ function LiveLBTab() {
         </div>
       )}
 
-      {/* leaderboard cards — rank 1 at top, last place at bottom */}
+      {/* leaderboard cards — rank 1 at top, last place at bottom
+          layoutId handles smooth reordering on score changes (no remount) */}
       <AnimatePresence>
         {rows.map((row, idx) => (
           <RankCard
-            key={`${row.userId}-${animKey}`}
+            key={row.userId}
             row={row}
             index={idx}
             total={rows.length}
             shockwave={shockwave}
-            animKey={animKey}
+            isInitial={isInitialLoad}
           />
         ))}
       </AnimatePresence>
