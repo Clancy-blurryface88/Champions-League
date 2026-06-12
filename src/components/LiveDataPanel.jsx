@@ -242,7 +242,7 @@ function LiveLBTab() {
             <TeamFlag logo={liveInfo.homeLogo} name={liveInfo.home} className="w-4 h-4 flex-shrink-0" />
             <span className="font-bold text-xs text-emerald-400">{liveInfo.home}</span>
             <span className="font-bold text-xs tabular-nums"
-              style={{ background: 'linear-gradient(135deg,#60a5fa,#818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              style={{ background: 'linear-gradient(135deg,#38bdf8,#60a5fa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
               {liveInfo.score}
             </span>
             <span className="font-bold text-xs text-emerald-400">{liveInfo.away}</span>
