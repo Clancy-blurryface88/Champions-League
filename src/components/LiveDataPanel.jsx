@@ -520,7 +520,7 @@ export default function LiveDataPanel({ onClose }) {
                   <motion.div
                     layoutId="filter-pill"
                     className="absolute inset-0 rounded-lg"
-                    style={{ background: f.key === 'LB' ? 'linear-gradient(135deg,#8b5cf6,#6366f1)' : 'linear-gradient(135deg, #f5c518, #fde68a)' }}
+                    style={{ background: 'linear-gradient(135deg, #f5c518, #fde68a)' }}
                     transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
                   />
                 )}
