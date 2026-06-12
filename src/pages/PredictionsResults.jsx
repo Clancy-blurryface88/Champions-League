@@ -419,6 +419,7 @@ export default function PredictionsResults() {
       m.actual_score_b !== null
       );
       setFinishedMatches(roundMatches);
+      setCurrentMatchIndex(Math.max(roundMatches.length - 1, 0));
     }
   }, [selectedRound, matches]);
 
@@ -731,44 +732,44 @@ export default function PredictionsResults() {
                       {/* Progress Arc — next */}
                       {(() => {
                         const pct = finishedMatches.length > 1 ? (currentMatchIndex + 1) / finishedMatches.length : 1;
-                        const r = 24, c = 28, stroke = 3, circ = 2 * Math.PI * r;
+                        const r = 18, c = 22, stroke = 2.5, circ = 2 * Math.PI * r;
                         return (
-                          <div className="relative w-14 h-14 flex items-center justify-center flex-shrink-0">
-                            <svg width="56" height="56" className="absolute top-0 left-0 pointer-events-none" style={{ transform: 'rotate(-90deg)' }}>
+                          <div className="relative w-11 h-11 flex items-center justify-center flex-shrink-0">
+                            <svg width="44" height="44" className="absolute top-0 left-0 pointer-events-none" style={{ transform: 'rotate(-90deg)' }}>
                               <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
                               <circle cx={c} cy={c} r={r} fill="none" stroke="#f5c518" strokeWidth={stroke}
                                 strokeDasharray={`${circ * pct} ${circ}`} strokeLinecap="round"
                                 style={{ filter: 'drop-shadow(0 0 4px rgba(245,197,24,0.5))', transition: 'stroke-dasharray 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
                             </svg>
                             <button onClick={nextMatch} disabled={finishedMatches.length <= 1}
-                              className="relative w-10 h-10 flex items-center justify-center disabled:opacity-30 rounded-full z-10 transition-transform hover:scale-105 active:scale-95"
+                              className="relative w-8 h-8 flex items-center justify-center disabled:opacity-30 rounded-full z-10 transition-transform hover:scale-105 active:scale-95"
                               style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(255,255,255,0.18)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 8px rgba(0,0,0,0.3)' }}>
-                              <ChevronLeft className="w-5 h-5 text-white" />
+                              <ChevronLeft className="w-4 h-4 text-white" />
                             </button>
                           </div>
                         );
                       })()}
 
-                      <div className="text-center flex-1 px-4">
-                        <h3 className="text-white font-semibold mb-2">
+                      <div className="text-center flex-1 px-2">
+                        <h3 className="text-white font-semibold text-sm mb-1">
                           משחק {currentMatchIndex + 1} מתוך {finishedMatches.length}
                         </h3>
-                        <div key={currentMatchIndex} className="flex items-center justify-center gap-3 overflow-hidden">
+                        <div key={currentMatchIndex} className="flex items-center justify-center gap-2 overflow-hidden">
                           {/* קבוצה א — נכנסת משמאל */}
                           <motion.div
                             initial={{ x: -60, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             transition={{ type: "spring", stiffness: 220, damping: 22 }}>
-                            <TeamFlag logo={finishedMatches[currentMatchIndex]?.team_a_logo} name={finishedMatches[currentMatchIndex]?.team_a} className="w-8 h-8" rounded="md" />
+                            <TeamFlag logo={finishedMatches[currentMatchIndex]?.team_a_logo} name={finishedMatches[currentMatchIndex]?.team_a} className="w-6 h-6" rounded="md" />
                           </motion.div>
 
                           {/* תוצאה — מופיעה אחרי שתי הקבוצות */}
                           <motion.div
-                            className="bg-slate-700 px-3 py-1 rounded-lg"
+                            className="bg-slate-700 px-2 py-0.5 rounded-md"
                             initial={{ opacity: 0, scale: 0.7 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.25, type: "spring", stiffness: 300, damping: 20 }}>
-                            <span className="text-white font-bold">
+                            <span className="text-white font-bold text-sm">
                               {finishedMatches[currentMatchIndex]?.actual_score_a} - {finishedMatches[currentMatchIndex]?.actual_score_b}
                             </span>
                           </motion.div>
@@ -778,7 +779,7 @@ export default function PredictionsResults() {
                             initial={{ x: 60, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             transition={{ type: "spring", stiffness: 220, damping: 22 }}>
-                            <TeamFlag logo={finishedMatches[currentMatchIndex]?.team_b_logo} name={finishedMatches[currentMatchIndex]?.team_b} className="w-8 h-8" rounded="md" />
+                            <TeamFlag logo={finishedMatches[currentMatchIndex]?.team_b_logo} name={finishedMatches[currentMatchIndex]?.team_b} className="w-6 h-6" rounded="md" />
                           </motion.div>
                         </div>
                       </div>
@@ -786,11 +787,11 @@ export default function PredictionsResults() {
                       {/* Progress Arc — prev */}
                       {(() => {
                         const pct = finishedMatches.length > 1 ? (currentMatchIndex + 1) / finishedMatches.length : 1;
-                        const r = 24, c = 28, stroke = 3, circ = 2 * Math.PI * r;
+                        const r = 18, c = 22, stroke = 2.5, circ = 2 * Math.PI * r;
                         return (
-                          <div className="relative w-14 h-14 flex items-center justify-center flex-shrink-0">
-                            <div className="absolute top-0 left-0 pointer-events-none" style={{ transform: 'scaleX(-1)', width: 56, height: 56 }}>
-                              <svg width="56" height="56" style={{ transform: 'rotate(-90deg)' }}>
+                          <div className="relative w-11 h-11 flex items-center justify-center flex-shrink-0">
+                            <div className="absolute top-0 left-0 pointer-events-none" style={{ transform: 'scaleX(-1)', width: 44, height: 44 }}>
+                              <svg width="44" height="44" style={{ transform: 'rotate(-90deg)' }}>
                                 <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
                                 <circle cx={c} cy={c} r={r} fill="none" stroke="#f5c518" strokeWidth={stroke}
                                   strokeDasharray={`${circ * pct} ${circ}`} strokeLinecap="round"
@@ -798,9 +799,9 @@ export default function PredictionsResults() {
                               </svg>
                             </div>
                             <button onClick={prevMatch} disabled={finishedMatches.length <= 1}
-                              className="relative w-10 h-10 flex items-center justify-center disabled:opacity-30 rounded-full z-10 transition-transform hover:scale-105 active:scale-95"
+                              className="relative w-8 h-8 flex items-center justify-center disabled:opacity-30 rounded-full z-10 transition-transform hover:scale-105 active:scale-95"
                               style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(255,255,255,0.18)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 8px rgba(0,0,0,0.3)' }}>
-                              <ChevronRight className="w-5 h-5 text-white" />
+                              <ChevronRight className="w-4 h-4 text-white" />
                             </button>
                           </div>
                         );
