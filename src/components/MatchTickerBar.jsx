@@ -60,22 +60,22 @@ export default function MatchTickerBar({ onClick }) {
   return (
     <div
       dir="rtl"
-      className="fixed top-0 left-0 right-0 z-50 overflow-hidden flex items-center"
+      className="fixed top-0 left-0 right-0 z-50 flex items-center"
       style={{ height: '36px', background: 'rgba(3,13,26,0.97)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(245,197,24,0.22)', boxShadow: '0 1px 20px rgba(245,197,24,0.06)' }}
     >
       {/* Date button */}
       <button
+        type="button"
         onClick={onClick}
         style={{
           flexShrink: 0,
-          alignSelf: 'stretch',
+          height: '36px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           padding: '0 16px',
           minWidth: 64,
           cursor: 'pointer',
-          borderLeft: '1px solid rgba(245,197,24,0.3)',
           background: 'none',
           border: 'none',
           borderLeft: '1px solid rgba(245,197,24,0.3)',
@@ -83,6 +83,8 @@ export default function MatchTickerBar({ onClick }) {
           zIndex: 1,
           touchAction: 'manipulation',
           WebkitTapHighlightColor: 'transparent',
+          WebkitAppearance: 'none',
+          appearance: 'none',
         }}
       >
         <span style={{ color: '#fbbf24', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>{dateLabel}</span>
