@@ -18,6 +18,7 @@ import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminLiveLeaderboard from "../components/admin/AdminLiveLeaderboard";
+import AdminLiveLeaderboardDemo from "../components/admin/AdminLiveLeaderboardDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -78,6 +79,7 @@ export default function Admin() {
       case 'import': return <AdminImportMatches />;
       case 'reset':      return <AdminReset />;
       case 'live-leaderboard': return <AdminLiveLeaderboard />;
+      case 'live-lb-demo': return <AdminLiveLeaderboardDemo />;
 default: return <AdminRounds />;
     }
   };
@@ -94,6 +96,7 @@ default: return <AdminRounds />;
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'live-leaderboard', label: 'Live Leaderboard', icon: Zap },
+    { id: 'live-lb-demo',    label: 'Live LB — דמו',   icon: Zap },
   ];
 
   return (
