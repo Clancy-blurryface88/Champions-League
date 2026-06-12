@@ -20,7 +20,7 @@ function calculateScore(prediction, match) {
 
   if (predictedA === actualA && predictedB === actualB) {
     if (match.score_odds) {
-      const key = `${actualA}-${actualB}`;
+      const key = `${actualA}:${actualB}`;
       exactScorePoints = match.score_odds[key] ?? match.score_odds['other'] ?? 0;
     } else {
       exactScorePoints = match.exact_score_points || 0;
