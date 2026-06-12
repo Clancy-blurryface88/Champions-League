@@ -481,7 +481,7 @@ function LiveLBTab() {
       )}
 
       {/* leaderboard cards — rank 1 top, last place bottom */}
-      <div style={{ maxWidth: 340, margin: '0 auto' }}>
+      <div style={{ maxWidth: 340, margin: '0 auto', paddingLeft: 12, paddingRight: 12 }}>
         <AnimatePresence>
           {rows.map((row, idx) => (
             <RankCard
