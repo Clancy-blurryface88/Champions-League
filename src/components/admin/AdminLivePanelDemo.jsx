@@ -180,7 +180,7 @@ function RankCard({ row, index, total, shockwave, isInitial }) {
         </span>
 
         {/* content row — counter-skewed, pl to avoid ghost overlap */}
-        <div style={{ transform: 'skewX(6deg)', padding: '5px 4px 5px 22px' }}>
+        <div style={{ transform: 'skewX(6deg)', padding: '9px 6px 9px 34px' }}>
           <div className="flex items-center gap-1">
 
             {/* name */}
