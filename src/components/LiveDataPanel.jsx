@@ -76,7 +76,7 @@ function RankCard({ row, index, total, isInitial }) {
     <motion.div layout layoutId={`lb-${row.userId}`}
       initial={isInitial ? { opacity: 0, y: 14 } : false}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ layout: { type: 'spring', stiffness: 18, damping: 14 }, ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}) }}
+      transition={{ layout: { type: 'spring', stiffness: 12, damping: 14 }, ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}) }}
       className="relative mb-1">
       <div style={{ transform: 'skewX(-6deg)', borderRadius: 8, overflow: 'hidden', border: `2px solid ${RANK_BORDER(row.liveRank)}`, background: RANK_BG(row.liveRank), transition: 'border-color .5s ease, background .5s ease', position: 'relative' }}>
         <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%) skewX(6deg)', fontSize: 28, fontWeight: 900, color: RANK_COLOR(row.liveRank), opacity: 0.15, lineHeight: 1, userSelect: 'none', pointerEvents: 'none', transition: 'color .5s ease' }}>
@@ -88,7 +88,8 @@ function RankCard({ row, index, total, isInitial }) {
               style={isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}}>
               {row.name}
             </p>
-            <span className="text-[11px] font-bold text-emerald-400 tabular-nums flex-shrink-0">
+            <span className="text-[11px] font-bold tabular-nums flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg,#60a5fa,#818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
               <ScoreCounter value={row.total} duration={scoreDur} delay={scoreDelay} showDecimals={true} />
             </span>
             <div className="flex-shrink-0 w-10 flex justify-end">
