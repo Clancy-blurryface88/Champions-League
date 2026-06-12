@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, RefreshCw, Wifi, WifiOff, Clock, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import ScoreCounter from "@/components/ScoreCounter";
+import TeamFlag from "@/components/TeamFlag";
 import { Match, Prediction, UserStats, PublicProfile } from "@/api/entities";
 
 const FILTERS = [
@@ -201,7 +202,7 @@ function LiveLBTab() {
 
       setIsInitialLoad(false);  // smooth reorder only, no re-reveal
       setRows(built);
-      setLiveInfo({ home: dbMatch.team_a, away: dbMatch.team_b, score: `${homeScore}–${awayScore}`, minute: apiMatch.minute ?? null });
+      setLiveInfo({ home: dbMatch.team_a, away: dbMatch.team_b, homeLogo: dbMatch.team_a_logo ?? null, awayLogo: dbMatch.team_b_logo ?? null, score: `${homeScore}–${awayScore}`, minute: apiMatch.minute ?? null });
     } catch (e) {
       console.error('[LiveLBTab]', e);
       if (!hasShownInitial.current) setStatus('error');
@@ -238,8 +239,12 @@ function LiveLBTab() {
             className="mb-3 px-3 py-2 rounded-xl flex items-center gap-2"
             style={{ background: 'rgba(52,211,153,.08)', border: '1px solid rgba(52,211,153,.25)' }}>
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
-            <span className="font-bold text-xs text-emerald-400">{liveInfo.home} {liveInfo.score} {liveInfo.away}</span>
-            {liveInfo.minute && <span className="text-slate-500 text-[10px]">{liveInfo.minute}'</span>}
+            <TeamFlag logo={liveInfo.homeLogo} name={liveInfo.home} className="w-4 h-4 flex-shrink-0" />
+            <span className="font-bold text-xs text-emerald-400">{liveInfo.home}</span>
+            <span className="font-bold text-xs text-white tabular-nums">{liveInfo.score}</span>
+            <span className="font-bold text-xs text-emerald-400">{liveInfo.away}</span>
+            <TeamFlag logo={liveInfo.awayLogo} name={liveInfo.away} className="w-4 h-4 flex-shrink-0" />
+            {liveInfo.minute && <span className="text-slate-500 text-[10px] mr-1">{liveInfo.minute}'</span>}
           </motion.div>
         )}
       </AnimatePresence>
