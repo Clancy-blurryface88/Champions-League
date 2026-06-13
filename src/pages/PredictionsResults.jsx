@@ -1013,14 +1013,6 @@ function LeaderboardView({ roundLeaderboard, loading, user }) {
 // NEW: Updated MyRoundPredictions WITHOUT leaderboard section
 function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, roundLeaderboard, matches, getUserDisplayName, getOutcomeStatus }) {
   // חייב להיות לפני כל return מוקדם (כלל Hooks)
-  const scatterOffsets = useMemo(() =>
-    (roundStats?.predictionDetails ?? []).map(() => ({
-      x:      (Math.random() - 0.5) * 380,
-      y:      (Math.random() - 0.5) * 280,
-      rotate: (Math.random() - 0.5) * 45,
-      scale:  0.25 + Math.random() * 0.35,
-    })),
-  [roundStats]);
 
   if (loading || loadingLeaderboard) {
     return (
@@ -1111,7 +1103,6 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                 detail.exactScore        ? 'shadow-[0_0_16px_rgba(16,185,129,0.15)]' :
                 detail.correctOutcome    ? 'shadow-[0_0_16px_rgba(245,158,11,0.12)]' :
                                            'shadow-[0_0_16px_rgba(239,68,68,0.10)]';
-              const off = scatterOffsets[index] ?? { x: 0, y: 0, rotate: 0, scale: 1 };
               const accentBg  = !isFinished ? 'rgba(100,116,139,0.18)' : detail.exactScore ? 'rgba(16,185,129,0.18)' : detail.correctOutcome ? 'rgba(245,158,11,0.18)' : 'rgba(239,68,68,0.14)';
               const accentFg  = !isFinished ? '#64748b' : detail.exactScore ? '#10b981' : detail.correctOutcome ? '#f59e0b' : '#ef4444';
               const matchMax  = calculateMatchMaxPotentialPoints(match);
@@ -1120,10 +1111,9 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
               return (
                 <motion.div
                   key={detail.matchId}
-                  initial={{ opacity: 0, x: off.x, y: off.y, rotate: off.rotate, scale: off.scale }}
-                  whileInView={{ opacity: 1, x: 0, y: 0, rotate: 0, scale: 1 }}
-                  viewport={{ once: true, amount: 0.25 }}
-                  transition={{ type: 'spring', stiffness: 130, damping: 16 }}
+                  initial={{ opacity: 0, rotateX: 80, y: -30 }}
+                  animate={{ opacity: 1, rotateX: 0, y: 0 }}
+                  transition={{ delay: index * 0.18, duration: 0.5, ease: 'easeOut' }}
                   className="rounded-2xl p-3 flex gap-3"
                   style={{ background: '#12181f', border: `1px solid ${accentFg}33` }}
                 >
