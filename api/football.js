@@ -10,20 +10,22 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Missing FOOTBALL_DATA_API_KEY' });
   }
 
-  // Use client-supplied date (local timezone) or fall back to UTC
-  const { date: clientDate } = req.query;
-  const today = clientDate || new Date().toISOString().split('T')[0];
+  // Accept explicit range (dateFrom/dateTo) or fall back to single date / UTC
+  const { date: clientDate, dateFrom: clientDateFrom, dateTo: clientDateTo } = req.query;
+  const fallback = clientDate || new Date().toISOString().split('T')[0];
+  const dateFrom = clientDateFrom || fallback;
+  const dateTo   = clientDateTo   || fallback;
 
   try {
     let url;
     if (filter === 'LIVE') {
-      // Free tier doesn't update status in real-time — fetch today and infer live by time
-      url = `https://api.football-data.org/v4/competitions/${competition}/matches?dateFrom=${today}&dateTo=${today}`;
+      // Free tier doesn't update status in real-time — fetch range and infer live by time
+      url = `https://api.football-data.org/v4/competitions/${competition}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`;
     } else if (filter === 'FINISHED') {
-      url = `https://api.football-data.org/v4/competitions/${competition}/matches?dateFrom=${today}&dateTo=${today}`;
+      url = `https://api.football-data.org/v4/competitions/${competition}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`;
     } else {
       // TODAY
-      url = `https://api.football-data.org/v4/competitions/${competition}/matches?dateFrom=${today}&dateTo=${today}`;
+      url = `https://api.football-data.org/v4/competitions/${competition}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`;
     }
 
     console.log(`[football API] filter=${filter} url=${url}`);

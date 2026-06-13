@@ -159,8 +159,10 @@ function LiveLBTab() {
       }
 
       // ── Phase 2: fetch live API and smoothly reorder ──────────────────────────
-      const localDate = new Date().toLocaleDateString('sv-SE');
-      const res  = await fetch(`/api/football?competition=WC&filter=LIVE&date=${localDate}`);
+      const now2 = new Date();
+      const localDate = now2.toLocaleDateString('sv-SE');
+      const prevLocalDate = new Date(now2 - 864e5).toLocaleDateString('sv-SE');
+      const res  = await fetch(`/api/football?competition=WC&filter=LIVE&dateFrom=${prevLocalDate}&dateTo=${localDate}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
       const liveMatches = json.matches || [];
@@ -423,11 +425,19 @@ export default function LiveDataPanel({ onClose }) {
     setLoading(true);
     setError(null);
     try {
-      const localDate = new Date().toLocaleDateString('sv-SE');
-      const res = await fetch(`/api/football?competition=WC&filter=${filter}&date=${localDate}`);
+      const now = new Date();
+      const localDate = now.toLocaleDateString('sv-SE');
+      // Include previous local day so UTC+3 early-morning matches (e.g. 01:00 IL = 22:00 UTC prev day) are fetched
+      const prevLocalDate = new Date(now - 864e5).toLocaleDateString('sv-SE');
+      const res = await fetch(`/api/football?competition=WC&filter=${filter}&dateFrom=${prevLocalDate}&dateTo=${localDate}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'שגיאה');
-      setMatches(json.matches || []);
+      let matches = json.matches || [];
+      // Filter to only matches that fall on local today (prevents "tomorrow" UTC matches showing)
+      if (filter === 'TODAY' || filter === 'FINISHED') {
+        matches = matches.filter(m => new Date(m.utcDate).toLocaleDateString('sv-SE') === localDate);
+      }
+      setMatches(matches);
       setLastUpdate(new Date());
     } catch (e) {
       setError(e.message);
