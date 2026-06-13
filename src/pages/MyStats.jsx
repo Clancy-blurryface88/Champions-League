@@ -29,6 +29,7 @@ import RankingHistoryCharts from "../components/stats/RankingHistoryCharts";
 import CategoryLeaderboards from "../components/stats/CategoryLeaderboards";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ComparisonBar from "../components/stats/ComparisonBar";
+import CommonPredictionsStripe from "../components/stats/CommonPredictionsStripe";
 
 export default function MyStats() {
   const navigate = useNavigate();
@@ -1172,6 +1173,41 @@ export default function MyStats() {
                 </div>
               </div>
             </motion.div>
+
+            {/* Common Predictions */}
+            {heatmapData.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85 }}>
+                <div className="rounded-[20px] relative overflow-hidden" style={{
+                  background: 'linear-gradient(160deg, rgba(200,200,210,0.18) 0%, rgba(120,120,135,0.10) 50%, rgba(200,200,210,0.16) 100%)',
+                  backdropFilter: 'blur(40px) saturate(140%)',
+                  WebkitBackdropFilter: 'blur(40px) saturate(140%)',
+                  border: '1px solid rgba(200,200,215,0.30)',
+                  boxShadow: '0 8px 40px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.20)',
+                }}>
+                  <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)' }} />
+                  <div className="relative px-6 pt-6 pb-4 text-center flex items-center justify-center gap-2">
+                    <span>📊</span>
+                    <h3 className="font-bold text-lg" style={{ color: '#E8E8E8' }}>הניחוש הנפוץ ביותר</h3>
+                  </div>
+                  <div className="relative px-4 pb-6">
+                    <CommonPredictionsStripe
+                      predictions={heatmapData.flatMap(r =>
+                        r.matches
+                          .filter(m => m.hasPrediction)
+                          .map(m => ({
+                            predicted_score_a: m.predictedA,
+                            predicted_score_b: m.predictedB,
+                            exact_score_points_earned:
+                              m.isFinished &&
+                              m.predictedA === m.homeScore &&
+                              m.predictedB === m.awayScore ? 1 : 0,
+                          }))
+                      )}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </TabsContent>
 
           <TabsContent value="head2head" forceMount className="space-y-6 data-[state=inactive]:hidden">
