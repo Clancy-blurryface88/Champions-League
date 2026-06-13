@@ -1133,7 +1133,7 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
                   {/* Middle — prediction / result grid */}
                   <div className="flex-1 grid grid-cols-2 gap-2">
                     <div className="rounded-xl flex flex-col items-center justify-center py-2.5" style={{ background: 'rgba(59,130,246,0.12)' }}>
-                      <span className="text-[8px] text-blue-400 font-bold uppercase tracking-wider mb-1">הניחוש</span>
+                      <span className="text-[8px] text-blue-400 font-bold uppercase tracking-wider mb-1">ניחוש שלך</span>
                       <span className="text-white font-black text-lg tabular-nums leading-none">{detail.prediction}</span>
                     </div>
                     <div className="rounded-xl flex flex-col items-center justify-center py-2.5" style={{ background: accentBg }}>
