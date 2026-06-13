@@ -17,8 +17,6 @@ import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
-import AdminRevealDemo from "../components/admin/AdminRevealDemo";
-import AdminH2H from "../components/admin/AdminH2H";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -78,8 +76,6 @@ export default function Admin() {
       case 'live-data': return <AdminLiveData />;
       case 'import': return <AdminImportMatches />;
       case 'reset':      return <AdminReset />;
-      case 'reveal-demo': return <AdminRevealDemo />;
-      case 'h2h-test': return <AdminH2H />;
 default: return <AdminRounds />;
     }
   };
@@ -95,8 +91,6 @@ default: return <AdminRounds />;
     { id: 'live-data', label: 'Live Data Test', icon: BarChart3 },
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
-    { id: 'reveal-demo',  label: '25 אפקטי חשיפה — דמו', icon: RotateCcw },
-    { id: 'h2h-test', label: 'H2H Test', icon: BarChart3 },
   ];
 
   return (
