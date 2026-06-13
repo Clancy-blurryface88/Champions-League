@@ -1,6 +1,6 @@
 // Vercel Serverless Function — proxies football-data.org API
 export default async function handler(req, res) {
-  const { competition = 'WC', filter = 'LIVE' } = req.query;
+  const { competition = 'WC', filter = 'LIVE', type } = req.query;
 
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
@@ -10,29 +10,57 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Missing FOOTBALL_DATA_API_KEY' });
   }
 
-  // Accept explicit range (dateFrom/dateTo) or fall back to single date / UTC
-  const { date: clientDate, dateFrom: clientDateFrom, dateTo: clientDateTo } = req.query;
-  const fallback = clientDate || new Date().toISOString().split('T')[0];
-  const dateFrom = clientDateFrom || fallback;
-  const dateTo   = clientDateTo   || fallback;
-
   try {
-    let url;
-    if (filter === 'LIVE') {
-      // Free tier doesn't update status in real-time — fetch range and infer live by time
-      url = `https://api.football-data.org/v4/competitions/${competition}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`;
-    } else if (filter === 'FINISHED') {
-      url = `https://api.football-data.org/v4/competitions/${competition}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`;
-    } else {
-      // TODAY
-      url = `https://api.football-data.org/v4/competitions/${competition}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`;
+    // ── Non-match endpoints ───────────────────────────────────────────────────
+    if (type === 'standings') {
+      const url = `https://api.football-data.org/v4/competitions/${competition}/standings`;
+      console.log(`[football API] standings url=${url}`);
+      const r = await fetch(url, { headers: { 'X-Auth-Token': apiKey } });
+      const d = await r.json();
+      if (!r.ok) return res.status(r.status).json({ error: d.message || JSON.stringify(d) });
+      return res.status(200).json({ success: true, standings: d.standings || [], competition: d.competition });
     }
 
+    if (type === 'scorers') {
+      const { limit = 20 } = req.query;
+      const url = `https://api.football-data.org/v4/competitions/${competition}/scorers?limit=${limit}`;
+      console.log(`[football API] scorers url=${url}`);
+      const r = await fetch(url, { headers: { 'X-Auth-Token': apiKey } });
+      const d = await r.json();
+      if (!r.ok) return res.status(r.status).json({ error: d.message || JSON.stringify(d) });
+      return res.status(200).json({ success: true, scorers: d.scorers || [] });
+    }
+
+    if (type === 'teams') {
+      const url = `https://api.football-data.org/v4/competitions/${competition}/teams`;
+      console.log(`[football API] teams url=${url}`);
+      const r = await fetch(url, { headers: { 'X-Auth-Token': apiKey } });
+      const d = await r.json();
+      if (!r.ok) return res.status(r.status).json({ error: d.message || JSON.stringify(d) });
+      return res.status(200).json({ success: true, teams: d.teams || [] });
+    }
+
+    if (type === 'match') {
+      const { matchId } = req.query;
+      if (!matchId) return res.status(400).json({ error: 'matchId required' });
+      const url = `https://api.football-data.org/v4/matches/${matchId}`;
+      console.log(`[football API] match url=${url}`);
+      const r = await fetch(url, { headers: { 'X-Auth-Token': apiKey } });
+      const d = await r.json();
+      if (!r.ok) return res.status(r.status).json({ error: d.message || JSON.stringify(d) });
+      return res.status(200).json({ success: true, match: d });
+    }
+
+    // ── Matches endpoint ──────────────────────────────────────────────────────
+    const { date: clientDate, dateFrom: clientDateFrom, dateTo: clientDateTo } = req.query;
+    const fallback = clientDate || new Date().toISOString().split('T')[0];
+    const dateFrom = clientDateFrom || fallback;
+    const dateTo   = clientDateTo   || fallback;
+
+    const url = `https://api.football-data.org/v4/competitions/${competition}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`;
     console.log(`[football API] filter=${filter} url=${url}`);
 
-    const response = await fetch(url, {
-      headers: { 'X-Auth-Token': apiKey },
-    });
+    const response = await fetch(url, { headers: { 'X-Auth-Token': apiKey } });
 
     if (!response.ok) {
       const text = await response.text();
