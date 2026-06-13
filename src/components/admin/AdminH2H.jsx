@@ -134,25 +134,34 @@ export default function AdminH2H() {
     setRawJson(null);
 
     try {
-      const [h2hRes, eventsRes] = await Promise.all([
+      const [h2hRes, eventsRes, head2headRes] = await Promise.all([
         fetch(`/api/sofascore?action=h2h&matchId=${matchId.trim()}`),
         fetch(`/api/sofascore?action=h2h_events&matchId=${matchId.trim()}`),
+        fetch(`/api/sofascore?action=head2head&matchId=${matchId.trim()}`),
       ]);
 
-      const [h2hJson, eventsJson] = await Promise.all([h2hRes.json(), eventsRes.json()]);
+      const [h2hJson, eventsJson, head2headJson] = await Promise.all([
+        h2hRes.json(), eventsRes.json(), head2headRes.json(),
+      ]);
 
-      setRawJson({ h2h: h2hJson, events: eventsJson });
+      setRawJson({ h2h: h2hJson, h2h_events: eventsJson, head2head: head2headJson });
 
       if (h2hJson.success) setH2hData(h2hJson.data);
       else setError(`H2H: ${h2hJson.error?.message || h2hJson.error || 'שגיאה'}`);
 
-      if (eventsJson.success && eventsJson.data) {
-        const raw = eventsJson.data;
-        const list = raw.events || raw.previousEvents || raw.teamDuel?.events || [];
-        setEvents(list);
-      } else {
-        setEvents([]);
-      }
+      // נסה לחלץ events מכל endpoint שמחזיר נתונים
+      const fromHead2head = head2headJson?.data;
+      const fromEvents = eventsJson?.data;
+
+      const list =
+        fromHead2head?.events ||
+        fromHead2head?.previousEvents ||
+        fromHead2head?.teamDuel?.events ||
+        fromEvents?.events ||
+        fromEvents?.previousEvents ||
+        [];
+
+      setEvents(list);
     } catch (err) {
       setError(err.message || 'שגיאת רשת');
     }
