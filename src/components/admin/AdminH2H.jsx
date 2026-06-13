@@ -1,12 +1,9 @@
 import React, { useState } from "react";
-import { Search, RefreshCw, Swords, TrendingUp, Users } from "lucide-react";
+import { Search, RefreshCw, Swords, Users, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-const RAPIDAPI_KEY = import.meta.env.VITE_RAPIDAPI_KEY;
-const H2H_URL = "https://sofascore.p.rapidapi.com/matches/get-h2h";
 
 function StatBar({ homeWins, awayWins, draws }) {
   const total = homeWins + awayWins + draws;
@@ -24,9 +21,9 @@ function StatBar({ homeWins, awayWins, draws }) {
         <div className="bg-orange-500 transition-all" style={{ width: `${awayPct}%` }} />
       </div>
       <div className="flex justify-between text-xs text-slate-400">
-        <span className="text-blue-400">ניצחון בית {homePct}%</span>
+        <span className="text-blue-400">בית {homePct}%</span>
         <span className="text-slate-400">תיקו {drawPct}%</span>
-        <span className="text-orange-400">ניצחון חוץ {awayPct}%</span>
+        <span className="text-orange-400">חוץ {awayPct}%</span>
       </div>
     </div>
   );
@@ -83,21 +80,16 @@ export default function AdminH2H() {
     setRawJson(null);
 
     try {
-      const res = await fetch(`${H2H_URL}?matchId=${matchId.trim()}`, {
-        method: "GET",
-        headers: {
-          "X-RapidAPI-Key": RAPIDAPI_KEY,
-          "X-RapidAPI-Host": "sofascore.p.rapidapi.com",
-        },
-      });
-
+      const res = await fetch(`/api/sofascore?action=h2h&matchId=${matchId.trim()}`);
       const json = await res.json();
       setRawJson(json);
 
-      if (!res.ok) {
-        setError(`שגיאה ${res.status}: ${json?.message || res.statusText}`);
+      if (!res.ok || !json.success) {
+        const detail = json.error?.message || json.error || `שגיאה ${res.status}`;
+        const code = json.status || json.error?.code;
+        setError(code ? `${code}: ${detail}` : detail);
       } else {
-        setResult(json);
+        setResult(json.data);
       }
     } catch (err) {
       setError(err.message || "שגיאת רשת");
@@ -106,25 +98,20 @@ export default function AdminH2H() {
     setLoading(false);
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") fetchH2H();
-  };
-
   return (
     <div className="space-y-6" dir="rtl">
       <div>
         <h2 className="text-xl font-bold text-white">H2H Test — Sofascore API</h2>
-        <p className="text-slate-400 text-sm mt-1">הזן Match ID מ-Sofascore כדי לקבל נתוני Head to Head</p>
+        <p className="text-slate-400 text-sm mt-1">הזן Match ID מ-Sofascore — הקריאה עוברת דרך השרת</p>
       </div>
 
-      {/* Search */}
       <div className="flex gap-3">
         <Input
           value={matchId}
           onChange={(e) => setMatchId(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="הזן Match ID (לדוגמה: 12345678)"
-          className="bg-slate-800/60 border-slate-600 text-white placeholder:text-slate-500 text-right"
+          onKeyDown={(e) => e.key === "Enter" && fetchH2H()}
+          placeholder="לדוגמה: 15186526"
+          className="bg-slate-800/60 border-slate-600 text-white placeholder:text-slate-500"
           dir="ltr"
         />
         <Button
@@ -137,29 +124,41 @@ export default function AdminH2H() {
         </Button>
       </div>
 
-      {/* Helper */}
       <Card className="bg-slate-700/30 border-slate-600/50">
         <CardContent className="pt-4 pb-3">
           <p className="text-slate-400 text-sm">
             <span className="text-slate-300 font-medium">איך מוצאים Match ID?</span>{" "}
-            נכנס ל-Sofascore, פותחים משחק, ה-ID נמצא ב-URL:{" "}
+            נכנסים ל-Sofascore, פותחים משחק, ה-ID נמצא ב-URL:{" "}
             <code className="text-blue-300 text-xs bg-slate-800 px-1 py-0.5 rounded">
               sofascore.com/event/<strong>12345678</strong>
             </code>
+            {" "}או אחרי{" "}
+            <code className="text-blue-300 text-xs bg-slate-800 px-1 py-0.5 rounded">#id:</code>
           </p>
         </CardContent>
       </Card>
 
-      {/* Error */}
       {error && (
         <Card className="bg-red-900/20 border-red-700/50">
-          <CardContent className="pt-4">
-            <p className="text-red-400 text-sm">{error}</p>
+          <CardContent className="pt-4 flex items-start gap-3">
+            <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-red-400 text-sm font-medium">{error}</p>
+              {error.includes("404") && (
+                <p className="text-slate-400 text-xs">
+                  404 = Sofascore לא מצא את המשחק הזה. ייתכן שהוא טרם הוסף למסד הנתונים, או שה-ID שגוי.
+                </p>
+              )}
+              {error.includes("403") && (
+                <p className="text-slate-400 text-xs">
+                  403 = בעיית מנוי ב-RapidAPI. וודא שה-RAPIDAPI_KEY הוגדר ב-Vercel environment variables.
+                </p>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Results */}
       {result && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -170,7 +169,7 @@ export default function AdminH2H() {
               onClick={() => setShowRaw(!showRaw)}
               className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
             >
-              {showRaw ? "הסתר JSON גולמי" : "הצג JSON גולמי"}
+              {showRaw ? "הסתר JSON" : "הצג JSON גולמי"}
             </button>
           </div>
 
