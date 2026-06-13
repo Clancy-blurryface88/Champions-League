@@ -44,7 +44,18 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(url, { headers });
-    const data = await response.json();
+    const text = await response.text();
+
+    if (!text || !text.trim()) {
+      return res.status(200).json({ success: true, data: null, empty: true });
+    }
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return res.status(200).json({ success: false, error: 'Invalid JSON from API', raw: text.slice(0, 300) });
+    }
 
     if (!response.ok) {
       return res.status(200).json({ success: false, status: response.status, error: data });

@@ -146,10 +146,12 @@ export default function AdminH2H() {
       if (h2hJson.success) setH2hData(h2hJson.data);
       else setError(`H2H: ${h2hJson.error?.message || h2hJson.error || 'שגיאה'}`);
 
-      if (eventsJson.success) {
+      if (eventsJson.success && eventsJson.data) {
         const raw = eventsJson.data;
-        const list = raw.events || raw.teamDuel?.events || raw.previousEvents || [];
+        const list = raw.events || raw.previousEvents || raw.teamDuel?.events || [];
         setEvents(list);
+      } else {
+        setEvents([]);
       }
     } catch (err) {
       setError(err.message || 'שגיאת רשת');
@@ -216,8 +218,9 @@ export default function AdminH2H() {
 
           {events?.length === 0 && (
             <Card className="bg-slate-700/30 border-slate-600/50">
-              <CardContent className="pt-4">
-                <p className="text-slate-400 text-sm text-center">אין היסטוריית מפגשים קודמים</p>
+              <CardContent className="pt-4 space-y-1">
+                <p className="text-slate-400 text-sm text-center">לא הוחזרו משחקים מה-events endpoint</p>
+                <p className="text-slate-500 text-xs text-center">פתח JSON גולמי → events כדי לראות מה הAPI מחזיר</p>
               </CardContent>
             </Card>
           )}
