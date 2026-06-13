@@ -23,6 +23,11 @@ export default async function handler(req, res) {
       url = `${BASE}/matches/get-h2h?matchId=${matchId}`;
       break;
 
+    case 'h2h_events':
+      if (!matchId) return res.status(400).json({ error: 'matchId required' });
+      url = `${BASE}/matches/get-h2h-events?matchId=${matchId}`;
+      break;
+
     case 'tournament_matches':
       if (!tournamentId || !seasonId) return res.status(400).json({ error: 'tournamentId and seasonId required' });
       url = `${BASE}/tournaments/get-matches?tournamentId=${tournamentId}&seasonId=${seasonId}${page ? `&page=${page}` : ''}`;
