@@ -22,6 +22,7 @@ import AdminChartIdeasDemo from "../components/admin/AdminChartIdeasDemo";
 import AdminCommonPredictionsDemo from "../components/admin/AdminCommonPredictionsDemo";
 import AdminCommonPredictionsDemo2 from "../components/admin/AdminCommonPredictionsDemo2";
 import AdminCommonPredictionsDemo3 from "../components/admin/AdminCommonPredictionsDemo3";
+import AdminStripeDemo from "../components/admin/AdminStripeDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -86,6 +87,7 @@ export default function Admin() {
       case 'preds-demo':   return <AdminCommonPredictionsDemo />;
       case 'preds-demo2':  return <AdminCommonPredictionsDemo2 />;
       case 'preds-demo3':  return <AdminCommonPredictionsDemo3 />;
+      case 'stripe-demo':  return <AdminStripeDemo />;
 default: return <AdminRounds />;
     }
   };
@@ -106,6 +108,7 @@ default: return <AdminRounds />;
     { id: 'preds-demo',  label: 'ניחושים — דמו',    icon: BarChart3 },
     { id: 'preds-demo2', label: 'ניחושים — דמו 2',  icon: BarChart3 },
     { id: 'preds-demo3', label: 'ניחושים — דמו 3',  icon: BarChart3 },
+    { id: 'stripe-demo', label: 'Stripe — משודרג',   icon: BarChart3 },
   ];
 
   return (
