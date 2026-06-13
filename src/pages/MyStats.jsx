@@ -1,5 +1,5 @@
 import TeamFlag from "@/components/TeamFlag";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { User } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { Match } from "@/api/entities";
@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SlidingNumber } from "../components/animate-ui/text/sliding-number";
 import { FlexibleIcon } from "../components/ui/FlexibleIcon";
 import { BarChart } from "../components/ui/BarChart";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 import RankingHistoryTable from "../components/stats/RankingHistoryTable";
 import ExactHitsHistoryTable from "../components/stats/ExactHitsHistoryTable";
 import PredictionsHeatmap from "../components/stats/PredictionsHeatmap";
@@ -1013,6 +1013,75 @@ export default function MyStats() {
                 </div>
               </div>
             </motion.div>
+
+            {/* Cumulative Points Line Chart */}
+            {chartData.length > 0 && (() => {
+              let cum = 0;
+              const cumulativeData = chartData.map(d => {
+                cum = parseFloat((cum + (d.roundPoints || 0)).toFixed(2));
+                return { round: d.round, cumulative: cum, roundPts: d.roundPoints || 0 };
+              });
+              const CustomTooltip = ({ active, payload }) => {
+                if (!active || !payload?.length) return null;
+                const d = payload[0].payload;
+                return (
+                  <div style={{ background: 'rgba(15,20,35,0.95)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 12px' }}>
+                    <p style={{ color: '#f5c518', fontWeight: 700, fontSize: 12 }}>{d.round}</p>
+                    <p style={{ color: '#fff', fontSize: 12 }}>סה״כ מצטבר: <strong>{d.cumulative}</strong></p>
+                    <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11 }}>במחזור זה: +{d.roundPts}</p>
+                  </div>
+                );
+              };
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.72 }}
+                  className="mt-6"
+                >
+                  <div className="rounded-[20px] relative overflow-hidden" style={{
+                    background: 'linear-gradient(160deg, rgba(200,200,210,0.18) 0%, rgba(120,120,135,0.10) 50%, rgba(200,200,210,0.16) 100%)',
+                    backdropFilter: 'blur(40px) saturate(140%)',
+                    WebkitBackdropFilter: 'blur(40px) saturate(140%)',
+                    border: '1px solid rgba(200,200,215,0.30)',
+                    boxShadow: '0 8px 40px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.20)',
+                  }}>
+                    <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)' }} />
+                    <div className="relative px-6 pt-6 pb-4 text-center flex items-center justify-center gap-2">
+                      <span>📈</span>
+                      <h3 className="font-bold text-lg" style={{ color: '#E8E8E8' }}>נקודות מצטברות</h3>
+                    </div>
+                    <div className="relative px-6 pb-6">
+                      <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }}>
+                        <ResponsiveContainer width="100%" height={190}>
+                          <LineChart data={cumulativeData} margin={{ top: 8, right: 8, bottom: 0, left: -20 }}>
+                            <defs>
+                              <linearGradient id="cumLineGrad" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stopColor="#f5c518" />
+                                <stop offset="100%" stopColor="#22c55e" />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                            <XAxis dataKey="round" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                            <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Line
+                              type="monotone"
+                              dataKey="cumulative"
+                              stroke="url(#cumLineGrad)"
+                              strokeWidth={2.5}
+                              dot={{ fill: '#f5c518', r: 4, strokeWidth: 0 }}
+                              activeDot={{ r: 6, fill: '#fff', stroke: '#f5c518', strokeWidth: 2 }}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                        <div className="mt-4 text-center"><p className="text-sm" style={{ color: 'rgba(255,255,255,0.40)' }}>סך הנקודות שצברת לאורך כל הטורניר</p></div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })()}
 
             {/* Points Percentage Chart */}
             <motion.div
