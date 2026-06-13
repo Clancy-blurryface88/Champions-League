@@ -30,12 +30,12 @@ export default function AdminStripeDemo() {
       {/* Header row */}
       <div className="flex items-center gap-3 px-4 pb-2 mb-1"
         style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-        <span className="w-5 text-[10px] text-white/20 font-mono">#</span>
-        <span className="w-12 text-[10px] text-white/20">תוצאה</span>
-        <span className="flex-1 text-[10px] text-white/20 text-right hidden sm:block" />
-        <span className="w-24 text-[10px] text-white/20 text-center">ניחושים</span>
-        <span className="w-24 text-[10px] text-white/20 text-center">פגיעות</span>
-        <span className="w-14 text-[10px] text-white/20 text-right">מהסה״כ</span>
+        <span className="w-5 text-[10px] text-white/55 font-mono">#</span>
+        <span className="w-12 text-[10px] text-white/55">תוצאה</span>
+        <span className="flex-1 text-[10px] text-white/55 text-right hidden sm:block" />
+        <span className="w-24 text-[10px] text-white/55 text-center">ניחושים</span>
+        <span className="w-24 text-[10px] text-white/55 text-center">פגיעות</span>
+        <span className="w-14 text-[10px] text-white/55 text-right">מהסה״כ</span>
       </div>
 
       {/* Rows */}
@@ -79,34 +79,33 @@ export default function AdminStripeDemo() {
               </div>
 
               {/* Count */}
-              <div className="w-24 flex-shrink-0 text-center">
+              <div className="w-24 flex-shrink-0 flex items-center justify-center gap-1.5">
+                <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.22)" }}>
+                  ניחושים
+                </span>
                 <span className="text-sm font-bold"
                   style={{ color: i === 0 ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.45)" }}>
                   {d.count}
                 </span>
-                <span className="text-[11px] mr-1"
-                  style={{ color: "rgba(255,255,255,0.22)" }}>
-                  {" "}ניחושים
-                </span>
               </div>
 
               {/* Hits */}
-              <div className="w-24 flex-shrink-0 text-center">
+              <div className="w-24 flex-shrink-0 flex items-center justify-center gap-1">
                 {d.hits > 0 ? (
-                  <span className="text-[12px]">
-                    <span className="font-bold" style={{ color: "rgba(52,211,153,0.85)" }}>
+                  <>
+                    <span className="text-[11px]" style={{ color: "rgba(52,211,153,0.45)" }}>
+                      פגיעות
+                    </span>
+                    <span className="text-sm font-bold" style={{ color: "rgba(52,211,153,0.85)" }}>
                       {d.hits}
                     </span>
-                    <span style={{ color: "rgba(52,211,153,0.45)" }}>
-                      {" "}פגיעות
+                    <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.2)" }}>
+                      ({hitRate}%)
                     </span>
-                    <span className="text-[10px] mr-1" style={{ color: "rgba(255,255,255,0.2)" }}>
-                      {" "}({hitRate}%)
-                    </span>
-                  </span>
+                  </>
                 ) : (
                   <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.15)" }}>
-                    0 פגיעות
+                    פגיעות 0
                   </span>
                 )}
               </div>
