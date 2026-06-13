@@ -17,12 +17,6 @@ import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
-import AdminMatchBgDemo from "../components/admin/AdminMatchBgDemo";
-import AdminChartIdeasDemo from "../components/admin/AdminChartIdeasDemo";
-import AdminCommonPredictionsDemo from "../components/admin/AdminCommonPredictionsDemo";
-import AdminCommonPredictionsDemo2 from "../components/admin/AdminCommonPredictionsDemo2";
-import AdminCommonPredictionsDemo3 from "../components/admin/AdminCommonPredictionsDemo3";
-import AdminStripeDemo from "../components/admin/AdminStripeDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -82,13 +76,7 @@ export default function Admin() {
       case 'live-data': return <AdminLiveData />;
       case 'import': return <AdminImportMatches />;
       case 'reset':      return <AdminReset />;
-      case 'bg-demo':    return <AdminMatchBgDemo />;
-      case 'chart-demo':   return <AdminChartIdeasDemo />;
-      case 'preds-demo':   return <AdminCommonPredictionsDemo />;
-      case 'preds-demo2':  return <AdminCommonPredictionsDemo2 />;
-      case 'preds-demo3':  return <AdminCommonPredictionsDemo3 />;
-      case 'stripe-demo':  return <AdminStripeDemo />;
-default: return <AdminRounds />;
+      default: return <AdminRounds />;
     }
   };
 
@@ -103,12 +91,6 @@ default: return <AdminRounds />;
     { id: 'live-data', label: 'Live Data Test', icon: BarChart3 },
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
-    { id: 'bg-demo',     label: '50 רקעים — דמו',  icon: BarChart3 },
-    { id: 'chart-demo',  label: 'גרפים — דמו',      icon: BarChart3 },
-    { id: 'preds-demo',  label: 'ניחושים — דמו',    icon: BarChart3 },
-    { id: 'preds-demo2', label: 'ניחושים — דמו 2',  icon: BarChart3 },
-    { id: 'preds-demo3', label: 'ניחושים — דמו 3',  icon: BarChart3 },
-    { id: 'stripe-demo', label: 'Stripe — משודרג',   icon: BarChart3 },
   ];
 
   return (
