@@ -69,8 +69,8 @@ function DeltaIcon({ delta }) {
 function RankCard({ row, index, total, isInitial }) {
   const delta = row.officialRank - row.liveRank;
   const rankFromBottom = total - 1 - index;
-  const cardDelay   = isInitial ? Math.pow(rankFromBottom, 1.4) * 0.22 + (row.liveRank === 1 ? 0.3 : 0) : 0;
-  const scoreDur    = isInitial ? 1.1 : 2.8;
+  const cardDelay   = isInitial ? Math.pow(rankFromBottom, 1.4) * 0.13 + (row.liveRank === 1 ? 0.2 : 0) : 0;
+  const scoreDur    = isInitial ? 0.7 : 2.8;
   const scoreDelay  = isInitial ? cardDelay + 0.2 : 0;
   return (
     <motion.div layout layoutId={`lb-${row.userId}`}
@@ -154,7 +154,7 @@ function LiveLBTab() {
         setRows(official);
         setStatus('done');
         // wait for reveal animation to complete before live update
-        const revealWait = Math.pow(Math.max(official.length - 1, 0), 1.4) * 0.22 + 2.2;
+        const revealWait = Math.pow(Math.max(official.length - 1, 0), 1.4) * 0.13 + 1.2;
         await new Promise(resolve => setTimeout(resolve, revealWait * 1000));
       }
 
