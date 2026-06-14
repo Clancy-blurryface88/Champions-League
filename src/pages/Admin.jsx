@@ -18,6 +18,7 @@ import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminApiExplorer from "../components/admin/AdminApiExplorer";
+import AdminLivePanelDesigns from "../components/admin/AdminLivePanelDesigns";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -78,6 +79,7 @@ export default function Admin() {
       case 'import': return <AdminImportMatches />;
       case 'reset':      return <AdminReset />;
       case 'api-explorer': return <AdminApiExplorer />;
+      case 'panel-designs': return <AdminLivePanelDesigns />;
       default: return <AdminRounds />;
     }
   };
@@ -94,6 +96,7 @@ export default function Admin() {
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'api-explorer', label: 'API Explorer',    icon: BarChart3 },
+    { id: 'panel-designs', label: '🎨 Panel Designs', icon: Eye },
   ];
 
   return (
