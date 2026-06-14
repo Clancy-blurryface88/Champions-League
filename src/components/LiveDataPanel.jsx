@@ -39,6 +39,7 @@ function calculateScore(prediction, match) {
 
 const TEAM_ALIASES = {
   "ctedivoire":        "ivorycoast",
+  "caboverde":         "capeverde",
   "republicofireland": "ireland",
   "czechia":           "czechrepublic",
   "unitedstates":      "usa",
