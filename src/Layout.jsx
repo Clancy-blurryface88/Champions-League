@@ -34,6 +34,7 @@ export default function Layout({ children, currentPageName }) {
   const [touchStartY, setTouchStartY] = useState(null);
   const [showExactHits, setShowExactHits] = useState(false); // Kept, but its functionality is replaced for swipe
   const [showLiveData, setShowLiveData] = useState(false); // Added: New state for LiveDataPanel
+  const [hasLiveMatch, setHasLiveMatch] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showYearlySummary, setShowYearlySummary] = useState(false); // NEW: State for YearlySummaryPanel
   const [showPushBanner, setShowPushBanner] = useState(false);
@@ -277,6 +278,26 @@ export default function Layout({ children, currentPageName }) {
 
     window.addEventListener('openLiveDataPanel', handleOpenLiveDataPanel);
     return () => window.removeEventListener('openLiveDataPanel', handleOpenLiveDataPanel);
+  }, []);
+
+  // Poll for live matches to show/hide the LIVE button
+  useEffect(() => {
+    const checkLive = async () => {
+      try {
+        const now = new Date();
+        const localDate = now.toLocaleDateString('sv-SE');
+        const prevLocalDate = new Date(now - 864e5).toLocaleDateString('sv-SE');
+        const res = await fetch(`/api/football?competition=WC&filter=LIVE&dateFrom=${prevLocalDate}&dateTo=${localDate}`);
+        const json = await res.json();
+        const live = (json.matches || []).filter(m => m.status === 'IN_PLAY' || m.status === 'PAUSED');
+        setHasLiveMatch(live.length > 0);
+      } catch {
+        setHasLiveMatch(false);
+      }
+    };
+    checkLive();
+    const iv = setInterval(checkLive, 60000);
+    return () => clearInterval(iv);
   }, []);
 
   // Add effect to handle yearly summary panel opening
@@ -681,6 +702,31 @@ export default function Layout({ children, currentPageName }) {
         {/* User Info & Admin Button */}
         {user &&
         <div className="fixed top-[44px] right-4 z-40 flex items-center gap-2">
+
+            <AnimatePresence>
+              {hasLiveMatch && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.7 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+                  onClick={() => { setShowLiveData(true); setShowLeaderboard(false); }}
+                  className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-full cursor-pointer"
+                  style={{
+                    background: 'rgba(239,68,68,0.12)',
+                    border: '1px solid rgba(239,68,68,0.45)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                  }}
+                >
+                  <span className="relative flex h-2 w-2 flex-shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                  </span>
+                  <span className="text-red-400 text-[11px] font-bold tracking-widest uppercase">Live</span>
+                </motion.button>
+              )}
+            </AnimatePresence>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
