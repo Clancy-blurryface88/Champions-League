@@ -377,10 +377,6 @@ export default function Layout({ children, currentPageName }) {
     if (touchStart > centerZone && touchStart < screenWidth - centerZone) {
       if (isRightSwipe) {
         setShowLeaderboard(true);
-        setShowLiveData(false);
-      } else if (isLeftSwipe) {
-        setShowLiveData(true);
-        setShowLeaderboard(false);
       }
     }
 
