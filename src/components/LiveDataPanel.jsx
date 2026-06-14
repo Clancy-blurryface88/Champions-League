@@ -37,7 +37,20 @@ function calculateScore(prediction, match) {
   return { totalPoints: parseFloat(total.toFixed(2)) };
 }
 
-function normTeam(n = '') { return n.toLowerCase().replace(/[^a-z0-9א-ת]/g, ''); }
+const TEAM_ALIASES = {
+  "ctedivoire":        "ivorycoast",
+  "republicofireland": "ireland",
+  "czechia":           "czechrepublic",
+  "unitedstates":      "usa",
+  "usmnt":             "usa",
+  "dprkorea":          "northkorea",
+  "koreadpr":          "northkorea",
+  "korearepublic":     "southkorea",
+};
+function normTeam(n = '') {
+  const base = n.toLowerCase().replace(/[^a-z0-9א-ת]/g, '');
+  return TEAM_ALIASES[base] ?? base;
+}
 function teamsMatch(a, b) { const na = normTeam(a), nb = normTeam(b); return na === nb || na.includes(nb) || nb.includes(na); }
 function findDbMatch(apiMatch, dbMatches) {
   const h = apiMatch.homeTeam?.name || '', hS = apiMatch.homeTeam?.shortName || '';
