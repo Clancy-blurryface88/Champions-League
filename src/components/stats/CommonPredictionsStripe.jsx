@@ -7,7 +7,9 @@ export default function CommonPredictionsStripe({ predictions = [] }) {
     const map = {};
     predictions.forEach(p => {
       if (p.predicted_score_a === null || p.predicted_score_b === null) return;
-      const key = `${p.predicted_score_a}-${p.predicted_score_b}`;
+      const hi = Math.max(p.predicted_score_a, p.predicted_score_b);
+      const lo = Math.min(p.predicted_score_a, p.predicted_score_b);
+      const key = `${hi}-${lo}`;
       if (!map[key]) map[key] = { score: key, count: 0, hits: 0 };
       map[key].count++;
       if ((p.exact_score_points_earned || 0) > 0) map[key].hits++;
