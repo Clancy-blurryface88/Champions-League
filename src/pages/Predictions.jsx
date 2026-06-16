@@ -178,30 +178,29 @@ export default function Predictions() {
     });
   }, [activeDateKey]);
 
-  // Scroll content to today's match cards — waits for Framer Motion animation to finish
-  useEffect(() => {
+  // Scroll to last locked match — triggered by Framer Motion's onAnimationComplete
+  // so we scroll only after the height animation finishes (no guessing with timeouts)
+  const handleDateAnimationComplete = useCallback((dateKey) => {
+    if (dateKey !== activeDateKey) return;
     if (initialScrollDone.current) return;
-    if (!activeDateKey || !expandedDates) return;
     initialScrollDone.current = true;
-    const key = activeDateKey;
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       const container = scrollContainerRef.current;
       if (!container) return;
-      // מוצא את המשחק הנעול האחרון ביום הנוכחי
-      const dayMatches = matchesByDate[key] || [];
+      const dayMatches = matchesByDate[dateKey] || [];
       const lockedMatches = dayMatches.filter(m => isMatchLocked(m.match_date));
       const lastLocked = lockedMatches[lockedMatches.length - 1];
       const el = (lastLocked && matchCardRefs.current[lastLocked.id])
-        || matchGridRefs.current[key]
-        || dateRefs.current[key];
+        || matchGridRefs.current[dateKey]
+        || dateRefs.current[dateKey];
       if (!el) return;
       isProgrammaticScrollRef.current = true;
       const elTop = el.getBoundingClientRect().top;
       const containerTop = container.getBoundingClientRect().top;
       container.scrollTop += elTop - containerTop - 20;
       setTimeout(() => { isProgrammaticScrollRef.current = false; }, 900);
-    }, 450);
-  }, [activeDateKey, expandedDates]);
+    });
+  }, [activeDateKey, matchesByDate]);
 
   // Scroll spy — update active date tab while scrolling
   useEffect(() => {
@@ -739,6 +738,7 @@ export default function Predictions() {
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                       className="overflow-hidden"
+                      onAnimationComplete={() => handleDateAnimationComplete(dateKey)}
                     >
                       <div ref={el => matchGridRefs.current[dateKey] = el} className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3 pb-2">
                         {dayMatches.map((match, index) => {
