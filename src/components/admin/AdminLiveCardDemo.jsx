@@ -155,7 +155,7 @@ function SectionHeader({ icon: Icon, title, color = "#94a3b8" }) {
   );
 }
 
-// ── Personal Card ─────────────────────────────────────────────────────────────
+// ── Personal Card (reordered sections) ───────────────────────────────────────
 function PersonalCard() {
   const actualA = CURRENT.a;
   const actualB = CURRENT.b;
@@ -240,7 +240,7 @@ function PersonalCard() {
 
       <div className="px-4 py-4 space-y-5">
 
-        {/* ── Section 1: המצב שלי עכשיו ─────────────────────────────── */}
+        {/* ── Section 1: מה ניחשתי + מצב עכשיו ───────────────────────── */}
         <div>
           <SectionHeader icon={Target} title="המצב שלי עכשיו" color="#34d399" />
           <div className="grid grid-cols-2 gap-2">
@@ -263,7 +263,59 @@ function PersonalCard() {
           </div>
         </div>
 
-        {/* ── Section 2: מי מאיים עלי? ─────────────────────────────── */}
+        {/* ── Section 2 (reordered): מי ניחש כמוני? ───────────────────── */}
+        <div>
+          <SectionHeader icon={Users} title="מי ניחש כמוני?" color="#a78bfa" />
+          {sameBoat.length === 0 ? (
+            <p className="text-slate-500 text-xs text-center py-2">אף אחד לא ניחש כמוך — אתה ייחודי</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {sameBoat.map(p => (
+                <div key={p.name} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+                  style={{ background: "rgba(167,139,250,.1)", border: "1px solid rgba(167,139,250,.3)" }}>
+                  <span className="text-purple-400 text-[10px]">⚓</span>
+                  <span className="text-slate-200 text-xs font-medium">{p.name}</span>
+                  <span className="text-purple-400 text-[9px]">ניחש גם {myPredA}–{myPredB}</span>
+                </div>
+              ))}
+              <p className="w-full text-center text-[10px] text-slate-600 mt-0.5">אנחנו באותה סירה</p>
+            </div>
+          )}
+        </div>
+
+        {/* ── Section 3 (reordered): מי אני יכול לעקוף? ───────────────── */}
+        <div>
+          <SectionHeader icon={Zap} title="מי אני יכול לעקוף?" color="#f5c518" />
+          <div className="space-y-1.5">
+            {canOvertake.map(p => (
+              <div key={p.name} className="flex items-center gap-2 px-3 py-2 rounded-xl"
+                style={{
+                  background: p.iOvertake ? "rgba(52,211,153,.07)" : "rgba(30,41,59,.5)",
+                  border: `1px solid ${p.iOvertake ? "rgba(52,211,153,.22)" : "rgba(71,85,105,.4)"}`,
+                }}>
+                <span className="text-[10px] font-bold w-4 text-center"
+                  style={{ color: p.iOvertake ? "#34d399" : "#475569" }}>
+                  {p.iOvertake ? "✓" : "—"}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs">
+                    <span className="font-bold text-white">{p.name}</span>
+                    <span className="text-slate-500 text-[10px]"> ניחש {p.predicted_a}–{p.predicted_b}</span>
+                  </p>
+                  <p className="text-[9px] text-slate-600">
+                    אם {CURRENT.a}–{CURRENT.b} נשאר: {p.theirTotalIfCurrent.toFixed(1)} נק' ({p.iOvertake ? "אני עוקף ✓" : "נשאר מעלי"})
+                  </p>
+                </div>
+                <span className="text-[10px] font-bold flex-shrink-0"
+                  style={{ color: p.iOvertake ? "#34d399" : "#64748b" }}>
+                  מק' {p.rank}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Section 4 (reordered): מי מאיים עלי? ────────────────────── */}
         <div>
           <SectionHeader icon={AlertTriangle} title="מי מאיים עלי?" color="#f87171" />
           {threats.length === 0 ? (
@@ -303,39 +355,7 @@ function PersonalCard() {
           })}
         </div>
 
-        {/* ── Section 3: מי אני יכול לעקוף? ────────────────────────── */}
-        <div>
-          <SectionHeader icon={Zap} title="מי אני יכול לעקוף?" color="#f5c518" />
-          <div className="space-y-1.5">
-            {canOvertake.map(p => (
-              <div key={p.name} className="flex items-center gap-2 px-3 py-2 rounded-xl"
-                style={{
-                  background: p.iOvertake ? "rgba(52,211,153,.07)" : "rgba(30,41,59,.5)",
-                  border: `1px solid ${p.iOvertake ? "rgba(52,211,153,.22)" : "rgba(71,85,105,.4)"}`,
-                }}>
-                <span className="text-[10px] font-bold w-4 text-center"
-                  style={{ color: p.iOvertake ? "#34d399" : "#475569" }}>
-                  {p.iOvertake ? "✓" : "—"}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs">
-                    <span className="font-bold text-white">{p.name}</span>
-                    <span className="text-slate-500 text-[10px]"> ניחש {p.predicted_a}–{p.predicted_b}</span>
-                  </p>
-                  <p className="text-[9px] text-slate-600">
-                    אם {CURRENT.a}–{CURRENT.b} נשאר: {p.theirTotalIfCurrent.toFixed(1)} נק' ({p.iOvertake ? "אני עוקף ✓" : "נשאר מעלי"})
-                  </p>
-                </div>
-                <span className="text-[10px] font-bold flex-shrink-0"
-                  style={{ color: p.iOvertake ? "#34d399" : "#64748b" }}>
-                  מק' {p.rank}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Section 4: תרחיש הזהב ─────────────────────────────────── */}
+        {/* ── Section 5 (reordered): תרחיש הזהב ──────────────────────── */}
         <div>
           <SectionHeader icon={Target} title="תרחיש הזהב" color="#f5c518" />
           {goldScore && (
@@ -356,26 +376,6 @@ function PersonalCard() {
           )}
         </div>
 
-        {/* ── Section 5: מי ניחש כמוני? ────────────────────────────── */}
-        <div>
-          <SectionHeader icon={Users} title="מי ניחש כמוני?" color="#a78bfa" />
-          {sameBoat.length === 0 ? (
-            <p className="text-slate-500 text-xs text-center py-2">אף אחד לא ניחש כמוך — אתה ייחודי</p>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {sameBoat.map(p => (
-                <div key={p.name} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
-                  style={{ background: "rgba(167,139,250,.1)", border: "1px solid rgba(167,139,250,.3)" }}>
-                  <span className="text-purple-400 text-[10px]">⚓</span>
-                  <span className="text-slate-200 text-xs font-medium">{p.name}</span>
-                  <span className="text-purple-400 text-[9px]">ניחש גם {myPredA}–{myPredB}</span>
-                </div>
-              ))}
-              <p className="w-full text-center text-[10px] text-slate-600 mt-0.5">אנחנו באותה סירה</p>
-            </div>
-          )}
-        </div>
-
       </div>
 
       <div className="h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" />
@@ -383,9 +383,323 @@ function PersonalCard() {
   );
 }
 
+// ── Tab: תמצית (ultra compact) ───────────────────────────────────────────────
+function CompactCard() {
+  const actualA = CURRENT.a;
+  const actualB = CURRENT.b;
+  const myPredA = ME.predicted_a;
+  const myPredB = ME.predicted_b;
+
+  const myBonusNow = calcPoints(myPredA, myPredB, actualA, actualB);
+  const myTotalNow = ME.pts + myBonusNow;
+
+  const rowsIfCurrent = computeLiveRows(actualA, actualB);
+  const sortedIfCurrent = [...rowsIfCurrent].sort((a, b) => b.liveTotal - a.liveTotal);
+  const myRankIfCurrent = sortedIfCurrent.findIndex(p => p.name === ME.name) + 1;
+
+  const myBonusIfMyPred = calcPoints(myPredA, myPredB, myPredA, myPredB);
+  const myTotalIfMyPred = ME.pts + myBonusIfMyPred;
+  const rowsIfMyPred = computeLiveRows(myPredA, myPredB);
+  const sortedIfMyPred = [...rowsIfMyPred].sort((a, b) => b.liveTotal - a.liveTotal);
+  const myRankIfMyPred = sortedIfMyPred.findIndex(p => p.name === ME.name) + 1;
+
+  // Gap to player above and below (current scenario)
+  const myIdxInCurrent = sortedIfCurrent.findIndex(p => p.name === ME.name);
+  const playerAbove = myIdxInCurrent > 0 ? sortedIfCurrent[myIdxInCurrent - 1] : null;
+  const playerBelow = myIdxInCurrent < sortedIfCurrent.length - 1 ? sortedIfCurrent[myIdxInCurrent + 1] : null;
+  const gapAbove = playerAbove ? (playerAbove.liveTotal - myTotalNow).toFixed(1) : null;
+  const gapBelow = playerBelow ? (myTotalNow - playerBelow.liveTotal).toFixed(1) : null;
+
+  const isMyPredActive = myPredA === actualA && myPredB === actualB;
+
+  return (
+    <div className="rounded-2xl overflow-hidden"
+      style={{ background: "rgba(10,18,35,0.95)", border: "1px solid rgba(255,255,255,.12)", boxShadow: "0 8px 32px rgba(0,0,0,.5)" }}>
+      <div className="h-px bg-gradient-to-r from-transparent via-amber-400/50 to-transparent" />
+
+      {/* Top header row */}
+      <div className="px-4 pt-3 pb-2 flex items-center justify-between"
+        style={{ borderBottom: "1px solid rgba(255,255,255,.06)" }}>
+        <span className="text-slate-400 text-[10px]">ניחשת <span className="text-white font-bold">{myPredA}–{myPredB}</span></span>
+        <span className="flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+          <span className="text-red-400 text-[10px] font-bold">עכשיו {actualA}–{actualB} · {LIVE_MATCH.minute}'</span>
+        </span>
+      </div>
+
+      {/* Two columns */}
+      <div className="grid grid-cols-2 gap-0" style={{ borderBottom: "1px solid rgba(255,255,255,.06)" }}>
+        {/* Left: current scenario */}
+        <div className="px-4 py-4 space-y-1"
+          style={{ borderLeft: "1px solid rgba(255,255,255,.06)", borderRight: "none" }}>
+          <p className="text-[9px] text-slate-500 font-medium mb-2">אם נגמר {actualA}–{actualB}</p>
+          <p className="text-emerald-400 text-2xl font-black leading-none">+{myBonusNow}</p>
+          <p className="text-[10px] text-slate-400">נק'</p>
+          <p className="text-white text-sm font-bold mt-1">{myTotalNow.toFixed(1)} סה"כ</p>
+          <p className="text-slate-400 text-xs">מקום {myRankIfCurrent}</p>
+        </div>
+        {/* Right: if-my-prediction scenario */}
+        <div className="px-4 py-4 space-y-1"
+          style={{ background: "rgba(245,197,24,.04)" }}>
+          <p className="text-[9px] text-slate-500 font-medium mb-2">
+            אם ניחושי {myPredA}–{myPredB} {isMyPredActive ? "✓" : "✨"}
+          </p>
+          <p className="text-amber-400 text-2xl font-black leading-none">+{myBonusIfMyPred}</p>
+          <p className="text-[10px] text-slate-400">נק'</p>
+          <p className="text-white text-sm font-bold mt-1">{myTotalIfMyPred.toFixed(1)} סה"כ</p>
+          <p className="text-amber-400 text-xs font-bold">
+            מקום {myRankIfMyPred} {myRankIfMyPred === 1 ? "🥇" : ""}
+          </p>
+        </div>
+      </div>
+
+      {/* Gap line */}
+      <div className="px-4 py-2.5 flex items-center justify-center gap-3 text-[10px]">
+        {gapAbove && (
+          <span className="text-slate-500">
+            <span className="text-red-400 font-bold">-{gapAbove}</span> נק' מ<span className="text-white">{playerAbove.name}</span> מעלי
+          </span>
+        )}
+        {gapAbove && gapBelow && <span className="text-slate-700">·</span>}
+        {gapBelow && (
+          <span className="text-slate-500">
+            <span className="text-emerald-400 font-bold">+{gapBelow}</span> על <span className="text-white">{playerBelow.name}</span> מתחתי
+          </span>
+        )}
+        {!gapAbove && !gapBelow && (
+          <span className="text-slate-500">אתה לבד בטבלה</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Tab: תרחישים (3 scenario cards) ─────────────────────────────────────────
+function ScenariosTab() {
+  const actualA = CURRENT.a;
+  const actualB = CURRENT.b;
+  const myPredA = ME.predicted_a;
+  const myPredB = ME.predicted_b;
+
+  // Scenario 1: Current score (1-0)
+  const bonusCurrent = calcPoints(myPredA, myPredB, actualA, actualB);
+  const totalCurrent = ME.pts + bonusCurrent;
+  const rowsCurrent = computeLiveRows(actualA, actualB);
+  const sortedCurrent = [...rowsCurrent].sort((a, b) => b.liveTotal - a.liveTotal);
+  const rankCurrent = sortedCurrent.findIndex(p => p.name === ME.name) + 1;
+
+  // Scenario 2: My prediction (2-1)
+  const bonusMyPred = calcPoints(myPredA, myPredB, myPredA, myPredB);
+  const totalMyPred = ME.pts + bonusMyPred;
+  const rowsMyPred = computeLiveRows(myPredA, myPredB);
+  const sortedMyPred = [...rowsMyPred].sort((a, b) => b.liveTotal - a.liveTotal);
+  const rankMyPred = sortedMyPred.findIndex(p => p.name === ME.name) + 1;
+
+  // Scenario 3: Golden (best possible)
+  let goldScore = null, goldBonus = -1, goldRank = 99;
+  for (let a = 0; a <= 4; a++) {
+    for (let b = 0; b <= 4; b++) {
+      const bonus = calcPoints(myPredA, myPredB, a, b);
+      const rows = computeLiveRows(a, b);
+      const sorted = [...rows].sort((x, y) => y.liveTotal - x.liveTotal);
+      const rank = sorted.findIndex(p => p.name === ME.name) + 1;
+      if (bonus > goldBonus || (bonus === goldBonus && rank < goldRank)) {
+        goldBonus = bonus; goldRank = rank; goldScore = { a, b };
+      }
+    }
+  }
+  const totalGold = ME.pts + goldBonus;
+
+  const scenarios = [
+    {
+      label: "עכשיו",
+      score: `${actualA}–${actualB}`,
+      bonus: bonusCurrent,
+      total: totalCurrent,
+      rank: rankCurrent,
+      bg: "rgba(52,211,153,.07)",
+      border: "rgba(52,211,153,.25)",
+      bonusColor: "#34d399",
+      tag: "נוכחי",
+      tagBg: "rgba(52,211,153,.15)",
+      tagColor: "#34d399",
+      glow: "none",
+    },
+    {
+      label: "ניחושי",
+      score: `${myPredA}–${myPredB}`,
+      bonus: bonusMyPred,
+      total: totalMyPred,
+      rank: rankMyPred,
+      bg: "rgba(245,197,24,.07)",
+      border: "rgba(245,197,24,.30)",
+      bonusColor: "#f5c518",
+      tag: "ניחוש שלי",
+      tagBg: "rgba(245,197,24,.15)",
+      tagColor: "#f5c518",
+      glow: "none",
+    },
+    {
+      label: "הזהב",
+      score: goldScore ? `${goldScore.a}–${goldScore.b}` : "—",
+      bonus: goldBonus,
+      total: totalGold,
+      rank: goldRank,
+      bg: "linear-gradient(135deg,rgba(245,197,24,.12),rgba(245,158,11,.06))",
+      border: "#f5c518",
+      bonusColor: "#fbbf24",
+      tag: "הכי טוב",
+      tagBg: "rgba(245,197,24,.22)",
+      tagColor: "#f5c518",
+      glow: "0 0 16px rgba(245,197,24,.20)",
+    },
+  ];
+
+  return (
+    <div className="space-y-3">
+      <p className="text-[10px] text-slate-500 text-center">3 תרחישים אפשריים עבורך</p>
+      <div className="grid grid-cols-3 gap-2">
+        {scenarios.map((s) => (
+          <div key={s.label} className="rounded-xl p-3 text-center flex flex-col gap-1"
+            style={{
+              background: s.bg,
+              border: `1px solid ${s.border}`,
+              boxShadow: s.glow,
+            }}>
+            {/* Tag */}
+            <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full mx-auto"
+              style={{ background: s.tagBg, color: s.tagColor }}>
+              {s.tag}
+            </span>
+            {/* Score */}
+            <p className="text-white text-[11px] font-bold mt-1">{s.score}</p>
+            {/* Bonus */}
+            <p className="font-black text-xl leading-none" style={{ color: s.bonusColor }}>+{s.bonus}</p>
+            <p className="text-slate-500 text-[8px]">נק'</p>
+            {/* Total */}
+            <p className="text-white text-[10px] font-bold">{s.total.toFixed(1)}</p>
+            {/* Rank */}
+            <p className="text-[10px] font-bold" style={{ color: s.bonusColor }}>
+              {MEDAL[s.rank] || `#${s.rank}`}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Tab: כולם (everyone's table) ─────────────────────────────────────────────
+function EveryoneTab() {
+  const actualA = CURRENT.a;
+  const actualB = CURRENT.b;
+
+  // Build rows with current rank and "if prediction correct" rank
+  const currentRows = computeLiveRows(actualA, actualB);
+
+  const tableRows = currentRows.map((p) => {
+    const bonusCurrent = p.bonus; // already computed
+    const totalCurrent = p.liveTotal;
+    const rankCurrent = p.liveRank;
+
+    const bonusIfRight = calcPoints(p.predicted_a, p.predicted_b, p.predicted_a, p.predicted_b);
+    const totalIfRight = p.pts + bonusIfRight;
+
+    return { ...p, bonusCurrent, totalCurrent, rankCurrent, bonusIfRight, totalIfRight };
+  });
+
+  // Compute "if prediction correct" ranks
+  const sortedIfRight = [...tableRows].sort((a, b) => b.totalIfRight - a.totalIfRight);
+  const rankIfRightMap = {};
+  sortedIfRight.forEach((p, i) => { rankIfRightMap[p.name] = i + 1; });
+
+  // Sort display by current live rank
+  const displayRows = [...tableRows].sort((a, b) => a.rankCurrent - b.rankCurrent);
+
+  return (
+    <div className="rounded-2xl overflow-hidden"
+      style={{ background: "rgba(10,18,35,0.95)", border: "1px solid rgba(255,255,255,.1)" }}>
+      <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+      {/* Table header */}
+      <div className="grid px-3 py-2 text-[9px] font-bold text-slate-600 uppercase tracking-wide"
+        style={{
+          gridTemplateColumns: "28px 1fr 52px 52px 50px",
+          borderBottom: "1px solid rgba(255,255,255,.06)",
+        }}>
+        <span>#</span>
+        <span>שם + ניחוש</span>
+        <span className="text-center">עכשיו</span>
+        <span className="text-center">אם נכון</span>
+        <span className="text-center">דירוג</span>
+      </div>
+
+      {/* Rows */}
+      <div className="divide-y divide-white/[0.04]">
+        {displayRows.map((p) => {
+          const isMe = p.name === ME.name;
+          const rankIfRight = rankIfRightMap[p.name];
+          const rankDelta = p.rankCurrent - rankIfRight; // positive = improve
+          const deltaStr = rankDelta > 0 ? `↑${rankDelta}` : rankDelta < 0 ? `↓${Math.abs(rankDelta)}` : "=";
+          const deltaColor = rankDelta > 0 ? "#34d399" : rankDelta < 0 ? "#f87171" : "#64748b";
+
+          return (
+            <div key={p.name}
+              className="grid px-3 py-2 items-center"
+              style={{
+                gridTemplateColumns: "28px 1fr 52px 52px 50px",
+                background: isMe ? "rgba(52,211,153,.06)" : "transparent",
+                borderLeft: isMe ? "2px solid #34d399" : "2px solid transparent",
+              }}>
+              {/* Rank */}
+              <span className="text-[10px] font-bold" style={{ color: RANK_BORDER(p.rankCurrent) }}>
+                {MEDAL[p.rankCurrent] || p.rankCurrent}
+              </span>
+
+              {/* Name + prediction */}
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold truncate" style={{ color: isMe ? "#34d399" : "#e2e8f0" }}>
+                  {p.name}
+                </p>
+                <p className="text-[9px] text-slate-600">{p.predicted_a}–{p.predicted_b}</p>
+              </div>
+
+              {/* Current */}
+              <div className="text-center">
+                <p className="text-[10px] font-bold text-white">{p.totalCurrent.toFixed(1)}</p>
+                {p.bonusCurrent > 0 && (
+                  <p className="text-[8px] text-emerald-400">+{p.bonusCurrent}</p>
+                )}
+              </div>
+
+              {/* If correct */}
+              <div className="text-center">
+                <p className="text-[10px] font-bold text-amber-400">{p.totalIfRight.toFixed(1)}</p>
+                <p className="text-[8px] text-slate-600">+{p.bonusIfRight}</p>
+              </div>
+
+              {/* Rank if correct + delta */}
+              <div className="text-center">
+                <p className="text-[10px] font-bold" style={{ color: deltaColor }}>{deltaStr}</p>
+                <p className="text-[8px] text-slate-600">#{rankIfRight}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="h-px bg-gradient-to-r from-transparent via-white/8 to-transparent" />
+      <p className="text-center text-slate-700 text-[9px] py-2">↑↓ שינוי דירוג אם כל אחד יצדק</p>
+    </div>
+  );
+}
+
 // ── Main Export ───────────────────────────────────────────────────────────────
 export default function AdminLiveCardDemo() {
   const [cardOpen, setCardOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState("פירוט");
+
+  const TABS = ["פירוט", "תמצית", "תרחישים", "כולם"];
 
   return (
     <div className="space-y-5" dir="rtl">
@@ -429,41 +743,90 @@ export default function AdminLiveCardDemo() {
         <p className="text-center text-slate-700 text-[10px] pb-3">⚡ זמני · לא נשמר</p>
       </div>
 
-      {/* ── Toggle button ─────────────────────────────────────────────── */}
+      {/* ── Tab bar ─────────────────────────────────────────────────── */}
       <div className="max-w-xs mx-auto">
-        <motion.button
-          onClick={() => setCardOpen(v => !v)}
-          whileTap={{ scale: 0.97 }}
-          className="w-full flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-sm transition-all"
-          style={{
-            background: cardOpen
-              ? "linear-gradient(135deg,rgba(52,211,153,.18),rgba(16,185,129,.08))"
-              : "linear-gradient(135deg,rgba(52,211,153,.08),rgba(5,13,26,.9))",
-            border: "1px solid rgba(52,211,153,.35)",
-            color: "#34d399",
-          }}>
-          <span className="flex items-center gap-2">
-            <Shield className="w-4 h-4" />
-            מה המצב שלי?
-          </span>
-          {cardOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </motion.button>
+        <div className="flex gap-1.5 p-1 rounded-2xl"
+          style={{ background: "rgba(15,23,42,.8)", border: "1px solid rgba(255,255,255,.08)" }}>
+          {TABS.map(tab => {
+            const isActive = activeTab === tab;
+            return (
+              <motion.button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                whileTap={{ scale: 0.95 }}
+                className="flex-1 py-2 rounded-xl text-[11px] font-bold transition-all"
+                style={{
+                  background: isActive
+                    ? "linear-gradient(135deg,#f5c518,#fde68a)"
+                    : "rgba(255,255,255,.06)",
+                  color: isActive ? "#000" : "#94a3b8",
+                  boxShadow: isActive ? "0 2px 8px rgba(245,197,24,.30)" : "none",
+                }}>
+                {tab}
+              </motion.button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* ── Personal card ─────────────────────────────────────────────── */}
+      {/* ── Tab content ──────────────────────────────────────────────── */}
       <div className="max-w-xs mx-auto">
-        <AnimatePresence>
-          {cardOpen && (
-            <motion.div
-              key="personal-card"
-              initial={{ opacity: 0, height: 0, y: -8 }}
-              animate={{ opacity: 1, height: "auto", y: 0 }}
-              exit={{ opacity: 0, height: 0, y: -8 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              style={{ overflow: "hidden" }}>
-              <PersonalCard />
-            </motion.div>
-          )}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}>
+
+            {/* ── Tab: פירוט ─────────────────────────────────────────── */}
+            {activeTab === "פירוט" && (
+              <div className="space-y-3">
+                {/* Toggle button */}
+                <motion.button
+                  onClick={() => setCardOpen(v => !v)}
+                  whileTap={{ scale: 0.97 }}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-sm transition-all"
+                  style={{
+                    background: cardOpen
+                      ? "linear-gradient(135deg,rgba(52,211,153,.18),rgba(16,185,129,.08))"
+                      : "linear-gradient(135deg,rgba(52,211,153,.08),rgba(5,13,26,.9))",
+                    border: "1px solid rgba(52,211,153,.35)",
+                    color: "#34d399",
+                  }}>
+                  <span className="flex items-center gap-2">
+                    <Shield className="w-4 h-4" />
+                    מה המצב שלי?
+                  </span>
+                  {cardOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </motion.button>
+
+                <AnimatePresence>
+                  {cardOpen && (
+                    <motion.div
+                      key="personal-card"
+                      initial={{ opacity: 0, height: 0, y: -8 }}
+                      animate={{ opacity: 1, height: "auto", y: 0 }}
+                      exit={{ opacity: 0, height: 0, y: -8 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      style={{ overflow: "hidden" }}>
+                      <PersonalCard />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {/* ── Tab: תמצית ─────────────────────────────────────────── */}
+            {activeTab === "תמצית" && <CompactCard />}
+
+            {/* ── Tab: תרחישים ───────────────────────────────────────── */}
+            {activeTab === "תרחישים" && <ScenariosTab />}
+
+            {/* ── Tab: כולם ──────────────────────────────────────────── */}
+            {activeTab === "כולם" && <EveryoneTab />}
+
+          </motion.div>
         </AnimatePresence>
       </div>
 
