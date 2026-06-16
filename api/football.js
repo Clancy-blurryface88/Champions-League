@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     if (type === 'standings') {
       const url = `https://api.football-data.org/v4/competitions/${competition}/standings`;
       console.log(`[football API] standings url=${url}`);
-      const r = await fetch(url, { headers: { 'X-Auth-Token': apiKey } });
+      const r = await fetch(url, { headers: { 'X-Auth-Token': apiKey, 'X-Api-Version': 'v4.1' } });
       const d = await r.json();
       if (!r.ok) return res.status(r.status).json({ error: d.message || JSON.stringify(d) });
       return res.status(200).json({ success: true, standings: d.standings || [], competition: d.competition });
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       const { limit = 20 } = req.query;
       const url = `https://api.football-data.org/v4/competitions/${competition}/scorers?limit=${limit}`;
       console.log(`[football API] scorers url=${url}`);
-      const r = await fetch(url, { headers: { 'X-Auth-Token': apiKey } });
+      const r = await fetch(url, { headers: { 'X-Auth-Token': apiKey, 'X-Api-Version': 'v4.1' } });
       const d = await r.json();
       if (!r.ok) return res.status(r.status).json({ error: d.message || JSON.stringify(d) });
       return res.status(200).json({ success: true, scorers: d.scorers || [] });
@@ -34,7 +34,7 @@ export default async function handler(req, res) {
     if (type === 'teams') {
       const url = `https://api.football-data.org/v4/competitions/${competition}/teams`;
       console.log(`[football API] teams url=${url}`);
-      const r = await fetch(url, { headers: { 'X-Auth-Token': apiKey } });
+      const r = await fetch(url, { headers: { 'X-Auth-Token': apiKey, 'X-Api-Version': 'v4.1' } });
       const d = await r.json();
       if (!r.ok) return res.status(r.status).json({ error: d.message || JSON.stringify(d) });
       return res.status(200).json({ success: true, teams: d.teams || [] });
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
       if (!matchId) return res.status(400).json({ error: 'matchId required' });
       const url = `https://api.football-data.org/v4/matches/${matchId}`;
       console.log(`[football API] match url=${url}`);
-      const r = await fetch(url, { headers: { 'X-Auth-Token': apiKey } });
+      const r = await fetch(url, { headers: { 'X-Auth-Token': apiKey, 'X-Api-Version': 'v4.1' } });
       const d = await r.json();
       if (!r.ok) return res.status(r.status).json({ error: d.message || JSON.stringify(d) });
       return res.status(200).json({ success: true, match: d });
@@ -60,7 +60,7 @@ export default async function handler(req, res) {
     const url = `https://api.football-data.org/v4/competitions/${competition}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`;
     console.log(`[football API] filter=${filter} url=${url}`);
 
-    const response = await fetch(url, { headers: { 'X-Auth-Token': apiKey } });
+    const response = await fetch(url, { headers: { 'X-Auth-Token': apiKey, 'X-Api-Version': 'v4.1' } });
 
     if (!response.ok) {
       const text = await response.text();
