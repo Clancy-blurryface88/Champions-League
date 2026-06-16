@@ -314,6 +314,14 @@ export default function Predictions() {
     // Set active date to today or first upcoming
     const firstOpen = sortedDateKeys.find(k => !moment(k).isBefore(today)) || sortedDateKeys[sortedDateKeys.length - 1];
     setActiveDateKey(firstOpen);
+    // Scroll content to today's section
+    if (firstOpen) {
+      isProgrammaticScrollRef.current = true;
+      setTimeout(() => {
+        dateRefs.current[firstOpen]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => { isProgrammaticScrollRef.current = false; }, 900);
+      }, 300);
+    }
   }, [sortedDateKeys.join(',')]);
 
   const toggleDate = (dateKey) => {

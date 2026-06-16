@@ -13,6 +13,18 @@ window.OneSignalDeferred.push(async function(OneSignal) {
     notificationClickHandlerMatch: 'origin',
     defaultIcon: '/favicon.png',
   });
+
+  OneSignal.Notifications.addEventListener('click', (event) => {
+    const launchUrl = event?.notification?.launchURL;
+    if (launchUrl) {
+      try {
+        const target = new URL(launchUrl);
+        window.location.href = target.pathname + target.search;
+      } catch {
+        window.location.href = launchUrl;
+      }
+    }
+  });
 });
 
 ReactDOM.createRoot(document.getElementById('root')).render(
