@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, Zap } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
@@ -18,6 +18,7 @@ import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminApiExplorer from "../components/admin/AdminApiExplorer";
+import AdminLiveCardDemo from "../components/admin/AdminLiveCardDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -78,6 +79,7 @@ export default function Admin() {
       case 'import': return <AdminImportMatches />;
       case 'reset':      return <AdminReset />;
       case 'api-explorer': return <AdminApiExplorer />;
+      case 'live-card-demo': return <AdminLiveCardDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -94,6 +96,7 @@ export default function Admin() {
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'api-explorer', label: 'API Explorer',    icon: BarChart3 },
+    { id: 'live-card-demo', label: '⚡ Live Card Demo', icon: Zap },
   ];
 
   return (
