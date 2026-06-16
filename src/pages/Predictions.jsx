@@ -177,23 +177,18 @@ export default function Predictions() {
     });
   }, [activeDateKey]);
 
-  // Scroll content to today's match cards — runs once after DOM is painted
+  // Scroll content to today's match cards — waits for Framer Motion animation to finish
   useEffect(() => {
     if (initialScrollDone.current) return;
     if (!activeDateKey || !expandedDates) return;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const container = scrollContainerRef.current;
-        const el = matchGridRefs.current[activeDateKey] || dateRefs.current[activeDateKey];
-        if (!container || !el) return;
-        isProgrammaticScrollRef.current = true;
-        const elTop = el.getBoundingClientRect().top;
-        const containerTop = container.getBoundingClientRect().top;
-        container.scrollTop += elTop - containerTop - 150;
-        initialScrollDone.current = true;
-        setTimeout(() => { isProgrammaticScrollRef.current = false; }, 900);
-      });
-    });
+    initialScrollDone.current = true;
+    setTimeout(() => {
+      const el = matchGridRefs.current[activeDateKey] || dateRefs.current[activeDateKey];
+      if (!el) return;
+      isProgrammaticScrollRef.current = true;
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => { isProgrammaticScrollRef.current = false; }, 900);
+    }, 450);
   }, [activeDateKey, expandedDates]);
 
   // Scroll spy — update active date tab while scrolling
@@ -733,7 +728,7 @@ export default function Predictions() {
                       transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                       className="overflow-hidden"
                     >
-                      <div ref={el => matchGridRefs.current[dateKey] = el} className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3 pb-2">
+                      <div ref={el => matchGridRefs.current[dateKey] = el} className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3 pb-2" style={{ scrollMarginTop: '160px' }}>
                         {dayMatches.map((match, index) => {
             const isLocked = isMatchLocked(match.match_date);
             const timeInfo = getTimeUntilLock(match.match_date);
