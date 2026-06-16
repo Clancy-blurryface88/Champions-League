@@ -58,6 +58,7 @@ export default function Predictions() {
   const [activeDateKey, setActiveDateKey] = useState(null);
   const dateRefs = useRef({});
   const dateTabRefs = useRef({});
+  const initialScrollDone = useRef(false);
   const dateStripRef = useRef(null);
   const scrollContainerRef = useRef(null);
   const isProgrammaticScrollRef = useRef(false);
@@ -173,6 +174,17 @@ export default function Predictions() {
     const scrollLeft = tabLeft - stripWidth / 2 + tabWidth / 2;
     strip.scrollTo({ left: scrollLeft, behavior: 'smooth' });
   }, [activeDateKey]);
+
+  // Scroll content to today's section — runs once after DOM is ready
+  useEffect(() => {
+    if (initialScrollDone.current) return;
+    if (!activeDateKey || !expandedDates) return;
+    if (!dateRefs.current[activeDateKey]) return;
+    initialScrollDone.current = true;
+    isProgrammaticScrollRef.current = true;
+    dateRefs.current[activeDateKey].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => { isProgrammaticScrollRef.current = false; }, 900);
+  }, [activeDateKey, expandedDates]);
 
   // Scroll spy — update active date tab while scrolling
   useEffect(() => {
@@ -314,14 +326,6 @@ export default function Predictions() {
     // Set active date to today or first upcoming
     const firstOpen = sortedDateKeys.find(k => !moment(k).isBefore(today)) || sortedDateKeys[sortedDateKeys.length - 1];
     setActiveDateKey(firstOpen);
-    // Scroll content to today's section
-    if (firstOpen) {
-      isProgrammaticScrollRef.current = true;
-      setTimeout(() => {
-        dateRefs.current[firstOpen]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setTimeout(() => { isProgrammaticScrollRef.current = false; }, 900);
-      }, 300);
-    }
   }, [sortedDateKeys.join(',')]);
 
   const toggleDate = (dateKey) => {

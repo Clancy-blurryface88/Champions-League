@@ -15,7 +15,7 @@ window.OneSignalDeferred.push(async function(OneSignal) {
   });
 
   OneSignal.Notifications.addEventListener('click', (event) => {
-    const launchUrl = event?.notification?.launchURL;
+    const launchUrl = event?.notification?.url || event?.notification?.launchURL;
     if (launchUrl) {
       try {
         const target = new URL(launchUrl);
