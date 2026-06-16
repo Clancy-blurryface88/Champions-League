@@ -59,6 +59,7 @@ export default function Predictions() {
   const dateRefs = useRef({});
   const dateTabRefs = useRef({});
   const matchGridRefs = useRef({});
+  const matchCardRefs = useRef({});
   const initialScrollDone = useRef(false);
   const dateStripRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -185,14 +186,19 @@ export default function Predictions() {
     const key = activeDateKey;
     setTimeout(() => {
       const container = scrollContainerRef.current;
-      const grid = matchGridRefs.current[key];
-      const header = dateRefs.current[key];
-      const el = grid || header;
-      if (!container || !el) return;
+      if (!container) return;
+      // מוצא את המשחק הנעול האחרון ביום הנוכחי
+      const dayMatches = matchesByDate[key] || [];
+      const lockedMatches = dayMatches.filter(m => isMatchLocked(m.match_date));
+      const lastLocked = lockedMatches[lockedMatches.length - 1];
+      const el = (lastLocked && matchCardRefs.current[lastLocked.id])
+        || matchGridRefs.current[key]
+        || dateRefs.current[key];
+      if (!el) return;
       isProgrammaticScrollRef.current = true;
       const elTop = el.getBoundingClientRect().top;
       const containerTop = container.getBoundingClientRect().top;
-      container.scrollTop += elTop - containerTop - (grid ? 0 : 80);
+      container.scrollTop += elTop - containerTop - 20;
       setTimeout(() => { isProgrammaticScrollRef.current = false; }, 900);
     }, 450);
   }, [activeDateKey, expandedDates]);
@@ -743,6 +749,7 @@ export default function Predictions() {
             return (
               <motion.div
                 key={match.id}
+                ref={el => matchCardRefs.current[match.id] = el}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.06 }}
