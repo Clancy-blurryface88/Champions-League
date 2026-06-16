@@ -46,16 +46,6 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // חשיפת navigate ל-OneSignal לניווט עמוק מהודעות פוש
-  useEffect(() => {
-    window.__onesignalNavigate = navigate;
-    const pending = localStorage.getItem('__onesignal_nav');
-    if (pending) {
-      localStorage.removeItem('__onesignal_nav');
-      navigate(pending);
-    }
-    return () => { delete window.__onesignalNavigate; };
-  }, [navigate]);
 
   // Animation variants for dropdown - עדכון למהירות איטית יותר
   const dropdownVariants = {
