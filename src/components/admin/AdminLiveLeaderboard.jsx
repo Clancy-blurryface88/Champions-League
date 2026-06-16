@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { UserStats } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
-import { RefreshCw, Zap, Trophy, AlertTriangle, Wifi, WifiOff, Clock, TrendingUp, TrendingDown, Minus, LayoutList, Layers } from "lucide-react";
+import { User } from "@/api/entities";
+import { RefreshCw, Zap, Trophy, AlertTriangle, Wifi, WifiOff, Clock, TrendingUp, TrendingDown, Minus, LayoutList, Layers, Swords, Shield, Star } from "lucide-react";
 import ScoreCounter from "@/components/ScoreCounter";
 
 // Identical to AdminScoring — no changes to original file
@@ -230,12 +231,17 @@ export default function AdminLiveLeaderboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [viewMode, setViewMode]   = useState('cards');
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState(null);
   const dbDataRef      = useRef(null);
   const isInitialRef   = useRef(true);
 
   const getName = useCallback(uid => {
     const profiles = dbDataRef.current?.profiles || [];
     return profiles.find(p => p.user_id === uid)?.display_name || uid?.slice(0, 6) || '?';
+  }, []);
+
+  useEffect(() => {
+    User.me().then(u => { if (u?.id) setCurrentUserId(u.id); }).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -312,6 +318,38 @@ export default function AdminLiveLeaderboard() {
     const iv = setInterval(() => fetchAndRecalc(), INTERVAL);
     return () => clearInterval(iv);
   }, [dbData, fetchAndRecalc]);
+
+  const insights = useMemo(() => {
+    if (!liveState?.rows || !liveState?.dbMatch || !dbData || !currentUserId) return null;
+    const { rows, dbMatch } = liveState;
+    const myRow = rows.find(r => r.userId === currentUserId);
+    if (!myRow) return null;
+
+    const myRank = myRow.liveRank;
+    const myTotal = myRow.total;
+
+    // golden scenario: recalculate leaderboard assuming my prediction comes true
+    const myPred = dbData.predictions.find(p => p.match_id === dbMatch.id && p.user_id === currentUserId);
+    let goldenRows = null, myGoldenRow = null;
+    if (myPred) {
+      goldenRows = buildLeaderboard(dbMatch, myPred.predicted_score_a, myPred.predicted_score_b, dbData.predictions, dbData.userStats, getName);
+      myGoldenRow = goldenRows.find(r => r.userId === currentUserId);
+    }
+
+    // can overtake: people above me NOW who fall below me in golden scenario
+    const canOvertake = goldenRows
+      ? rows.filter(r => {
+          if (r.liveRank >= myRank) return false;
+          const goldenRank = goldenRows.find(g => g.userId === r.userId)?.liveRank ?? r.liveRank;
+          return goldenRank > (myGoldenRow?.liveRank ?? myRank);
+        })
+      : [];
+
+    // threatens me: people below me NOW who are within 12 pts of my current total
+    const threatens = rows.filter(r => r.liveRank > myRank && (myTotal - r.total) <= 12);
+
+    return { myRow, myRank, myTotal, myPred, myGoldenRow, canOvertake, threatens };
+  }, [liveState, dbData, currentUserId, getName]);
 
   if (loading) return (
     <div className="flex items-center justify-center py-20 text-slate-400">
@@ -526,6 +564,120 @@ export default function AdminLiveLeaderboard() {
                   })}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {/* Personal Insights */}
+          {insights && (
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-px bg-slate-700/60" />
+                <span className="text-slate-500 text-xs font-medium tracking-wider uppercase">תובנות אישיות</span>
+                <div className="flex-1 h-px bg-slate-700/60" />
+              </div>
+
+              {/* My current position strip */}
+              <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-800/60 border border-slate-700">
+                <span className="text-slate-400 text-xs">המיקום שלי עכשיו</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-white font-bold text-sm">מקום {insights.myRank}</span>
+                  <span className="text-slate-500 text-xs">{insights.myTotal} נק'</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3">
+                {/* Can overtake */}
+                <div className="rounded-xl border p-4" style={{ background: 'rgba(16,185,129,0.06)', borderColor: 'rgba(16,185,129,0.20)' }}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Swords className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <span className="text-emerald-300 font-semibold text-sm">את מי אני יכול לעקוף?</span>
+                  </div>
+                  {!insights.myPred ? (
+                    <p className="text-slate-500 text-xs">אין לך ניחוש למשחק הזה</p>
+                  ) : insights.canOvertake.length === 0 ? (
+                    <p className="text-slate-500 text-xs">
+                      {insights.myGoldenRow?.liveRank === 1 ? 'כבר במקום הראשון בתרחיש הזהב 🥇' : 'לא ניתן לעקוף אף אחד בתרחיש הזהב'}
+                    </p>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {insights.canOvertake.map(r => (
+                        <div key={r.userId} className="flex items-center justify-between">
+                          <span className="text-white text-xs font-medium">{r.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-slate-500 text-[10px]">מקום {r.liveRank}</span>
+                            <span className="text-emerald-400 text-[10px] font-semibold">+{(r.total - insights.myTotal).toFixed(1)} יתרון</span>
+                          </div>
+                        </div>
+                      ))}
+                      <p className="text-emerald-400/60 text-[10px] pt-1">אם ניחושך ({insights.myPred.predicted_score_a}–{insights.myPred.predicted_score_b}) יצא נכון</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Threatens me */}
+                <div className="rounded-xl border p-4" style={{ background: 'rgba(239,68,68,0.06)', borderColor: 'rgba(239,68,68,0.20)' }}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Shield className="w-4 h-4 text-red-400 flex-shrink-0" />
+                    <span className="text-red-300 font-semibold text-sm">מי מאיים עליי?</span>
+                  </div>
+                  {insights.threatens.length === 0 ? (
+                    <p className="text-slate-500 text-xs">אף אחד לא קרוב מספיק כדי לאיים</p>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {insights.threatens.map(r => (
+                        <div key={r.userId} className="flex items-center justify-between">
+                          <span className="text-white text-xs font-medium">{r.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-slate-500 text-[10px]">מקום {r.liveRank}</span>
+                            <span className="text-red-400 text-[10px] font-semibold">{(insights.myTotal - r.total).toFixed(1)} נק' מאחורי</span>
+                          </div>
+                        </div>
+                      ))}
+                      <p className="text-red-400/60 text-[10px] pt-1">בטווח של עד 12 נקודות</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Golden scenario */}
+                <div className="rounded-xl border p-4" style={{ background: 'rgba(251,191,36,0.06)', borderColor: 'rgba(251,191,36,0.20)' }}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Star className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                    <span className="text-amber-300 font-semibold text-sm">תרחיש זהב</span>
+                  </div>
+                  {!insights.myPred ? (
+                    <p className="text-slate-500 text-xs">אין לך ניחוש למשחק הזה</p>
+                  ) : !insights.myGoldenRow ? (
+                    <p className="text-slate-500 text-xs">לא ניתן לחשב</p>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-400 text-xs">ניחוש שלך</span>
+                        <span className="text-amber-300 font-bold text-sm font-mono">
+                          {insights.myPred.predicted_score_a}–{insights.myPred.predicted_score_b}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-400 text-xs">נקודות סופיות</span>
+                        <span className="text-white font-bold text-sm">{insights.myGoldenRow.total} נק'</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-400 text-xs">מיקום בתרחיש זהב</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-amber-400 font-black text-base">מקום {insights.myGoldenRow.liveRank}</span>
+                          {insights.myGoldenRow.liveRank < insights.myRank && (
+                            <span className="text-emerald-400 text-xs font-semibold">
+                              ↑{insights.myRank - insights.myGoldenRow.liveRank} מיקומים
+                            </span>
+                          )}
+                          {insights.myGoldenRow.liveRank === insights.myRank && (
+                            <span className="text-slate-500 text-xs">ללא שינוי</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </>
