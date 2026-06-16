@@ -58,6 +58,7 @@ export default function Predictions() {
   const [activeDateKey, setActiveDateKey] = useState(null);
   const dateRefs = useRef({});
   const dateTabRefs = useRef({});
+  const matchGridRefs = useRef({});
   const initialScrollDone = useRef(false);
   const dateStripRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -162,38 +163,34 @@ export default function Predictions() {
     };
   };
 
-  // Auto-scroll the date strip to keep active tab visible
+  // Auto-scroll the date strip to center active tab — after paint
   useEffect(() => {
-    if (!activeDateKey || !dateStripRef.current) return;
-    const tab = dateTabRefs.current[activeDateKey];
-    if (!tab) return;
-    const strip = dateStripRef.current;
-    const tabLeft = tab.offsetLeft;
-    const tabWidth = tab.offsetWidth;
-    const stripWidth = strip.offsetWidth;
-    const scrollLeft = tabLeft - stripWidth / 2 + tabWidth / 2;
-    strip.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+    if (!activeDateKey) return;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const tab = dateTabRefs.current[activeDateKey];
+        const strip = dateStripRef.current;
+        if (!tab || !strip) return;
+        const scrollLeft = tab.offsetLeft - strip.offsetWidth / 2 + tab.offsetWidth / 2;
+        strip.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+      });
+    });
   }, [activeDateKey]);
 
-  // Scroll content to today's section — runs once after DOM is painted
+  // Scroll content to today's match cards — runs once after DOM is painted
   useEffect(() => {
     if (initialScrollDone.current) return;
     if (!activeDateKey || !expandedDates) return;
-    const doScroll = () => {
-      const container = scrollContainerRef.current;
-      const el = dateRefs.current[activeDateKey];
-      if (!container || !el) return false;
-      const elTop = el.getBoundingClientRect().top;
-      const containerTop = container.getBoundingClientRect().top;
-      container.scrollTop += elTop - containerTop - 140;
-      return true;
-    };
-    // double RAF guarantees we run after paint
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
+        const container = scrollContainerRef.current;
+        const el = matchGridRefs.current[activeDateKey] || dateRefs.current[activeDateKey];
+        if (!container || !el) return;
         isProgrammaticScrollRef.current = true;
-        const success = doScroll();
-        if (success) initialScrollDone.current = true;
+        const elTop = el.getBoundingClientRect().top;
+        const containerTop = container.getBoundingClientRect().top;
+        container.scrollTop += elTop - containerTop - 150;
+        initialScrollDone.current = true;
         setTimeout(() => { isProgrammaticScrollRef.current = false; }, 900);
       });
     });
@@ -736,7 +733,7 @@ export default function Predictions() {
                       transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                       className="overflow-hidden"
                     >
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3 pb-2">
+                      <div ref={el => matchGridRefs.current[dateKey] = el} className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3 pb-2">
                         {dayMatches.map((match, index) => {
             const isLocked = isMatchLocked(match.match_date);
             const timeInfo = getTimeUntilLock(match.match_date);
