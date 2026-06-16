@@ -175,22 +175,28 @@ export default function Predictions() {
     strip.scrollTo({ left: scrollLeft, behavior: 'smooth' });
   }, [activeDateKey]);
 
-  // Scroll content to today's section — runs once after DOM is ready
+  // Scroll content to today's section — runs once after DOM is painted
   useEffect(() => {
     if (initialScrollDone.current) return;
     if (!activeDateKey || !expandedDates) return;
-    initialScrollDone.current = true;
-    isProgrammaticScrollRef.current = true;
-    setTimeout(() => {
+    const doScroll = () => {
       const container = scrollContainerRef.current;
       const el = dateRefs.current[activeDateKey];
-      if (container && el) {
-        const elTop = el.getBoundingClientRect().top;
-        const containerTop = container.getBoundingClientRect().top;
-        container.scrollTop += elTop - containerTop - 140;
-      }
-      setTimeout(() => { isProgrammaticScrollRef.current = false; }, 900);
-    }, 150);
+      if (!container || !el) return false;
+      const elTop = el.getBoundingClientRect().top;
+      const containerTop = container.getBoundingClientRect().top;
+      container.scrollTop += elTop - containerTop - 140;
+      return true;
+    };
+    // double RAF guarantees we run after paint
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        isProgrammaticScrollRef.current = true;
+        const success = doScroll();
+        if (success) initialScrollDone.current = true;
+        setTimeout(() => { isProgrammaticScrollRef.current = false; }, 900);
+      });
+    });
   }, [activeDateKey, expandedDates]);
 
   // Scroll spy — update active date tab while scrolling
