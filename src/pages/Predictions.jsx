@@ -179,11 +179,18 @@ export default function Predictions() {
   useEffect(() => {
     if (initialScrollDone.current) return;
     if (!activeDateKey || !expandedDates) return;
-    if (!dateRefs.current[activeDateKey]) return;
     initialScrollDone.current = true;
     isProgrammaticScrollRef.current = true;
-    dateRefs.current[activeDateKey].scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setTimeout(() => { isProgrammaticScrollRef.current = false; }, 900);
+    setTimeout(() => {
+      const container = scrollContainerRef.current;
+      const el = dateRefs.current[activeDateKey];
+      if (container && el) {
+        const elTop = el.getBoundingClientRect().top;
+        const containerTop = container.getBoundingClientRect().top;
+        container.scrollTop += elTop - containerTop - 140;
+      }
+      setTimeout(() => { isProgrammaticScrollRef.current = false; }, 900);
+    }, 150);
   }, [activeDateKey, expandedDates]);
 
   // Scroll spy — update active date tab while scrolling

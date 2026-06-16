@@ -15,14 +15,16 @@ window.OneSignalDeferred.push(async function(OneSignal) {
   });
 
   OneSignal.Notifications.addEventListener('click', (event) => {
-    const launchUrl = event?.notification?.url || event?.notification?.launchURL;
-    if (launchUrl) {
-      try {
-        const target = new URL(launchUrl);
-        window.location.href = target.pathname + target.search;
-      } catch {
-        window.location.href = launchUrl;
-      }
+    const data = event?.notification?.additionalData || event?.notification?.data || {};
+    const dest = data?.destination
+      || event?.notification?.url
+      || event?.notification?.launchURL;
+    if (!dest) return;
+    try {
+      const target = new URL(dest, window.location.origin);
+      window.location.href = target.pathname + target.search;
+    } catch {
+      window.location.href = dest;
     }
   });
 });
