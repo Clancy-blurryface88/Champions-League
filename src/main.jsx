@@ -20,11 +20,12 @@ window.OneSignalDeferred.push(async function(OneSignal) {
       || event?.notification?.url
       || event?.notification?.launchURL;
     if (!dest) return;
-    try {
-      const target = new URL(dest, window.location.origin);
-      window.location.href = target.pathname + target.search;
-    } catch {
-      window.location.href = dest;
+    const path = dest.startsWith('http') ? new URL(dest).pathname + new URL(dest).search : dest;
+    if (window.__onesignalNavigate) {
+      window.__onesignalNavigate(path);
+    } else {
+      localStorage.setItem('__onesignal_nav', path);
+      window.location.href = path;
     }
   });
 });
