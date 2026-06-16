@@ -182,11 +182,17 @@ export default function Predictions() {
     if (initialScrollDone.current) return;
     if (!activeDateKey || !expandedDates) return;
     initialScrollDone.current = true;
+    const key = activeDateKey;
     setTimeout(() => {
-      const el = matchGridRefs.current[activeDateKey] || dateRefs.current[activeDateKey];
-      if (!el) return;
+      const container = scrollContainerRef.current;
+      const grid = matchGridRefs.current[key];
+      const header = dateRefs.current[key];
+      const el = grid || header;
+      if (!container || !el) return;
       isProgrammaticScrollRef.current = true;
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const elTop = el.getBoundingClientRect().top;
+      const containerTop = container.getBoundingClientRect().top;
+      container.scrollTop += elTop - containerTop - (grid ? 0 : 80);
       setTimeout(() => { isProgrammaticScrollRef.current = false; }, 900);
     }, 450);
   }, [activeDateKey, expandedDates]);
@@ -728,7 +734,7 @@ export default function Predictions() {
                       transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                       className="overflow-hidden"
                     >
-                      <div ref={el => matchGridRefs.current[dateKey] = el} className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3 pb-2" style={{ scrollMarginTop: '160px' }}>
+                      <div ref={el => matchGridRefs.current[dateKey] = el} className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3 pb-2">
                         {dayMatches.map((match, index) => {
             const isLocked = isMatchLocked(match.match_date);
             const timeInfo = getTimeUntilLock(match.match_date);
