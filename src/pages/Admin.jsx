@@ -20,6 +20,7 @@ import AdminReset from "../components/admin/AdminReset";
 import AdminApiExplorer from "../components/admin/AdminApiExplorer";
 import AdminLiveCardDemo from "../components/admin/AdminLiveCardDemo";
 import AdminLiveLeaderboard from "../components/admin/AdminLiveLeaderboard";
+import AdminPlayerCardsDemo from "../components/admin/AdminPlayerCardsDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -82,6 +83,7 @@ export default function Admin() {
       case 'api-explorer': return <AdminApiExplorer />;
       case 'live-card-demo': return <AdminLiveCardDemo />;
       case 'live-leaderboard': return <AdminLiveLeaderboard />;
+      case 'player-cards-demo': return <AdminPlayerCardsDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -99,7 +101,8 @@ export default function Admin() {
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'api-explorer', label: 'API Explorer',    icon: BarChart3 },
     { id: 'live-card-demo', label: '⚡ Live Card Demo', icon: Zap },
-    { id: 'live-leaderboard', label: '⚡ Live Leaderboard', icon: Zap },
+    { id: 'live-leaderboard',   label: '⚡ Live Leaderboard',    icon: Zap },
+    { id: 'player-cards-demo', label: '🎨 Player Cards Demo',   icon: Zap },
   ];
 
   return (
