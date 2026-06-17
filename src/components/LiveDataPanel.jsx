@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, RefreshCw, Wifi, WifiOff, Clock, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { ShineBorder } from "@/components/magicui/shine-border";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import ScoreCounter from "@/components/ScoreCounter";
 import TeamFlag from "@/components/TeamFlag";
@@ -93,6 +94,17 @@ function RankCard({ row, index, total, isInitial }) {
       transition={{ layout: { type: 'spring', stiffness: 12, damping: 14 }, ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}) }}
       className="relative mb-1">
       <div style={{ transform: 'skewX(-6deg)', borderRadius: 8, overflow: 'hidden', border: `2px solid ${RANK_BORDER(row.liveRank)}`, background: RANK_BG(row.liveRank), transition: 'border-color .5s ease, background .5s ease', position: 'relative' }}>
+        <ShineBorder
+          borderRadius={8}
+          borderWidth={1}
+          duration={row.liveRank === 1 ? 6 : row.liveRank === 2 ? 7 : row.liveRank === 3 ? 8 : 12}
+          shineColor={
+            row.liveRank === 1 ? ['#FFD700','#fff','#F5C518'] :
+            row.liveRank === 2 ? ['#C0C0C0','#fff','#94a3b8'] :
+            row.liveRank === 3 ? ['#CD7F32','#fff','#D97706'] :
+            ['#475569','#64748b','#475569']
+          }
+        />
         <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%) skewX(6deg)', fontSize: 28, fontWeight: 900, color: RANK_COLOR(row.liveRank), opacity: 0.15, lineHeight: 1, userSelect: 'none', pointerEvents: 'none', transition: 'color .5s ease' }}>
           {row.liveRank}
         </span>

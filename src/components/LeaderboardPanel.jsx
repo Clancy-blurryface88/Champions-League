@@ -8,6 +8,7 @@ import { User } from "@/api/entities";
 import { UserStats } from "@/api/entities";
 import ScoreCounter from "./ScoreCounter";
 import PlayerStatsModal from "./PlayerStatsModal";
+import { ShineBorder } from "@/components/magicui/shine-border";
 
 const LEADERBOARD_ICON_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/a99a73381_image.png";
 const GENERIC_USER_AVATAR_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/314b5002f_WhatsApp2025-07-07000346_91206de8.jpg";
@@ -264,6 +265,17 @@ export default function LeaderboardPanel({ onClose, user }) {
                           onMouseEnter={e => { e.currentTarget.style.transform = 'skewX(-6deg) scale(1.04)'; e.currentTarget.style.boxShadow = `0 0 18px ${getRankColor(position)}44`; }}
                           onMouseLeave={e => { e.currentTarget.style.transform = 'skewX(-6deg)'; e.currentTarget.style.boxShadow = 'none'; }}
                         >
+                          <ShineBorder
+                            borderRadius={8}
+                            borderWidth={1}
+                            duration={position === 1 ? 6 : position === 2 ? 7 : position === 3 ? 8 : 12}
+                            shineColor={
+                              position === 1 ? ['#FFD700','#fff','#F5C518'] :
+                              position === 2 ? ['#C0C0C0','#fff','#94a3b8'] :
+                              position === 3 ? ['#CD7F32','#fff','#D97706'] :
+                              ['#475569','#64748b','#475569']
+                            }
+                          />
                           {/* Ghost rank number */}
                           <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%) skewX(6deg)', fontSize:38, fontWeight:900, color:getRankColor(position), opacity:0.18, lineHeight:1, userSelect:'none', pointerEvents:'none' }}>
                             {position}
