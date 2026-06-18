@@ -678,6 +678,30 @@ export default function Layout({ children, currentPageName }) {
                       <h3 className="text-white text-base font-semibold leading-tight">ניחושים ותוצאות</h3>
                     </div>
                   </motion.div>
+
+                  {/* Knockout Bracket Card - קלף חמישי - ברוחב מלא */}
+                  <motion.div
+                  initial={{ y: "100%", opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: "100%", opacity: 0 }}
+                  transition={{
+                    duration: 0.3,
+                    ease: "easeOut",
+                    delay: 0.25
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(createPageUrl("KnockoutBracket"));
+                    setShowSidebar(false);
+                  }}
+                  className="col-span-2 inline-flex animate-shine items-center justify-center rounded-xl text-sm border border-yellow-500/30 bg-[linear-gradient(110deg,rgba(0,1,3,0.7),45%,rgba(30,38,49,0.9),55%,rgba(0,1,3,0.7))] bg-[length:200%_100%] px-6 py-4 font-medium text-neutral-400 transition-colors cursor-pointer hover:scale-[1.02] gap-4 h-20">
+
+                    <span className="text-3xl shrink-0">🏆</span>
+                    <div className="text-right">
+                      <h3 className="text-white text-base font-semibold leading-tight">בראקט נוקאאוט</h3>
+                      <p className="text-yellow-500/70 text-xs mt-0.5">עדכון חי לפי הטבלאות</p>
+                    </div>
+                  </motion.div>
                 </div>
               </motion.div>
             </>
