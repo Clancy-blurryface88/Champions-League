@@ -32,13 +32,28 @@ import TeamInfoModal from "@/components/TeamInfoModal";
 import { ShineBorder } from "@/components/magicui/shine-border";
 import { loadAllOverrides, applyOverride, applyBestThirdOrder } from '@/utils/groupOverride';
 
-// --- Slot-machine position badge ---
+// --- Slot-machine position badge (starts when element enters viewport) ---
 function SlotBadge({ value, color }) {
   const [displayed, setDisplayed] = useState(1);
   const [settled, setSettled]     = useState(false);
+  const [inView, setInView]       = useState(false);
+  const badgeRef                  = useRef(null);
 
+  // Trigger only when badge scrolls into view
   useEffect(() => {
-    if (!value) return;
+    const el = badgeRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setInView(true); obs.disconnect(); } },
+      { threshold: 0.5 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  // Slot machine — runs only after entering viewport
+  useEffect(() => {
+    if (!value || !inView) return;
     let elapsed = 0;
     let current = 1;
     let tid;
@@ -51,7 +66,7 @@ function SlotBadge({ value, color }) {
         return;
       }
       const progress = elapsed / DURATION;
-      const interval = 55 + 280 * Math.pow(progress, 2.5); // fast→slow
+      const interval = 55 + 280 * Math.pow(progress, 2.5);
       current = current >= 4 ? 1 : current + 1;
       setDisplayed(current);
       elapsed += interval;
@@ -60,10 +75,11 @@ function SlotBadge({ value, color }) {
 
     tick();
     return () => clearTimeout(tid);
-  }, [value]);
+  }, [value, inView]);
 
   return (
     <span
+      ref={badgeRef}
       style={{
         fontSize: 11,
         fontWeight: 800,
