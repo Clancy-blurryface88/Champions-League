@@ -4,7 +4,7 @@ import { Match } from '@/api/entities';
 import TeamFlag from '@/components/TeamFlag';
 import AppBackground from '@/components/AppBackground';
 import { RefreshCw, Trophy, ArrowRight } from 'lucide-react';
-import { loadGroupOverrides, applyOverride } from '@/utils/groupOverride';
+import { loadAllOverrides, applyOverride, applyBestThirdOrder } from '@/utils/groupOverride';
 
 // ─── Layout constants ────────────────────────────────────────────────────────
 const CH = 64;   // card height
@@ -164,14 +164,20 @@ function calcStandings(matches) {
 }
 
 // ─── Assign best 3rd-place teams to bracket slots (backtracking) ─────────────
-function assign3rd(allGroupMatches, groupOverrides = {}) {
+function assign3rd(allGroupMatches, groupOverrides = {}, bestThirdOrder = null, bracketSlotOverride = {}) {
   const all3rd = ALL_GROUPS.map(g => {
     const s = applyOverride(calcStandings(allGroupMatches[g] || []), groupOverrides[g]);
     return s.length >= 3 ? { ...s[2], group: g } : null;
   }).filter(Boolean).sort((a,b) =>
     (b.Pts-a.Pts)||(b.GD-a.GD)||(b.GF-a.GF)||a.name.localeCompare(b.name)
   );
-  const qualifying = all3rd.slice(0, 8);
+
+  // apply manual ranking order if set
+  const sorted = bestThirdOrder ? applyBestThirdOrder(all3rd, bestThirdOrder) : all3rd;
+  const qualifying = sorted.slice(0, 8);
+
+  const all3rdByName = Object.fromEntries(all3rd.map(t => [t.name, t]));
+
   const SLOTS = [74,77,79,80,81,82,85,87];
   const result = {};
 
@@ -191,6 +197,13 @@ function assign3rd(allGroupMatches, groupOverrides = {}) {
   }
 
   backtrack(0, new Set());
+
+  // apply manual bracket slot overrides on top of backtracking result
+  Object.entries(bracketSlotOverride).forEach(([slot, teamName]) => {
+    const team = all3rdByName[teamName];
+    if (team) result[parseInt(slot)] = team;
+  });
+
   return result;
 }
 
@@ -286,17 +299,19 @@ function MatchCard({ homeTeam, awayTeam, homeScore, awayScore, isFinished, width
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function KnockoutBracket() {
   const navigate = useNavigate();
-  const [allGroupMatches, setAllGroupMatches] = useState({});
-  const [knockoutMatches, setKnoutMatches]   = useState([]);
-  const [groupOverrides, setGroupOverrides]  = useState({});
-  const [loading, setLoading]                = useState(true);
-  const [lastUpdate, setLastUpdate]          = useState(null);
+  const [allGroupMatches, setAllGroupMatches]     = useState({});
+  const [knockoutMatches, setKnoutMatches]        = useState([]);
+  const [groupOverrides, setGroupOverrides]       = useState({});
+  const [bestThirdOrder, setBestThirdOrder]       = useState(null);
+  const [bracketSlotOverride, setBracketSlotOverride] = useState({});
+  const [loading, setLoading]                     = useState(true);
+  const [lastUpdate, setLastUpdate]               = useState(null);
 
   const load = async () => {
     try {
-      const [data, { overrides }] = await Promise.all([
+      const [data, { groupOverrides: gOvr, bestThirdOrder: bto, bracketSlotOverride: bso }] = await Promise.all([
         Match.list('match_date'),
-        loadGroupOverrides(),
+        loadAllOverrides(),
       ]);
       const grouped = {};
       const knockout = [];
@@ -311,7 +326,9 @@ export default function KnockoutBracket() {
       });
       setAllGroupMatches(grouped);
       setKnoutMatches(knockout);
-      setGroupOverrides(overrides || {});
+      setGroupOverrides(gOvr || {});
+      setBestThirdOrder(bto || null);
+      setBracketSlotOverride(bso || {});
       setLastUpdate(new Date());
     } catch(e) { console.error(e); }
     setLoading(false);
@@ -332,8 +349,11 @@ export default function KnockoutBracket() {
     return r;
   }, [allGroupMatches, groupOverrides]);
 
-  // 3rd-place assignment (with manual overrides applied)
-  const third3rd = useMemo(() => assign3rd(allGroupMatches, groupOverrides), [allGroupMatches, groupOverrides]);
+  // 3rd-place assignment (with all manual overrides applied)
+  const third3rd = useMemo(
+    () => assign3rd(allGroupMatches, groupOverrides, bestThirdOrder, bracketSlotOverride),
+    [allGroupMatches, groupOverrides, bestThirdOrder, bracketSlotOverride]
+  );
 
   // Build knockout winners map from DB matches
   // Key = match number (from bracket), value = { name, logo } of winner

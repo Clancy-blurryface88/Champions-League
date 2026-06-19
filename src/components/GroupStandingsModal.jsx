@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Calendar, MapPin } from "lucide-react";
 import moment from "moment";
 import TeamFlag from "@/components/TeamFlag";
-import { loadGroupOverrides, applyOverride } from "@/utils/groupOverride";
+import { loadAllOverrides, applyOverride, applyBestThirdOrder } from "@/utils/groupOverride";
 
 // FIFA WC 2026 tiebreaker order (group stage):
 // 1. Pts  2. H2H Pts  3. H2H GD  4. H2H GF  5. Overall GD  6. Overall GF
@@ -107,6 +107,7 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
   const [activeGroup, setActiveGroup] = useState(() => toLetter(initialGroup));
   const [allMatches, setAllMatches] = useState({});
   const [groupOverrides, setGroupOverrides] = useState({});
+  const [bestThirdOrder, setBestThirdOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const activeButtonRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -118,9 +119,9 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
     const load = async () => {
       setLoading(true);
       try {
-        const [data, { overrides }] = await Promise.all([
+        const [data, { groupOverrides: gOvr, bestThirdOrder: bto }] = await Promise.all([
           Match.list('match_date'),
-          loadGroupOverrides(),
+          loadAllOverrides(),
         ]);
         const grouped = {};
         data.forEach(m => {
@@ -133,7 +134,8 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
           grouped[k].sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
         });
         setAllMatches(grouped);
-        setGroupOverrides(overrides || {});
+        setGroupOverrides(gOvr || {});
+        setBestThirdOrder(bto || null);
       } catch (e) {
         console.error(e);
       }
@@ -156,7 +158,8 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
   const isBest3 = activeGroup === 'best3';
   const matches = isBest3 ? [] : (allMatches[activeGroup] || []);
   const standings = isBest3 ? [] : applyOverride(calcStandings(matches), groupOverrides[activeGroup]);
-  const best3Standings = isBest3 ? calcBest3rd(allMatches, groupOverrides) : [];
+  const naturalBest3 = isBest3 ? calcBest3rd(allMatches, groupOverrides) : [];
+  const best3Standings = bestThirdOrder ? applyBestThirdOrder(naturalBest3, bestThirdOrder) : naturalBest3;
   const hasOverride = !isBest3 && !!groupOverrides[activeGroup];
 
   return (
