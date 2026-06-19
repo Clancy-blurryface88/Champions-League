@@ -75,7 +75,7 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
   // Show odds section after form section has entered
   const [showOdds, setShowOdds] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => setShowOdds(true), 550);
+    const t = setTimeout(() => setShowOdds(true), 1100);
     return () => clearTimeout(t);
   }, []);
 
@@ -119,12 +119,7 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
               )}
             </div>
 
-            {/* Center label */}
-            <div className="flex-shrink-0 pt-1">
-              <span className="text-[9px] text-white font-semibold">5 משחקים אחרונים</span>
-            </div>
-
-            {/* Team B form */}
+{/* Team B form */}
             <div className="flex flex-col items-end gap-1">
               <FormDots form={formB.last5} />
               {formB.avgGoals != null && (
