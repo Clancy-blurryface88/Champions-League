@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Match } from '@/api/entities';
 import TeamFlag from '@/components/TeamFlag';
 import AppBackground from '@/components/AppBackground';
-import { RefreshCw, Trophy } from 'lucide-react';
+import { RefreshCw, Trophy, ArrowRight } from 'lucide-react';
 
 // ─── Layout constants ────────────────────────────────────────────────────────
 const CH = 64;   // card height
@@ -283,6 +284,7 @@ function MatchCard({ homeTeam, awayTeam, homeScore, awayScore, isFinished, width
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function KnockoutBracket() {
+  const navigate = useNavigate();
   const [allGroupMatches, setAllGroupMatches] = useState({});
   const [knockoutMatches, setKnoutMatches]   = useState([]);
   const [loading, setLoading]                = useState(true);
@@ -481,6 +483,11 @@ export default function KnockoutBracket() {
               className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition-colors">
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition-colors">
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
@@ -548,11 +555,16 @@ export default function KnockoutBracket() {
 
             {/* FINAL */}
             {abs(FINAL_X, sfTop(), FINAL_CW,
+              <div style={{ position:'relative' }}>
+                <div style={{ position:'absolute', top:-20, left:0, right:0, textAlign:'center', pointerEvents:'none' }}>
+                  <Trophy style={{ width:16, height:16, color:'#f5c518', display:'inline-block', filter:'drop-shadow(0 0 6px rgba(245,197,24,0.6))' }} />
+                </div>
               <div style={{ height:CH, background:'rgba(245,197,24,0.08)', border:'1px solid rgba(245,197,24,0.3)', borderRadius:8, overflow:'hidden', display:'flex', flexDirection:'column', justifyContent:'center' }}>
                 <div style={{ textAlign:'center', fontSize:9, color:'#f5c518', fontWeight:700, letterSpacing:2, paddingTop:2 }}>FINAL</div>
                 <TeamRow team={resolved.final.homeTeam} score={resolved.final.homeScore} won={resolved.final.isFinished && resolved.final.homeScore > resolved.final.awayScore} isFinished={resolved.final.isFinished} />
                 <div style={{ height:1, background:'rgba(245,197,24,0.2)', margin:'0 6px' }} />
                 <TeamRow team={resolved.final.awayTeam} score={resolved.final.awayScore} won={resolved.final.isFinished && resolved.final.awayScore > resolved.final.homeScore} isFinished={resolved.final.isFinished} />
+              </div>
               </div>
             )}
 
