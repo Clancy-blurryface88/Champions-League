@@ -120,8 +120,9 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
             </div>
 
             {/* Center label */}
-            <div className="flex-shrink-0 pt-1">
-              <span className="text-[9px] text-slate-400 font-semibold">אחרונים 5</span>
+            <div className="flex-shrink-0 pt-1 flex items-center gap-0.5">
+              <span className="text-[9px] text-slate-500 font-semibold">אחרונים</span>
+              <span className="text-[9px] text-slate-200 font-bold">5</span>
             </div>
 
             {/* Team B form */}
@@ -145,14 +146,14 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
           </motion.div>
         ) : null}
 
-        {/* Odds Bar — appears after form section */}
+        {/* Odds Bar — fades in after form section, no y-jump */}
         <AnimatePresence>
           {showOdds && match.score_odds && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.4, ease: 'easeOut' }}
+              transition={{ duration: 0.55, ease: 'easeOut' }}
             >
               <MatchOddsBar
                 scoreOdds={match.score_odds}

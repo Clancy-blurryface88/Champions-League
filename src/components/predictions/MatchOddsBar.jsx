@@ -138,7 +138,6 @@ export default function MatchOddsBar({ scoreOdds, teamA, teamB }) {
 
   return (
     <div className="mt-6 flex flex-col items-center gap-2">
-      <div className="w-full h-px mb-1" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent)' }} />
       <span className="text-[10px] font-semibold tracking-wide text-yellow-400">תחזית המשחק</span>
       <WinRow teamA={teamA} teamB={teamB} probs={probs} />
       {topScores.length > 0 && <ScoreRow topScores={topScores} />}
