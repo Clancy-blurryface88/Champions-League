@@ -253,7 +253,8 @@ export default function Predictions() {
     });
     if (isOpening) {
       setTimeout(() => {
-        window.scrollBy({ top: 300, behavior: 'smooth' });
+        const container = scrollContainerRef.current;
+        if (container) container.scrollBy({ top: 300, behavior: 'smooth' });
       }, 300);
     }
   };
