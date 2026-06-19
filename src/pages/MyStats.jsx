@@ -30,6 +30,7 @@ import CategoryLeaderboards from "../components/stats/CategoryLeaderboards";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ComparisonBar from "../components/stats/ComparisonBar";
 import CommonPredictionsStripe from "../components/stats/CommonPredictionsStripe";
+import RoundSummaryTable from "../components/stats/RoundSummaryTable";
 
 export default function MyStats() {
   const navigate = useNavigate();
@@ -1705,6 +1706,8 @@ export default function MyStats() {
           </TabsContent>
 
           <TabsContent value="tables" forceMount className="space-y-6 data-[state=inactive]:hidden">
+            <RoundSummaryTable />
+
             <CategoryLeaderboards />
             
             {/* Points Breakdown Pie Chart - Fixed with simple animation */}
