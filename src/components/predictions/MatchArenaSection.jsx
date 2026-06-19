@@ -93,13 +93,15 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
               <FormDots form={formA.last5} />
               {formA.avgGoals != null && (
                 <span className="text-[10px] font-medium flex items-center">
+                  <span>⚽</span>
                   <span style={{
                     background: 'linear-gradient(135deg, #bbf7d0, #4ade80)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
-                  }}>⚽ {formA.avgGoals}</span>
-                  <span className="text-slate-600"> / </span>
+                    marginLeft: 2,
+                  }}>{formA.avgGoals}</span>
+                  <span className="text-slate-600 mx-1">/</span>
                   <span style={{ color: '#f87171' }}>✕ {formA.avgConceded}</span>
                 </span>
               )}
@@ -115,13 +117,15 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
               <FormDots form={formB.last5} />
               {formB.avgGoals != null && (
                 <span className="text-[10px] font-medium flex items-center">
+                  <span>⚽</span>
                   <span style={{
                     background: 'linear-gradient(135deg, #bbf7d0, #4ade80)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
-                  }}>⚽ {formB.avgGoals}</span>
-                  <span className="text-slate-600"> / </span>
+                    marginLeft: 2,
+                  }}>{formB.avgGoals}</span>
+                  <span className="text-slate-600 mx-1">/</span>
                   <span style={{ color: '#f87171' }}>✕ {formB.avgConceded}</span>
                 </span>
               )}
