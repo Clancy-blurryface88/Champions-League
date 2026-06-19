@@ -30,6 +30,61 @@ import TeamFlag from "@/components/TeamFlag";
 import GroupStandingsModal from "@/components/GroupStandingsModal";
 import TeamInfoModal from "@/components/TeamInfoModal";
 import { ShineBorder } from "@/components/magicui/shine-border";
+import { loadAllOverrides, applyOverride, applyBestThirdOrder } from '@/utils/groupOverride';
+
+// --- Standings helpers (module-level, no imports) ---
+const _ALL_GROUPS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+const _toLetter = g => g?.replace?.('Group ', '').trim() || '';
+
+function _calcStandings(matches = []) {
+  const teams = {};
+  matches.forEach(m => {
+    const a = m.team_a, b = m.team_b;
+    if (!teams[a]) teams[a] = { name: a, Pts:0, W:0, D:0, L:0, GF:0, GA:0, GD:0 };
+    if (!teams[b]) teams[b] = { name: b, Pts:0, W:0, D:0, L:0, GF:0, GA:0, GD:0 };
+    if (!m.is_finished || m.actual_score_a == null || m.actual_score_b == null) return;
+    const gA = Number(m.actual_score_a), gB = Number(m.actual_score_b);
+    teams[a].GF += gA; teams[a].GA += gB; teams[a].GD += gA - gB;
+    teams[b].GF += gB; teams[b].GA += gA; teams[b].GD += gB - gA;
+    if (gA > gB)      { teams[a].W++; teams[a].Pts+=3; teams[b].L++; }
+    else if (gA < gB) { teams[b].W++; teams[b].Pts+=3; teams[a].L++; }
+    else              { teams[a].D++; teams[a].Pts++; teams[b].D++; teams[b].Pts++; }
+  });
+  return Object.values(teams).sort((a,b) =>
+    (b.Pts-a.Pts)||(b.GD-a.GD)||(b.GF-a.GF)||a.name.localeCompare(b.name)
+  );
+}
+
+function _computeTeamPositions(allMatches, groupOverrides = {}, bestThirdOrder = null) {
+  const grouped = {};
+  allMatches.forEach(m => {
+    if (!m.league) return;
+    const g = _toLetter(m.league);
+    if (!grouped[g]) grouped[g] = [];
+    grouped[g].push(m);
+  });
+  const standingsPerGroup = {};
+  _ALL_GROUPS.forEach(g => {
+    standingsPerGroup[g] = applyOverride(_calcStandings(grouped[g] || []), groupOverrides[g]);
+  });
+  const all3rd = _ALL_GROUPS
+    .map(g => { const s = standingsPerGroup[g]; return s.length >= 3 ? { ...s[2], group: g } : null; })
+    .filter(Boolean)
+    .sort((a,b) => (b.Pts-a.Pts)||(b.GD-a.GD)||(b.GF-a.GF)||a.name.localeCompare(b.name));
+  const sorted = bestThirdOrder ? applyBestThirdOrder(all3rd, bestThirdOrder) : all3rd;
+  const best8 = new Set(sorted.slice(0, 8).map(t => t.name));
+  const positions = {};
+  _ALL_GROUPS.forEach(g => {
+    (standingsPerGroup[g] || []).forEach((team, idx) => {
+      const pos = idx + 1;
+      const color = pos <= 2 ? '#4ade80'
+                  : pos === 3 ? (best8.has(team.name) ? '#facc15' : '#f87171')
+                  : '#f87171';
+      positions[team.name] = { pos, color };
+    });
+  });
+  return positions;
+}
 
 export default function Predictions() {
   const [currentRound, setCurrentRound] = useState(null);
@@ -60,6 +115,7 @@ export default function Predictions() {
   const [allMatchesForForm, setAllMatchesForForm] = useState([]);
   const [arenaMatchesLoading, setArenaMatchesLoading] = useState(false);
   const arenaMatchesLoadedRef = useRef(false);
+  const [teamPositions, setTeamPositions] = useState({});
   const [activeDateKey, setActiveDateKey] = useState(null);
   const dateRefs = useRef({});
   const dateTabRefs = useRef({});
@@ -104,21 +160,28 @@ export default function Predictions() {
     return now >= lockTime;
   };
 
-  const toggleArena = async (matchId) => {
+  // Load all match data on mount: team positions + form history
+  useEffect(() => {
+    const loadMatchData = async () => {
+      try {
+        const [allData, { groupOverrides, bestThirdOrder }] = await Promise.all([
+          Match.list('match_date'),
+          loadAllOverrides(),
+        ]);
+        setAllMatchesForForm(allData.filter(m => m.is_finished && m.actual_score_a != null));
+        arenaMatchesLoadedRef.current = true;
+        setTeamPositions(_computeTeamPositions(allData, groupOverrides, bestThirdOrder));
+      } catch(e) { console.error(e); }
+    };
+    loadMatchData();
+  }, []);
+
+  const toggleArena = (matchId) => {
     setArenaOpen(prev => {
       const next = new Set(prev);
       next.has(matchId) ? next.delete(matchId) : next.add(matchId);
       return next;
     });
-    if (!arenaMatchesLoadedRef.current) {
-      arenaMatchesLoadedRef.current = true;
-      setArenaMatchesLoading(true);
-      try {
-        const data = await Match.list('match_date');
-        setAllMatchesForForm(data.filter(m => m.is_finished && m.actual_score_a != null));
-      } catch(e) { console.error(e); }
-      setArenaMatchesLoading(false);
-    }
   };
 
   // MODIFIED: Enhanced to return breakdown of time units while preserving all existing logic
@@ -937,6 +1000,11 @@ export default function Predictions() {
                             {match.team_a}
                           </RevealText>
                           <span className="text-slate-400 text-[10px] leading-none text-center">(Home)</span>
+                          {teamPositions[match.team_a] && (
+                            <span style={{ fontSize: 9, fontWeight: 800, color: teamPositions[match.team_a].color, lineHeight: 1, marginTop: 2 }}>
+                              {teamPositions[match.team_a].pos}
+                            </span>
+                          )}
                         </div>
                         <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center cursor-pointer"
@@ -945,6 +1013,11 @@ export default function Predictions() {
                             {match.team_b}
                           </RevealText>
                           <span className="text-slate-400 text-[10px] leading-none text-center">(Away)</span>
+                          {teamPositions[match.team_b] && (
+                            <span style={{ fontSize: 9, fontWeight: 800, color: teamPositions[match.team_b].color, lineHeight: 1, marginTop: 2 }}>
+                              {teamPositions[match.team_b].pos}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -974,11 +1047,12 @@ export default function Predictions() {
                       )}
                     </div>
 
-                    {/* Arena toggle */}
+                    {/* Separator + Arena toggle */}
+                    <div className="h-px mt-3" style={{ background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)' }} />
                     <button
                       onClick={(e) => { e.stopPropagation(); toggleArena(match.id); }}
-                      className="w-full flex items-center justify-center gap-1.5 pt-3 transition-colors"
-                      style={{ color: arenaOpen.has(match.id) ? '#facc15' : 'rgba(255,255,255,0.38)' }}
+                      className="w-full flex items-center justify-center gap-1.5 pt-2.5 transition-opacity"
+                      style={{ color: '#facc15', opacity: arenaOpen.has(match.id) ? 1 : 0.7 }}
                     >
                       <span className="text-[11px] font-semibold tracking-wide">זירת המשחק</span>
                       {arenaOpen.has(match.id)
