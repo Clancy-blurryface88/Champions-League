@@ -68,7 +68,7 @@ function FormDots({ form }) {
                 setOpenSlot({
                   idx: i,
                   x: rect.left + rect.width / 2,
-                  y: rect.top,
+                  y: rect.bottom,   // bottom of dot → popup goes below
                   s,
                   item,
                 });
@@ -99,7 +99,7 @@ function FormDots({ form }) {
           style={{
             position: 'fixed',
             left: openSlot.x,
-            bottom: window.innerHeight - openSlot.y + 8,
+            top: openSlot.y + 8,
             transform: 'translateX(-50%)',
             background: 'rgba(8,15,30,0.97)',
             border: `1px solid ${openSlot.s.border}`,
@@ -113,17 +113,17 @@ function FormDots({ form }) {
             pointerEvents: 'none',
           }}
         >
-          {/* Arrow pointing down */}
+          {/* Arrow pointing up */}
           <div style={{
             position: 'absolute',
-            bottom: -5,
+            top: -5,
             left: '50%',
             marginLeft: -4,
             width: 8, height: 8,
             background: 'rgba(8,15,30,0.97)',
             border: `1px solid ${openSlot.s.border}`,
-            borderTop: 'none',
-            borderLeft: 'none',
+            borderBottom: 'none',
+            borderRight: 'none',
             transform: 'rotate(45deg)',
           }} />
           <div style={{ fontSize: 10, fontWeight: 700, color: openSlot.s.text, marginBottom: 4 }}>
