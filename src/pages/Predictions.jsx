@@ -6,7 +6,7 @@ import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { User } from "@/api/entities";
 import { AiBrief } from "@/api/entities";
-import { ArrowLeft, Check, Calendar, Lock, HelpCircle, Eye, Sparkles, ChevronDown } from "lucide-react";
+import { ArrowLeft, Check, Calendar, Lock, HelpCircle, Eye, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import AiBriefModal from "@/components/AiBriefModal"; // ADDED Eye icon
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -22,8 +22,9 @@ import { BgAnimateButton } from "../components/ui/bg-animate-button";
 import { useNavigate } from 'react-router-dom';
 import MatchScoringRulesModal from "../components/MatchScoringRulesModal";
 import MatchPredictionsModal from "../components/MatchPredictionsModal"; // ADDED MatchPredictionsModal import
-import CrowdWisdomStats from "../components/predictions/CrowdWisdomStats"; // ADDED CrowdWisdomStats import
+import CrowdWisdomStats from "../components/predictions/CrowdWisdomStats";
 import MatchOddsBar from "../components/predictions/MatchOddsBar";
+import MatchArenaSection from "../components/predictions/MatchArenaSection";
 import { RevealText } from "@/components/magicui/reveal-text";
 import TeamFlag from "@/components/TeamFlag";
 import GroupStandingsModal from "@/components/GroupStandingsModal";
@@ -55,6 +56,10 @@ export default function Predictions() {
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const [expandedDates, setExpandedDates] = useState(null); // null = not yet initialized
   const [forcedClosed, setForcedClosed] = useState(new Set());
+  const [arenaOpen, setArenaOpen] = useState(new Set());
+  const [allMatchesForForm, setAllMatchesForForm] = useState([]);
+  const [arenaMatchesLoading, setArenaMatchesLoading] = useState(false);
+  const arenaMatchesLoadedRef = useRef(false);
   const [activeDateKey, setActiveDateKey] = useState(null);
   const dateRefs = useRef({});
   const dateTabRefs = useRef({});
@@ -97,6 +102,23 @@ export default function Predictions() {
     const matchTime = new Date(matchDate);
     const lockTime = new Date(matchTime.getTime() - 15 * 60 * 1000);
     return now >= lockTime;
+  };
+
+  const toggleArena = async (matchId) => {
+    setArenaOpen(prev => {
+      const next = new Set(prev);
+      next.has(matchId) ? next.delete(matchId) : next.add(matchId);
+      return next;
+    });
+    if (!arenaMatchesLoadedRef.current) {
+      arenaMatchesLoadedRef.current = true;
+      setArenaMatchesLoading(true);
+      try {
+        const data = await Match.list('match_date');
+        setAllMatchesForForm(data.filter(m => m.is_finished && m.actual_score_a != null));
+      } catch(e) { console.error(e); }
+      setArenaMatchesLoading(false);
+    }
   };
 
   // MODIFIED: Enhanced to return breakdown of time units while preserving all existing logic
@@ -937,15 +959,6 @@ export default function Predictions() {
                       </div>
                     }
 
-                    {/* Odds Probabilities */}
-                    {match.score_odds && (
-                      <MatchOddsBar
-                        scoreOdds={match.score_odds}
-                        teamA={match.team_a}
-                        teamB={match.team_b}
-                      />
-                    )}
-
                     {/* Footer: Date & Location */}
                     <div className="pt-3 space-y-1">
                       <div className="h-px mb-2" style={{ background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)' }} />
@@ -961,15 +974,18 @@ export default function Predictions() {
                       )}
                     </div>
                     
-                    {/* Crowd Wisdom Stats */}
-                    {isLocked &&
-                    <div className="mt-3">
-                        <CrowdWisdomStats
-                        matchId={match.id}
-                        teamA={match.team_a}
-                        teamB={match.team_b} />
-                      </div>
-                    }
+                    {/* Arena section — expandable */}
+                    <AnimatePresence>
+                      {arenaOpen.has(match.id) && (
+                        <MatchArenaSection
+                          key={`arena-${match.id}`}
+                          match={match}
+                          isLocked={isLocked}
+                          allMatches={allMatchesForForm}
+                          loading={arenaMatchesLoading}
+                        />
+                      )}
+                    </AnimatePresence>
 
                     {/* Footer bar */}
                     <div className="-mx-5 -mb-5 mt-3 flex overflow-hidden rounded-b-xl relative">
@@ -981,6 +997,17 @@ export default function Predictions() {
                         style={{ color:'rgba(255,255,255,0.75)' }}
                       >
                         1 X 2
+                      </button>
+                      <div className="w-px my-2.5" style={{ background:'rgba(255,255,255,0.14)' }} />
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleArena(match.id); }}
+                        className="flex-1 flex items-center justify-center gap-1 py-3 text-xs font-bold transition-colors"
+                        style={{ color: arenaOpen.has(match.id) ? '#facc15' : 'rgba(255,255,255,0.75)' }}
+                      >
+                        זירה
+                        {arenaOpen.has(match.id)
+                          ? <ChevronUp className="w-3 h-3" />
+                          : <ChevronDown className="w-3 h-3" />}
                       </button>
                       <div className="w-px my-2.5" style={{ background:'rgba(255,255,255,0.14)' }} />
                       <button
