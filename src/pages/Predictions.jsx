@@ -253,9 +253,8 @@ export default function Predictions() {
     });
     if (isOpening) {
       setTimeout(() => {
-        const cardEl = matchCardRefs.current[matchId];
-        if (cardEl) cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 320);
+        window.scrollBy({ top: 300, behavior: 'smooth' });
+      }, 300);
     }
   };
 
