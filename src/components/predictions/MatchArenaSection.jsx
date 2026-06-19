@@ -39,27 +39,90 @@ const R = {
   L: { bg: 'rgba(248,113,113,0.18)', border: 'rgba(248,113,113,0.52)', text: '#f87171' },
 };
 
+const RESULT_HE = { W: 'ניצחון', D: 'תיקו', L: 'הפסד' };
+
 function FormDots({ form }) {
+  const [open, setOpen] = useState(null);
+
+  useEffect(() => {
+    if (open === null) return;
+    const close = () => setOpen(null);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [open]);
+
   if (!form?.length) return <span className="text-[10px] text-slate-600">—</span>;
+
   return (
     <div className="flex gap-[5px]">
       {form.map((item, i) => {
         const s = R[item.result];
+        const isOpen = open === i;
         return (
-          <div
-            key={i}
-            title={`${item.result} · ${item.scored}-${item.conceded} vs ${item.opponent}`}
-            style={{
-              width: 20, height: 20,
-              background: s.bg,
-              border: `1px solid ${s.border}`,
-              borderRadius: 5,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <span style={{ fontSize: 9, fontWeight: 800, color: s.text, lineHeight: 1 }}>
-              {item.result}
-            </span>
+          <div key={i} style={{ position: 'relative' }}>
+            {/* Square */}
+            <div
+              onClick={e => { e.stopPropagation(); setOpen(isOpen ? null : i); }}
+              style={{
+                width: 20, height: 20,
+                background: s.bg,
+                border: `1px solid ${s.border}`,
+                borderRadius: 5,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer',
+                boxShadow: isOpen ? `0 0 0 2px ${s.border}` : 'none',
+                transition: 'box-shadow 0.15s ease',
+              }}
+            >
+              <span style={{ fontSize: 9, fontWeight: 800, color: s.text, lineHeight: 1 }}>
+                {item.result}
+              </span>
+            </div>
+
+            {/* Popup */}
+            {isOpen && (
+              <div
+                onClick={e => e.stopPropagation()}
+                style={{
+                  position: 'absolute',
+                  bottom: 'calc(100% + 8px)',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: 'rgba(8,15,30,0.97)',
+                  border: `1px solid ${s.border}`,
+                  borderRadius: 10,
+                  padding: '8px 12px',
+                  whiteSpace: 'nowrap',
+                  zIndex: 200,
+                  textAlign: 'center',
+                  boxShadow: `0 8px 24px rgba(0,0,0,0.7), 0 0 0 1px ${s.border}`,
+                  minWidth: 90,
+                }}
+              >
+                {/* Arrow */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: -5,
+                  left: '50%',
+                  marginLeft: -4,
+                  width: 8, height: 8,
+                  background: 'rgba(8,15,30,0.97)',
+                  border: `1px solid ${s.border}`,
+                  borderTop: 'none',
+                  borderLeft: 'none',
+                  transform: 'rotate(45deg)',
+                }} />
+                <div style={{ fontSize: 10, fontWeight: 700, color: s.text, marginBottom: 4 }}>
+                  {RESULT_HE[item.result]}
+                </div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', lineHeight: 1, marginBottom: 4, letterSpacing: 1 }}>
+                  {item.scored}:{item.conceded}
+                </div>
+                <div style={{ fontSize: 9, color: '#94a3b8', maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  נגד {item.opponent}
+                </div>
+              </div>
+            )}
           </div>
         );
       })}
