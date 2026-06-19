@@ -19,6 +19,7 @@ import AdminReset from "../components/admin/AdminReset";
 import AdminApiExplorer from "../components/admin/AdminApiExplorer";
 import AdminRoundInsights from "../components/admin/AdminRoundInsights";
 import AdminGroupOverride from "../components/admin/AdminGroupOverride";
+import AdminButtonDemo from "../components/admin/AdminButtonDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -80,6 +81,7 @@ export default function Admin() {
       case 'api-explorer': return <AdminApiExplorer />;
       case 'round-insights': return <AdminRoundInsights />;
       case 'group-override': return <AdminGroupOverride />;
+      case 'button-demo': return <AdminButtonDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -97,6 +99,7 @@ export default function Admin() {
     { id: 'api-explorer', label: 'API Explorer',    icon: BarChart3 },
     { id: 'round-insights',    label: '📊 Round Insights',      icon: BarChart3 },
     { id: 'group-override',   label: '🔀 סידור בתים',          icon: BarChart3 },
+    { id: 'button-demo',     label: '🎨 דמו כפתורים',         icon: BarChart3 },
   ];
 
   return (
