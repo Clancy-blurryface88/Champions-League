@@ -1160,7 +1160,7 @@ export default function Predictions() {
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
                         className="flex-1 flex items-center justify-center py-3 text-xs font-bold transition-colors"
-                        style={{ color:'rgba(255,255,255,0.75)' }}
+                        style={{ color:'rgba(255,255,255,0.75)', textDecoration:'none' }}
                       >
                         1 X 2
                       </button>
@@ -1168,7 +1168,7 @@ export default function Predictions() {
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
                         className="flex-1 flex items-center justify-center py-3 text-xs font-bold transition-colors"
-                        style={{ color:'rgba(255,255,255,0.75)' }}
+                        style={{ color:'rgba(255,255,255,0.75)', textDecoration:'none' }}
                       >
                         ניחושים
                       </button>
