@@ -245,11 +245,18 @@ export default function Predictions() {
   }, []);
 
   const toggleArena = (matchId) => {
+    const isOpening = !arenaOpen.has(matchId);
     setArenaOpen(prev => {
       const next = new Set(prev);
       next.has(matchId) ? next.delete(matchId) : next.add(matchId);
       return next;
     });
+    if (isOpening) {
+      setTimeout(() => {
+        const cardEl = matchCardRefs.current[matchId];
+        if (cardEl) cardEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 320);
+    }
   };
 
   // MODIFIED: Enhanced to return breakdown of time units while preserving all existing logic
