@@ -3,10 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Round, Match, Prediction, PublicProfile } from "@/api/entities";
 import { ChevronDown } from "lucide-react";
 
-const RANK_COLOR  = r => r === 1 ? '#FFD700' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : '#94a3b8';
-const RANK_BG     = r => r === 1 ? 'rgba(255,215,0,0.08)' : r === 2 ? 'rgba(192,192,192,0.06)' : r === 3 ? 'rgba(205,127,50,0.06)' : 'transparent';
-const RANK_BORDER = r => r === 1 ? 'rgba(255,215,0,0.18)' : r === 2 ? 'rgba(192,192,192,0.12)' : r === 3 ? 'rgba(205,127,50,0.12)' : 'transparent';
 const MEDAL = ['🥇', '🥈', '🥉'];
+// columns alternate: white / blue
+const COL_COLOR = i => i % 2 === 0 ? '#e2e8f0' : '#60a5fa';
 
 export default function RoundSummaryTable() {
   const [rounds, setRounds]         = useState([]);
@@ -161,47 +160,21 @@ export default function RoundSummaryTable() {
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}>
 
-              {/* ── podium top-3 ── */}
-              {rows.length >= 3 && (
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                  {[rows[1], rows[0], rows[2]].map((u, i) => {
-                    const actualRank = i === 0 ? 2 : i === 1 ? 1 : 3;
-                    return (
-                      <motion.div key={u.userId}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.08 }}
-                        className={`rounded-xl p-3 text-center ${actualRank === 1 ? 'order-2' : ''}`}
-                        style={{
-                          background: RANK_BG(actualRank),
-                          border: `1px solid ${RANK_BORDER(actualRank)}`,
-                          marginTop: actualRank === 1 ? 0 : 10,
-                        }}>
-                        <div className="text-xl mb-1">{MEDAL[actualRank - 1]}</div>
-                        <div className="text-white text-[11px] font-bold truncate">{u.name}</div>
-                        <div className="font-black text-sm tabular-nums mt-0.5"
-                          style={{ color: RANK_COLOR(actualRank) }}>{u.pts}</div>
-                        <div className="text-[9px] text-slate-500 mt-0.5">נק'</div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              )}
-
               {/* ── table ── */}
               <div className="rounded-xl overflow-hidden"
                 style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
                 <table className="w-full text-sm">
                   <thead>
                     <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                      <th className="px-3 py-2.5 text-left   text-slate-600 text-[10px] font-bold w-8">#</th>
-                      <th className="px-3 py-2.5 text-right  text-slate-600 text-[10px] font-bold">שם</th>
-                      <th className="px-2 py-2.5 text-center text-slate-500 text-[10px] font-bold">נק'</th>
-                      <th className="px-2 py-2.5 text-center text-yellow-600/80  text-[10px] font-bold" title="פגיעה מדויקת">🎯</th>
-                      <th className="px-2 py-2.5 text-center text-blue-600/80    text-[10px] font-bold" title="כיוון נכון">✅</th>
-                      <th className="px-2 py-2.5 text-center text-emerald-600/80 text-[10px] font-bold" title="BTTS">⚽</th>
-                      <th className="px-2 py-2.5 text-center text-purple-600/80  text-[10px] font-bold" title="טווח שערים">📊</th>
-                      <th className="px-2 py-2.5 text-center text-red-600/80     text-[10px] font-bold" title="שערים שניחש">🔥</th>
+                      <th className="px-3 py-2.5 text-left  text-slate-600 text-[10px] font-bold w-8">#</th>
+                      <th className="px-3 py-2.5 text-right text-slate-600 text-[10px] font-bold">שם</th>
+                      {['נק\'','🎯','✅','⚽','📊','🔥'].map((h, i) => (
+                        <th key={h} className="px-2 py-2.5 text-center text-[10px] font-bold"
+                          style={{ color: COL_COLOR(i) + 'aa' }}
+                          title={['נקודות','פגיעה מדויקת','כיוון נכון','BTTS','טווח שערים','שערים שניחש'][i]}>
+                          {h}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
@@ -211,28 +184,19 @@ export default function RoundSummaryTable() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.04 }}
                         className="transition-colors hover:bg-white/[0.03]"
-                        style={{
-                          borderBottom: idx < rows.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-                          background: u.rank <= 3 ? RANK_BG(u.rank) : 'transparent',
-                        }}>
+                        style={{ borderBottom: idx < rows.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
                         <td className="px-3 py-2.5">
-                          <span className="text-xs font-black" style={{ color: RANK_COLOR(u.rank) }}>
+                          <span className="text-xs font-black text-slate-400">
                             {u.rank <= 3 ? MEDAL[u.rank - 1] : u.rank}
                           </span>
                         </td>
-                        <td className="px-3 py-2.5 text-right">
-                          <span className="text-xs font-semibold" style={{ color: u.rank <= 3 ? RANK_COLOR(u.rank) : '#e2e8f0' }}>
-                            {u.name}
-                          </span>
-                        </td>
-                        <td className="px-2 py-2.5 text-center">
-                          <span className="font-black text-sm tabular-nums" style={{ color: RANK_COLOR(u.rank) }}>{u.pts}</span>
-                        </td>
-                        <td className="px-2 py-2.5 text-center text-yellow-400  text-xs tabular-nums">{u.exact   || <span className="text-slate-700">—</span>}</td>
-                        <td className="px-2 py-2.5 text-center text-blue-400    text-xs tabular-nums">{u.outcome || <span className="text-slate-700">—</span>}</td>
-                        <td className="px-2 py-2.5 text-center text-emerald-400 text-xs tabular-nums">{u.btts    || <span className="text-slate-700">—</span>}</td>
-                        <td className="px-2 py-2.5 text-center text-purple-400  text-xs tabular-nums">{u.range   || <span className="text-slate-700">—</span>}</td>
-                        <td className="px-2 py-2.5 text-center text-red-400     text-xs tabular-nums">{u.goals   || <span className="text-slate-700">—</span>}</td>
+                        <td className="px-3 py-2.5 text-right text-white text-xs font-semibold">{u.name}</td>
+                        {[u.pts, u.exact, u.outcome, u.btts, u.range, u.goals].map((val, i) => (
+                          <td key={i} className="px-2 py-2.5 text-center text-xs tabular-nums"
+                            style={{ color: val ? COL_COLOR(i) : '#334155', fontWeight: i === 0 ? 900 : 400, fontSize: i === 0 ? '0.8rem' : '0.75rem' }}>
+                            {val || '—'}
+                          </td>
+                        ))}
                       </motion.tr>
                     ))}
                   </tbody>
