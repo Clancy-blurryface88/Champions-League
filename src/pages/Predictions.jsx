@@ -1054,6 +1054,9 @@ export default function Predictions() {
                       className="w-full flex items-center justify-center gap-1.5 pt-2.5 transition-opacity"
                       style={{ color: '#facc15', opacity: arenaOpen.has(match.id) ? 1 : 0.7 }}
                     >
+                      {arenaOpen.has(match.id)
+                        ? <ChevronUp className="w-3.5 h-3.5" />
+                        : <ChevronDown className="w-3.5 h-3.5" />}
                       <span className="text-[11px] font-semibold tracking-wide">זירת המשחק</span>
                       {arenaOpen.has(match.id)
                         ? <ChevronUp className="w-3.5 h-3.5" />

@@ -14,11 +14,13 @@ function getTeamForm(allMatches, teamName) {
     .sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
 
   let totalGoals = 0;
+  let totalConceded = 0;
   const results = played.map(m => {
     const isHome  = m.team_a === teamName;
     const scored   = isHome ? Number(m.actual_score_a) : Number(m.actual_score_b);
     const conceded = isHome ? Number(m.actual_score_b) : Number(m.actual_score_a);
     totalGoals += scored;
+    totalConceded += conceded;
     const result = scored > conceded ? 'W' : scored < conceded ? 'L' : 'D';
     return { result, scored, conceded, opponent: isHome ? m.team_b : m.team_a };
   });
@@ -26,6 +28,7 @@ function getTeamForm(allMatches, teamName) {
   return {
     last5: results.slice(-5),
     avgGoals: played.length > 0 ? (totalGoals / played.length).toFixed(1) : null,
+    avgConceded: played.length > 0 ? (totalConceded / played.length).toFixed(1) : null,
     played: played.length,
   };
 }
@@ -89,20 +92,28 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
             <div className="flex flex-col items-start gap-1">
               <FormDots form={formA.last5} />
               {formA.avgGoals != null && (
-                <span className="text-[10px] text-slate-500 font-medium">⚽ {formA.avgGoals}</span>
+                <span className="text-[10px] font-medium flex items-center gap-0.5">
+                  <span className="text-slate-500">⚽ {formA.avgGoals}</span>
+                  <span className="text-slate-600">/</span>
+                  <span style={{ color: '#f87171' }}>✕ {formA.avgConceded}</span>
+                </span>
               )}
             </div>
 
             {/* Center label */}
             <div className="flex-shrink-0 pt-1">
-              <span className="text-[9px] text-slate-600 font-semibold">5 אחרונים</span>
+              <span className="text-[9px] text-slate-400 font-semibold">אחרונים 5</span>
             </div>
 
             {/* Team B form */}
             <div className="flex flex-col items-end gap-1">
               <FormDots form={formB.last5} />
               {formB.avgGoals != null && (
-                <span className="text-[10px] text-slate-500 font-medium">⚽ {formB.avgGoals}</span>
+                <span className="text-[10px] font-medium flex items-center gap-0.5">
+                  <span className="text-slate-500">⚽ {formB.avgGoals}</span>
+                  <span className="text-slate-600">/</span>
+                  <span style={{ color: '#f87171' }}>✕ {formB.avgConceded}</span>
+                </span>
               )}
             </div>
           </div>
