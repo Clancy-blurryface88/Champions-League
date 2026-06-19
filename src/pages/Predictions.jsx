@@ -1001,7 +1001,16 @@ export default function Predictions() {
                           </RevealText>
                           <span className="text-slate-400 text-[10px] leading-none text-center">(Home)</span>
                           {teamPositions[match.team_a] && (
-                            <span style={{ fontSize: 9, fontWeight: 800, color: teamPositions[match.team_a].color, lineHeight: 1, marginTop: 2 }}>
+                            <span style={{
+                              fontSize: 9, fontWeight: 800,
+                              color: teamPositions[match.team_a].color,
+                              border: `1px solid ${teamPositions[match.team_a].color}`,
+                              borderRadius: 3,
+                              padding: '1px 4px',
+                              lineHeight: 1,
+                              marginTop: 3,
+                              display: 'inline-block',
+                            }}>
                               {teamPositions[match.team_a].pos}
                             </span>
                           )}
@@ -1014,7 +1023,16 @@ export default function Predictions() {
                           </RevealText>
                           <span className="text-slate-400 text-[10px] leading-none text-center">(Away)</span>
                           {teamPositions[match.team_b] && (
-                            <span style={{ fontSize: 9, fontWeight: 800, color: teamPositions[match.team_b].color, lineHeight: 1, marginTop: 2 }}>
+                            <span style={{
+                              fontSize: 9, fontWeight: 800,
+                              color: teamPositions[match.team_b].color,
+                              border: `1px solid ${teamPositions[match.team_b].color}`,
+                              borderRadius: 3,
+                              padding: '1px 4px',
+                              lineHeight: 1,
+                              marginTop: 3,
+                              display: 'inline-block',
+                            }}>
                               {teamPositions[match.team_b].pos}
                             </span>
                           )}
