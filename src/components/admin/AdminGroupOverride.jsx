@@ -350,6 +350,18 @@ function TabBest3rd({ allMatches, groupOverrides, bestThirdOrder: initOrder, set
 }
 
 // ─── Tab 3: Bracket slot assignment ──────────────────────────────────────────
+// BRACKET_SLOTS sorted ascending by match number — displayed as #1–#8
+const SLOT_LABELS = {
+  74: { num: 1, home: 'מקום 1 בית E' },
+  77: { num: 2, home: 'מקום 1 בית I' },
+  79: { num: 3, home: 'מקום 1 בית A' },
+  80: { num: 4, home: 'מקום 1 בית L' },
+  81: { num: 5, home: 'מקום 1 בית D' },
+  82: { num: 6, home: 'מקום 1 בית G' },
+  85: { num: 7, home: 'מקום 1 בית B' },
+  87: { num: 8, home: 'מקום 1 בית K' },
+};
+
 function TabBracket({ allMatches, groupOverrides, bestThirdOrder, bracketSlotOverride: initOverride, settingId, onSettingId }) {
   const [slotOverride, setSlotOverride] = useState(initOverride || {});
   const [dirty, setDirty] = useState(false);
@@ -358,7 +370,6 @@ function TabBracket({ allMatches, groupOverrides, bestThirdOrder, bracketSlotOve
 
   useEffect(() => { setSlotOverride(initOverride || {}); }, [initOverride]);
 
-  // top-8 qualifying teams (respecting bestThirdOrder)
   const qualifying = useMemo(() => {
     const all3rd = ALL_GROUPS.map(g => {
       const s = applyOverride(calcStandings(allMatches[g] || []), groupOverrides[g]);
@@ -368,10 +379,8 @@ function TabBracket({ allMatches, groupOverrides, bestThirdOrder, bracketSlotOve
     return ordered.slice(0, 8);
   }, [allMatches, groupOverrides, bestThirdOrder]);
 
-  // automatic backtracking assignment
   const autoAssignment = useMemo(() => autoBacktrack(qualifying), [qualifying]);
 
-  // effective assignment: auto + manual overrides
   const effectiveAssignment = useMemo(() => {
     const base = { ...autoAssignment };
     const byName = Object.fromEntries(qualifying.map(t => [t.name, t]));
@@ -402,11 +411,14 @@ function TabBracket({ allMatches, groupOverrides, bestThirdOrder, bracketSlotOve
   };
 
   const hasAnyOverride = Object.keys(slotOverride).length > 0;
+  const sortedSlots = [...BRACKET_SLOTS].sort((a, b) => a - b);
 
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-slate-400 text-sm">שבץ ידנית נבחרת מקום 3 לכל סלוט בבראקט. כל שינוי מהשיבוץ האוטומטי מסומן.</p>
+        <p className="text-slate-400 text-sm">
+          8 משחקי שמינית-32 שבהם מקום 3 משובץ. בחר ידנית נבחרת לכל משחק מתוך 8 העולות.
+        </p>
         {qualifying.length === 0 && (
           <div className="mt-3 p-4 bg-slate-800/60 rounded-xl text-slate-500 text-sm text-center">
             אין עדיין 8 נבחרות מקום 3 — ממלאים לאחר סיום שלב הבתים
@@ -416,17 +428,35 @@ function TabBracket({ allMatches, groupOverrides, bestThirdOrder, bracketSlotOve
           <div className="mt-3 bg-orange-500/8 border border-orange-500/20 rounded-xl px-4 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-orange-400" />
-              <span className="text-orange-300 text-sm">שיבוץ ידני פעיל ב-{Object.keys(slotOverride).length} סלוטים</span>
+              <span className="text-orange-300 text-sm">שיבוץ ידני פעיל ב-{Object.keys(slotOverride).length} משחקים</span>
             </div>
             <button onClick={resetAll} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-red-400 border border-slate-700 hover:border-red-500/40 px-2.5 py-1.5 rounded-lg transition-all">
               <RotateCcw className="w-3 h-3" /> איפוס הכל
             </button>
           </div>
         )}
+
+        {/* Legend: qualifying teams */}
+        {qualifying.length > 0 && (
+          <div className="mt-3 bg-slate-800/40 border border-slate-700 rounded-xl p-3">
+            <p className="text-[11px] text-slate-500 font-semibold mb-2">8 עולות מקום 3 (לפי דירוג):</p>
+            <div className="flex flex-wrap gap-2">
+              {qualifying.map((t, i) => (
+                <div key={t.name} className="flex items-center gap-1.5 bg-slate-700/60 rounded-lg px-2 py-1">
+                  <span className="text-[10px] text-slate-500 font-mono">#{i+1}</span>
+                  <TeamFlag logo={t.logo} name={t.name} className="w-4 h-4" />
+                  <span className="text-[11px] text-white font-medium">{t.name}</span>
+                  <span className="text-[10px] text-slate-500">({t.group})</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">
-        {BRACKET_SLOTS.map(slot => {
+        {sortedSlots.map(slot => {
+          const lbl = SLOT_LABELS[slot];
           const assigned = effectiveAssignment[slot];
           const isManual = !!slotOverride[slot];
           const eligible = THIRD_SLOTS[slot];
@@ -434,46 +464,45 @@ function TabBracket({ allMatches, groupOverrides, bestThirdOrder, bracketSlotOve
 
           return (
             <div key={slot} className={`bg-slate-800/60 border rounded-xl p-3.5 transition-all ${
-              isManual ? 'border-orange-500/30' : 'border-slate-700'
+              isManual ? 'border-orange-500/40' : 'border-slate-700'
             }`}>
-              <div className="flex items-center gap-3">
-                {/* Slot info */}
-                <div className="flex-shrink-0 text-center w-24">
-                  <div className="text-[10px] text-slate-500 font-semibold uppercase">משחק {slot}</div>
-                  <div className="text-xs text-slate-300 font-bold">{SLOT_HOME[slot]} <span className="text-slate-600">vs</span> 3rd</div>
-                  <div className="text-[10px] text-slate-600 mt-0.5">כשיר: {eligible.join(',')}</div>
+              <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
+
+                {/* Match number + home side */}
+                <div className="flex-shrink-0 w-32">
+                  <div className="text-xs font-black text-white">משחק #{lbl.num}</div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">{lbl.home}</div>
+                  <div className="text-[10px] text-slate-600 mt-0.5">כשיר: {eligible.join(', ')}</div>
                 </div>
 
-                {/* Current assigned team */}
+                {/* vs arrow */}
+                <div className="text-slate-600 text-sm font-bold flex-shrink-0">נגד ↓</div>
+
+                {/* Currently assigned */}
                 <div className="flex-1 min-w-0">
                   {assigned ? (
                     <div className="flex items-center gap-2">
                       <TeamFlag logo={assigned.logo} name={assigned.name} className="w-6 h-6 flex-shrink-0" />
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-white font-medium">{assigned.name}</span>
-                          <span className="text-[10px] text-slate-500">({assigned.group})</span>
-                          {isManual && <span className="text-[10px] text-orange-400 bg-orange-400/10 border border-orange-400/20 px-1.5 py-0.5 rounded">ידני</span>}
-                          {isInvalid && <span className="text-[10px] text-red-400 bg-red-400/10 border border-red-400/20 px-1.5 py-0.5 rounded">⚠ בית לא כשיר</span>}
-                        </div>
-                        {!isManual && <div className="text-[10px] text-slate-600">אוטומטי</div>}
-                      </div>
+                      <span className="text-sm text-white font-semibold">{assigned.name}</span>
+                      <span className="text-[10px] text-slate-500">בית {assigned.group}</span>
+                      {isManual && <span className="text-[10px] text-orange-400 bg-orange-400/10 border border-orange-400/20 px-1.5 py-0.5 rounded">ידני</span>}
+                      {isInvalid && <span className="text-[10px] text-red-400 bg-red-400/10 border border-red-400/20 px-1.5 py-0.5 rounded">⚠ לא כשיר</span>}
                     </div>
                   ) : (
-                    <span className="text-slate-600 text-sm">לא שובצה</span>
+                    <span className="text-slate-600 text-sm italic">לא שובצה</span>
                   )}
                 </div>
 
-                {/* Dropdown */}
+                {/* Selection dropdown */}
                 <select
                   value={slotOverride[slot] || ''}
                   onChange={e => setSlot(slot, e.target.value)}
-                  className="bg-slate-700 border border-slate-600 text-white text-xs rounded-lg px-2 py-1.5 flex-shrink-0 min-w-[120px]"
+                  className="bg-slate-700 border border-slate-600 text-white text-xs rounded-lg px-2 py-1.5 flex-shrink-0 min-w-[150px]"
                 >
                   <option value="">אוטומטי</option>
-                  {qualifying.map(team => (
+                  {qualifying.map((team, idx) => (
                     <option key={team.name} value={team.name}>
-                      {team.name} ({team.group}){!eligible.includes(team.group) ? ' ⚠' : ''}
+                      #{idx+1} {team.name} (בית {team.group}){!eligible.includes(team.group) ? ' ⚠' : ''}
                     </option>
                   ))}
                 </select>
