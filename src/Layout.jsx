@@ -698,8 +698,7 @@ export default function Layout({ children, currentPageName }) {
 
                     <span className="text-3xl shrink-0">🏆</span>
                     <div className="text-right">
-                      <h3 className="text-white text-base font-semibold leading-tight">בראקט נוקאאוט</h3>
-                      <p className="text-yellow-500/70 text-xs mt-0.5">עדכון חי לפי הטבלאות</p>
+                      <h3 className="text-white text-base font-semibold leading-tight">שלבי הכרעה</h3>
                     </div>
                   </motion.div>
                 </div>
