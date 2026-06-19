@@ -1,17 +1,15 @@
 import { supabase } from '@/api/supabase';
 
-const OVERRIDE_KEY = 'group_position_overrides';
-
 export async function loadGroupOverrides() {
   try {
     const { data } = await supabase
       .from('app_settings')
-      .select('*')
-      .eq('key', OVERRIDE_KEY)
+      .select('id, group_position_overrides')
+      .limit(1)
       .maybeSingle();
     if (!data) return { overrides: {}, settingId: null };
     return {
-      overrides: JSON.parse(data.value || '{}'),
+      overrides: JSON.parse(data.group_position_overrides || '{}'),
       settingId: data.id,
     };
   } catch {
@@ -20,21 +18,21 @@ export async function loadGroupOverrides() {
 }
 
 export async function saveGroupOverrides(overrides, settingId) {
-  const value = JSON.stringify(overrides);
+  const group_position_overrides = JSON.stringify(overrides);
   if (settingId) {
     const { data, error } = await supabase
       .from('app_settings')
-      .update({ value, updated_at: new Date().toISOString() })
+      .update({ group_position_overrides, updated_at: new Date().toISOString() })
       .eq('id', settingId)
-      .select()
+      .select('id')
       .single();
     if (error) throw error;
     return data.id;
   } else {
     const { data, error } = await supabase
       .from('app_settings')
-      .insert({ key: OVERRIDE_KEY, value })
-      .select()
+      .insert({ group_position_overrides })
+      .select('id')
       .single();
     if (error) throw error;
     return data.id;
