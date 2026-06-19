@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 
-const STEP_MS = 4000; // 4s per counter
+const STEP_MS = 3000; // 3s per counter
 
 function useCountUp(target, delay = 0) {
   const [count, setCount] = useState(0);

@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import React, { useMemo, useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import MatchOddsBar from './MatchOddsBar';
 import CrowdWisdomStats from './CrowdWisdomStats';
 
@@ -72,6 +72,13 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
   const formB = useMemo(() => getTeamForm(allMatches, match.team_b), [allMatches, match.team_b]);
   const hasForm = formA.played > 0 || formB.played > 0;
 
+  // Show odds section after form section has entered
+  const [showOdds, setShowOdds] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setShowOdds(true), 550);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0, height: 0 }}
@@ -81,13 +88,18 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
       style={{ overflow: 'hidden' }}
     >
       <div className="pt-2 space-y-3">
-        {/* Last 5 matches form */}
+        {/* Last 5 matches form — enters first */}
         {loading ? (
           <div className="flex justify-center py-1">
             <span className="text-[10px] text-slate-600 animate-pulse">טוען...</span>
           </div>
         ) : hasForm ? (
-          <div className="flex items-start justify-between gap-2 px-0.5">
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+            className="flex items-start justify-between gap-2 px-0.5"
+          >
             {/* Team A form */}
             <div className="flex flex-col items-start gap-1">
               <FormDots form={formA.last5} />
@@ -130,20 +142,29 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
                 </span>
               )}
             </div>
-          </div>
+          </motion.div>
         ) : null}
 
-        {/* Odds Bar — unchanged design */}
-        {match.score_odds && (
-          <MatchOddsBar
-            scoreOdds={match.score_odds}
-            teamA={match.team_a}
-            teamB={match.team_b}
-          />
-        )}
+        {/* Odds Bar — appears after form section */}
+        <AnimatePresence>
+          {showOdds && match.score_odds && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+            >
+              <MatchOddsBar
+                scoreOdds={match.score_odds}
+                teamA={match.team_a}
+                teamB={match.team_b}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Crowd Wisdom — only when locked, unchanged design */}
-        {isLocked && (
+        {isLocked && showOdds && (
           <CrowdWisdomStats
             matchId={match.id}
             teamA={match.team_a}
