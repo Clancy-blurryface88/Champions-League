@@ -42,14 +42,14 @@ const R = {
 const RESULT_HE = { W: 'ניצחון', D: 'תיקו', L: 'הפסד' };
 
 function FormDots({ form }) {
-  const [open, setOpen] = useState(null);
+  const [openSlot, setOpenSlot] = useState(null); // { idx, x, y, s, item }
 
   useEffect(() => {
-    if (open === null) return;
-    const close = () => setOpen(null);
+    if (!openSlot) return;
+    const close = () => setOpenSlot(null);
     document.addEventListener('click', close);
     return () => document.removeEventListener('click', close);
-  }, [open]);
+  }, [openSlot]);
 
   if (!form?.length) return <span className="text-[10px] text-slate-600">—</span>;
 
@@ -57,12 +57,22 @@ function FormDots({ form }) {
     <div className="flex gap-[5px]">
       {form.map((item, i) => {
         const s = R[item.result];
-        const isOpen = open === i;
+        const isOpen = openSlot?.idx === i;
         return (
-          <div key={i} style={{ position: 'relative' }}>
-            {/* Square */}
+          <div key={i}>
             <div
-              onClick={e => { e.stopPropagation(); setOpen(isOpen ? null : i); }}
+              onClick={e => {
+                e.stopPropagation();
+                if (isOpen) { setOpenSlot(null); return; }
+                const rect = e.currentTarget.getBoundingClientRect();
+                setOpenSlot({
+                  idx: i,
+                  x: rect.left + rect.width / 2,
+                  y: rect.top,
+                  s,
+                  item,
+                });
+              }}
               style={{
                 width: 20, height: 20,
                 background: s.bg,
@@ -78,54 +88,55 @@ function FormDots({ form }) {
                 {item.result}
               </span>
             </div>
-
-            {/* Popup */}
-            {isOpen && (
-              <div
-                onClick={e => e.stopPropagation()}
-                style={{
-                  position: 'absolute',
-                  bottom: 'calc(100% + 8px)',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  background: 'rgba(8,15,30,0.97)',
-                  border: `1px solid ${s.border}`,
-                  borderRadius: 10,
-                  padding: '8px 12px',
-                  whiteSpace: 'nowrap',
-                  zIndex: 200,
-                  textAlign: 'center',
-                  boxShadow: `0 8px 24px rgba(0,0,0,0.7), 0 0 0 1px ${s.border}`,
-                  minWidth: 90,
-                }}
-              >
-                {/* Arrow */}
-                <div style={{
-                  position: 'absolute',
-                  bottom: -5,
-                  left: '50%',
-                  marginLeft: -4,
-                  width: 8, height: 8,
-                  background: 'rgba(8,15,30,0.97)',
-                  border: `1px solid ${s.border}`,
-                  borderTop: 'none',
-                  borderLeft: 'none',
-                  transform: 'rotate(45deg)',
-                }} />
-                <div style={{ fontSize: 10, fontWeight: 700, color: s.text, marginBottom: 4 }}>
-                  {RESULT_HE[item.result]}
-                </div>
-                <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', lineHeight: 1, marginBottom: 4, letterSpacing: 1 }}>
-                  {item.scored}:{item.conceded}
-                </div>
-                <div style={{ fontSize: 9, color: '#94a3b8', maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  נגד {item.opponent}
-                </div>
-              </div>
-            )}
           </div>
         );
       })}
+
+      {/* Popup rendered with position:fixed to escape overflow:hidden parents */}
+      {openSlot && (
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{
+            position: 'fixed',
+            left: openSlot.x,
+            bottom: window.innerHeight - openSlot.y + 8,
+            transform: 'translateX(-50%)',
+            background: 'rgba(8,15,30,0.97)',
+            border: `1px solid ${openSlot.s.border}`,
+            borderRadius: 10,
+            padding: '8px 12px',
+            whiteSpace: 'nowrap',
+            zIndex: 9999,
+            textAlign: 'center',
+            boxShadow: `0 8px 24px rgba(0,0,0,0.7), 0 0 0 1px ${openSlot.s.border}`,
+            minWidth: 90,
+            pointerEvents: 'none',
+          }}
+        >
+          {/* Arrow pointing down */}
+          <div style={{
+            position: 'absolute',
+            bottom: -5,
+            left: '50%',
+            marginLeft: -4,
+            width: 8, height: 8,
+            background: 'rgba(8,15,30,0.97)',
+            border: `1px solid ${openSlot.s.border}`,
+            borderTop: 'none',
+            borderLeft: 'none',
+            transform: 'rotate(45deg)',
+          }} />
+          <div style={{ fontSize: 10, fontWeight: 700, color: openSlot.s.text, marginBottom: 4 }}>
+            {RESULT_HE[openSlot.item.result]}
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', lineHeight: 1, marginBottom: 4, letterSpacing: 1 }}>
+            {openSlot.item.scored}:{openSlot.item.conceded}
+          </div>
+          <div style={{ fontSize: 9, color: '#94a3b8' }}>
+            נגד {openSlot.item.opponent}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
