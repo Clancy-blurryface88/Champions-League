@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 
-const STEP_MS = 3000; // 3s per counter (4x slower than original 750ms)
+const STEP_MS = 4000; // 4s per counter
 
 function useCountUp(target, delay = 0) {
   const [count, setCount] = useState(0);
@@ -55,7 +55,7 @@ function getTopScores(scoreOdds, n = 5) {
     .map(e => ({ score: e.score, pct: Math.round((e.prob / total) * 100) }));
 }
 
-// Sequential animated win-row: home at 0, draw at STEP_MS, away at STEP_MS*2
+// Sequential: home → draw → away, each 4s
 function WinRow({ teamA, teamB, probs }) {
   const cols = [
     { label: teamA,  p: probs.home, delay: 0 },
@@ -84,42 +84,48 @@ function WinRow({ teamA, teamB, probs }) {
   );
 }
 
-// Pills appear one by one (asc pct = lowest first) after all 3 counters finish
+// Pills: sorted descending (highest left, lowest right).
+// Appear right-to-left (lowest first) after all 3 counters finish, stagger 700ms.
 function ScoreRow({ topScores }) {
   const sorted = useMemo(
-    () => [...topScores].sort((a, b) => a.pct - b.pct),
+    () => [...topScores].sort((a, b) => b.pct - a.pct), // descending → highest left
     [topScores]
   );
+  const n = sorted.length;
   const [visibleCount, setVisibleCount] = useState(0);
 
   useEffect(() => {
-    const startAfter = STEP_MS * 3; // after all 3 counters
-    const stagger = 350;
+    const startAfter = STEP_MS * 3;
+    const stagger = 700;
     const timers = sorted.map((_, i) =>
       setTimeout(() => setVisibleCount(v => v + 1), startAfter + i * stagger)
     );
     return () => timers.forEach(clearTimeout);
-  }, [sorted.length]);
+  }, [n]);
 
   return (
     <div className="flex flex-wrap gap-1.5 justify-center">
-      {sorted.map(({ score, pct }, i) => (
-        <div
-          key={score}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-          style={{
-            background: 'rgba(59,130,246,0.1)',
-            border: '1px solid rgba(59,130,246,0.5)',
-            boxShadow: '0 0 10px rgba(59,130,246,0.25)',
-            opacity: i < visibleCount ? 1 : 0,
-            transform: i < visibleCount ? 'translateY(0)' : 'translateY(6px)',
-            transition: 'opacity 0.35s ease, transform 0.35s ease',
-          }}
-        >
-          <span className="text-[11px] font-black text-white">{score}</span>
-          <span className="text-[9px] text-blue-300/70">{pct}%</span>
-        </div>
-      ))}
+      {sorted.map(({ score, pct }, i) => {
+        // rightmost pill (index n-1) appears first: visible when n - visibleCount <= i
+        const isVisible = i >= n - visibleCount;
+        return (
+          <div
+            key={score}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+            style={{
+              background: 'rgba(59,130,246,0.1)',
+              border: '1px solid rgba(59,130,246,0.5)',
+              boxShadow: '0 0 10px rgba(59,130,246,0.25)',
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? 'translateY(0)' : 'translateY(6px)',
+              transition: 'opacity 0.4s ease, transform 0.4s ease',
+            }}
+          >
+            <span className="text-[11px] font-black text-white">{score}</span>
+            <span className="text-[9px] text-blue-300/70">{pct}%</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -131,7 +137,8 @@ export default function MatchOddsBar({ scoreOdds, teamA, teamB }) {
   if (!probs) return null;
 
   return (
-    <div className="mt-3 flex flex-col items-center gap-2">
+    <div className="mt-6 flex flex-col items-center gap-2">
+      <div className="w-full h-px mb-1" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent)' }} />
       <span className="text-[10px] font-semibold tracking-wide text-yellow-400">תחזית המשחק</span>
       <WinRow teamA={teamA} teamB={teamB} probs={probs} />
       {topScores.length > 0 && <ScoreRow topScores={topScores} />}
