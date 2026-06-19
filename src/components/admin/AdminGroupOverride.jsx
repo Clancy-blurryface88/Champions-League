@@ -516,15 +516,213 @@ function TabBracket({ allMatches, groupOverrides, bestThirdOrder, bracketSlotOve
   );
 }
 
+// ─── Tab 4: Full knockout bracket editor ──────────────────────────────────────
+const GROUP_LEAGUE_PATTERN = /^Group [A-L]$/;
+
+const ROUND_SORT = {
+  'R32':1,'Round of 32':1,'שמינית-32':1,
+  'R16':2,'Round of 16':2,'שש-עשרה':2,
+  'QF':3,'Quarter Final':3,'Quarter-Final':3,'רבע גמר':3,
+  'SF':4,'Semi Final':4,'Semi-Final':4,'חצי גמר':4,
+  '3rd Place':5,'Third Place':5,'מקום שלישי':5,
+  'Final':6,'F':6,'גמר':6,
+};
+
+function TeamPicker({ teams, value, onChange }) {
+  return (
+    <select
+      value={value || ''}
+      onChange={e => {
+        const t = teams.find(t => t.name === e.target.value);
+        onChange(e.target.value, t?.logo || null);
+      }}
+      className="bg-slate-700 border border-slate-600 text-white text-xs rounded-lg px-2 py-1.5 w-full"
+    >
+      <option value="">— בחר נבחרת —</option>
+      {teams.map(t => (
+        <option key={t.name} value={t.name}>{t.name}</option>
+      ))}
+    </select>
+  );
+}
+
+function TabBracketEditor({ rawMatches }) {
+  const [localMatches, setLocalMatches] = useState(() => rawMatches);
+  const [pending, setPending] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState(null);
+
+  // All unique teams from every match (for selection list)
+  const allTeams = useMemo(() => {
+    const map = {};
+    rawMatches.forEach(m => {
+      if (m.team_a) map[m.team_a] = m.team_a_logo || null;
+      if (m.team_b) map[m.team_b] = m.team_b_logo || null;
+    });
+    return Object.entries(map)
+      .sort(([a],[b]) => a.localeCompare(b, 'he'))
+      .map(([name, logo]) => ({ name, logo }));
+  }, [rawMatches]);
+
+  // Knockout matches only (not group stage)
+  const knockoutMatches = useMemo(
+    () => localMatches.filter(m => !GROUP_LEAGUE_PATTERN.test(m.league || '')),
+    [localMatches]
+  );
+
+  // Group by round/league
+  const byRound = useMemo(() => {
+    const g = {};
+    knockoutMatches.forEach(m => {
+      const key = m.league || '—';
+      if (!g[key]) g[key] = [];
+      g[key].push(m);
+    });
+    return g;
+  }, [knockoutMatches]);
+
+  const sortedRounds = useMemo(
+    () => Object.keys(byRound).sort((a,b) => (ROUND_SORT[a]||99) - (ROUND_SORT[b]||99)),
+    [byRound]
+  );
+
+  const getTeam = (match, side) => {
+    const p = pending[match.id];
+    return {
+      name: (p?.[`team_${side}`] ?? match[`team_${side}`]) || '',
+      logo: (p?.[`team_${side}_logo`] ?? match[`team_${side}_logo`]) || null,
+    };
+  };
+
+  const setTeam = (matchId, side, name, logo) => {
+    setPending(prev => ({
+      ...prev,
+      [matchId]: { ...(prev[matchId] || {}), [`team_${side}`]: name, [`team_${side}_logo`]: logo },
+    }));
+  };
+
+  const saveAll = async () => {
+    setSaving(true); setStatus(null);
+    try {
+      await Promise.all(
+        Object.entries(pending).map(([id, data]) => Match.update(id, data))
+      );
+      setLocalMatches(prev => prev.map(m => pending[m.id] ? { ...m, ...pending[m.id] } : m));
+      setPending({});
+      setStatus('success');
+      setTimeout(() => setStatus(null), 3000);
+    } catch(e) {
+      console.error(e);
+      setStatus('error');
+      setTimeout(() => setStatus(null), 4000);
+    }
+    setSaving(false);
+  };
+
+  const hasPending = Object.keys(pending).length > 0;
+
+  if (knockoutMatches.length === 0) {
+    return (
+      <div className="py-12 text-center text-slate-500 text-sm">
+        לא נמצאו משחקי נוקאאוט — יופיעו לאחר שלב הבתים
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      <p className="text-slate-400 text-sm">בחר לכל משחק את שתי הנבחרות — השינויים נשמרים בלחיצה על "שמור שינויים".</p>
+
+      {hasPending && (
+        <div className="bg-orange-500/8 border border-orange-500/20 rounded-xl px-4 py-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-orange-400" />
+            <span className="text-orange-300 text-sm">{Object.keys(pending).length} משחקים עם שינויים שלא נשמרו</span>
+          </div>
+          <button onClick={() => setPending({})}
+            className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-red-400 border border-slate-700 hover:border-red-500/40 px-2.5 py-1.5 rounded-lg transition-all">
+            <RotateCcw className="w-3 h-3" /> בטל הכל
+          </button>
+        </div>
+      )}
+
+      {sortedRounds.map(round => (
+        <div key={round}>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[11px] font-black text-yellow-400 uppercase tracking-widest">{round}</span>
+            <div className="flex-1 h-px bg-slate-700" />
+            <span className="text-[10px] text-slate-600">{byRound[round].length} משחקים</span>
+          </div>
+          <div className="space-y-2">
+            {byRound[round].map((match, idx) => {
+              const teamA = getTeam(match, 'a');
+              const teamB = getTeam(match, 'b');
+              const changed = !!pending[match.id];
+
+              return (
+                <div key={match.id} className={`bg-slate-800/60 border rounded-xl p-3 transition-all ${
+                  changed ? 'border-orange-500/40' : 'border-slate-700'
+                }`}>
+                  <div className="flex items-center gap-1 mb-2">
+                    <span className="text-[10px] font-bold text-slate-400">
+                      {match.match_number ? `משחק ${match.match_number}` : `#${idx + 1}`}
+                    </span>
+                    {match.match_date && (
+                      <span className="text-[10px] text-slate-600">
+                        · {new Date(match.match_date).toLocaleDateString('he-IL', { day:'2-digit', month:'2-digit' })}
+                      </span>
+                    )}
+                    {changed && (
+                      <span className="mr-auto text-[10px] text-orange-400 bg-orange-400/10 border border-orange-400/20 px-1.5 py-0.5 rounded">שונה</span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center">
+                    {/* Team A */}
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-1.5">
+                        <TeamFlag logo={teamA.logo} name={teamA.name} className="w-5 h-5 flex-shrink-0" />
+                        <span className="text-xs text-white font-semibold truncate">{teamA.name || '—'}</span>
+                      </div>
+                      <TeamPicker teams={allTeams} value={teamA.name}
+                        onChange={(name, logo) => setTeam(match.id, 'a', name, logo)} />
+                    </div>
+
+                    <span className="text-slate-600 font-bold text-sm text-center">VS</span>
+
+                    {/* Team B */}
+                    <div className="flex flex-col gap-1 items-end">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-white font-semibold truncate">{teamB.name || '—'}</span>
+                        <TeamFlag logo={teamB.logo} name={teamB.name} className="w-5 h-5 flex-shrink-0" />
+                      </div>
+                      <TeamPicker teams={allTeams} value={teamB.name}
+                        onChange={(name, logo) => setTeam(match.id, 'b', name, logo)} />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+
+      <SaveRow dirty={hasPending} saving={saving} status={status} onSave={saveAll} />
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 const TABS = [
-  { id: 'groups', label: 'סידור בתים' },
-  { id: 'best3',  label: 'טובות מקום 3' },
-  { id: 'bracket', label: 'בראקט' },
+  { id: 'groups',         label: 'סידור בתים' },
+  { id: 'best3',          label: 'טובות מקום 3' },
+  { id: 'bracket',        label: 'בראקט מקום 3' },
+  { id: 'bracket-editor', label: 'עריכת בראקט' },
 ];
 
 export default function AdminGroupOverride() {
   const [allMatches, setAllMatches] = useState({});
+  const [rawMatches, setRawMatches] = useState([]);
   const [groupOverrides, setGroupOverrides] = useState({});
   const [bestThirdOrder, setBestThirdOrder] = useState(null);
   const [bracketSlotOverride, setBracketSlotOverride] = useState({});
@@ -541,6 +739,7 @@ export default function AdminGroupOverride() {
         Match.list('match_date'),
         loadAllOverrides(),
       ]);
+      setRawMatches(matchData);
       const grouped = {};
       matchData.forEach(m => {
         if (!m.league) return;
@@ -611,6 +810,9 @@ export default function AdminGroupOverride() {
           settingId={settingId}
           onSettingId={id => { setSettingId(id); }}
         />
+      )}
+      {activeTab === 'bracket-editor' && (
+        <TabBracketEditor rawMatches={rawMatches} />
       )}
     </div>
   );
