@@ -120,9 +120,8 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
             </div>
 
             {/* Center label */}
-            <div className="flex-shrink-0 pt-1 flex items-center gap-0.5">
-              <span className="text-[9px] text-slate-500 font-semibold">אחרונים</span>
-              <span className="text-[9px] text-slate-200 font-bold">5</span>
+            <div className="flex-shrink-0 pt-1">
+              <span className="text-[9px] text-white font-semibold">5 משחקים אחרונים</span>
             </div>
 
             {/* Team B form */}
@@ -153,7 +152,7 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.55, ease: 'easeOut' }}
+              transition={{ duration: 1.5, ease: 'easeOut' }}
             >
               <MatchOddsBar
                 scoreOdds={match.score_odds}
