@@ -254,7 +254,7 @@ export default function Predictions() {
     if (isOpening) {
       setTimeout(() => {
         const cardEl = matchCardRefs.current[matchId];
-        if (cardEl) cardEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        if (cardEl) cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }, 320);
     }
   };
