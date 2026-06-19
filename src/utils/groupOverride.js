@@ -9,15 +9,21 @@ export async function loadAllOverrides() {
       .select('id, group_position_overrides, best_third_order, bracket_slot_override')
       .limit(1)
       .maybeSingle();
-    if (!data) return { groupOverrides: {}, bestThirdOrder: null, bracketSlotOverride: {}, settingId: null };
+    if (!data) return { groupOverrides: {}, bestThirdOrder: null, bracketSlotOverride: {}, bracketMatchOverride: {}, settingId: null };
+    // bracket_slot_override stores both 3rd-place slot overrides (numeric keys)
+    // and bracket match team overrides (under the _matches key)
+    const slotRaw = JSON.parse(data.bracket_slot_override || '{}');
+    const bracketMatchOverride = slotRaw._matches || {};
+    const bracketSlotOverride  = Object.fromEntries(Object.entries(slotRaw).filter(([k]) => k !== '_matches'));
     return {
       groupOverrides:      JSON.parse(data.group_position_overrides || '{}'),
       bestThirdOrder:      data.best_third_order ? JSON.parse(data.best_third_order) : null,
-      bracketSlotOverride: JSON.parse(data.bracket_slot_override || '{}'),
+      bracketSlotOverride,
+      bracketMatchOverride,
       settingId:           data.id,
     };
   } catch {
-    return { groupOverrides: {}, bestThirdOrder: null, bracketSlotOverride: {}, settingId: null };
+    return { groupOverrides: {}, bestThirdOrder: null, bracketSlotOverride: {}, bracketMatchOverride: {}, settingId: null };
   }
 }
 
@@ -48,9 +54,24 @@ async function saveColumn(column, value, settingId) {
   }
 }
 
-export const saveGroupOverrides      = (v, id) => saveColumn('group_position_overrides', JSON.stringify(v), id);
-export const saveBestThirdOrder      = (v, id) => saveColumn('best_third_order', v ? JSON.stringify(v) : null, id);
-export const saveBracketSlotOverride = (v, id) => saveColumn('bracket_slot_override', JSON.stringify(v), id);
+export const saveGroupOverrides = (v, id) => saveColumn('group_position_overrides', JSON.stringify(v), id);
+export const saveBestThirdOrder = (v, id) => saveColumn('best_third_order', v ? JSON.stringify(v) : null, id);
+
+// Save slot override while preserving any existing _matches key
+export async function saveBracketSlotOverride(slotOverride, settingId) {
+  const { bracketMatchOverride } = await loadAllOverrides();
+  const combined = Object.keys(bracketMatchOverride).length
+    ? { ...slotOverride, _matches: bracketMatchOverride }
+    : slotOverride;
+  return saveColumn('bracket_slot_override', JSON.stringify(combined), settingId);
+}
+
+// Save match team override while preserving numeric slot keys
+export async function saveBracketMatchOverride(matchOverride, settingId) {
+  const { bracketSlotOverride } = await loadAllOverrides();
+  const combined = { ...bracketSlotOverride, _matches: matchOverride };
+  return saveColumn('bracket_slot_override', JSON.stringify(combined), settingId);
+}
 
 // ─── Apply helpers ────────────────────────────────────────────────────────────
 

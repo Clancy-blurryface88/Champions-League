@@ -8,6 +8,7 @@ import {
   saveGroupOverrides,
   saveBestThirdOrder,
   saveBracketSlotOverride,
+  saveBracketMatchOverride,
   applyOverride,
   applyBestThirdOrder,
 } from '@/utils/groupOverride';
@@ -516,17 +517,81 @@ function TabBracket({ allMatches, groupOverrides, bestThirdOrder, bracketSlotOve
   );
 }
 
-// ─── Tab 4: Full knockout bracket editor ──────────────────────────────────────
-const GROUP_LEAGUE_PATTERN = /^Group [A-L]$/;
+// ─── Tab 4: Full knockout bracket editor (topology-based) ─────────────────────
+// Same topology as KnockoutBracket.jsx — matches are resolved from group standings
 
-const ROUND_SORT = {
-  'R32':1,'Round of 32':1,'שמינית-32':1,
-  'R16':2,'Round of 16':2,'שש-עשרה':2,
-  'QF':3,'Quarter Final':3,'Quarter-Final':3,'רבע גמר':3,
-  'SF':4,'Semi Final':4,'Semi-Final':4,'חצי גמר':4,
-  '3rd Place':5,'Third Place':5,'מקום שלישי':5,
-  'Final':6,'F':6,'גמר':6,
-};
+const BE_LEFT_R32  = [
+  { num:74, home:'1E', away:{slot:74} },
+  { num:77, home:'1I', away:{slot:77} },
+  { num:73, home:'2A', away:'2B' },
+  { num:75, home:'1F', away:'2C' },
+  { num:83, home:'2K', away:'2L' },
+  { num:84, home:'1H', away:'2J' },
+  { num:81, home:'1D', away:{slot:81} },
+  { num:82, home:'1G', away:{slot:82} },
+];
+const BE_RIGHT_R32 = [
+  { num:76, home:'1C', away:'2F' },
+  { num:78, home:'2E', away:'2I' },
+  { num:79, home:'1A', away:{slot:79} },
+  { num:80, home:'1L', away:{slot:80} },
+  { num:86, home:'1J', away:'2H' },
+  { num:88, home:'2D', away:'2G' },
+  { num:85, home:'1B', away:{slot:85} },
+  { num:87, home:'1K', away:{slot:87} },
+];
+const BE_LEFT_R16  = [
+  { num:89, home:'W74', away:'W77' },
+  { num:90, home:'W73', away:'W75' },
+  { num:93, home:'W83', away:'W84' },
+  { num:94, home:'W81', away:'W82' },
+];
+const BE_RIGHT_R16 = [
+  { num:91, home:'W76', away:'W78' },
+  { num:92, home:'W79', away:'W80' },
+  { num:95, home:'W86', away:'W88' },
+  { num:96, home:'W85', away:'W87' },
+];
+const BE_LEFT_QF   = [{ num:97, home:'W89', away:'W90' }, { num:98, home:'W93', away:'W94' }];
+const BE_RIGHT_QF  = [{ num:99, home:'W91', away:'W92' }, { num:100,home:'W95', away:'W96' }];
+const BE_LEFT_SF   = [{ num:101,home:'W97', away:'W98' }];
+const BE_RIGHT_SF  = [{ num:102,home:'W99', away:'W100' }];
+const BE_FINAL     = { num:104, home:'W101', away:'W102' };
+const BE_THIRD     = { num:103, home:'L101', away:'L102' };
+
+const BE_ROUNDS = [
+  { label:'שמינית 32 (16 משחקים)', slots:[...BE_LEFT_R32,  ...BE_RIGHT_R32]  },
+  { label:'שמינית גמר (8 משחקים)', slots:[...BE_LEFT_R16,  ...BE_RIGHT_R16]  },
+  { label:'רבע גמר (4 משחקים)',    slots:[...BE_LEFT_QF,   ...BE_RIGHT_QF]   },
+  { label:'חצי גמר (2 משחקים)',    slots:[...BE_LEFT_SF,   ...BE_RIGHT_SF]   },
+  { label:'גמר',                   slots:[BE_FINAL]                           },
+  { label:'מקום שלישי',            slots:[BE_THIRD]                           },
+];
+
+function resolveBeTeam(slotLabel, standings, third3rd, matchOverride) {
+  if (!slotLabel) return null;
+  if (typeof slotLabel === 'object' && slotLabel.slot) {
+    const t = third3rd[slotLabel.slot];
+    return t ? { name: t.name, logo: t.logo } : null;
+  }
+  if (typeof slotLabel === 'string' && slotLabel.startsWith('W')) {
+    const num = parseInt(slotLabel.slice(1));
+    const ov = matchOverride[num];
+    return ov?.winner ? { name: ov.winner, logo: ov.winner_logo } : null;
+  }
+  if (typeof slotLabel === 'string' && slotLabel.startsWith('L')) {
+    const num = parseInt(slotLabel.slice(1));
+    const ov = matchOverride[num];
+    return ov?.loser ? { name: ov.loser, logo: ov.loser_logo } : null;
+  }
+  if (typeof slotLabel === 'string' && /^[12][A-L]$/.test(slotLabel)) {
+    const pos = parseInt(slotLabel[0]) - 1;
+    const grp = slotLabel[1];
+    const s = standings[grp] || [];
+    return s[pos] ? { name: s[pos].name, logo: s[pos].logo } : null;
+  }
+  return null;
+}
 
 function TeamPicker({ teams, value, onChange }) {
   return (
@@ -546,13 +611,58 @@ function TeamPicker({ teams, value, onChange }) {
   );
 }
 
-function TabBracketEditor({ rawMatches }) {
-  const [localMatches, setLocalMatches] = useState(() => rawMatches);
-  const [pending, setPending] = useState({});
+function TabBracketEditor({ allMatches, groupOverrides, bestThirdOrder, bracketSlotOverride,
+                            bracketMatchOverride: initOverride, rawMatches, settingId, onSettingId }) {
+  const [matchOverride, setMatchOverride] = useState(initOverride || {});
+  const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState(null);
 
-  // All unique teams from every match (for selection list)
+  useEffect(() => { setMatchOverride(initOverride || {}); }, [initOverride]);
+
+  // Compute standings (same logic as KnockoutBracket)
+  const standings = useMemo(() => {
+    const r = {};
+    ALL_GROUPS.forEach(g => {
+      r[g] = applyOverride(calcStandings(allMatches[g] || []), groupOverrides[g]);
+    });
+    return r;
+  }, [allMatches, groupOverrides]);
+
+  // Compute 3rd-place assignments
+  const third3rd = useMemo(() => {
+    const all3rd = ALL_GROUPS.map(g => {
+      const s = standings[g] || [];
+      return s.length >= 3 ? { ...s[2], group: g } : null;
+    }).filter(Boolean).sort((a,b) =>
+      (b.Pts-a.Pts)||(b.GD-a.GD)||(b.GF-a.GF)||a.name.localeCompare(b.name)
+    );
+    const ordered = bestThirdOrder ? applyBestThirdOrder(all3rd, bestThirdOrder) : all3rd;
+    const qualifying = ordered.slice(0, 8);
+    const result = {};
+    const byName = Object.fromEntries(all3rd.map(t => [t.name, t]));
+    // backtracking
+    const SLOTS = [74,77,79,80,81,82,85,87];
+    function bt(idx, used) {
+      if (idx === SLOTS.length) return true;
+      const sn = SLOTS[idx];
+      for (const team of qualifying) {
+        if (!used.has(team.name) && THIRD_SLOTS[sn].includes(team.group)) {
+          result[sn] = team; used.add(team.name);
+          if (bt(idx+1, used)) return true;
+          delete result[sn]; used.delete(team.name);
+        }
+      }
+      return false;
+    }
+    bt(0, new Set());
+    Object.entries(bracketSlotOverride).forEach(([slot, name]) => {
+      const t = byName[name]; if (t) result[parseInt(slot)] = t;
+    });
+    return result;
+  }, [standings, bestThirdOrder, bracketSlotOverride]);
+
+  // All unique teams from group matches
   const allTeams = useMemo(() => {
     const map = {};
     rawMatches.forEach(m => {
@@ -564,52 +674,38 @@ function TabBracketEditor({ rawMatches }) {
       .map(([name, logo]) => ({ name, logo }));
   }, [rawMatches]);
 
-  // Knockout matches only (not group stage)
-  const knockoutMatches = useMemo(
-    () => localMatches.filter(m => !GROUP_LEAGUE_PATTERN.test(m.league || '')),
-    [localMatches]
-  );
-
-  // Group by round/league
-  const byRound = useMemo(() => {
-    const g = {};
-    knockoutMatches.forEach(m => {
-      const key = m.league || '—';
-      if (!g[key]) g[key] = [];
-      g[key].push(m);
-    });
-    return g;
-  }, [knockoutMatches]);
-
-  const sortedRounds = useMemo(
-    () => Object.keys(byRound).sort((a,b) => (ROUND_SORT[a]||99) - (ROUND_SORT[b]||99)),
-    [byRound]
-  );
-
-  const getTeam = (match, side) => {
-    const p = pending[match.id];
+  // Resolve a slot to { home, away } — first check manual override, then compute
+  const resolveSlot = (slot) => {
+    const ov = matchOverride[slot.num];
+    const computedHome = resolveBeTeam(slot.home, standings, third3rd, matchOverride);
+    const computedAway = resolveBeTeam(slot.away, standings, third3rd, matchOverride);
     return {
-      name: (p?.[`team_${side}`] ?? match[`team_${side}`]) || '',
-      logo: (p?.[`team_${side}_logo`] ?? match[`team_${side}_logo`]) || null,
+      home: ov?.team_a ? { name: ov.team_a, logo: ov.team_a_logo } : computedHome,
+      away: ov?.team_b ? { name: ov.team_b, logo: ov.team_b_logo } : computedAway,
+      isOverridden: !!(ov?.team_a || ov?.team_b),
     };
   };
 
-  const setTeam = (matchId, side, name, logo) => {
-    setPending(prev => ({
+  const setTeam = (matchNum, side, name, logo) => {
+    setMatchOverride(prev => ({
       ...prev,
-      [matchId]: { ...(prev[matchId] || {}), [`team_${side}`]: name, [`team_${side}_logo`]: logo },
+      [matchNum]: { ...(prev[matchNum] || {}), [`team_${side}`]: name, [`team_${side}_logo`]: logo },
     }));
+    setDirty(true);
   };
 
-  const saveAll = async () => {
+  const clearSlot = (matchNum) => {
+    setMatchOverride(prev => { const n = {...prev}; delete n[matchNum]; return n; });
+    setDirty(true);
+  };
+
+  const resetAll = () => { setMatchOverride({}); setDirty(true); };
+
+  const handleSave = async () => {
     setSaving(true); setStatus(null);
     try {
-      await Promise.all(
-        Object.entries(pending).map(([id, data]) => Match.update(id, data))
-      );
-      setLocalMatches(prev => prev.map(m => pending[m.id] ? { ...m, ...pending[m.id] } : m));
-      setPending({});
-      setStatus('success');
+      const newId = await saveBracketMatchOverride(matchOverride, settingId);
+      onSettingId(newId); setDirty(false); setStatus('success');
       setTimeout(() => setStatus(null), 3000);
     } catch(e) {
       console.error(e);
@@ -619,85 +715,78 @@ function TabBracketEditor({ rawMatches }) {
     setSaving(false);
   };
 
-  const hasPending = Object.keys(pending).length > 0;
-
-  if (knockoutMatches.length === 0) {
-    return (
-      <div className="py-12 text-center text-slate-500 text-sm">
-        לא נמצאו משחקי נוקאאוט — יופיעו לאחר שלב הבתים
-      </div>
-    );
-  }
+  const overriddenCount = Object.keys(matchOverride).length;
 
   return (
     <div className="space-y-5">
-      <p className="text-slate-400 text-sm">בחר לכל משחק את שתי הנבחרות — השינויים נשמרים בלחיצה על "שמור שינויים".</p>
+      <p className="text-slate-400 text-sm">
+        הבראקט מחושב אוטומטית מהטבלאות. בחר ידנית נבחרת לכל צד להחלפה — מגיב מיידית בדף הבראקט.
+      </p>
 
-      {hasPending && (
+      {overriddenCount > 0 && (
         <div className="bg-orange-500/8 border border-orange-500/20 rounded-xl px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-orange-400" />
-            <span className="text-orange-300 text-sm">{Object.keys(pending).length} משחקים עם שינויים שלא נשמרו</span>
+            <span className="text-orange-300 text-sm">שינוי ידני פעיל ב-{overriddenCount} משחקים</span>
           </div>
-          <button onClick={() => setPending({})}
+          <button onClick={resetAll}
             className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-red-400 border border-slate-700 hover:border-red-500/40 px-2.5 py-1.5 rounded-lg transition-all">
-            <RotateCcw className="w-3 h-3" /> בטל הכל
+            <RotateCcw className="w-3 h-3" /> איפוס הכל
           </button>
         </div>
       )}
 
-      {sortedRounds.map(round => (
-        <div key={round}>
+      {BE_ROUNDS.map(({ label, slots }) => (
+        <div key={label}>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-[11px] font-black text-yellow-400 uppercase tracking-widest">{round}</span>
+            <span className="text-[11px] font-black text-yellow-400 tracking-widest">{label}</span>
             <div className="flex-1 h-px bg-slate-700" />
-            <span className="text-[10px] text-slate-600">{byRound[round].length} משחקים</span>
           </div>
           <div className="space-y-2">
-            {byRound[round].map((match, idx) => {
-              const teamA = getTeam(match, 'a');
-              const teamB = getTeam(match, 'b');
-              const changed = !!pending[match.id];
-
+            {slots.map(slot => {
+              const { home, away, isOverridden } = resolveSlot(slot);
               return (
-                <div key={match.id} className={`bg-slate-800/60 border rounded-xl p-3 transition-all ${
-                  changed ? 'border-orange-500/40' : 'border-slate-700'
+                <div key={slot.num} className={`bg-slate-800/60 border rounded-xl p-3 transition-all ${
+                  isOverridden ? 'border-orange-500/40' : 'border-slate-700'
                 }`}>
-                  <div className="flex items-center gap-1 mb-2">
-                    <span className="text-[10px] font-bold text-slate-400">
-                      {match.match_number ? `משחק ${match.match_number}` : `#${idx + 1}`}
-                    </span>
-                    {match.match_date && (
-                      <span className="text-[10px] text-slate-600">
-                        · {new Date(match.match_date).toLocaleDateString('he-IL', { day:'2-digit', month:'2-digit' })}
-                      </span>
-                    )}
-                    {changed && (
-                      <span className="mr-auto text-[10px] text-orange-400 bg-orange-400/10 border border-orange-400/20 px-1.5 py-0.5 rounded">שונה</span>
-                    )}
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold text-slate-500">#{slot.num}</span>
+                    <div className="flex items-center gap-2">
+                      {isOverridden && <span className="text-[10px] text-orange-400 bg-orange-400/10 border border-orange-400/20 px-1.5 py-0.5 rounded">ידני</span>}
+                      {isOverridden && (
+                        <button onClick={() => clearSlot(slot.num)}
+                          className="text-[10px] text-slate-500 hover:text-red-400 transition-colors">
+                          <RotateCcw className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center">
-                    {/* Team A */}
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-1.5">
-                        <TeamFlag logo={teamA.logo} name={teamA.name} className="w-5 h-5 flex-shrink-0" />
-                        <span className="text-xs text-white font-semibold truncate">{teamA.name || '—'}</span>
+                  <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-start">
+                    {/* Home */}
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5 min-h-[20px]">
+                        {home && <TeamFlag logo={home.logo} name={home.name} className="w-4 h-4 flex-shrink-0" />}
+                        <span className={`text-[11px] font-semibold truncate ${home ? 'text-white' : 'text-slate-600 italic'}`}>
+                          {home?.name || String(slot.home?.slot ? `3rd→${slot.home.slot}` : slot.home)}
+                        </span>
                       </div>
-                      <TeamPicker teams={allTeams} value={teamA.name}
-                        onChange={(name, logo) => setTeam(match.id, 'a', name, logo)} />
+                      <TeamPicker teams={allTeams} value={matchOverride[slot.num]?.team_a || home?.name || ''}
+                        onChange={(name, logo) => setTeam(slot.num, 'a', name, logo)} />
                     </div>
 
-                    <span className="text-slate-600 font-bold text-sm text-center">VS</span>
+                    <span className="text-slate-600 font-bold text-xs text-center mt-1">VS</span>
 
-                    {/* Team B */}
-                    <div className="flex flex-col gap-1 items-end">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs text-white font-semibold truncate">{teamB.name || '—'}</span>
-                        <TeamFlag logo={teamB.logo} name={teamB.name} className="w-5 h-5 flex-shrink-0" />
+                    {/* Away */}
+                    <div className="space-y-1 items-end flex flex-col">
+                      <div className="flex items-center gap-1.5 min-h-[20px] self-end">
+                        <span className={`text-[11px] font-semibold truncate ${away ? 'text-white' : 'text-slate-600 italic'}`}>
+                          {away?.name || String(slot.away?.slot ? `3rd→${slot.away.slot}` : slot.away)}
+                        </span>
+                        {away && <TeamFlag logo={away.logo} name={away.name} className="w-4 h-4 flex-shrink-0" />}
                       </div>
-                      <TeamPicker teams={allTeams} value={teamB.name}
-                        onChange={(name, logo) => setTeam(match.id, 'b', name, logo)} />
+                      <TeamPicker teams={allTeams} value={matchOverride[slot.num]?.team_b || away?.name || ''}
+                        onChange={(name, logo) => setTeam(slot.num, 'b', name, logo)} />
                     </div>
                   </div>
                 </div>
@@ -707,7 +796,7 @@ function TabBracketEditor({ rawMatches }) {
         </div>
       ))}
 
-      <SaveRow dirty={hasPending} saving={saving} status={status} onSave={saveAll} />
+      <SaveRow dirty={dirty} saving={saving} status={status} onSave={handleSave} />
     </div>
   );
 }
@@ -726,6 +815,7 @@ export default function AdminGroupOverride() {
   const [groupOverrides, setGroupOverrides] = useState({});
   const [bestThirdOrder, setBestThirdOrder] = useState(null);
   const [bracketSlotOverride, setBracketSlotOverride] = useState({});
+  const [bracketMatchOverride, setBracketMatchOverride] = useState({});
   const [settingId, setSettingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('groups');
@@ -735,7 +825,7 @@ export default function AdminGroupOverride() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [matchData, { groupOverrides: gOvr, bestThirdOrder: bto, bracketSlotOverride: bso, settingId: sid }] = await Promise.all([
+      const [matchData, { groupOverrides: gOvr, bestThirdOrder: bto, bracketSlotOverride: bso, bracketMatchOverride: bmo, settingId: sid }] = await Promise.all([
         Match.list('match_date'),
         loadAllOverrides(),
       ]);
@@ -751,6 +841,7 @@ export default function AdminGroupOverride() {
       setGroupOverrides(gOvr || {});
       setBestThirdOrder(bto || null);
       setBracketSlotOverride(bso || {});
+      setBracketMatchOverride(bmo || {});
       setSettingId(sid);
     } catch(e) { console.error(e); }
     setLoading(false);
@@ -812,7 +903,16 @@ export default function AdminGroupOverride() {
         />
       )}
       {activeTab === 'bracket-editor' && (
-        <TabBracketEditor rawMatches={rawMatches} />
+        <TabBracketEditor
+          allMatches={allMatches}
+          groupOverrides={groupOverrides}
+          bestThirdOrder={bestThirdOrder}
+          bracketSlotOverride={bracketSlotOverride}
+          bracketMatchOverride={bracketMatchOverride}
+          rawMatches={rawMatches}
+          settingId={settingId}
+          onSettingId={id => setSettingId(id)}
+        />
       )}
     </div>
   );

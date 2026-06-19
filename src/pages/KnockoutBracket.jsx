@@ -304,12 +304,13 @@ export default function KnockoutBracket() {
   const [groupOverrides, setGroupOverrides]       = useState({});
   const [bestThirdOrder, setBestThirdOrder]       = useState(null);
   const [bracketSlotOverride, setBracketSlotOverride] = useState({});
+  const [bracketMatchOverride, setBracketMatchOverride] = useState({});
   const [loading, setLoading]                     = useState(true);
   const [lastUpdate, setLastUpdate]               = useState(null);
 
   const load = async () => {
     try {
-      const [data, { groupOverrides: gOvr, bestThirdOrder: bto, bracketSlotOverride: bso }] = await Promise.all([
+      const [data, { groupOverrides: gOvr, bestThirdOrder: bto, bracketSlotOverride: bso, bracketMatchOverride: bmo }] = await Promise.all([
         Match.list('match_date'),
         loadAllOverrides(),
       ]);
@@ -329,6 +330,7 @@ export default function KnockoutBracket() {
       setGroupOverrides(gOvr || {});
       setBestThirdOrder(bto || null);
       setBracketSlotOverride(bso || {});
+      setBracketMatchOverride(bmo || {});
       setLastUpdate(new Date());
     } catch(e) { console.error(e); }
     setLoading(false);
@@ -385,8 +387,14 @@ export default function KnockoutBracket() {
 
   // Resolve a bracket slot definition to a rendered match
   const resolveSlot = (slotDef) => {
-    const homeTeam = resolveTeam(slotDef.home, standings, third3rd, {});
-    const awayTeam = resolveTeam(slotDef.away, standings, third3rd, {});
+    // Apply manual bracket match override first (from admin editor)
+    const manualOv = bracketMatchOverride[slotDef.num];
+    const homeTeam = (manualOv?.team_a)
+      ? { name: manualOv.team_a, logo: manualOv.team_a_logo }
+      : resolveTeam(slotDef.home, standings, third3rd, {});
+    const awayTeam = (manualOv?.team_b)
+      ? { name: manualOv.team_b, logo: manualOv.team_b_logo }
+      : resolveTeam(slotDef.away, standings, third3rd, {});
     // Check if there's a DB match for these teams
     const key1 = homeTeam && awayTeam ? `team_${homeTeam.name}_${awayTeam.name}` : null;
     const key2 = homeTeam && awayTeam ? `team_${awayTeam.name}_${homeTeam.name}` : null;
@@ -417,7 +425,7 @@ export default function KnockoutBracket() {
       third:    resolveSlot(THIRD_SLOT),
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [standings, third3rd, knockoutWinners]);
+  }, [standings, third3rd, knockoutWinners, bracketMatchOverride]);
 
   // ─── SVG lines ─────────────────────────────────────────────────────────────
   const lineColor = 'rgba(71,85,105,0.55)';
