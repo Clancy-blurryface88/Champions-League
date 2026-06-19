@@ -973,7 +973,19 @@ export default function Predictions() {
                         </div>
                       )}
                     </div>
-                    
+
+                    {/* Arena toggle */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); toggleArena(match.id); }}
+                      className="w-full flex items-center justify-center gap-1.5 pt-3 transition-colors"
+                      style={{ color: arenaOpen.has(match.id) ? '#facc15' : 'rgba(255,255,255,0.38)' }}
+                    >
+                      <span className="text-[11px] font-semibold tracking-wide">זירת המשחק</span>
+                      {arenaOpen.has(match.id)
+                        ? <ChevronUp className="w-3.5 h-3.5" />
+                        : <ChevronDown className="w-3.5 h-3.5" />}
+                    </button>
+
                     {/* Arena section — expandable */}
                     <AnimatePresence>
                       {arenaOpen.has(match.id) && (
@@ -997,17 +1009,6 @@ export default function Predictions() {
                         style={{ color:'rgba(255,255,255,0.75)' }}
                       >
                         1 X 2
-                      </button>
-                      <div className="w-px my-2.5" style={{ background:'rgba(255,255,255,0.14)' }} />
-                      <button
-                        onClick={(e) => { e.stopPropagation(); toggleArena(match.id); }}
-                        className="flex-1 flex items-center justify-center gap-1 py-3 text-xs font-bold transition-colors"
-                        style={{ color: arenaOpen.has(match.id) ? '#facc15' : 'rgba(255,255,255,0.75)' }}
-                      >
-                        זירה
-                        {arenaOpen.has(match.id)
-                          ? <ChevronUp className="w-3 h-3" />
-                          : <ChevronDown className="w-3 h-3" />}
                       </button>
                       <div className="w-px my-2.5" style={{ background:'rgba(255,255,255,0.14)' }} />
                       <button

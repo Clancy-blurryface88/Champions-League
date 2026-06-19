@@ -77,14 +77,7 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
       transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
       style={{ overflow: 'hidden' }}
     >
-      <div className="pt-3 space-y-3">
-        <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent)' }} />
-
-        {/* Section title */}
-        <div className="flex justify-center">
-          <span className="text-[10px] font-semibold tracking-widest text-yellow-400">זירת המשחק</span>
-        </div>
-
+      <div className="pt-2 space-y-3">
         {/* Last 5 matches form */}
         {loading ? (
           <div className="flex justify-center py-1">
@@ -96,7 +89,7 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
             <div className="flex flex-col items-start gap-1">
               <FormDots form={formA.last5} />
               {formA.avgGoals != null && (
-                <span className="text-[10px] text-slate-400 font-medium">ø {formA.avgGoals} גול</span>
+                <span className="text-[10px] text-slate-500 font-medium">⚽ {formA.avgGoals}</span>
               )}
             </div>
 
@@ -109,7 +102,7 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
             <div className="flex flex-col items-end gap-1">
               <FormDots form={formB.last5} />
               {formB.avgGoals != null && (
-                <span className="text-[10px] text-slate-400 font-medium">ø {formB.avgGoals} גול</span>
+                <span className="text-[10px] text-slate-500 font-medium">⚽ {formB.avgGoals}</span>
               )}
             </div>
           </div>
