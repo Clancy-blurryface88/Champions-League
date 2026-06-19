@@ -92,9 +92,14 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
             <div className="flex flex-col items-start gap-1">
               <FormDots form={formA.last5} />
               {formA.avgGoals != null && (
-                <span className="text-[10px] font-medium flex items-center gap-0.5">
-                  <span className="text-slate-500">⚽ {formA.avgGoals}</span>
-                  <span className="text-slate-600">/</span>
+                <span className="text-[10px] font-medium flex items-center">
+                  <span style={{
+                    background: 'linear-gradient(135deg, #bbf7d0, #4ade80)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}>⚽ {formA.avgGoals}</span>
+                  <span className="text-slate-600"> / </span>
                   <span style={{ color: '#f87171' }}>✕ {formA.avgConceded}</span>
                 </span>
               )}
@@ -109,9 +114,14 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
             <div className="flex flex-col items-end gap-1">
               <FormDots form={formB.last5} />
               {formB.avgGoals != null && (
-                <span className="text-[10px] font-medium flex items-center gap-0.5">
-                  <span className="text-slate-500">⚽ {formB.avgGoals}</span>
-                  <span className="text-slate-600">/</span>
+                <span className="text-[10px] font-medium flex items-center">
+                  <span style={{
+                    background: 'linear-gradient(135deg, #bbf7d0, #4ade80)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}>⚽ {formB.avgGoals}</span>
+                  <span className="text-slate-600"> / </span>
                   <span style={{ color: '#f87171' }}>✕ {formB.avgConceded}</span>
                 </span>
               )}
