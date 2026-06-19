@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Calendar, MapPin } from "lucide-react";
 import moment from "moment";
 import TeamFlag from "@/components/TeamFlag";
+import { loadGroupOverrides, applyOverride } from "@/utils/groupOverride";
 
 // FIFA WC 2026 tiebreaker order (group stage):
 // 1. Pts  2. H2H Pts  3. H2H GD  4. H2H GF  5. Overall GD  6. Overall GF
@@ -84,10 +85,10 @@ function calcStandings(matches) {
 const ALL_GROUPS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
 
 // Returns the 12 third-place teams sorted by Pts → GD → GF (FIFA criteria)
-function calcBest3rd(allMatches) {
+function calcBest3rd(allMatches, groupOverrides = {}) {
   return ALL_GROUPS
     .map(letter => {
-      const standings = calcStandings(allMatches[letter] || []);
+      const standings = applyOverride(calcStandings(allMatches[letter] || []), groupOverrides[letter]);
       if (standings.length < 3) return null;
       return { ...standings[2], group: letter };
     })
@@ -105,19 +106,22 @@ const toLetter = (g) => g.replace('Group ', '').trim();
 export default function GroupStandingsModal({ group: initialGroup, onClose }) {
   const [activeGroup, setActiveGroup] = useState(() => toLetter(initialGroup));
   const [allMatches, setAllMatches] = useState({});
+  const [groupOverrides, setGroupOverrides] = useState({});
   const [loading, setLoading] = useState(true);
   const activeButtonRef = useRef(null);
   const scrollContainerRef = useRef(null);
 
   useModalBackButtonOnMount(onClose);
 
-  // Load ALL matches once on mount
+  // Load ALL matches and overrides once on mount
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
-        const data = await Match.list('match_date');
-        // Group by letter (league = "Group A" → "A")
+        const [data, { overrides }] = await Promise.all([
+          Match.list('match_date'),
+          loadGroupOverrides(),
+        ]);
         const grouped = {};
         data.forEach(m => {
           if (!m.league) return;
@@ -125,11 +129,11 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
           if (!grouped[letter]) grouped[letter] = [];
           grouped[letter].push(m);
         });
-        // Sort each group's matches by date
         Object.keys(grouped).forEach(k => {
           grouped[k].sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
         });
         setAllMatches(grouped);
+        setGroupOverrides(overrides || {});
       } catch (e) {
         console.error(e);
       }
@@ -151,8 +155,9 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
 
   const isBest3 = activeGroup === 'best3';
   const matches = isBest3 ? [] : (allMatches[activeGroup] || []);
-  const standings = isBest3 ? [] : calcStandings(matches);
-  const best3Standings = isBest3 ? calcBest3rd(allMatches) : [];
+  const standings = isBest3 ? [] : applyOverride(calcStandings(matches), groupOverrides[activeGroup]);
+  const best3Standings = isBest3 ? calcBest3rd(allMatches, groupOverrides) : [];
+  const hasOverride = !isBest3 && !!groupOverrides[activeGroup];
 
   return (
     <AnimatePresence>
@@ -184,7 +189,14 @@ export default function GroupStandingsModal({ group: initialGroup, onClose }) {
                   <span className="text-yellow-400 text-base font-black">3</span>
                 </h2>
               ) : (
-                <h2 className="text-white font-bold text-lg">Group {activeGroup}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-white font-bold text-lg">Group {activeGroup}</h2>
+                  {hasOverride && (
+                    <span className="text-[10px] bg-orange-400/15 text-orange-400 border border-orange-400/30 px-1.5 py-0.5 rounded-full">
+                      סידור ידני
+                    </span>
+                  )}
+                </div>
               )}
               <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
                 <X className="w-5 h-5" />

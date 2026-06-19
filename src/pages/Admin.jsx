@@ -22,6 +22,7 @@ import AdminLiveCardDemo from "../components/admin/AdminLiveCardDemo";
 import AdminLiveLeaderboard from "../components/admin/AdminLiveLeaderboard";
 import AdminPlayerCardsDemo from "../components/admin/AdminPlayerCardsDemo";
 import AdminRoundInsights from "../components/admin/AdminRoundInsights";
+import AdminGroupOverride from "../components/admin/AdminGroupOverride";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -86,6 +87,7 @@ export default function Admin() {
       case 'live-leaderboard': return <AdminLiveLeaderboard />;
       case 'player-cards-demo': return <AdminPlayerCardsDemo />;
       case 'round-insights': return <AdminRoundInsights />;
+      case 'group-override': return <AdminGroupOverride />;
       default: return <AdminRounds />;
     }
   };
@@ -106,6 +108,7 @@ export default function Admin() {
     { id: 'live-leaderboard',   label: '⚡ Live Leaderboard',    icon: Zap },
     { id: 'player-cards-demo', label: '🎨 Player Cards Demo',   icon: Zap },
     { id: 'round-insights',    label: '📊 Round Insights',      icon: BarChart3 },
+    { id: 'group-override',   label: '🔀 סידור בתים',          icon: BarChart3 },
   ];
 
   return (

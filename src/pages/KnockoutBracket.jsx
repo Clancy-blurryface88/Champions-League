@@ -4,6 +4,7 @@ import { Match } from '@/api/entities';
 import TeamFlag from '@/components/TeamFlag';
 import AppBackground from '@/components/AppBackground';
 import { RefreshCw, Trophy, ArrowRight } from 'lucide-react';
+import { loadGroupOverrides, applyOverride } from '@/utils/groupOverride';
 
 // ─── Layout constants ────────────────────────────────────────────────────────
 const CH = 64;   // card height
@@ -163,9 +164,9 @@ function calcStandings(matches) {
 }
 
 // ─── Assign best 3rd-place teams to bracket slots (backtracking) ─────────────
-function assign3rd(allGroupMatches) {
+function assign3rd(allGroupMatches, groupOverrides = {}) {
   const all3rd = ALL_GROUPS.map(g => {
-    const s = calcStandings(allGroupMatches[g] || []);
+    const s = applyOverride(calcStandings(allGroupMatches[g] || []), groupOverrides[g]);
     return s.length >= 3 ? { ...s[2], group: g } : null;
   }).filter(Boolean).sort((a,b) =>
     (b.Pts-a.Pts)||(b.GD-a.GD)||(b.GF-a.GF)||a.name.localeCompare(b.name)
@@ -287,12 +288,16 @@ export default function KnockoutBracket() {
   const navigate = useNavigate();
   const [allGroupMatches, setAllGroupMatches] = useState({});
   const [knockoutMatches, setKnoutMatches]   = useState([]);
+  const [groupOverrides, setGroupOverrides]  = useState({});
   const [loading, setLoading]                = useState(true);
   const [lastUpdate, setLastUpdate]          = useState(null);
 
   const load = async () => {
     try {
-      const data = await Match.list('match_date');
+      const [data, { overrides }] = await Promise.all([
+        Match.list('match_date'),
+        loadGroupOverrides(),
+      ]);
       const grouped = {};
       const knockout = [];
       data.forEach(m => {
@@ -306,6 +311,7 @@ export default function KnockoutBracket() {
       });
       setAllGroupMatches(grouped);
       setKnoutMatches(knockout);
+      setGroupOverrides(overrides || {});
       setLastUpdate(new Date());
     } catch(e) { console.error(e); }
     setLoading(false);
@@ -317,15 +323,17 @@ export default function KnockoutBracket() {
     return () => clearInterval(iv);
   }, []);
 
-  // Standings per group
+  // Standings per group (with manual overrides applied)
   const standings = useMemo(() => {
     const r = {};
-    ALL_GROUPS.forEach(g => { r[g] = calcStandings(allGroupMatches[g] || []); });
+    ALL_GROUPS.forEach(g => {
+      r[g] = applyOverride(calcStandings(allGroupMatches[g] || []), groupOverrides[g]);
+    });
     return r;
-  }, [allGroupMatches]);
+  }, [allGroupMatches, groupOverrides]);
 
-  // 3rd-place assignment
-  const third3rd = useMemo(() => assign3rd(allGroupMatches), [allGroupMatches]);
+  // 3rd-place assignment (with manual overrides applied)
+  const third3rd = useMemo(() => assign3rd(allGroupMatches, groupOverrides), [allGroupMatches, groupOverrides]);
 
   // Build knockout winners map from DB matches
   // Key = match number (from bracket), value = { name, logo } of winner
