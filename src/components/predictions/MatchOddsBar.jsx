@@ -1,4 +1,27 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+
+function useCountUp(target, duration = 750) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!target) return;
+    let startTime = null;
+    const step = (ts) => {
+      if (!startTime) startTime = ts;
+      const progress = Math.min((ts - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      setCount(Math.round(eased * target));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    const id = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(id);
+  }, [target, duration]);
+  return count;
+}
+
+function AnimatedPct({ value, className, style }) {
+  const count = useCountUp(value);
+  return <span className={className} style={style}>{count}%</span>;
+}
 
 function calculateProbabilities(scoreOdds) {
   if (!scoreOdds || typeof scoreOdds !== 'object') return null;
@@ -59,7 +82,7 @@ function WinRow({ teamA, teamB, probs }) {
           style={{ borderRight: i < 2 ? '1px solid rgba(255,255,255,0.08)' : 'none' }}
         >
           <span className="text-[9px] text-white/70 text-center px-1 w-full truncate leading-tight">{l}</span>
-          <span className="text-sm font-bold text-white leading-none">{p}%</span>
+          <AnimatedPct value={p} className="text-sm font-bold text-white leading-none" />
         </div>
       ))}
     </div>
@@ -81,7 +104,7 @@ function ScoreRow({ topScores }) {
           }}
         >
           <span className="text-[11px] font-black text-white">{score}</span>
-          <span className="text-[9px] text-blue-300/70">{pct}%</span>
+          <AnimatedPct value={pct} className="text-[9px] text-blue-300/70" />
         </div>
       ))}
     </div>
