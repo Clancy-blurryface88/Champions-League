@@ -4,7 +4,7 @@ import { Round, Match, Prediction, PublicProfile } from "@/api/entities";
 import {
   Trophy, Target, TrendingUp, TrendingDown, Zap, BarChart3,
   Users, Star, AlertTriangle, ChevronDown, Flame, Shield,
-  Crown, Sparkles, Handshake, Ghost, Swords, Eye
+  Crown, Sparkles, Handshake, Ghost, Swords, Eye, Hash, Crosshair
 } from "lucide-react";
 
 const pct = (n, d) => d === 0 ? 0 : Math.round((n / d) * 100);
@@ -192,6 +192,22 @@ export default function AdminRoundInsights() {
         m.uniqueExactUsers.map(uid => ({ uid, name: getName(uid), matchName: m.name, actual: m.actual }))
       );
 
+      // התוצאה הכי שכיחה שנשלחה — כלל המחזור
+      const allScoreCounts = {};
+      finishedPreds.forEach(p => {
+        const k = `${p.predicted_score_a}-${p.predicted_score_b}`;
+        allScoreCounts[k] = (allScoreCounts[k] || 0) + 1;
+      });
+      const mostCommonPredEntry = Object.entries(allScoreCounts).sort((a, b) => b[1] - a[1])[0];
+      const mostCommonPred = mostCommonPredEntry
+        ? { score: mostCommonPredEntry[0], count: mostCommonPredEntry[1] }
+        : null;
+
+      // המשחק עם הכי הרבה פגיעות מדויקות
+      const mostExactHitsMatch = [...matchStats]
+        .filter(m => m.exact > 0)
+        .sort((a, b) => b.exact - a.exact)[0] || null;
+
       // match with zero exact hits
       const zeroExactMatch = matchStats
         .filter(m => m.exact === 0 && m.total > 0)
@@ -214,6 +230,7 @@ export default function AdminRoundInsights() {
         topScorer, topExact, topOutcome, topGoals, leastGoals,
         hardestMatch, easiestMatch, consensusMatch, sinMatch,
         rareHits, zeroExactMatch, perfectMatch, noPredsUsers,
+        mostCommonPred, mostExactHitsMatch,
       });
     })().catch(console.error).finally(() => setLoading(false));
   }, [selectedRound]);
@@ -300,6 +317,35 @@ export default function AdminRoundInsights() {
                 bg="rgba(239,68,68,0.08)" border="rgba(239,68,68,0.22)"
                 iconColor="#f87171" titleColor="#fca5a5"
               />
+
+              {/* התוצאה הכי שכיחה */}
+              {data.mostCommonPred && (
+                <div className="flex items-center gap-3 px-4 py-3 rounded-2xl"
+                  style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)' }}>
+                  <Hash className="w-6 h-6 text-indigo-400 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-[10px] text-indigo-400/60 mb-0.5">התוצאה הכי שכיחה שנשלחה:</div>
+                    <div className="font-black text-xl text-indigo-300 tabular-nums">{data.mostCommonPred.score}</div>
+                    <div className="text-[10px] text-indigo-400/70 mt-0.5">נשלחה {data.mostCommonPred.count} פעמים במחזור</div>
+                  </div>
+                </div>
+              )}
+
+              {/* המשחק עם הכי הרבה פגיעות מדויקות */}
+              {data.mostExactHitsMatch && (
+                <div className="flex items-center gap-3 px-4 py-3 rounded-2xl"
+                  style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)' }}>
+                  <Crosshair className="w-6 h-6 text-emerald-400 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-[10px] text-emerald-400/60 mb-0.5">הכי הרבה פגעו מדויק:</div>
+                    <div className="font-bold text-sm text-emerald-300 truncate">{data.mostExactHitsMatch.name}</div>
+                    <div className="text-[10px] text-emerald-400/70 mt-0.5">
+                      {data.mostExactHitsMatch.exact} פגיעות מדויקות · תוצאה: {data.mostExactHitsMatch.actual}
+                      {' '}({data.mostExactHitsMatch.exactPct}% מהמשתתפים)
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <InsightCard
                 icon={Shield} title="השחקן השמרן:"
