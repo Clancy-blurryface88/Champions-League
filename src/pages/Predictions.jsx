@@ -32,6 +32,58 @@ import TeamInfoModal from "@/components/TeamInfoModal";
 import { ShineBorder } from "@/components/magicui/shine-border";
 import { loadAllOverrides, applyOverride, applyBestThirdOrder } from '@/utils/groupOverride';
 
+// --- Slot-machine position badge ---
+function SlotBadge({ value, color }) {
+  const [displayed, setDisplayed] = useState(1);
+  const [settled, setSettled]     = useState(false);
+
+  useEffect(() => {
+    if (!value) return;
+    let elapsed = 0;
+    let current = 1;
+    let tid;
+    const DURATION = 2000;
+
+    const tick = () => {
+      if (elapsed >= DURATION) {
+        setDisplayed(value);
+        setSettled(true);
+        return;
+      }
+      const progress = elapsed / DURATION;
+      const interval = 55 + 280 * Math.pow(progress, 2.5); // fast→slow
+      current = current >= 4 ? 1 : current + 1;
+      setDisplayed(current);
+      elapsed += interval;
+      tid = setTimeout(tick, interval);
+    };
+
+    tick();
+    return () => clearTimeout(tid);
+  }, [value]);
+
+  return (
+    <span
+      style={{
+        fontSize: 11,
+        fontWeight: 800,
+        color:       settled ? color : 'rgba(255,255,255,0.5)',
+        border:      `1px solid ${settled ? color : 'rgba(255,255,255,0.25)'}`,
+        borderRadius: 3,
+        padding:     '1px 5px',
+        lineHeight:  1,
+        marginTop:   3,
+        display:     'inline-block',
+        minWidth:    16,
+        textAlign:   'center',
+        transition:  settled ? 'color 0.35s ease, border-color 0.35s ease' : 'none',
+      }}
+    >
+      {displayed}
+    </span>
+  );
+}
+
 // --- Standings helpers (module-level, no imports) ---
 const _ALL_GROUPS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
 const _toLetter = g => g?.replace?.('Group ', '').trim() || '';
@@ -1001,18 +1053,10 @@ export default function Predictions() {
                           </RevealText>
                           <span className="text-slate-400 text-[10px] leading-none text-center">(Home)</span>
                           {teamPositions[match.team_a] && (
-                            <span style={{
-                              fontSize: 9, fontWeight: 800,
-                              color: teamPositions[match.team_a].color,
-                              border: `1px solid ${teamPositions[match.team_a].color}`,
-                              borderRadius: 3,
-                              padding: '1px 4px',
-                              lineHeight: 1,
-                              marginTop: 3,
-                              display: 'inline-block',
-                            }}>
-                              {teamPositions[match.team_a].pos}
-                            </span>
+                            <SlotBadge
+                              value={teamPositions[match.team_a].pos}
+                              color={teamPositions[match.team_a].color}
+                            />
                           )}
                         </div>
                         <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
@@ -1023,18 +1067,10 @@ export default function Predictions() {
                           </RevealText>
                           <span className="text-slate-400 text-[10px] leading-none text-center">(Away)</span>
                           {teamPositions[match.team_b] && (
-                            <span style={{
-                              fontSize: 9, fontWeight: 800,
-                              color: teamPositions[match.team_b].color,
-                              border: `1px solid ${teamPositions[match.team_b].color}`,
-                              borderRadius: 3,
-                              padding: '1px 4px',
-                              lineHeight: 1,
-                              marginTop: 3,
-                              display: 'inline-block',
-                            }}>
-                              {teamPositions[match.team_b].pos}
-                            </span>
+                            <SlotBadge
+                              value={teamPositions[match.team_b].pos}
+                              color={teamPositions[match.team_b].color}
+                            />
                           )}
                         </div>
                       </div>
