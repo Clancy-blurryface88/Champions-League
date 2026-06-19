@@ -161,7 +161,7 @@ function calcStandings(matches) {
   return result;
 }
 
-// ─── Assign best 3rd-place teams to bracket slots (greedy) ──────────────────
+// ─── Assign best 3rd-place teams to bracket slots (backtracking) ─────────────
 function assign3rd(allGroupMatches) {
   const all3rd = ALL_GROUPS.map(g => {
     const s = calcStandings(allGroupMatches[g] || []);
@@ -170,13 +170,25 @@ function assign3rd(allGroupMatches) {
     (b.Pts-a.Pts)||(b.GD-a.GD)||(b.GF-a.GF)||a.name.localeCompare(b.name)
   );
   const qualifying = all3rd.slice(0, 8);
-  const used = new Set();
+  const SLOTS = [74,77,79,80,81,82,85,87];
   const result = {};
-  for (const slotNum of [74,77,79,80,81,82,85,87]) {
-    const allowed = THIRD_SLOTS[slotNum];
-    const pick = qualifying.find(t => !used.has(t.name) && allowed.includes(t.group));
-    if (pick) { result[slotNum] = pick; used.add(pick.name); }
+
+  function backtrack(idx, used) {
+    if (idx === SLOTS.length) return true;
+    const slotNum = SLOTS[idx];
+    for (const team of qualifying) {
+      if (!used.has(team.name) && THIRD_SLOTS[slotNum].includes(team.group)) {
+        result[slotNum] = team;
+        used.add(team.name);
+        if (backtrack(idx + 1, used)) return true;
+        delete result[slotNum];
+        used.delete(team.name);
+      }
+    }
+    return false;
   }
+
+  backtrack(0, new Set());
   return result;
 }
 
