@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Match } from "@/api/entities";
 import { Round } from "@/api/entities";
 import { Prediction } from "@/api/entities";
+import { PublicProfile } from "@/api/entities";
 import { calculateMatchMaxPotentialPoints } from "@/components/utils/calculateMatchMaxPotentialPoints";
 import { Trophy, Target, Star, Zap } from "lucide-react";
 import { TextLoop } from "@/components/core/text-loop";
@@ -99,11 +100,12 @@ export default function RoundInsightsTicker({ user }) {
       }
       try {
         // Parallel fetch for maximum speed
-        const [rounds, matches, allPredictions] = await Promise.all([
-        Round.list('order'),
-        Match.list(),
-        Prediction.list()]
-        );
+        const [rounds, matches, allPredictions, profiles] = await Promise.all([
+          Round.list('order'),
+          Match.list(),
+          Prediction.list(),
+          PublicProfile.list(),
+        ]);
 
         // מציג סיכום של המחזור האחרון שהושלם לגמרי
         const roundsWithMatches = rounds.filter((r) => matches.some((m) => m.round_id === r.id));
@@ -220,6 +222,52 @@ export default function RoundInsightsTicker({ user }) {
           }
         }
 
+        // ── נתונים קבוצתיים ────────────────────────────────────────────
+        const finishedIds = new Set(roundMatches.filter(m => m.is_finished).map(m => m.id));
+
+        // dedup: prediction אחת לכל user+match
+        const globalDedupeMap = {};
+        roundPredictions.forEach(p => {
+          if (!finishedIds.has(p.match_id)) return;
+          const key = `${p.user_id}__${p.match_id}`;
+          if (!globalDedupeMap[key] || new Date(p.created_date) > new Date(globalDedupeMap[key].created_date))
+            globalDedupeMap[key] = p;
+        });
+        const dedupedPreds = Object.values(globalDedupeMap);
+
+        let totalGroupExact = 0;
+        let totalGroupOutcomes = 0;
+        const exactPerUser = {};
+        const scoreCounts = {};
+
+        dedupedPreds.forEach(p => {
+          const match = roundMatches.find(m => m.id === p.match_id);
+          if (!match) return;
+
+          // תוצאה הכי שכיחה
+          const sk = `${p.predicted_score_a}-${p.predicted_score_b}`;
+          scoreCounts[sk] = (scoreCounts[sk] || 0) + 1;
+
+          // פגיעה מדויקת
+          if (p.predicted_score_a === match.actual_score_a && p.predicted_score_b === match.actual_score_b) {
+            totalGroupExact++;
+            exactPerUser[p.user_id] = (exactPerUser[p.user_id] || 0) + 1;
+          }
+
+          // כיוון נכון
+          const predOut = p.predicted_score_a > p.predicted_score_b ? 'h' : p.predicted_score_a < p.predicted_score_b ? 'a' : 'd';
+          const actOut  = match.actual_score_a  > match.actual_score_b  ? 'h' : match.actual_score_a  < match.actual_score_b  ? 'a' : 'd';
+          if (predOut === actOut) totalGroupOutcomes++;
+        });
+
+        const mostCommonEntry = Object.entries(scoreCounts).sort((a, b) => b[1] - a[1])[0];
+        const mostCommonPred = mostCommonEntry ? { score: mostCommonEntry[0], count: mostCommonEntry[1] } : null;
+
+        const topExactEntry = Object.entries(exactPerUser).sort((a, b) => b[1] - a[1])[0];
+        const topExactUser = topExactEntry
+          ? { name: profiles.find(p => p.user_id === topExactEntry[0])?.display_name || '?', count: topExactEntry[1] }
+          : null;
+
         // Best match item
         let bestMatchItem = null;
         if (currentStats.predictionDetails.length > 0) {
@@ -278,8 +326,28 @@ export default function RoundInsightsTicker({ user }) {
           text: <><span className="text-white">ניחושי כיוון:</span> <span className="text-emerald-400 font-bold">{currentStats.correctOutcomes}</span> <span className="text-slate-300 text-sm">מתוך {currentStats.totalFinishedPredictions}</span></>,
           icon: <img src="https://media.base44.com/images/public/68656264510003eeef16bac3/c658b4327_goal_17549795.png" alt="Direction" className="w-[18px] h-[18px] object-contain" />
         },
-        ...(bestMatchItem !== null ? [bestMatchItem] : [])];
-
+        ...(bestMatchItem !== null ? [bestMatchItem] : []),
+        ...(mostCommonPred ? [{
+          id: 10,
+          text: <><span className="text-white">התוצאה הכי שכיחה:</span> <span className="text-indigo-400 font-black">{mostCommonPred.score}</span> <span className="text-slate-400 text-[13px]">({mostCommonPred.count} ניחושים)</span></>,
+          icon: <span className="text-[16px] leading-none">📊</span>
+        }] : []),
+        ...(totalGroupExact > 0 ? [{
+          id: 11,
+          text: <><span className="text-white">סה"כ פגיעות מדויקות במחזור:</span> <span className="text-yellow-400 font-bold">{totalGroupExact}</span> <span className="text-slate-400 text-[13px]">(כל המשתתפים)</span></>,
+          icon: <span className="text-[16px] leading-none">🎯</span>
+        }] : []),
+        ...(totalGroupOutcomes > 0 ? [{
+          id: 12,
+          text: <><span className="text-white">סה"כ כיוונים נכונים במחזור:</span> <span className="text-emerald-400 font-bold">{totalGroupOutcomes}</span> <span className="text-slate-400 text-[13px]">(כל המשתתפים)</span></>,
+          icon: <span className="text-[16px] leading-none">✅</span>
+        }] : []),
+        ...(topExactUser && topExactUser.count > 0 ? [{
+          id: 13,
+          text: <><span className="text-white">מלך הפגיעות במחזור:</span> <span className="text-amber-400 font-bold">{topExactUser.name}</span> <span className="text-slate-400 text-[13px]">({topExactUser.count} פגיעות מדויקות)</span></>,
+          icon: <span className="text-[16px] leading-none">👑</span>
+        }] : []),
+        ];
 
         setTickerData(items);
       } catch (error) {
