@@ -1153,38 +1153,22 @@ export default function Predictions() {
                       )}
                     </AnimatePresence>
 
-                    {/* Footer bar — style #47 with blue gradient underline */}
+                    {/* Footer bar */}
                     <div className="-mx-5 -mb-5 mt-3 flex overflow-hidden rounded-b-xl relative">
                       <div className="absolute top-0 left-6 right-6 h-px pointer-events-none"
                         style={{ background:'linear-gradient(90deg, transparent, rgba(255,255,255,0.22) 20%, rgba(255,255,255,0.22) 80%, transparent)' }} />
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
-                        className="flex-1 flex items-center justify-center text-xs font-bold transition-opacity hover:opacity-100"
-                        style={{
-                          color: 'rgba(255,255,255,0.8)',
-                          paddingTop: 12,
-                          paddingBottom: 10,
-                          backgroundImage: 'linear-gradient(90deg, #3b82f6, #6366f1, #8b5cf6)',
-                          backgroundSize: '60% 2px',
-                          backgroundPosition: 'center bottom 6px',
-                          backgroundRepeat: 'no-repeat',
-                        }}
+                        className="flex-1 flex items-center justify-center py-3 text-xs font-bold transition-colors"
+                        style={{ color:'rgba(255,255,255,0.75)' }}
                       >
                         1 X 2
                       </button>
-                      <div className="w-px my-2.5" style={{ background:'rgba(255,255,255,0.12)' }} />
+                      <div className="w-px my-2.5" style={{ background:'rgba(255,255,255,0.14)' }} />
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
-                        className="flex-1 flex items-center justify-center text-xs font-bold transition-opacity hover:opacity-100"
-                        style={{
-                          color: 'rgba(255,255,255,0.8)',
-                          paddingTop: 12,
-                          paddingBottom: 10,
-                          backgroundImage: 'linear-gradient(90deg, #3b82f6, #6366f1, #8b5cf6)',
-                          backgroundSize: '60% 2px',
-                          backgroundPosition: 'center bottom 6px',
-                          backgroundRepeat: 'no-repeat',
-                        }}
+                        className="flex-1 flex items-center justify-center py-3 text-xs font-bold transition-colors"
+                        style={{ color:'rgba(255,255,255,0.75)' }}
                       >
                         ניחושים
                       </button>
