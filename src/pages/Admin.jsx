@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, Zap } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
@@ -14,13 +14,9 @@ import AdminPredictions from "../components/admin/AdminPredictions";
 import AdminUsers from "../components/admin/AdminUsers";
 import AdminScoring from "../components/admin/AdminScoring";
 import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
-import AdminLiveData from "../components/admin/AdminLiveData";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminApiExplorer from "../components/admin/AdminApiExplorer";
-import AdminLiveCardDemo from "../components/admin/AdminLiveCardDemo";
-import AdminLiveLeaderboard from "../components/admin/AdminLiveLeaderboard";
-import AdminPlayerCardsDemo from "../components/admin/AdminPlayerCardsDemo";
 import AdminRoundInsights from "../components/admin/AdminRoundInsights";
 import AdminGroupOverride from "../components/admin/AdminGroupOverride";
 import { LoaderBar } from "../components/ui/LoaderBar";
@@ -79,13 +75,9 @@ export default function Admin() {
       case 'users': return <AdminUsers />;
       case 'logos': return <AdminLogos />;
       case 'scoring': return <AdminScoring onUpdateComplete={() => {}} />;
-      case 'live-data': return <AdminLiveData />;
       case 'import': return <AdminImportMatches />;
       case 'reset':      return <AdminReset />;
       case 'api-explorer': return <AdminApiExplorer />;
-      case 'live-card-demo': return <AdminLiveCardDemo />;
-      case 'live-leaderboard': return <AdminLiveLeaderboard />;
-      case 'player-cards-demo': return <AdminPlayerCardsDemo />;
       case 'round-insights': return <AdminRoundInsights />;
       case 'group-override': return <AdminGroupOverride />;
       default: return <AdminRounds />;
@@ -100,13 +92,9 @@ export default function Admin() {
     { id: 'users', label: 'Manage Users', icon: UserIcon },
     { id: 'logos', label: 'Team Logos', icon: Image },
     { id: 'scoring', label: 'Calculate Scores', icon: Calculator },
-    { id: 'live-data', label: 'Live Data Test', icon: BarChart3 },
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'api-explorer', label: 'API Explorer',    icon: BarChart3 },
-    { id: 'live-card-demo', label: '⚡ Live Card Demo', icon: Zap },
-    { id: 'live-leaderboard',   label: '⚡ Live Leaderboard',    icon: Zap },
-    { id: 'player-cards-demo', label: '🎨 Player Cards Demo',   icon: Zap },
     { id: 'round-insights',    label: '📊 Round Insights',      icon: BarChart3 },
     { id: 'group-override',   label: '🔀 סידור בתים',          icon: BarChart3 },
   ];
