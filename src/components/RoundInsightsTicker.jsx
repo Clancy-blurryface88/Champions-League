@@ -329,7 +329,7 @@ export default function RoundInsightsTicker({ user }) {
         ...(bestMatchItem !== null ? [bestMatchItem] : []),
         ...(mostCommonPred ? [{
           id: 10,
-          text: <><span className="text-white">התוצאה הכי שכיחה:</span> <span className="text-indigo-400 font-black">{mostCommonPred.score}</span> <span className="text-slate-400 text-[13px]">({mostCommonPred.count} ניחושים)</span></>,
+          text: <><span className="text-white">התוצאה הכי שכיחה:</span> <span className="font-black bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">{mostCommonPred.score}</span> <span className="text-slate-400 text-[13px]">({mostCommonPred.count} ניחושים)</span></>,
           icon: <span className="text-[16px] leading-none">📊</span>
         }] : []),
         ...(totalGroupExact > 0 ? [{
@@ -345,7 +345,7 @@ export default function RoundInsightsTicker({ user }) {
         ...(topExactUser && topExactUser.count > 0 ? [{
           id: 13,
           text: <><span className="text-white">מלך הפגיעות במחזור:</span> <span className="text-amber-400 font-bold">{topExactUser.name}</span> <span className="text-slate-400 text-[13px]">({topExactUser.count} פגיעות מדויקות)</span></>,
-          icon: <span className="text-[16px] leading-none">👑</span>
+          icon: <span className="text-[16px] leading-none">🥇</span>
         }] : []),
         ];
 
