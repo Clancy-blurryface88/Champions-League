@@ -254,7 +254,7 @@ export default function Predictions() {
     if (isOpening) {
       setTimeout(() => {
         const container = scrollContainerRef.current;
-        if (container) container.scrollBy({ top: 300, behavior: 'smooth' });
+        if (container) container.scrollBy({ top: 200, behavior: 'smooth' });
       }, 300);
     }
   };
