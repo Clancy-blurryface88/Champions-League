@@ -79,18 +79,18 @@ function SlotBadge({ value, color }) {
 
   const borderColor = settled ? color : 'rgba(255,255,255,0.25)';
   const textColor   = settled ? color : 'rgba(255,255,255,0.5)';
-  const CLIP = 'polygon(15% 0, 85% 0, 100% 18%, 100% 100%, 0 100%, 0 18%)';
+  const CLIP = 'polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%, 0 6px)';
   return (
     <span
       ref={badgeRef}
-      style={{ position:'relative', display:'inline-flex', alignItems:'center', justifyContent:'center', marginTop:3 }}
+      style={{ position:'relative', display:'inline-flex', alignItems:'center', justifyContent:'center', marginTop:8 }}
     >
       {/* Outer layer = border color */}
-      <span style={{ position:'absolute', width:22, height:18, background:borderColor, clipPath:CLIP, transition: settled ? 'background 0.35s ease' : 'none' }} />
+      <span style={{ position:'absolute', width:24, height:20, background:borderColor, clipPath:CLIP, transition: settled ? 'background 0.35s ease' : 'none' }} />
       {/* Inner layer = background (creates border illusion) */}
-      <span style={{ position:'absolute', width:20, height:16, background:'rgb(6,14,28)', clipPath:CLIP }} />
+      <span style={{ position:'absolute', width:22, height:18, background:'rgb(6,14,28)', clipPath:CLIP }} />
       {/* Number */}
-      <span style={{ position:'relative', zIndex:1, fontSize:11, fontWeight:800, color:textColor, lineHeight:1, transition: settled ? 'color 0.35s ease' : 'none' }}>
+      <span style={{ position:'relative', zIndex:1, fontSize:11, fontWeight:800, color:textColor, lineHeight:1, transition: settled ? 'color 0.35s ease' : 'none', padding:'0 5px' }}>
         {displayed}
       </span>
     </span>
