@@ -207,33 +207,6 @@ function assign3rd(allGroupMatches, groupOverrides = {}, bestThirdOrder = null, 
   return result;
 }
 
-// ─── Resolve a slot label to { name, logo } ──────────────────────────────────
-function resolveTeam(slotLabel, standings, third3rd, knockoutWinners) {
-  if (!slotLabel) return null;
-  // 3rd place slot object
-  if (typeof slotLabel === 'object' && slotLabel.slot) {
-    const t = third3rd[slotLabel.slot];
-    return t ? { name: t.name, logo: t.logo, projected: true } : null;
-  }
-  // Knockout winner (W73, W74...)
-  if (typeof slotLabel === 'string' && slotLabel.startsWith('W')) {
-    const num = parseInt(slotLabel.slice(1));
-    return knockoutWinners[num] || null;
-  }
-  // Knockout loser (L101, L102)
-  if (typeof slotLabel === 'string' && slotLabel.startsWith('L')) {
-    const num = parseInt(slotLabel.slice(1));
-    return knockoutWinners[`L${num}`] || null;
-  }
-  // Group position (1A, 2B, etc.)
-  if (typeof slotLabel === 'string' && /^[12][A-L]$/.test(slotLabel)) {
-    const pos = parseInt(slotLabel[0]) - 1;
-    const grp = slotLabel[1];
-    const s = standings[grp] || [];
-    return s[pos] ? { name: s[pos].name, logo: s[pos].logo, projected: true } : null;
-  }
-  return null;
-}
 
 // ─── SVG bracket line ─────────────────────────────────────────────────────────
 function BracketArm({ x1, y1a, y1b, x2, y2, color = 'rgba(100,116,139,0.5)', xMid }) {
@@ -357,75 +330,124 @@ export default function KnockoutBracket() {
     [allGroupMatches, groupOverrides, bestThirdOrder, bracketSlotOverride]
   );
 
-  // Build knockout winners map from DB matches
-  // Key = match number (from bracket), value = { name, logo } of winner
-  const knockoutWinners = useMemo(() => {
-    const map = {};
-    // Try to match DB knockout matches by date
-    // Each bracket slot has a kickoff date - we find DB match near that date
-    knockoutMatches.forEach(m => {
-      if (!m.is_finished || m.actual_score_a == null) return;
-      const winner = m.actual_score_a > m.actual_score_b
-        ? { name: m.team_a, logo: m.team_a_logo }
-        : m.actual_score_b > m.actual_score_a
-        ? { name: m.team_b, logo: m.team_b_logo }
-        : null; // draw — shouldn't happen in knockout
-      const loser = m.actual_score_a > m.actual_score_b
-        ? { name: m.team_b, logo: m.team_b_logo }
-        : { name: m.team_a, logo: m.team_a_logo };
-      // Match by team names across bracket slots
-      const allSlots = [
-        ...LEFT_R32, ...LEFT_R16, ...LEFT_QF, ...LEFT_SF,
-        ...RIGHT_R32, ...RIGHT_R16, ...RIGHT_QF, ...RIGHT_SF,
-        FINAL_SLOT, THIRD_SLOT
-      ];
-      // We store by match number derived from date+teams (simplified: store by teams)
-      if (winner) map[`team_${m.team_a}_${m.team_b}`] = { winner, loser, homeScore: m.actual_score_a, awayScore: m.actual_score_b, match: m };
-    });
-    return map;
-  }, [knockoutMatches]);
-
-  // Resolve a bracket slot definition to a rendered match
-  const resolveSlot = (slotDef) => {
-    // Apply manual bracket match override first (from admin editor)
-    const manualOv = bracketMatchOverride[slotDef.num];
-    const homeTeam = (manualOv?.team_a)
-      ? { name: manualOv.team_a, logo: manualOv.team_a_logo }
-      : resolveTeam(slotDef.home, standings, third3rd, {});
-    const awayTeam = (manualOv?.team_b)
-      ? { name: manualOv.team_b, logo: manualOv.team_b_logo }
-      : resolveTeam(slotDef.away, standings, third3rd, {});
-    // Check if there's a DB match for these teams
-    const key1 = homeTeam && awayTeam ? `team_${homeTeam.name}_${awayTeam.name}` : null;
-    const key2 = homeTeam && awayTeam ? `team_${awayTeam.name}_${homeTeam.name}` : null;
-    const dbMatch = (key1 && knockoutWinners[key1]) || (key2 && knockoutWinners[key2]);
-    const swapped = dbMatch && key2 && knockoutWinners[key2];
-    return {
-      homeTeam,
-      awayTeam,
-      homeScore: dbMatch ? (swapped ? dbMatch.awayScore : dbMatch.homeScore) : null,
-      awayScore: dbMatch ? (swapped ? dbMatch.homeScore : dbMatch.awayScore) : null,
-      isFinished: !!dbMatch,
-    };
-  };
-
-  // Pre-resolve all slots
+  // Multi-pass bracket resolution:
+  // 1. Processes rounds in order so W-labels (winner propagation) work correctly.
+  // 2. Falls back to matching a DB match by home-team name alone when the
+  //    exact (both-team) lookup fails — this handles wrong 3rd-place projections.
+  // 3. Tracks used match IDs so each DB match is only assigned to one slot.
   const resolved = useMemo(() => {
-    const resolve = arr => arr.map(s => ({ ...s, ...resolveSlot(s) }));
-    return {
-      leftR32:  resolve(LEFT_R32),
-      leftR16:  resolve(LEFT_R16),
-      leftQF:   resolve(LEFT_QF),
-      leftSF:   resolve(LEFT_SF),
-      rightR32: resolve(RIGHT_R32),
-      rightR16: resolve(RIGHT_R16),
-      rightQF:  resolve(RIGHT_QF),
-      rightSF:  resolve(RIGHT_SF),
-      final:    resolveSlot(FINAL_SLOT),
-      third:    resolveSlot(THIRD_SLOT),
+    // Build team-name → sorted DB match list (upcoming first, then finished)
+    const byTeam = {};
+    [...knockoutMatches]
+      .sort((a, b) => new Date(a.match_date) - new Date(b.match_date))
+      .forEach(m => {
+        (byTeam[m.team_a] = byTeam[m.team_a] || []).push(m);
+        (byTeam[m.team_b] = byTeam[m.team_b] || []).push(m);
+      });
+
+    const slotWinners  = {};   // slotNum → { winner, loser } — built as we resolve rounds
+    const usedMatchIds = new Set();
+
+    const resolveLabel = (label) => {
+      if (!label) return null;
+      if (typeof label === 'object' && label.slot != null) {
+        const t = third3rd[label.slot];
+        return t ? { name: t.name, logo: t.logo, projected: true } : null;
+      }
+      if (typeof label === 'string' && label.startsWith('W')) {
+        const num = parseInt(label.slice(1));
+        return slotWinners[num]?.winner || null;
+      }
+      if (typeof label === 'string' && label.startsWith('L')) {
+        const num = parseInt(label.slice(1));
+        return slotWinners[num]?.loser || null;
+      }
+      if (/^[12][A-L]$/.test(label)) {
+        const pos = parseInt(label[0]) - 1;
+        const grp = label[1];
+        const s = standings[grp] || [];
+        return s[pos] ? { name: s[pos].name, logo: s[pos].logo, projected: true } : null;
+      }
+      return null;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [standings, third3rd, knockoutWinners, bracketMatchOverride]);
+
+    const findDbMatch = (homeTeam, awayTeam) => {
+      if (homeTeam && awayTeam) {
+        const m = knockoutMatches.find(m =>
+          !usedMatchIds.has(m.id) && (
+            (m.team_a === homeTeam.name && m.team_b === awayTeam.name) ||
+            (m.team_a === awayTeam.name && m.team_b === homeTeam.name)
+          )
+        );
+        if (m) return m;
+      }
+      // Fallback: match by home team only (handles wrong 3rd-place projections)
+      if (homeTeam) {
+        const candidates = (byTeam[homeTeam.name] || []).filter(c => !usedMatchIds.has(c.id));
+        return candidates.find(c => !c.is_finished) || candidates[0] || null;
+      }
+      return null;
+    };
+
+    const resolveOne = (slotDef) => {
+      const manualOv = bracketMatchOverride[slotDef.num];
+      let homeTeam, awayTeam;
+      if (manualOv?.team_a) {
+        homeTeam = { name: manualOv.team_a, logo: manualOv.team_a_logo };
+        awayTeam = manualOv.team_b ? { name: manualOv.team_b, logo: manualOv.team_b_logo } : null;
+      } else {
+        homeTeam = resolveLabel(slotDef.home);
+        awayTeam = resolveLabel(slotDef.away);
+      }
+
+      const dbMatch = findDbMatch(homeTeam, awayTeam);
+      let displayHome = homeTeam;
+      let displayAway = awayTeam;
+      let homeScore = null, awayScore = null, isFinished = false;
+
+      if (dbMatch) {
+        usedMatchIds.add(dbMatch.id);
+        const dbA = { name: dbMatch.team_a, logo: dbMatch.team_a_logo };
+        const dbB = { name: dbMatch.team_b, logo: dbMatch.team_b_logo };
+        // Preserve home/away orientation from DB
+        if (homeTeam?.name === dbMatch.team_b) {
+          displayHome = { ...dbB, projected: !dbMatch.is_finished };
+          displayAway = { ...dbA, projected: !dbMatch.is_finished };
+        } else {
+          displayHome = { ...dbA, projected: !dbMatch.is_finished };
+          displayAway = { ...dbB, projected: !dbMatch.is_finished };
+        }
+
+        if (dbMatch.is_finished && dbMatch.actual_score_a != null) {
+          isFinished = true;
+          const homeIsDbA = displayHome.name === dbMatch.team_a;
+          homeScore = homeIsDbA ? dbMatch.actual_score_a : dbMatch.actual_score_b;
+          awayScore = homeIsDbA ? dbMatch.actual_score_b : dbMatch.actual_score_a;
+          const winner = homeScore > awayScore ? displayHome : displayAway;
+          const loser  = homeScore > awayScore ? displayAway : displayHome;
+          slotWinners[slotDef.num] = {
+            winner: { name: winner.name, logo: winner.logo },
+            loser:  { name: loser.name,  logo: loser.logo },
+          };
+        }
+      }
+
+      return { homeTeam: displayHome, awayTeam: displayAway, homeScore, awayScore, isFinished };
+    };
+
+    const leftR32  = LEFT_R32.map(s  => ({ ...s, ...resolveOne(s) }));
+    const rightR32 = RIGHT_R32.map(s => ({ ...s, ...resolveOne(s) }));
+    const leftR16  = LEFT_R16.map(s  => ({ ...s, ...resolveOne(s) }));
+    const rightR16 = RIGHT_R16.map(s => ({ ...s, ...resolveOne(s) }));
+    const leftQF   = LEFT_QF.map(s   => ({ ...s, ...resolveOne(s) }));
+    const rightQF  = RIGHT_QF.map(s  => ({ ...s, ...resolveOne(s) }));
+    const leftSF   = LEFT_SF.map(s   => ({ ...s, ...resolveOne(s) }));
+    const rightSF  = RIGHT_SF.map(s  => ({ ...s, ...resolveOne(s) }));
+    const final    = { ...FINAL_SLOT, ...resolveOne(FINAL_SLOT) };
+    const third    = { ...THIRD_SLOT, ...resolveOne(THIRD_SLOT) };
+
+    return { leftR32, leftR16, leftQF, leftSF, rightR32, rightR16, rightQF, rightSF, final, third };
+  }, [standings, third3rd, knockoutMatches, bracketMatchOverride]);
 
   // ─── SVG lines ─────────────────────────────────────────────────────────────
   const lineColor = 'rgba(71,85,105,0.55)';
