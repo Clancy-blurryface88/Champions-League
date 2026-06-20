@@ -77,24 +77,35 @@ function SlotBadge({ value, color }) {
     return () => clearTimeout(tid);
   }, [value, inView]);
 
+  const borderColor = settled ? color : 'rgba(255,255,255,0.25)';
+  const corners = [
+    { top:0, left:0,  borderTop:`1.5px solid ${borderColor}`, borderLeft:`1.5px solid ${borderColor}` },
+    { top:0, right:0, borderTop:`1.5px solid ${borderColor}`, borderRight:`1.5px solid ${borderColor}` },
+    { bottom:0, left:0,  borderBottom:`1.5px solid ${borderColor}`, borderLeft:`1.5px solid ${borderColor}` },
+    { bottom:0, right:0, borderBottom:`1.5px solid ${borderColor}`, borderRight:`1.5px solid ${borderColor}` },
+  ];
   return (
     <span
       ref={badgeRef}
       style={{
-        fontSize: 11,
-        fontWeight: 800,
+        position:    'relative',
+        display:     'inline-flex',
+        alignItems:  'center',
+        justifyContent: 'center',
+        fontSize:    11,
+        fontWeight:  800,
         color:       settled ? color : 'rgba(255,255,255,0.5)',
-        border:      `1px solid ${settled ? color : 'rgba(255,255,255,0.25)'}`,
-        borderRadius: 3,
-        padding:     '1px 5px',
+        padding:     '3px 6px',
         lineHeight:  1,
         marginTop:   3,
-        display:     'inline-block',
-        minWidth:    16,
+        minWidth:    20,
         textAlign:   'center',
-        transition:  settled ? 'color 0.35s ease, border-color 0.35s ease' : 'none',
+        transition:  settled ? 'color 0.35s ease' : 'none',
       }}
     >
+      {corners.map((s, i) => (
+        <span key={i} style={{ position:'absolute', width:5, height:5, ...s, transition: settled ? 'border-color 0.35s ease' : 'none' }} />
+      ))}
       {displayed}
     </span>
   );
