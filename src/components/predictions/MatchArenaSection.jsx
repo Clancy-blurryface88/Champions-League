@@ -39,108 +39,30 @@ const R = {
   L: { bg: 'rgba(248,113,113,0.18)', border: 'rgba(248,113,113,0.52)', text: '#f87171' },
 };
 
-const RESULT_HE = { W: 'ניצחון', D: 'תיקו', L: 'הפסד' };
-
 function FormDots({ form }) {
-  const [openSlot, setOpenSlot] = useState(null); // { idx, x, y, s, item }
-
-  useEffect(() => {
-    if (!openSlot) return;
-    const close = () => setOpenSlot(null);
-    document.addEventListener('click', close);
-    return () => document.removeEventListener('click', close);
-  }, [openSlot]);
-
   if (!form?.length) return <span className="text-[10px] text-slate-600">—</span>;
-
   return (
     <div className="flex gap-[5px]">
       {form.map((item, i) => {
         const s = R[item.result];
-        const isOpen = openSlot?.idx === i;
         return (
-          <div key={i}>
-            <div
-              onClick={e => {
-                e.stopPropagation();
-                if (isOpen) { setOpenSlot(null); return; }
-                const rect = e.currentTarget.getBoundingClientRect();
-                const POPUP_H = 95;
-                const spaceBelow = window.innerHeight - rect.bottom;
-                const below = spaceBelow >= POPUP_H + 12;
-                setOpenSlot({
-                  idx: i,
-                  x: rect.left + rect.width / 2,
-                  y: below ? rect.bottom + 8 : rect.top - POPUP_H - 8,
-                  below,
-                  s,
-                  item,
-                });
-              }}
-              style={{
-                width: 20, height: 20,
-                background: s.bg,
-                border: `1px solid ${s.border}`,
-                borderRadius: 5,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer',
-                boxShadow: isOpen ? `0 0 0 2px ${s.border}` : 'none',
-                transition: 'box-shadow 0.15s ease',
-              }}
-            >
-              <span style={{ fontSize: 9, fontWeight: 800, color: s.text, lineHeight: 1 }}>
-                {item.result}
-              </span>
-            </div>
+          <div
+            key={i}
+            title={`${item.result} · ${item.scored}-${item.conceded} vs ${item.opponent}`}
+            style={{
+              width: 20, height: 20,
+              background: s.bg,
+              border: `1px solid ${s.border}`,
+              borderRadius: 5,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <span style={{ fontSize: 9, fontWeight: 800, color: s.text, lineHeight: 1 }}>
+              {item.result}
+            </span>
           </div>
         );
       })}
-
-      {/* Popup rendered with position:fixed to escape overflow:hidden parents */}
-      {openSlot && (
-        <div
-          onClick={e => e.stopPropagation()}
-          style={{
-            position: 'fixed',
-            left: openSlot.x,
-            top: openSlot.y,
-            transform: 'translateX(-50%)',
-            background: 'rgba(8,15,30,0.97)',
-            border: `1px solid ${openSlot.s.border}`,
-            borderRadius: 10,
-            padding: '8px 12px',
-            whiteSpace: 'nowrap',
-            zIndex: 9999,
-            textAlign: 'center',
-            boxShadow: `0 8px 24px rgba(0,0,0,0.7), 0 0 0 1px ${openSlot.s.border}`,
-            minWidth: 90,
-            pointerEvents: 'none',
-          }}
-        >
-          {/* Arrow — points toward the dot */}
-          <div style={{
-            position: 'absolute',
-            ...(openSlot.below
-              ? { top: -5, borderBottom: 'none', borderRight: 'none' }
-              : { bottom: -5, borderTop: 'none', borderLeft: 'none' }),
-            left: '50%',
-            marginLeft: -4,
-            width: 8, height: 8,
-            background: 'rgba(8,15,30,0.97)',
-            border: `1px solid ${openSlot.s.border}`,
-            transform: 'rotate(45deg)',
-          }} />
-          <div style={{ fontSize: 10, fontWeight: 700, color: openSlot.s.text, marginBottom: 4 }}>
-            {RESULT_HE[openSlot.item.result]}
-          </div>
-          <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', lineHeight: 1, marginBottom: 4, letterSpacing: 1 }}>
-            {openSlot.item.scored}:{openSlot.item.conceded}
-          </div>
-          <div style={{ fontSize: 9, color: '#94a3b8' }}>
-            נגד {openSlot.item.opponent}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
