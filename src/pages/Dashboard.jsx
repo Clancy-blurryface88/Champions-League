@@ -14,6 +14,7 @@ import { Round } from "@/api/entities"; // NEW: Import Round entity
 import { motion, AnimatePresence } from "framer-motion";
 import LottieAnimation from "@/components/ui/LottieAnimation";
 import RoundInsightsTicker from "../components/RoundInsightsTicker";
+import RoundSummaryTable from "../components/stats/RoundSummaryTable";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -146,8 +147,13 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Round Summary Table */}
+        <div className="w-full max-w-4xl mx-auto px-4 pb-16">
+          <RoundSummaryTable />
+        </div>
+
       </div>
-      
+
       <div className="relative z-[1] mt-auto w-full">
         <RoundInsightsTicker user={user} />
       </div>
