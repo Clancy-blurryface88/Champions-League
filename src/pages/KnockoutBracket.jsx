@@ -196,9 +196,27 @@ function assign3rd(allGroupMatches, groupOverrides = {}, bestThirdOrder = null, 
     return false;
   }
 
-  backtrack(0, new Set());
+  const fullSuccess = backtrack(0, new Set());
 
-  // apply manual bracket slot overrides on top of backtracking result
+  // When a full valid assignment isn't possible (e.g. group stage incomplete and
+  // fewer than 8 qualifying teams exist, or their groups don't cover all slots),
+  // fall back to greedy best-effort: fill each slot independently with the best
+  // available team so the live bracket still shows projected opponents.
+  if (!fullSuccess) {
+    const usedNames = new Set(Object.values(result).map(t => t.name));
+    for (const slotNum of SLOTS) {
+      if (result[slotNum]) continue;
+      const candidate = qualifying.find(t =>
+        !usedNames.has(t.name) && THIRD_SLOTS[slotNum].includes(t.group)
+      );
+      if (candidate) {
+        result[slotNum] = candidate;
+        usedNames.add(candidate.name);
+      }
+    }
+  }
+
+  // apply manual bracket slot overrides on top
   Object.entries(bracketSlotOverride).forEach(([slot, teamName]) => {
     const team = all3rdByName[teamName];
     if (team) result[parseInt(slot)] = team;
