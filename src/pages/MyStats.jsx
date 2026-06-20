@@ -29,6 +29,7 @@ import RankingHistoryCharts from "../components/stats/RankingHistoryCharts";
 import CategoryLeaderboards from "../components/stats/CategoryLeaderboards";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ComparisonBar from "../components/stats/ComparisonBar";
+import CommonPredictionsStripe from "../components/stats/CommonPredictionsStripe";
 import GapTrackingTable from "../components/stats/GapTrackingTable";
 import RoundSummaryTable from "../components/stats/RoundSummaryTable";
 
@@ -49,7 +50,6 @@ export default function MyStats() {
   const [exactHitsList, setExactHitsList] = useState([]);
   const [heatmapData, setHeatmapData] = useState([]);
   const [activeTab, setActiveTab] = useState("stats");
-  const [activeChart, setActiveChart] = useState('points');
 
   const [rounds, setRounds] = useState([]);
   const [selectedRound, setSelectedRound] = useState('');
@@ -985,7 +985,7 @@ export default function MyStats() {
 
 
 
-            {/* Unified Performance Chart */}
+            {/* Points Progression Chart */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -999,91 +999,162 @@ export default function MyStats() {
                 boxShadow: '0 8px 40px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.20)',
               }}>
                 <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)' }} />
-                <div className="relative px-6 pt-6 pb-3 text-center">
-                  <h3 className="font-bold text-lg mb-4" style={{ color: '#E8E8E8' }}>נתוני ביצועים</h3>
-                  <div className="flex justify-center gap-2 flex-wrap">
-                    {[
-                      { key: 'points',     label: 'נקודות' },
-                      { key: 'cumulative', label: 'מצטבר' },
-                      { key: 'percentage', label: '% מקסימום' },
-                      { key: 'hits',       label: 'פגיעות' },
-                    ].map(opt => (
-                      <button
-                        key={opt.key}
-                        onClick={() => setActiveChart(opt.key)}
-                        style={{
-                          padding: '5px 14px',
-                          borderRadius: 20,
-                          fontSize: 12,
-                          fontWeight: 600,
-                          border: activeChart === opt.key ? '1px solid rgba(245,197,24,0.6)' : '1px solid rgba(255,255,255,0.15)',
-                          background: activeChart === opt.key ? 'rgba(245,197,24,0.18)' : 'rgba(255,255,255,0.06)',
-                          color: activeChart === opt.key ? '#f5c518' : 'rgba(255,255,255,0.5)',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                        }}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
+                <div className="relative px-6 pt-6 pb-4 text-center flex items-center justify-center gap-2">
+                  <FlexibleIcon src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/1cf56a1b1_game-coin_17879858.png" alt="התפתחות נקודות" size="medium" />
+                  <h3 className="font-bold text-lg" style={{ color: '#E8E8E8' }}>נקודות לפי מחזור</h3>
                 </div>
-                <div className="relative px-6 pb-6 pt-3">
-                  {chartData.length === 0 ? (
+                <div className="relative px-6 pb-6">
+                  {chartData.length > 0 ?
+                    <div className="rounded-xl p-6" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }}>
+                      <div className="relative h-48 w-full overflow-x-auto">
+                        <BarChart height={100} items={chartData.map((d) => ({ label: d.round, progress: d.roundPoints || 0 }))} />
+                      </div>
+                      <div className="mt-6 text-center"><p className="text-sm" style={{ color: 'rgba(255,255,255,0.40)' }}>נקודות שהושגו בכל מחזור</p></div>
+                    </div> :
                     <div className="text-center py-8">
                       <p style={{ color: 'rgba(255,255,255,0.40)' }}>אין נתונים זמינים עדיין</p>
                       <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.28)' }}>הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
                     </div>
-                  ) : (
-                    <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }}>
-                      <div className="relative h-52 w-full overflow-x-auto">
-                        {activeChart === 'points' && (
-                          <BarChart height={100} items={chartData.map(d => ({ label: d.round, progress: d.roundPoints || 0 }))} />
-                        )}
-                        {activeChart === 'cumulative' && (() => {
-                          let cum = 0;
-                          const cumulativeData = chartData.map(d => {
-                            cum = parseFloat((cum + (d.roundPoints || 0)).toFixed(2));
-                            return { round: d.round, cumulative: cum, roundPts: d.roundPoints || 0 };
-                          });
-                          const renderCumTooltip = ({ active, payload }) => {
-                            if (!active || !payload?.length) return null;
-                            const d = payload[0].payload;
-                            return (
-                              <div style={{ background: 'rgba(15,20,35,0.95)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 12px' }}>
-                                <p style={{ color: '#f5c518', fontWeight: 700, fontSize: 12 }}>{d.round}</p>
-                                <p style={{ color: '#fff', fontSize: 12 }}>סה״כ מצטבר: <strong>{d.cumulative}</strong></p>
-                                <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11 }}>במחזור זה: +{d.roundPts}</p>
-                              </div>
-                            );
-                          };
-                          return (
-                            <ResponsiveContainer width="100%" height={200}>
-                              <LineChart data={cumulativeData} margin={{ top: 8, right: 8, bottom: 0, left: -20 }}>
-                                <defs>
-                                  <linearGradient id="cumLineGrad" x1="0" y1="0" x2="1" y2="0">
-                                    <stop offset="0%" stopColor="#f5c518" />
-                                    <stop offset="100%" stopColor="#22c55e" />
-                                  </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                                <XAxis dataKey="round" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                                <Tooltip content={renderCumTooltip} />
-                                <Line type="monotone" dataKey="cumulative" stroke="url(#cumLineGrad)" strokeWidth={2.5} dot={{ fill: '#f5c518', r: 4, strokeWidth: 0 }} activeDot={{ r: 6, fill: '#fff', stroke: '#f5c518', strokeWidth: 2 }} />
-                              </LineChart>
-                            </ResponsiveContainer>
-                          );
-                        })()}
-                        {activeChart === 'percentage' && (
-                          <BarChart height={100} items={pointsPercentageChartData.map(d => ({ label: d.round, progress: d.percentage || 0 }))} colorScheme="blue" valueSuffix="%" valueLabel={false} />
-                        )}
-                        {activeChart === 'hits' && (
-                          <BarChart height={100} items={exactHitsChartData.map(d => ({ label: d.round, progress: d.exactHits || 0 }))} colorScheme="green" />
-                        )}
+                  }
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Cumulative Points Line Chart */}
+            {chartData.length > 0 && (() => {
+              let cum = 0;
+              const cumulativeData = chartData.map(d => {
+                cum = parseFloat((cum + (d.roundPoints || 0)).toFixed(2));
+                return { round: d.round, cumulative: cum, roundPts: d.roundPoints || 0 };
+              });
+              const CustomTooltip = ({ active, payload }) => {
+                if (!active || !payload?.length) return null;
+                const d = payload[0].payload;
+                return (
+                  <div style={{ background: 'rgba(15,20,35,0.95)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 12px' }}>
+                    <p style={{ color: '#f5c518', fontWeight: 700, fontSize: 12 }}>{d.round}</p>
+                    <p style={{ color: '#fff', fontSize: 12 }}>סה״כ מצטבר: <strong>{d.cumulative}</strong></p>
+                    <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11 }}>במחזור זה: +{d.roundPts}</p>
+                  </div>
+                );
+              };
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.72 }}
+                  className="mt-6"
+                >
+                  <div className="rounded-[20px] relative overflow-hidden" style={{
+                    background: 'linear-gradient(160deg, rgba(200,200,210,0.18) 0%, rgba(120,120,135,0.10) 50%, rgba(200,200,210,0.16) 100%)',
+                    backdropFilter: 'blur(40px) saturate(140%)',
+                    WebkitBackdropFilter: 'blur(40px) saturate(140%)',
+                    border: '1px solid rgba(200,200,215,0.30)',
+                    boxShadow: '0 8px 40px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.20)',
+                  }}>
+                    <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)' }} />
+                    <div className="relative px-6 pt-6 pb-4 text-center flex items-center justify-center gap-2">
+                      <span>📈</span>
+                      <h3 className="font-bold text-lg" style={{ color: '#E8E8E8' }}>נקודות מצטברות</h3>
+                    </div>
+                    <div className="relative px-6 pb-6">
+                      <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }}>
+                        <ResponsiveContainer width="100%" height={190}>
+                          <LineChart data={cumulativeData} margin={{ top: 8, right: 8, bottom: 0, left: -20 }}>
+                            <defs>
+                              <linearGradient id="cumLineGrad" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stopColor="#f5c518" />
+                                <stop offset="100%" stopColor="#22c55e" />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                            <XAxis dataKey="round" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                            <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Line
+                              type="monotone"
+                              dataKey="cumulative"
+                              stroke="url(#cumLineGrad)"
+                              strokeWidth={2.5}
+                              dot={{ fill: '#f5c518', r: 4, strokeWidth: 0 }}
+                              activeDot={{ r: 6, fill: '#fff', stroke: '#f5c518', strokeWidth: 2 }}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                        <div className="mt-4 text-center"><p className="text-sm" style={{ color: 'rgba(255,255,255,0.40)' }}>סך הנקודות שצברת לאורך כל הטורניר</p></div>
                       </div>
                     </div>
-                  )}
+                  </div>
+                </motion.div>
+              );
+            })()}
+
+            {/* Points Percentage Chart */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.75 }}
+              className="mt-6">
+              <div className="rounded-[20px] relative overflow-hidden" style={{
+                background: 'linear-gradient(160deg, rgba(200,200,210,0.18) 0%, rgba(120,120,135,0.10) 50%, rgba(200,200,210,0.16) 100%)',
+                backdropFilter: 'blur(40px) saturate(140%)',
+                WebkitBackdropFilter: 'blur(40px) saturate(140%)',
+                border: '1px solid rgba(200,200,215,0.30)',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.20)',
+              }}>
+                <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)' }} />
+                <div className="relative px-6 pt-6 pb-4 text-center flex items-center justify-center gap-2">
+                  <FlexibleIcon src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/cdffab42c_pie-chart_603148.png" alt="אחוז צבירת נקודות" size="medium" />
+                  <h3 className="font-bold text-lg" style={{ color: '#E8E8E8' }}>אחוז צבירת נקודות ממקסימום אפשרי</h3>
+                </div>
+                <div className="relative px-6 pb-6">
+                  {pointsPercentageChartData.length > 0 ?
+                    <div className="rounded-xl p-6" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }}>
+                      <div className="relative h-48 w-full overflow-x-auto">
+                        <BarChart height={100} items={pointsPercentageChartData.map((d) => ({ label: d.round, progress: d.percentage || 0 }))} colorScheme="blue" valueSuffix="%" valueLabel={false} />
+                      </div>
+                      <div className="mt-6 text-center"><p className="text-sm" style={{ color: 'rgba(255,255,255,0.40)' }}>אחוז הנקודות שהושגו מתוך המקסימום האפשרי בכל מחזור</p></div>
+                    </div> :
+                    <div className="text-center py-8">
+                      <p style={{ color: 'rgba(255,255,255,0.40)' }}>אין נתונים זמינים עדיין</p>
+                      <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.28)' }}>הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
+                    </div>
+                  }
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Exact Hits Chart */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="mt-6">
+              <div className="rounded-[20px] relative overflow-hidden" style={{
+                background: 'linear-gradient(160deg, rgba(200,200,210,0.18) 0%, rgba(120,120,135,0.10) 50%, rgba(200,200,210,0.16) 100%)',
+                backdropFilter: 'blur(40px) saturate(140%)',
+                WebkitBackdropFilter: 'blur(40px) saturate(140%)',
+                border: '1px solid rgba(200,200,215,0.30)',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.20)',
+              }}>
+                <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)' }} />
+                <div className="relative px-6 pt-6 pb-4 text-center flex items-center justify-center gap-2">
+                  <FlexibleIcon src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/7ec75a888_target_5987470.png" alt="פגיעות מדויקות" size="medium" />
+                  <h3 className="font-bold text-lg" style={{ color: '#E8E8E8' }}>פגיעות לפי מחזור</h3>
+                </div>
+                <div className="relative px-6 pb-6">
+                  {exactHitsChartData.length > 0 ?
+                    <div className="rounded-xl p-6" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }}>
+                      <div className="relative h-48 w-full overflow-x-auto">
+                        <BarChart height={100} items={exactHitsChartData.map((d) => ({ label: d.round, progress: d.exactHits || 0 }))} colorScheme="green" />
+                      </div>
+                      <div className="mt-6 text-center"><p className="text-sm" style={{ color: 'rgba(255,255,255,0.40)' }}>פגיעות מדויקות בכל מחזור</p></div>
+                    </div> :
+                    <div className="text-center py-8">
+                      <p style={{ color: 'rgba(255,255,255,0.40)' }}>אין נתונים זמינים עדיין</p>
+                      <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.28)' }}>הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
+                    </div>
+                  }
                 </div>
               </div>
             </motion.div>
@@ -1108,79 +1179,40 @@ export default function MyStats() {
               </div>
             </motion.div>
 
-            {/* Points Breakdown Pie Chart */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85 }} className="mt-6">
-              <Card style={{ background: 'rgba(255,255,255,0.10)', backdropFilter: 'blur(40px) saturate(180%)', WebkitBackdropFilter: 'blur(40px) saturate(180%)', border: '1px solid rgba(255,255,255,0.22)', boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)' }}>
-                <CardHeader className="text-center pb-3">
-                  <CardTitle className="text-white flex items-center justify-center gap-2 text-lg">
-                    <FlexibleIcon src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/cdffab42c_pie-chart_603148.png" alt="פילוח נקודות" size="medium" />
-                    פילוח הניקוד לפי קטגוריות
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-3 md:p-6">
-                  {pointsBreakdownData && pointsBreakdownData.length > 0 ?
-                    <div className="rounded-xl p-5" style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)' }}>
-                      {(() => {
-                        const total = pointsBreakdownData.reduce((s, d) => s + (d?.value || 0), 0);
-                        const r = 80, cx = 120, cy = 110;
-                        const semiCirc = Math.PI * r;
-                        let offset = 0;
-                        return (
-                          <div className="flex flex-col items-center gap-5">
-                            <div className="relative">
-                              <svg width="240" height="130" viewBox="0 0 240 130">
-                                <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="22" strokeLinecap="butt"/>
-                                {pointsBreakdownData.map((d, i) => {
-                                  const pct = total > 0 ? d.value / total : 0;
-                                  const len = pct * semiCirc - 1.5;
-                                  const seg = (
-                                    <path key={i}
-                                      d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-                                      fill="none" stroke={d.color} strokeWidth="22" strokeLinecap="butt"
-                                      strokeDasharray={`${len} ${semiCirc - len}`}
-                                      strokeDashoffset={-offset * semiCirc} opacity={0.9}
-                                    />
-                                  );
-                                  offset += pct;
-                                  return seg;
-                                })}
-                                <text x={cx} y={cy - 8} textAnchor="middle" fill="white" fontSize="22" fontWeight="900">{parseFloat(total).toFixed(0)}</text>
-                                <text x={cx} y={cy + 10} textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="11">נקודות סה"כ</text>
-                              </svg>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 w-full">
-                              {pointsBreakdownData.map((d, i) => {
-                                const pct = total > 0 ? (d.value / total * 100).toFixed(1) : 0;
-                                return (
-                                  <motion.div key={i}
-                                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
-                                    className="flex items-center justify-between rounded-xl px-4 py-3"
-                                    style={{ background:`${d.color}10`, border:`1px solid ${d.color}30` }}>
-                                    <div className="flex items-center gap-2">
-                                      <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: d.color }} />
-                                      <span className="text-sm text-white/70">{d.name}</span>
-                                    </div>
-                                    <div className="text-right">
-                                      <p className="text-sm font-bold" style={{ color: d.color }}>{parseFloat(d.value).toFixed(2)} Pts</p>
-                                      <p className="text-xs text-white/30">{pct}%</p>
-                                    </div>
-                                  </motion.div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })()}
-                    </div> :
-                    <div className="text-center py-8">
-                      <div className="text-5xl mb-4 opacity-60">📊</div>
-                      <p className="text-slate-400 text-lg font-medium">אין נתוני ניקוד עדיין</p>
-                      <p className="text-slate-500 text-sm mt-2">הפילוח יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
-                    </div>
-                  }
-                </CardContent>
-              </Card>
-            </motion.div>
+            {/* Common Predictions */}
+            {heatmapData.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85 }}>
+                <div className="rounded-[20px] relative overflow-hidden" style={{
+                  background: 'linear-gradient(160deg, rgba(200,200,210,0.18) 0%, rgba(120,120,135,0.10) 50%, rgba(200,200,210,0.16) 100%)',
+                  backdropFilter: 'blur(40px) saturate(140%)',
+                  WebkitBackdropFilter: 'blur(40px) saturate(140%)',
+                  border: '1px solid rgba(200,200,215,0.30)',
+                  boxShadow: '0 8px 40px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.20)',
+                }}>
+                  <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)' }} />
+                  <div className="relative px-6 pt-6 pb-4 text-center flex items-center justify-center gap-2">
+                    <span>📊</span>
+                    <h3 className="font-bold text-lg" style={{ color: '#E8E8E8' }}>הניחוש הנפוץ ביותר</h3>
+                  </div>
+                  <div className="relative px-4 pb-6">
+                    <CommonPredictionsStripe
+                      predictions={heatmapData.flatMap(r =>
+                        r.matches
+                          .filter(m => m.hasPrediction)
+                          .map(m => ({
+                            predicted_score_a: m.predictedA,
+                            predicted_score_b: m.predictedB,
+                            exact_score_points_earned:
+                              m.isFinished &&
+                              m.predictedA === m.homeScore &&
+                              m.predictedB === m.awayScore ? 1 : 0,
+                          }))
+                      )}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </TabsContent>
 
           <TabsContent value="head2head" forceMount className="space-y-6 data-[state=inactive]:hidden">
@@ -1681,6 +1713,104 @@ export default function MyStats() {
             <RoundSummaryTable />
             <CategoryLeaderboards />
             
+            {/* Points Breakdown Pie Chart - Fixed with simple animation */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="mt-6">
+
+              <Card style={{ background: 'rgba(255,255,255,0.10)', backdropFilter: 'blur(40px) saturate(180%)', WebkitBackdropFilter: 'blur(40px) saturate(180%)', border: '1px solid rgba(255,255,255,0.22)', boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)' }}>
+                <CardHeader className="text-center pb-3">
+                  <CardTitle className="text-white flex items-center justify-center gap-2 text-lg md:text-xl">
+                    <FlexibleIcon
+                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/cdffab42c_pie-chart_603148.png"
+                      alt="פילוח נקודות"
+                      size="medium"
+                    />
+                    פילוח הניקוד לפי קטגוריות
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 md:p-6">
+                  {pointsBreakdownData && pointsBreakdownData.length > 0 ?
+                    <div className="rounded-xl p-5" style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)' }}>
+                      {(() => {
+                        const total = pointsBreakdownData.reduce((s, d) => s + (d?.value || 0), 0);
+                        const r = 80, cx = 120, cy = 110;
+                        const semiCirc = Math.PI * r;
+                        let offset = 0;
+                        return (
+                          <div className="flex flex-col items-center gap-5">
+                            {/* Semi-circle gauge */}
+                            <div className="relative">
+                              <svg width="240" height="130" viewBox="0 0 240 130">
+                                {/* background track */}
+                                <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="22" strokeLinecap="butt"/>
+                                {/* colored segments */}
+                                {pointsBreakdownData.map((d, i) => {
+                                  const pct = total > 0 ? d.value / total : 0;
+                                  const len = pct * semiCirc - 1.5;
+                                  const dashOffset = -offset * semiCirc / 1 ;
+                                  const seg = (
+                                    <path key={i}
+                                      d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+                                      fill="none"
+                                      stroke={d.color}
+                                      strokeWidth="22"
+                                      strokeLinecap="butt"
+                                      strokeDasharray={`${len} ${semiCirc - len}`}
+                                      strokeDashoffset={-offset * semiCirc}
+                                      opacity={0.9}
+                                    />
+                                  );
+                                  offset += pct;
+                                  return seg;
+                                })}
+                                {/* center total */}
+                                <text x={cx} y={cy - 8} textAnchor="middle" fill="white" fontSize="22" fontWeight="900">{parseFloat(total).toFixed(0)}</text>
+                                <text x={cx} y={cy + 10} textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="11">נקודות סה"כ</text>
+                              </svg>
+                            </div>
+
+                            {/* Legend rows */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 w-full">
+                              {pointsBreakdownData.map((d, i) => {
+                                const pct = total > 0 ? (d.value / total * 100).toFixed(1) : 0;
+                                return (
+                                  <motion.div key={i}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    className="flex items-center justify-between rounded-xl px-4 py-3"
+                                    style={{ background:`${d.color}10`, border:`1px solid ${d.color}30` }}>
+                                    <div className="flex items-center gap-2">
+                                      <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: d.color }} />
+                                      <span className="text-sm text-white/70">{d.name}</span>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-sm font-bold" style={{ color: d.color }}>{parseFloat(d.value).toFixed(2)} Pts</p>
+                                      <p className="text-xs text-white/30">{pct}%</p>
+                                    </div>
+                                  </motion.div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div> :
+
+                    <div className="text-center py-8 md:py-12">
+                      <div className="text-5xl md:text-6xl mb-4 opacity-60">📊</div>
+                      <p className="text-slate-400 text-lg md:text-xl font-medium">אין נתוני ניקוד עדיין</p>
+                      <p className="text-slate-500 text-sm mt-2 max-w-sm mx-auto">
+                        הפילוח יופיע לאחר שיסתיימו משחקים ויחושבו נקודות
+                      </p>
+                    </div>
+                  }
+                </CardContent>
+              </Card>
+            </motion.div>
           </TabsContent>
         </Tabs>
 
