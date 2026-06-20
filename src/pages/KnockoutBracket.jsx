@@ -666,8 +666,12 @@ export default function KnockoutBracket() {
             {/* FINAL */}
             {abs(FINAL_X, sfTop(), FINAL_CW,
               <div style={{ position:'relative' }}>
-                <div style={{ position:'absolute', top:-20, left:0, right:0, textAlign:'center', pointerEvents:'none' }}>
-                  <Trophy style={{ width:16, height:16, color:'#f5c518', display:'inline-block', filter:'drop-shadow(0 0 6px rgba(245,197,24,0.6))' }} />
+                <div style={{ position:'absolute', top:-78, left:0, right:0, textAlign:'center', pointerEvents:'none' }}>
+                  <img
+                    src="/world-cup-trophy.png"
+                    alt="World Cup Trophy"
+                    style={{ width:56, height:72, objectFit:'contain', display:'inline-block', filter:'drop-shadow(0 0 12px rgba(245,197,24,0.7)) drop-shadow(0 0 4px rgba(245,197,24,0.4))' }}
+                  />
                 </div>
               <div style={{ height:CH, background:'rgba(245,197,24,0.08)', border:'1px solid rgba(245,197,24,0.3)', borderRadius:8, overflow:'hidden', display:'flex', flexDirection:'column', justifyContent:'center' }}>
                 <div style={{ textAlign:'center', fontSize:9, color:'#f5c518', fontWeight:700, letterSpacing:2, paddingTop:2 }}>FINAL</div>
