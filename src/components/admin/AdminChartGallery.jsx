@@ -123,6 +123,7 @@ export default function AdminChartGallery() {
     { id: 'progress', label: 'Progress' },
     { id: 'table',    label: 'טבלאות' },
     { id: 'special',  label: 'מיוחדים' },
+    { id: '3d',       label: '🧊 3D' },
   ];
 
   return (
@@ -1738,6 +1739,383 @@ export default function AdminChartGallery() {
                       </div>
                     ))}
                   </div>
+                );
+              })()}
+            </Card>
+
+          </div>
+        </>
+      )}
+
+      {/* ══════════════ SECTION 8 — 3D CHARTS ══════════════ */}
+      {(activeSection === 'all' || activeSection === '3d') && (
+        <>
+          <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">גרפים תלת-מימד — דמו (101–110)</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
+
+            {/* 101 — Isometric 3D Bar Chart */}
+            <Card n={101} title="Isometric 3D Bar Chart">
+              {(() => {
+                const vals = [12, 20, 15, 25, 18, 22, 10, 28];
+                const W = 280, H = 160, maxV = Math.max(...vals);
+                const barW = 24, gap = 8, depX = 10, depY = -6;
+                return (
+                  <svg width="100%" viewBox={`0 0 ${W} ${H}`}>
+                    {vals.map((v, i) => {
+                      const bh = (v / maxV) * 90;
+                      const bx = 20 + i * (barW + gap);
+                      const by = H - 20 - bh;
+                      const c = COLORS[i];
+                      return (
+                        <g key={i}>
+                          <rect x={bx} y={by} width={barW} height={bh} fill={c} opacity={0.9} />
+                          <polygon points={`${bx},${by} ${bx+barW},${by} ${bx+barW+depX},${by+depY} ${bx+depX},${by+depY}`} fill={c} style={{ filter:'brightness(1.5)' }} />
+                          <polygon points={`${bx+barW},${by} ${bx+barW+depX},${by+depY} ${bx+barW+depX},${by+bh+depY} ${bx+barW},${by+bh}`} fill={c} opacity={0.5} />
+                          <text x={bx+barW/2} y={H-6} textAnchor="middle" fill="#64748b" fontSize="8">{ROUNDS[i]}</text>
+                        </g>
+                      );
+                    })}
+                    <line x1={20} y1={H-20} x2={W-10} y2={H-20} stroke="rgba(255,255,255,0.1)" strokeWidth={1} />
+                  </svg>
+                );
+              })()}
+            </Card>
+
+            {/* 102 — 3D Cylinder Bars */}
+            <Card n={102} title="3D Cylinder Bar Chart">
+              {(() => {
+                const vals = [18, 30, 22, 35, 28, 15, 32];
+                const cols = ['#f5c518','#22c55e','#3b82f6','#a78bfa','#fb923c','#34d399','#f87171'];
+                const W = 260, H = 155, maxV = Math.max(...vals);
+                const cw = 26, gap = 8, ry = 6;
+                return (
+                  <svg width="100%" viewBox={`0 0 ${W} ${H}`}>
+                    <defs>
+                      {cols.map((c, i) => (
+                        <linearGradient key={i} id={`cyl${i}`} x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor={c} stopOpacity={0.5} />
+                          <stop offset="40%" stopColor={c} stopOpacity={1} />
+                          <stop offset="100%" stopColor={c} stopOpacity={0.4} />
+                        </linearGradient>
+                      ))}
+                    </defs>
+                    {vals.map((v, i) => {
+                      const bh = (v / maxV) * 95;
+                      const cx2 = 16 + i * (cw + gap) + cw / 2;
+                      const topY = H - 22 - bh, botY = H - 22;
+                      const c = cols[i];
+                      return (
+                        <g key={i}>
+                          <rect x={cx2-cw/2} y={topY} width={cw} height={bh} fill={`url(#cyl${i})`} />
+                          <ellipse cx={cx2} cy={botY} rx={cw/2} ry={ry} fill={c} opacity={0.6} />
+                          <ellipse cx={cx2} cy={topY} rx={cw/2} ry={ry} fill={c} style={{ filter:'brightness(1.6)' }} />
+                          <text x={cx2} y={H-5} textAnchor="middle" fill="#64748b" fontSize="8">{ROUNDS[i]}</text>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                );
+              })()}
+            </Card>
+
+            {/* 103 — 3D Pie Disc */}
+            <Card n={103} title="3D Pie Disc">
+              {(() => {
+                const data = [
+                  { v:35, c:'#f5c518', label:'ברזיל' },
+                  { v:25, c:'#22c55e', label:'צרפת' },
+                  { v:20, c:'#3b82f6', label:'גרמניה' },
+                  { v:12, c:'#a78bfa', label:'ספרד' },
+                  { v:8,  c:'#f87171', label:'אנגליה' },
+                ];
+                const total = data.reduce((s,d) => s+d.v, 0);
+                const W = 260, cx = 110, cy = 72, rx = 82, ry = 26, thick = 16;
+                let angle = -Math.PI/2;
+                const slices = data.map(d => {
+                  const start = angle, sweep = (d.v/total)*2*Math.PI;
+                  angle += sweep;
+                  return { ...d, start, end: angle };
+                });
+                const arcPath = (s) => {
+                  const x1=cx+rx*Math.cos(s.start), y1=cy+ry*Math.sin(s.start);
+                  const x2=cx+rx*Math.cos(s.end),   y2=cy+ry*Math.sin(s.end);
+                  const lg = s.end-s.start > Math.PI ? 1 : 0;
+                  return `M ${cx} ${cy} L ${x1} ${y1} A ${rx} ${ry} 0 ${lg} 1 ${x2} ${y2} Z`;
+                };
+                return (
+                  <svg width="100%" viewBox={`0 0 ${W} 140`}>
+                    {slices.map((s,i) => {
+                      const mid = (s.start+s.end)/2;
+                      if (Math.sin(mid) < 0) return null;
+                      const x1=cx+rx*Math.cos(s.start), y1=cy+ry*Math.sin(s.start);
+                      const x2=cx+rx*Math.cos(s.end),   y2=cy+ry*Math.sin(s.end);
+                      const lg = s.end-s.start > Math.PI ? 1 : 0;
+                      return <path key={i} d={`M ${x1} ${y1} A ${rx} ${ry} 0 ${lg} 1 ${x2} ${y2} L ${x2} ${y2+thick} A ${rx} ${ry} 0 ${lg} 0 ${x1} ${y1+thick} Z`} fill={s.c} opacity={0.55} />;
+                    })}
+                    {slices.map((s,i) => <path key={i} d={arcPath(s)} fill={s.c} opacity={0.92} stroke="rgba(0,0,0,0.3)" strokeWidth={0.5} />)}
+                    {data.map((d,i) => (
+                      <g key={i}>
+                        <rect x={200} y={18+i*22} width={8} height={8} rx={2} fill={d.c} />
+                        <text x={212} y={26+i*22} fill="#94a3b8" fontSize="9">{d.label}</text>
+                      </g>
+                    ))}
+                  </svg>
+                );
+              })()}
+            </Card>
+
+            {/* 104 — 3D Scatter with Depth */}
+            <Card n={104} title="3D Scatter Plot (X / Y / Z)">
+              {(() => {
+                const pts = [
+                  { x:20, y:70, z:8,  c:'#f5c518', l:'ברזיל' },
+                  { x:55, y:55, z:12, c:'#22c55e', l:'צרפת' },
+                  { x:80, y:35, z:5,  c:'#3b82f6', l:'גרמניה' },
+                  { x:35, y:80, z:15, c:'#a78bfa', l:'ארגנטינה' },
+                  { x:65, y:20, z:9,  c:'#fb923c', l:'ספרד' },
+                  { x:90, y:60, z:6,  c:'#f87171', l:'אנגליה' },
+                  { x:15, y:45, z:11, c:'#34d399', l:'פורטוגל' },
+                  { x:45, y:90, z:4,  c:'#60a5fa', l:'איטליה' },
+                ];
+                const W=260, H=140;
+                const mx = v => 30+v*2.1, my = v => H-20-v*1.1;
+                return (
+                  <svg width="100%" viewBox={`0 0 ${W} ${H}`}>
+                    <defs><filter id="s3d"><feDropShadow dx="2" dy="3" stdDeviation="2" floodOpacity="0.4" /></filter></defs>
+                    {[0,25,50,75,100].map(v => <line key={v} x1={mx(v)} y1={10} x2={mx(v)} y2={H-18} stroke="rgba(255,255,255,0.05)" strokeWidth={1} />)}
+                    {[0,25,50,75,100].map(v => <line key={v} x1={28} y1={my(v)} x2={W-10} y2={my(v)} stroke="rgba(255,255,255,0.05)" strokeWidth={1} />)}
+                    <line x1={30} y1={10} x2={30} y2={H-18} stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
+                    <line x1={30} y1={H-18} x2={W-8} y2={H-18} stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
+                    {pts.map((p,i) => <ellipse key={i} cx={mx(p.x)} cy={H-14} rx={p.z*1.5} ry={3} fill={p.c} opacity={0.18} />)}
+                    {[...pts].sort((a,b) => b.z-a.z).map((p,i) => (
+                      <g key={i} filter="url(#s3d)">
+                        <circle cx={mx(p.x)} cy={my(p.y)} r={p.z*1.1} fill={p.c} opacity={0.82} />
+                        <circle cx={mx(p.x)-p.z*0.3} cy={my(p.y)-p.z*0.3} r={p.z*0.35} fill="white" opacity={0.35} />
+                        <text x={mx(p.x)} y={my(p.y)+3} textAnchor="middle" fill="#000" fontSize={p.z>8?'7':'6'} fontWeight="700">{p.l.slice(0,2)}</text>
+                      </g>
+                    ))}
+                    <text x={W/2} y={H} textAnchor="middle" fill="#475569" fontSize="8">X=נקודות · Y=דיוק · גודל=Z פגיעות</text>
+                  </svg>
+                );
+              })()}
+            </Card>
+
+            {/* 105 — 3D Surface / Terrain */}
+            <Card n={105} title="3D Surface / Terrain Chart">
+              {(() => {
+                const rows=7, cols2=9;
+                const grid = Array.from({length:rows},(_,r) => Array.from({length:cols2},(_,c) => Math.sin(r*0.9)*Math.cos(c*0.7)*0.5+0.5));
+                const W=260, H=140;
+                const isoX=(c,r)=>20+c*24*0.6-r*24*0.6;
+                const isoY=(c,r,v)=>28+c*13*0.5+r*13*0.5-v*38;
+                const lerp=(a,b,t)=>a+(b-a)*t;
+                const cv=v=>{
+                  const r=Math.round(v<0.5?lerp(59,245,v*2):lerp(245,248,(v-0.5)*2));
+                  const g=Math.round(v<0.5?lerp(130,197,v*2):lerp(197,113,(v-0.5)*2));
+                  const b=Math.round(v<0.5?lerp(246,24,v*2):lerp(24,71,(v-0.5)*2));
+                  return `rgb(${r},${g},${b})`;
+                };
+                const quads=[];
+                for(let r=0;r<rows-1;r++) for(let c=0;c<cols2-1;c++){
+                  const v=(grid[r][c]+grid[r+1][c]+grid[r][c+1]+grid[r+1][c+1])/4;
+                  quads.push({
+                    pts:`${isoX(c,r)},${isoY(c,r,grid[r][c])} ${isoX(c+1,r)},${isoY(c+1,r,grid[r][c+1])} ${isoX(c+1,r+1)},${isoY(c+1,r+1,grid[r+1][c+1])} ${isoX(c,r+1)},${isoY(c,r+1,grid[r+1][c])}`,
+                    v
+                  });
+                }
+                return (
+                  <svg width="100%" viewBox={`-20 0 ${W} ${H}`}>
+                    {quads.map((q,i) => <polygon key={i} points={q.pts} fill={cv(q.v)} stroke="rgba(0,0,0,0.2)" strokeWidth={0.5} />)}
+                    <text x={W/2-30} y={H-2} fill="#475569" fontSize="8" textAnchor="middle">שטח תלת-ממדי</text>
+                  </svg>
+                );
+              })()}
+            </Card>
+
+            {/* 106 — 3D Globe */}
+            <Card n={106} title="3D Globe / Sphere">
+              {(() => {
+                const W=260, cx=90, cy=72, R=60, latL=7, lngL=10;
+                const project=(lat,lng)=>({
+                  x: cx+R*Math.sin(lat*Math.PI)*Math.cos(lng*Math.PI),
+                  y: cy-R*Math.sin(lng*Math.PI)*0.5-R*Math.cos(lat*Math.PI)*0.6,
+                });
+                const pts2=[
+                  {lat:0.3,lng:-0.2,c:'#f5c518',l:'ברזיל'},
+                  {lat:0.8,lng:0.05,c:'#3b82f6',l:'צרפת'},
+                  {lat:0.75,lng:0.15,c:'#22c55e',l:'גרמניה'},
+                  {lat:0.1,lng:-0.3,c:'#a78bfa',l:'ארגנטינה'},
+                  {lat:0.7,lng:-0.05,c:'#f87171',l:'ספרד'},
+                ];
+                return (
+                  <svg width="100%" viewBox={`0 0 ${W} 145`}>
+                    <defs>
+                      <radialGradient id="gG" cx="35%" cy="30%">
+                        <stop offset="0%" stopColor="#1e3a5f" /><stop offset="70%" stopColor="#0f172a" /><stop offset="100%" stopColor="#000820" />
+                      </radialGradient>
+                      <radialGradient id="gS" cx="30%" cy="25%">
+                        <stop offset="0%" stopColor="white" stopOpacity={0.25} /><stop offset="60%" stopColor="white" stopOpacity={0} />
+                      </radialGradient>
+                      <clipPath id="gC"><circle cx={cx} cy={cy} r={R} /></clipPath>
+                    </defs>
+                    <circle cx={cx} cy={cy} r={R} fill="url(#gG)" />
+                    <g clipPath="url(#gC)" stroke="rgba(255,255,255,0.12)" strokeWidth={0.6} fill="none">
+                      {Array.from({length:latL},(_,i)=>{
+                        const a=((i+1)/(latL+1))*Math.PI;
+                        return <ellipse key={i} cx={cx} cy={cy-R*Math.cos(a)*0.7} rx={R*Math.sin(a)} ry={R*Math.abs(Math.sin(a))*0.4} />;
+                      })}
+                      {Array.from({length:lngL},(_,i)=>{
+                        const a=(i/lngL)*Math.PI;
+                        return <ellipse key={i} cx={cx} cy={cy} rx={R*Math.abs(Math.sin(a))+1} ry={R*0.85} style={{transform:`rotate(${(i/lngL)*180}deg)`,transformOrigin:`${cx}px ${cy}px`}} />;
+                      })}
+                    </g>
+                    <circle cx={cx} cy={cy} r={R} fill="url(#gS)" />
+                    {pts2.map((p,i)=>{
+                      const {x,y}=project(p.lat,p.lng);
+                      return <g key={i}><circle cx={x} cy={y} r={5} fill={p.c} opacity={0.9} stroke="white" strokeWidth={0.8} /><text x={x+7} y={y+3} fill={p.c} fontSize="8" fontWeight="700">{p.l}</text></g>;
+                    })}
+                    {pts2.map((p,i)=>(
+                      <g key={i}><circle cx={178} cy={28+i*18} r={4} fill={p.c} /><text x={186} y={32+i*18} fill="#94a3b8" fontSize="8">{p.l}</text></g>
+                    ))}
+                  </svg>
+                );
+              })()}
+            </Card>
+
+            {/* 107 — 3D Stacked Isometric */}
+            <Card n={107} title="3D Isometric Stacked Bars">
+              {(() => {
+                const stacks=[[8,12,6],[15,8,10],[10,18,5],[6,14,12],[20,5,8]];
+                const sc=[['#f5c518','#c9a400','#9a7d00'],['#22c55e','#16a34a','#0d6b31'],['#3b82f6','#2563eb','#1a4fd8']];
+                const W=260, H=155, bW=26, bGap=10, depX=10, depY=-6, baseY=H-22;
+                return (
+                  <svg width="100%" viewBox={`0 0 ${W} ${H}`}>
+                    {stacks.map((stack,si)=>{
+                      const bx=18+si*(bW+bGap); let curY=baseY;
+                      return (
+                        <g key={si}>
+                          {stack.map((v,li)=>{
+                            const bh=v*3.2, topY=curY-bh;
+                            curY=topY;
+                            const [cf,cs,cr]=sc[li];
+                            return (
+                              <g key={li}>
+                                <rect x={bx} y={topY} width={bW} height={bh} fill={cf} />
+                                <polygon points={`${bx},${topY} ${bx+bW},${topY} ${bx+bW+depX},${topY+depY} ${bx+depX},${topY+depY}`} fill={cs} />
+                                <polygon points={`${bx+bW},${topY} ${bx+bW+depX},${topY+depY} ${bx+bW+depX},${topY+bh+depY} ${bx+bW},${topY+bh}`} fill={cr} />
+                              </g>
+                            );
+                          })}
+                          <text x={bx+bW/2} y={H-6} textAnchor="middle" fill="#64748b" fontSize="8">{ROUNDS[si]}</text>
+                        </g>
+                      );
+                    })}
+                    {[['כיוון','#f5c518'],['פגיעה','#22c55e'],['טווח','#3b82f6']].map(([l,c],i)=>(
+                      <g key={i}><rect x={200} y={15+i*16} width={8} height={8} rx={1} fill={c} /><text x={212} y={23+i*16} fill="#94a3b8" fontSize="8">{l}</text></g>
+                    ))}
+                  </svg>
+                );
+              })()}
+            </Card>
+
+            {/* 108 — 3D Ribbon / Area */}
+            <Card n={108} title="3D Ribbon / Area Chart">
+              {(() => {
+                const series=[
+                  {vals:[10,18,14,22,16,28,12,24],c:'#f5c518',label:'ברזיל'},
+                  {vals:[8,12,18,10,22,15,20,18], c:'#22c55e',label:'צרפת'},
+                  {vals:[14,8,10,16,12,20,8,16],  c:'#3b82f6',label:'גרמניה'},
+                ];
+                const W=260,H=145,maxV=30,n=8,xStep=(W-40)/(n-1),depth=18;
+                return (
+                  <svg width="100%" viewBox={`0 0 ${W} ${H}`}>
+                    {series.map((s,si)=>{
+                      const off=si*depth;
+                      const pts=s.vals.map((v,i)=>[20+i*xStep+off*0.6, H-25-(v/maxV)*(H-50)-off*0.4]);
+                      const bot=pts.map(([x])=>[x, H-25-off*0.4]);
+                      const tp=`M ${pts.map(p=>p.join(',')).join(' L ')}`;
+                      const area=`${tp} L ${[...bot].reverse().map(p=>p.join(',')).join(' L ')} Z`;
+                      return (
+                        <g key={si}>
+                          <path d={area} fill={s.c} opacity={0.2} />
+                          <path d={tp} fill="none" stroke={s.c} strokeWidth={2} />
+                          {pts.map(([x,y],i)=><circle key={i} cx={x} cy={y} r={3} fill={s.c} opacity={0.8} />)}
+                        </g>
+                      );
+                    })}
+                    <line x1={18} y1={10} x2={18} y2={H-22} stroke="rgba(255,255,255,0.12)" strokeWidth={1} />
+                    <line x1={18} y1={H-22} x2={W-10} y2={H-22} stroke="rgba(255,255,255,0.12)" strokeWidth={1} />
+                    {series.map((s,i)=>(
+                      <g key={i}><rect x={175} y={15+i*16} width={8} height={4} rx={1} fill={s.c} /><text x={187} y={21+i*16} fill="#94a3b8" fontSize="8">{s.label}</text></g>
+                    ))}
+                  </svg>
+                );
+              })()}
+            </Card>
+
+            {/* 109 — 3D Funnel */}
+            <Card n={109} title="3D Funnel / Cone Chart">
+              {(() => {
+                const levels=[
+                  {label:'תחזיות',v:100,c:'#f5c518'},
+                  {label:'משחקים',v:72, c:'#fb923c'},
+                  {label:'כיוון',  v:48, c:'#22c55e'},
+                  {label:'פגיעות', v:22, c:'#3b82f6'},
+                  {label:'מושלם', v:8,  c:'#a78bfa'},
+                ];
+                const W=260, H=145, cx=100, maxW=130, rowH=24, ry=7;
+                return (
+                  <svg width="100%" viewBox={`0 0 ${W} ${H}`}>
+                    {levels.map((l,i)=>{
+                      const w=(l.v/100)*maxW, x=cx-w/2, y=12+i*rowH;
+                      const nw=i<levels.length-1?(levels[i+1].v/100)*maxW:w*0.4;
+                      const nx=cx-nw/2;
+                      return (
+                        <g key={i}>
+                          <polygon points={`${x},${y+ry} ${x+w},${y+ry} ${nx+nw},${y+rowH-ry} ${nx},${y+rowH-ry}`} fill={l.c} opacity={0.85} />
+                          <ellipse cx={cx} cy={y+ry} rx={w/2} ry={ry} fill={l.c} style={{filter:'brightness(1.4)'}} />
+                          <ellipse cx={cx} cy={y+rowH-ry} rx={nw/2} ry={ry*0.6} fill={l.c} opacity={0.5} />
+                          <text x={cx} y={y+rowH/2+4} textAnchor="middle" fill="rgba(0,0,0,0.75)" fontSize="8" fontWeight="800">{l.label}</text>
+                          <text x={175} y={y+rowH/2+4} fill="#94a3b8" fontSize="8">{l.v}%</text>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                );
+              })()}
+            </Card>
+
+            {/* 110 — 3D Treemap with depth */}
+            <Card n={110} title="3D Treemap with Depth" span={2}>
+              {(() => {
+                const items=[
+                  {label:'ברזיל',v:45,c:'#f5c518'},{label:'צרפת',v:38,c:'#22c55e'},
+                  {label:'גרמניה',v:30,c:'#3b82f6'},{label:'ארגנטינה',v:25,c:'#a78bfa'},
+                  {label:'ספרד',v:20,c:'#fb923c'},{label:'אנגליה',v:15,c:'#f87171'},
+                  {label:'פורטוגל',v:12,c:'#34d399'},{label:'איטליה',v:8,c:'#60a5fa'},
+                ];
+                const total=items.reduce((s,d)=>s+d.v,0);
+                const W=520, H=140, pad=3, depX=6, depY=-4;
+                let cx2=pad;
+                const rects=items.map(item=>{
+                  const w=(item.v/total)*(W-pad*(items.length+1));
+                  const r={x:cx2,y:pad,w,h:H-pad*2,...item};
+                  cx2+=w+pad; return r;
+                });
+                return (
+                  <svg width="100%" viewBox={`0 0 ${W} ${H+8}`}>
+                    {rects.map((r,i)=>(
+                      <g key={i}>
+                        <polygon points={`${r.x+r.w},${r.y} ${r.x+r.w+depX},${r.y+depY} ${r.x+r.w+depX},${r.y+r.h+depY} ${r.x+r.w},${r.y+r.h}`} fill={r.c} opacity={0.4} />
+                        <polygon points={`${r.x},${r.y} ${r.x+r.w},${r.y} ${r.x+r.w+depX},${r.y+depY} ${r.x+depX},${r.y+depY}`} fill={r.c} style={{filter:'brightness(1.5)'}} opacity={0.9} />
+                        <rect x={r.x} y={r.y} width={r.w} height={r.h} fill={r.c} opacity={0.75} />
+                        {r.w>30 && <>
+                          <text x={r.x+r.w/2} y={r.y+r.h/2-4} textAnchor="middle" fill="rgba(0,0,0,0.8)" fontSize="9" fontWeight="800">{r.label}</text>
+                          <text x={r.x+r.w/2} y={r.y+r.h/2+8} textAnchor="middle" fill="rgba(0,0,0,0.65)" fontSize="8">{r.v}נק'</text>
+                        </>}
+                      </g>
+                    ))}
+                  </svg>
                 );
               })()}
             </Card>
