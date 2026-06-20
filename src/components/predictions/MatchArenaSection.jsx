@@ -34,31 +34,22 @@ function getTeamForm(allMatches, teamName) {
 }
 
 const R = {
-  W: { bg: 'rgba(74,222,128,0.18)',  border: 'rgba(74,222,128,0.55)',  text: '#4ade80' },
-  D: { bg: 'rgba(250,204,21,0.18)',  border: 'rgba(250,204,21,0.48)',  text: '#facc15' },
-  L: { bg: 'rgba(248,113,113,0.18)', border: 'rgba(248,113,113,0.52)', text: '#f87171' },
+  W: { bg: 'rgba(74,222,128,0.18)',  bd: 'rgba(74,222,128,0.55)',  tx: '#4ade80', so: '#22c55e' },
+  D: { bg: 'rgba(250,204,21,0.18)',  bd: 'rgba(250,204,21,0.48)',  tx: '#facc15', so: '#ca8a04' },
+  L: { bg: 'rgba(248,113,113,0.18)', bd: 'rgba(248,113,113,0.52)', tx: '#f87171', so: '#dc2626' },
 };
 
 function FormDots({ form }) {
   if (!form?.length) return <span className="text-[10px] text-slate-600">—</span>;
   return (
-    <div className="flex gap-[5px]">
+    <div className="flex flex-col gap-0.5">
       {form.map((item, i) => {
         const s = R[item.result];
         return (
-          <div
-            key={i}
-            title={`${item.result} · ${item.scored}-${item.conceded} vs ${item.opponent}`}
-            style={{
-              width: 20, height: 20,
-              background: s.bg,
-              border: `1px solid ${s.border}`,
-              borderRadius: 5,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <span style={{ fontSize: 9, fontWeight: 800, color: s.text, lineHeight: 1 }}>
-              {item.result}
+          <div key={i} style={{ height: 13, width: 90, background: s.bg, border: `1px solid ${s.bd}`, borderRadius: 3, display: 'flex', alignItems: 'center', paddingLeft: 5, gap: 5 }}>
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: s.so, flexShrink: 0 }} />
+            <span style={{ fontSize: 8, color: s.tx, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {item.opponent}  {item.scored}:{item.conceded}
             </span>
           </div>
         );
