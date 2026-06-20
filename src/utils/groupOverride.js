@@ -75,13 +75,24 @@ export async function saveBracketMatchOverride(matchOverride, settingId) {
 
 // ─── Apply helpers ────────────────────────────────────────────────────────────
 
-// Reorder `standings` array to match `overrideOrder` (array of team names).
+// Reorder `standings` using `overrideOrder` only as a tiebreaker.
+// Actual results (Pts → GD → GF) always take priority; the manual order
+// only kicks in when teams are completely equal on all stats.
 export function applyOverride(standings, overrideOrder) {
   if (!overrideOrder || overrideOrder.length === 0) return standings;
-  const byName = Object.fromEntries(standings.map(t => [t.name, t]));
-  const result = overrideOrder.map(name => byName[name]).filter(Boolean);
-  standings.forEach(t => { if (!overrideOrder.includes(t.name)) result.push(t); });
-  return result;
+  const overridePos = Object.fromEntries(overrideOrder.map((name, i) => [name, i]));
+  // naturalPos preserves the H2H order already computed by calcStandings
+  const naturalPos  = Object.fromEntries(standings.map((t, i) => [t.name, i]));
+  return [...standings].sort((a, b) => {
+    if (b.Pts !== a.Pts) return b.Pts - a.Pts;
+    if (b.GD  !== a.GD)  return b.GD  - a.GD;
+    if (b.GF  !== a.GF)  return b.GF  - a.GF;
+    // Truly tied — use manual override if both teams are listed, else keep H2H order
+    const aOv = overridePos[a.name];
+    const bOv = overridePos[b.name];
+    if (aOv !== undefined && bOv !== undefined) return aOv - bOv;
+    return naturalPos[a.name] - naturalPos[b.name];
+  });
 }
 
 // Reorder `allThirdTeams` (array of team objects) to match `bestThirdOrder` (array of names).
