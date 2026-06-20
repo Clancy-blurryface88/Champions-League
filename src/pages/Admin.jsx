@@ -18,10 +18,6 @@ import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminApiExplorer from "../components/admin/AdminApiExplorer";
 import AdminGroupOverride from "../components/admin/AdminGroupOverride";
-import AdminFormDemo from "../components/admin/AdminFormDemo";
-import AdminFormDemo2 from "../components/admin/AdminFormDemo2";
-import AdminFormDemo3 from "../components/admin/AdminFormDemo3";
-import AdminFormDemo4 from "../components/admin/AdminFormDemo4";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -82,10 +78,6 @@ export default function Admin() {
       case 'reset':      return <AdminReset />;
       case 'api-explorer': return <AdminApiExplorer />;
       case 'group-override': return <AdminGroupOverride />;
-      case 'form-demo': return <AdminFormDemo />;
-      case 'form-demo2': return <AdminFormDemo2 />;
-      case 'form-demo3': return <AdminFormDemo3 />;
-      case 'form-demo4': return <AdminFormDemo4 />;
       default: return <AdminRounds />;
     }
   };
@@ -102,10 +94,6 @@ export default function Admin() {
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'api-explorer', label: 'API Explorer',    icon: BarChart3 },
     { id: 'group-override',   label: '🔀 סידור בתים',          icon: BarChart3 },
-    { id: 'form-demo',        label: '🎨 דמו טופס משחקים',     icon: BarChart3 },
-    { id: 'form-demo2',       label: '🎨 דמו טופס 2',          icon: BarChart3 },
-    { id: 'form-demo3',       label: '🎨 דמו טופס 3',          icon: BarChart3 },
-    { id: 'form-demo4',       label: '🎨 דמו טופס 4',          icon: BarChart3 },
   ];
 
   return (
