@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import MatchFormDialog from "./MatchFormDialog";
 import { LoaderBar } from "../ui/LoaderBar";
-import { loadAllOverrides, saveGroupOverrides } from "@/utils/groupOverride";
+import { loadAllOverrides, saveGroupOverrides, saveBestThirdOrder } from "@/utils/groupOverride";
 
 export default function AdminMatches() {
   const [matches, setMatches] = useState([]);
@@ -76,17 +76,22 @@ export default function AdminMatches() {
         savedMatch = await Match.create(formData);
       }
 
-      // Auto-clear group override when a group match is finished so standings
-      // always reflect the new result immediately
+      // Auto-clear overrides when a group match finishes so standings always
+      // reflect actual results — admin can re-override manually if needed
       const league = formData.league || '';
       if (formData.is_finished && /^Group [A-L]$/.test(league)) {
         const groupLetter = league.replace('Group ', '').trim();
-        const { groupOverrides, settingId } = await loadAllOverrides();
+        const { groupOverrides, bestThirdOrder, settingId } = await loadAllOverrides();
+        const saves = [];
         if (groupOverrides[groupLetter]) {
           const updated = { ...groupOverrides };
           delete updated[groupLetter];
-          await saveGroupOverrides(updated, settingId);
+          saves.push(saveGroupOverrides(updated, settingId));
         }
+        if (bestThirdOrder) {
+          saves.push(saveBestThirdOrder(null, settingId));
+        }
+        if (saves.length) await Promise.all(saves);
       }
 
       setIsDialogOpen(false);
