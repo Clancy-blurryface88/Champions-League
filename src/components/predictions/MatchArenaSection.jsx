@@ -39,18 +39,38 @@ const R = {
   L: { bg: 'rgba(248,113,113,0.18)', bd: 'rgba(248,113,113,0.52)', tx: '#f87171', so: '#dc2626' },
 };
 
+const SHORT_NAMES = {
+  'Saudi Arabia': 'Saudia',
+  'South Korea':  'S.Korea',
+  'United States':'USA',
+  'New Zealand':  'N.Zealand',
+  'Ivory Coast':  'C.Ivoire',
+  'DR Congo':     'Congo',
+  'South Africa': 'S.Africa',
+};
+const shorten = (name) => SHORT_NAMES[name] || name;
+
 function FormDots({ form }) {
   if (!form?.length) return <span className="text-[10px] text-slate-600">—</span>;
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className="flex gap-[5px]">
       {form.map((item, i) => {
         const s = R[item.result];
         return (
-          <div key={i} style={{ height: 13, width: 90, background: s.bg, border: `1px solid ${s.bd}`, borderRadius: 3, display: 'flex', alignItems: 'center', paddingLeft: 5, gap: 5 }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: s.so, flexShrink: 0 }} />
-            <span style={{ fontSize: 8, color: s.tx, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {item.opponent}  {item.scored}:{item.conceded}
-            </span>
+          <div key={i} style={{
+            width: 28, height: 40,
+            background: `linear-gradient(160deg, ${s.bg}, rgba(255,255,255,0.02))`,
+            border: `1px solid ${s.bd}`,
+            borderRadius: 4,
+            transform: 'perspective(80px) rotateX(12deg) rotateY(-8deg)',
+            boxShadow: `3px 3px 0 ${s.so}35`,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: 1, padding: '2px 3px',
+          }}>
+            <span style={{ fontSize: 9, fontWeight: 900, color: s.tx, lineHeight: 1 }}>{item.result}</span>
+            <span style={{ fontSize: 9, fontWeight: 900, color: '#fff', lineHeight: 1 }}>{item.scored}:{item.conceded}</span>
+            <span style={{ fontSize: 6, color: 'rgba(255,255,255,0.4)', lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 26, textAlign: 'center' }}>{shorten(item.opponent)}</span>
           </div>
         );
       })}
