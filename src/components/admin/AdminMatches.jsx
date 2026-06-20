@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import MatchFormDialog from "./MatchFormDialog";
 import { LoaderBar } from "../ui/LoaderBar";
+import { loadAllOverrides, saveGroupOverrides } from "@/utils/groupOverride";
 
 export default function AdminMatches() {
   const [matches, setMatches] = useState([]);
@@ -69,12 +70,25 @@ export default function AdminMatches() {
       let savedMatch;
       if (formData.id) {
         const { id, created_at, ...updates } = formData;
-        // אם ערכי התוצאה השתנו — אפס את דגל החישוב כדי שיחושב מחדש
         updates.is_score_calculated = false;
         savedMatch = await Match.update(id, updates);
       } else {
         savedMatch = await Match.create(formData);
       }
+
+      // Auto-clear group override when a group match is finished so standings
+      // always reflect the new result immediately
+      const league = formData.league || '';
+      if (formData.is_finished && /^Group [A-L]$/.test(league)) {
+        const groupLetter = league.replace('Group ', '').trim();
+        const { groupOverrides, settingId } = await loadAllOverrides();
+        if (groupOverrides[groupLetter]) {
+          const updated = { ...groupOverrides };
+          delete updated[groupLetter];
+          await saveGroupOverrides(updated, settingId);
+        }
+      }
+
       setIsDialogOpen(false);
       loadData();
       return savedMatch;
