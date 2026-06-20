@@ -70,7 +70,7 @@ function FormDots({ form }) {
           }}>
             <span style={{ fontSize: 9, fontWeight: 900, color: s.tx, lineHeight: 1 }}>{item.result}</span>
             <span style={{ fontSize: 9, fontWeight: 900, color: '#fff', lineHeight: 1 }}>{item.scored}:{item.conceded}</span>
-            <span style={{ fontSize: 6, color: 'rgba(255,255,255,0.4)', lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 26, textAlign: 'center' }}>{shorten(item.opponent)}</span>
+            <span style={{ fontSize: 6, color: s.tx, lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 26, textAlign: 'center' }}>{shorten(item.opponent)}</span>
           </div>
         );
       })}
