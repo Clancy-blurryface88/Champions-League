@@ -51,6 +51,7 @@ export default function MyStats() {
   const [heatmapData, setHeatmapData] = useState([]);
   const [activeTab, setActiveTab] = useState("stats");
   const [activeChartTab, setActiveChartTab] = useState("points");
+  const [activeHitsTab, setActiveHitsTab] = useState("hits");
 
   const [rounds, setRounds] = useState([]);
   const [selectedRound, setSelectedRound] = useState('');
@@ -830,9 +831,6 @@ export default function MyStats() {
             {/* סיכום מיקומים למשתתף */}
             <UserRankingsSummary />
 
-            {/* היסטוריית פגיעות */}
-            <ExactHitsHistoryTable />
-
           </TabsContent>
 
           <TabsContent value="stats" forceMount className="space-y-6 data-[state=inactive]:hidden">
@@ -1123,7 +1121,7 @@ export default function MyStats() {
               </div>
             </motion.div>
 
-            {/* Exact Hits Chart */}
+            {/* Combined Hits Card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1137,23 +1135,84 @@ export default function MyStats() {
                 boxShadow: '0 8px 40px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.20)',
               }}>
                 <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)' }} />
-                <div className="relative px-6 pt-6 pb-4 text-center flex items-center justify-center gap-2">
-                  <FlexibleIcon src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/7ec75a888_target_5987470.png" alt="פגיעות מדויקות" size="medium" />
-                  <h3 className="font-bold text-lg" style={{ color: '#E8E8E8' }}>פגיעות לפי מחזור</h3>
+
+                {/* Tab buttons */}
+                <div className="relative px-4 pt-5 pb-3">
+                  <div
+                    className="flex w-full p-1 rounded-xl"
+                    style={{
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.14)',
+                    }}
+                  >
+                    {[
+                      { id: 'hits', label: 'פגיעות' },
+                      { id: 'common', label: 'ניחוש נפוץ' },
+                      { id: 'history', label: 'היסטוריה' },
+                    ].map((tab, index, arr) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveHitsTab(tab.id)}
+                        className="flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-300 relative"
+                        style={{
+                          color: activeHitsTab === tab.id ? '#000' : 'rgba(255,255,255,0.55)',
+                          background: activeHitsTab === tab.id
+                            ? 'linear-gradient(135deg, #f5c518 0%, #fde68a 60%, #fff 100%)'
+                            : 'transparent',
+                          boxShadow: activeHitsTab === tab.id ? '0 2px 10px rgba(245,197,24,0.30)' : 'none',
+                          borderRight: index < arr.length - 1 ? '1px solid rgba(255,255,255,0.10)' : 'none',
+                        }}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+
+                {/* Chart content */}
                 <div className="relative px-6 pb-6">
-                  {exactHitsChartData.length > 0 ?
-                    <div className="rounded-xl p-6" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }}>
-                      <div className="relative h-48 w-full overflow-x-auto">
-                        <BarChart height={100} items={exactHitsChartData.map((d) => ({ label: d.round, progress: d.exactHits || 0 }))} colorScheme="green" />
+                  {activeHitsTab === 'hits' && (
+                    exactHitsChartData.length > 0 ? (
+                      <div className="rounded-xl p-6" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }}>
+                        <div className="relative h-48 w-full overflow-x-auto">
+                          <BarChart height={100} items={exactHitsChartData.map((d) => ({ label: d.round, progress: d.exactHits || 0 }))} colorScheme="green" />
+                        </div>
+                        <div className="mt-6 text-center"><p className="text-sm" style={{ color: 'rgba(255,255,255,0.40)' }}>פגיעות מדויקות בכל מחזור</p></div>
                       </div>
-                      <div className="mt-6 text-center"><p className="text-sm" style={{ color: 'rgba(255,255,255,0.40)' }}>פגיעות מדויקות בכל מחזור</p></div>
-                    </div> :
-                    <div className="text-center py-8">
-                      <p style={{ color: 'rgba(255,255,255,0.40)' }}>אין נתונים זמינים עדיין</p>
-                      <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.28)' }}>הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
-                    </div>
-                  }
+                    ) : (
+                      <div className="text-center py-8">
+                        <p style={{ color: 'rgba(255,255,255,0.40)' }}>אין נתונים זמינים עדיין</p>
+                        <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.28)' }}>הגרף יופיע לאחר שיסתיימו משחקים ויחושבו נקודות</p>
+                      </div>
+                    )
+                  )}
+
+                  {activeHitsTab === 'common' && (
+                    heatmapData.length > 0 ? (
+                      <CommonPredictionsStripe
+                        predictions={heatmapData.flatMap(r =>
+                          r.matches
+                            .filter(m => m.hasPrediction)
+                            .map(m => ({
+                              predicted_score_a: m.predictedA,
+                              predicted_score_b: m.predictedB,
+                              exact_score_points_earned:
+                                m.isFinished &&
+                                m.predictedA === m.homeScore &&
+                                m.predictedB === m.awayScore ? 1 : 0,
+                            }))
+                        )}
+                      />
+                    ) : (
+                      <div className="text-center py-8">
+                        <p style={{ color: 'rgba(255,255,255,0.40)' }}>אין נתונים זמינים עדיין</p>
+                      </div>
+                    )
+                  )}
+
+                  {activeHitsTab === 'history' && (
+                    <ExactHitsHistoryTable />
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -1177,41 +1236,6 @@ export default function MyStats() {
                 </div>
               </div>
             </motion.div>
-
-            {/* Common Predictions */}
-            {heatmapData.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85 }}>
-                <div className="rounded-[20px] relative overflow-hidden" style={{
-                  background: 'linear-gradient(160deg, rgba(200,200,210,0.18) 0%, rgba(120,120,135,0.10) 50%, rgba(200,200,210,0.16) 100%)',
-                  backdropFilter: 'blur(40px) saturate(140%)',
-                  WebkitBackdropFilter: 'blur(40px) saturate(140%)',
-                  border: '1px solid rgba(200,200,215,0.30)',
-                  boxShadow: '0 8px 40px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.20)',
-                }}>
-                  <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)' }} />
-                  <div className="relative px-6 pt-6 pb-4 text-center flex items-center justify-center gap-2">
-                    <span>📊</span>
-                    <h3 className="font-bold text-lg" style={{ color: '#E8E8E8' }}>הניחוש הנפוץ ביותר</h3>
-                  </div>
-                  <div className="relative px-4 pb-6">
-                    <CommonPredictionsStripe
-                      predictions={heatmapData.flatMap(r =>
-                        r.matches
-                          .filter(m => m.hasPrediction)
-                          .map(m => ({
-                            predicted_score_a: m.predictedA,
-                            predicted_score_b: m.predictedB,
-                            exact_score_points_earned:
-                              m.isFinished &&
-                              m.predictedA === m.homeScore &&
-                              m.predictedB === m.awayScore ? 1 : 0,
-                          }))
-                      )}
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            )}
           </TabsContent>
 
           <TabsContent value="head2head" forceMount className="space-y-6 data-[state=inactive]:hidden">
