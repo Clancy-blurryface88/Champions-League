@@ -198,14 +198,23 @@ function assign3rd(allGroupMatches, groupOverrides = {}, bestThirdOrder = null, 
 
   const fullSuccess = backtrack(0, new Set());
 
-  // When a full valid assignment isn't possible (e.g. group stage incomplete and
-  // fewer than 8 qualifying teams exist, or their groups don't cover all slots),
-  // fall back to greedy best-effort: fill each slot independently with the best
-  // available team so the live bracket still shows projected opponents.
+  // When a full valid assignment isn't possible, fall back to a greedy best-effort
+  // using MRV (Minimum Remaining Values): process the most constrained slots first
+  // (fewest eligible qualifying teams). This prevents a team like Sweden (eligible
+  // for many slots) from being "stolen" by an earlier slot before reaching the slot
+  // where she truly belongs (e.g. slot 82 for Morocco).
   if (!fullSuccess) {
     const usedNames = new Set(Object.values(result).map(t => t.name));
-    for (const slotNum of SLOTS) {
-      if (result[slotNum]) continue;
+
+    // Sort slots by number of currently-eligible qualifying teams (ascending)
+    const remaining = SLOTS.filter(s => !result[s]);
+    remaining.sort((a, b) => {
+      const countA = qualifying.filter(t => !usedNames.has(t.name) && THIRD_SLOTS[a].includes(t.group)).length;
+      const countB = qualifying.filter(t => !usedNames.has(t.name) && THIRD_SLOTS[b].includes(t.group)).length;
+      return countA - countB;
+    });
+
+    for (const slotNum of remaining) {
       const candidate = qualifying.find(t =>
         !usedNames.has(t.name) && THIRD_SLOTS[slotNum].includes(t.group)
       );
