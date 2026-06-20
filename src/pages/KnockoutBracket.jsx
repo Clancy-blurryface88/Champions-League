@@ -371,7 +371,8 @@ export default function KnockoutBracket() {
       return null;
     };
 
-    const findDbMatch = (homeTeam, awayTeam) => {
+    const findDbMatch = (homeTeam, awayTeam, slotDef) => {
+      // 1. Exact match — both computed teams appear in the same DB match
       if (homeTeam && awayTeam) {
         const m = knockoutMatches.find(m =>
           !usedMatchIds.has(m.id) && (
@@ -381,11 +382,35 @@ export default function KnockoutBracket() {
         );
         if (m) return m;
       }
-      // Fallback: match by home team only (handles wrong 3rd-place projections)
-      if (homeTeam) {
+
+      const is3rdSlot = typeof slotDef?.away === 'object' && slotDef.away?.slot != null;
+
+      // 2. For 3rd-place slots: home-team fallback with group validation.
+      //    Only accept a DB match whose OTHER team is actually a 3rd-place finisher
+      //    from one of the valid groups for this slot — prevents "stealing" another
+      //    slot's match just because the team name appears in it.
+      if (homeTeam && is3rdSlot) {
+        const validGroups = new Set(THIRD_SLOTS[slotDef.away.slot] || []);
         const candidates = (byTeam[homeTeam.name] || []).filter(c => !usedMatchIds.has(c.id));
+
+        const validated = candidates.find(c => {
+          const otherName  = c.team_a === homeTeam.name ? c.team_b : c.team_a;
+          const otherGroup = ALL_GROUPS.find(g => (standings[g] || []).some(t => t.name === otherName));
+          const otherPos   = otherGroup ? (standings[otherGroup] || []).findIndex(t => t.name === otherName) : -1;
+          return otherGroup && validGroups.has(otherGroup) && otherPos === 2;
+        });
+        if (validated) return validated;
+
+        // Less-strict fallback: any available home-team match (standings may not be settled yet)
         return candidates.find(c => !c.is_finished) || candidates[0] || null;
       }
+
+      // 3. When home team is unknown — try by away team instead
+      if (!homeTeam && awayTeam) {
+        const candidates = (byTeam[awayTeam.name] || []).filter(c => !usedMatchIds.has(c.id));
+        return candidates.find(c => !c.is_finished) || candidates[0] || null;
+      }
+
       return null;
     };
 
@@ -400,7 +425,7 @@ export default function KnockoutBracket() {
         awayTeam = resolveLabel(slotDef.away);
       }
 
-      const dbMatch = findDbMatch(homeTeam, awayTeam);
+      const dbMatch = findDbMatch(homeTeam, awayTeam, slotDef);
       let displayHome = homeTeam;
       let displayAway = awayTeam;
       let homeScore = null, awayScore = null, isFinished = false;
