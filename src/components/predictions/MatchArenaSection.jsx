@@ -40,13 +40,18 @@ const R = {
 };
 
 const SHORT_NAMES = {
-  'Saudi Arabia': 'Saudia',
-  'South Korea':  'S.Korea',
-  'United States':'USA',
-  'New Zealand':  'N.Zealand',
-  'Ivory Coast':  'C.Ivoire',
-  'DR Congo':     'Congo',
-  'South Africa': 'S.Africa',
+  'Saudi Arabia':       'Saudia',
+  'South Korea':        'S.Korea',
+  'United States':      'USA',
+  'New Zealand':        'N.Zealand',
+  'Ivory Coast':        'C.Ivoire',
+  'DR Congo':           'Congo',
+  'Congo DR':           'Congo',
+  'South Africa':       'S.Africa',
+  'Korea Republic':     'K.Republic',
+  'Bosnia-Herzegovina': 'Bosnia',
+  'IR Iran':            'Iran',
+  'Cabo Verde':         'C.Verde',
 };
 const shorten = (name) => SHORT_NAMES[name] || name;
 
@@ -58,19 +63,19 @@ function FormDots({ form }) {
         const s = R[item.result];
         return (
           <div key={i} style={{
-            width: 28, height: 40,
+            width: 34, height: 48,
             background: `linear-gradient(160deg, ${s.bg}, rgba(255,255,255,0.02))`,
             border: `1px solid ${s.bd}`,
-            borderRadius: 4,
+            borderRadius: 5,
             transform: 'perspective(80px) rotateX(12deg) rotateY(-8deg)',
             boxShadow: `3px 3px 0 ${s.so}35`,
             display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
-            gap: 1, padding: '2px 3px',
+            gap: 2, padding: '3px 4px',
           }}>
-            <span style={{ fontSize: 9, fontWeight: 900, color: s.tx, lineHeight: 1 }}>{item.result}</span>
-            <span style={{ fontSize: 9, fontWeight: 900, color: '#fff', lineHeight: 1 }}>{item.scored}:{item.conceded}</span>
-            <span style={{ fontSize: 6, color: s.tx, lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 26, textAlign: 'center' }}>{shorten(item.opponent)}</span>
+            <span style={{ fontSize: 10, fontWeight: 900, color: s.tx, lineHeight: 1 }}>{item.result}</span>
+            <span style={{ fontSize: 10, fontWeight: 900, color: '#fff', lineHeight: 1 }}>{item.scored}:{item.conceded}</span>
+            <span style={{ fontSize: 7, color: s.tx, lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 30, textAlign: 'center' }}>{shorten(item.opponent)}</span>
           </div>
         );
       })}
