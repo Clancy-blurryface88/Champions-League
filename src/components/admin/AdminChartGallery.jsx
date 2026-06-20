@@ -423,19 +423,14 @@ export default function AdminChartGallery() {
             </Card>
 
             <Card n={24} title="Bar + Line Combo">
-              {(() => {
-                const { ComposedChart, Line: L, Bar: B } = require !== undefined
-                  ? { ComposedChart: require('recharts').ComposedChart, Line: require('recharts').Line, Bar: require('recharts').Bar }
-                  : {};
-                return (
-                  <ResponsiveContainer width="100%" height={130}>
-                    <BarChart data={barData} margin={{ top:4, right:4, left:-20, bottom:0 }}>
-                      <XAxis dataKey="name" tick={{ fill:'#64748b', fontSize:10 }} axisLine={false} tickLine={false} />
-                      <Bar dataKey="pts" fill="#3b82f6" opacity={0.7} radius={[2,2,0,0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                );
-              })()}
+              <ResponsiveContainer width="100%" height={130}>
+                <BarChart data={barData} margin={{ top:4, right:4, left:-20, bottom:0 }}>
+                  <XAxis dataKey="name" tick={{ fill:'#64748b', fontSize:10 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill:'#64748b', fontSize:9 }} axisLine={false} tickLine={false} />
+                  <Bar dataKey="pts" fill="#3b82f6" opacity={0.7} radius={[2,2,0,0]} />
+                  <Line type="monotone" dataKey="hits" stroke="#f5c518" strokeWidth={2} dot={false} />
+                </BarChart>
+              </ResponsiveContainer>
             </Card>
 
             <Card n={25} title="עמודות עם ערכים בתוך">
