@@ -77,13 +77,8 @@ function SlotBadge({ value, color }) {
     return () => clearTimeout(tid);
   }, [value, inView]);
 
-  const borderColor = settled ? color : 'rgba(255,255,255,0.25)';
-  const corners = [
-    { top:0, left:0,  borderTop:`1.5px solid ${borderColor}`, borderLeft:`1.5px solid ${borderColor}` },
-    { top:0, right:0, borderTop:`1.5px solid ${borderColor}`, borderRight:`1.5px solid ${borderColor}` },
-    { bottom:0, left:0,  borderBottom:`1.5px solid ${borderColor}`, borderLeft:`1.5px solid ${borderColor}` },
-    { bottom:0, right:0, borderBottom:`1.5px solid ${borderColor}`, borderRight:`1.5px solid ${borderColor}` },
-  ];
+  const strokeColor = settled ? color : 'rgba(255,255,255,0.25)';
+  const textColor   = settled ? color : 'rgba(255,255,255,0.5)';
   return (
     <span
       ref={badgeRef}
@@ -92,21 +87,24 @@ function SlotBadge({ value, color }) {
         display:     'inline-flex',
         alignItems:  'center',
         justifyContent: 'center',
-        fontSize:    11,
-        fontWeight:  800,
-        color:       settled ? color : 'rgba(255,255,255,0.5)',
-        padding:     '3px 6px',
-        lineHeight:  1,
+        width:       22,
+        height:      18,
         marginTop:   3,
-        minWidth:    20,
-        textAlign:   'center',
-        transition:  settled ? 'color 0.35s ease' : 'none',
       }}
     >
-      {corners.map((s, i) => (
-        <span key={i} style={{ position:'absolute', width:5, height:5, ...s, transition: settled ? 'border-color 0.35s ease' : 'none' }} />
-      ))}
-      {displayed}
+      {/* Chamfered octagon border — all 4 corners cut, no fill */}
+      <svg width={22} height={18} style={{ position:'absolute', top:0, left:0, overflow:'visible' }}>
+        <polygon
+          points="4,0 18,0 22,4 22,14 18,18 4,18 0,14 0,4"
+          fill="none"
+          stroke={strokeColor}
+          strokeWidth={1.2}
+          style={{ transition: settled ? 'stroke 0.35s ease' : 'none' }}
+        />
+      </svg>
+      <span style={{ position:'relative', zIndex:1, fontSize:11, fontWeight:800, color:textColor, lineHeight:1, transition: settled ? 'color 0.35s ease' : 'none' }}>
+        {displayed}
+      </span>
     </span>
   );
 }
