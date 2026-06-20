@@ -31,6 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ComparisonBar from "../components/stats/ComparisonBar";
 import CommonPredictionsStripe from "../components/stats/CommonPredictionsStripe";
 import RoundSummaryTable from "../components/stats/RoundSummaryTable";
+import GapTrackingTable from "../components/stats/GapTrackingTable";
 
 export default function MyStats() {
   const navigate = useNavigate();
@@ -816,11 +817,14 @@ export default function MyStats() {
           </TabsList>
 
           <TabsContent value="ranking" forceMount className="space-y-6 data-[state=inactive]:hidden">
-            {/* מגמות דירוג - Moved up */}
+            {/* מגמות דירוג */}
             <RankingHistoryCharts />
 
-            {/* היסטוריית מיקום - Moved down */}
+            {/* היסטוריית מיקום */}
             <RankingHistoryTable />
+
+            {/* מעקב פערים אינטרקטיבי */}
+            <GapTrackingTable />
 
             {/* סיכום מיקומים למשתתף */}
             <UserRankingsSummary />
