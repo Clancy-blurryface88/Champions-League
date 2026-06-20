@@ -78,21 +78,26 @@ function SlotBadge({ value, color }) {
   }, [value, inView]);
 
   const borderColor = settled ? color : 'rgba(255,255,255,0.25)';
-  const textColor   = settled ? color : 'rgba(255,255,255,0.5)';
-  const CLIP = 'polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%, 0 6px)';
+  const corners = [
+    { top:0, left:0,  borderTop:`1.5px solid ${borderColor}`, borderLeft:`1.5px solid ${borderColor}` },
+    { top:0, right:0, borderTop:`1.5px solid ${borderColor}`, borderRight:`1.5px solid ${borderColor}` },
+    { bottom:0, left:0,  borderBottom:`1.5px solid ${borderColor}`, borderLeft:`1.5px solid ${borderColor}` },
+    { bottom:0, right:0, borderBottom:`1.5px solid ${borderColor}`, borderRight:`1.5px solid ${borderColor}` },
+  ];
   return (
     <span
       ref={badgeRef}
-      style={{ position:'relative', display:'inline-flex', alignItems:'center', justifyContent:'center', marginTop:8 }}
+      style={{
+        position:'relative', display:'inline-flex', alignItems:'center', justifyContent:'center',
+        fontSize:11, fontWeight:800, color: settled ? color : 'rgba(255,255,255,0.5)',
+        padding:'3px 6px', lineHeight:1, marginTop:6, minWidth:20, textAlign:'center',
+        transition: settled ? 'color 0.35s ease' : 'none',
+      }}
     >
-      {/* Outer layer = border color */}
-      <span style={{ position:'absolute', width:24, height:20, background:borderColor, clipPath:CLIP, transition: settled ? 'background 0.35s ease' : 'none' }} />
-      {/* Inner layer = background (creates border illusion) */}
-      <span style={{ position:'absolute', width:22, height:18, background:'rgb(6,14,28)', clipPath:CLIP }} />
-      {/* Number */}
-      <span style={{ position:'relative', zIndex:1, fontSize:11, fontWeight:800, color:textColor, lineHeight:1, transition: settled ? 'color 0.35s ease' : 'none', padding:'0 5px' }}>
-        {displayed}
-      </span>
+      {corners.map((s, i) => (
+        <span key={i} style={{ position:'absolute', width:5, height:5, ...s, transition: settled ? 'border-color 0.35s ease' : 'none' }} />
+      ))}
+      {displayed}
     </span>
   );
 }

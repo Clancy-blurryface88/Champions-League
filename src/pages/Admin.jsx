@@ -20,6 +20,7 @@ import AdminApiExplorer from "../components/admin/AdminApiExplorer";
 import AdminGroupOverride from "../components/admin/AdminGroupOverride";
 import AdminFormDemo from "../components/admin/AdminFormDemo";
 import AdminFormDemo2 from "../components/admin/AdminFormDemo2";
+import AdminFormDemo3 from "../components/admin/AdminFormDemo3";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -82,6 +83,7 @@ export default function Admin() {
       case 'group-override': return <AdminGroupOverride />;
       case 'form-demo': return <AdminFormDemo />;
       case 'form-demo2': return <AdminFormDemo2 />;
+      case 'form-demo3': return <AdminFormDemo3 />;
       default: return <AdminRounds />;
     }
   };
@@ -100,6 +102,7 @@ export default function Admin() {
     { id: 'group-override',   label: '🔀 סידור בתים',          icon: BarChart3 },
     { id: 'form-demo',        label: '🎨 דמו טופס משחקים',     icon: BarChart3 },
     { id: 'form-demo2',       label: '🎨 דמו טופס 2',          icon: BarChart3 },
+    { id: 'form-demo3',       label: '🎨 דמו טופס 3',          icon: BarChart3 },
   ];
 
   return (
