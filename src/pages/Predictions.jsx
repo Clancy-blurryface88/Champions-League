@@ -77,31 +77,19 @@ function SlotBadge({ value, color }) {
     return () => clearTimeout(tid);
   }, [value, inView]);
 
-  const strokeColor = settled ? color : 'rgba(255,255,255,0.25)';
+  const borderColor = settled ? color : 'rgba(255,255,255,0.25)';
   const textColor   = settled ? color : 'rgba(255,255,255,0.5)';
+  const CLIP = 'polygon(15% 0, 85% 0, 100% 18%, 100% 100%, 0 100%, 0 18%)';
   return (
     <span
       ref={badgeRef}
-      style={{
-        position:    'relative',
-        display:     'inline-flex',
-        alignItems:  'center',
-        justifyContent: 'center',
-        width:       22,
-        height:      18,
-        marginTop:   3,
-      }}
+      style={{ position:'relative', display:'inline-flex', alignItems:'center', justifyContent:'center', marginTop:3 }}
     >
-      {/* Chamfered octagon border — all 4 corners cut, no fill */}
-      <svg width={22} height={18} style={{ position:'absolute', top:0, left:0, overflow:'visible' }}>
-        <polygon
-          points="4,0 18,0 22,4 22,14 18,18 4,18 0,14 0,4"
-          fill="none"
-          stroke={strokeColor}
-          strokeWidth={1.2}
-          style={{ transition: settled ? 'stroke 0.35s ease' : 'none' }}
-        />
-      </svg>
+      {/* Outer layer = border color */}
+      <span style={{ position:'absolute', width:22, height:18, background:borderColor, clipPath:CLIP, transition: settled ? 'background 0.35s ease' : 'none' }} />
+      {/* Inner layer = background (creates border illusion) */}
+      <span style={{ position:'absolute', width:20, height:16, background:'rgb(6,14,28)', clipPath:CLIP }} />
+      {/* Number */}
       <span style={{ position:'relative', zIndex:1, fontSize:11, fontWeight:800, color:textColor, lineHeight:1, transition: settled ? 'color 0.35s ease' : 'none' }}>
         {displayed}
       </span>
