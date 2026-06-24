@@ -658,7 +658,7 @@ export default function LiveDataPanel({ onClose }) {
         <div className="h-px mx-5 bg-gradient-to-r from-transparent via-white/8 to-transparent flex-shrink-0" />
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-white/10">
+        <div className="flex-1 overflow-y-auto px-4 pt-1 pb-4 scrollbar-thin scrollbar-thumb-white/10">
           {filter === 'LB' ? (
             <LiveLBTab />
           ) : (
