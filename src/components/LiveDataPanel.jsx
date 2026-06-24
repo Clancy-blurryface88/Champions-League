@@ -127,9 +127,10 @@ function RankCard({ row, index, total, isInitial }) {
                     <TeamFlag logo={mp.homeLogo} name={mp.home} size={9} className="flex-shrink-0" rounded="sm" />
                     <span className="text-[11px] font-mono font-bold tabular-nums leading-none"
                       style={{ color: '#7dd3fc' }}>
-                      {mp.predicted}{mp.isExact ? '🎯' : ''}
+                      {mp.predicted}
                     </span>
                     <TeamFlag logo={mp.awayLogo} name={mp.away} size={9} className="flex-shrink-0" rounded="sm" />
+                    {mp.isExact ? <span style={{ fontSize: 10, lineHeight: 1 }}>🎯</span> : <span style={{ width: 10 }} />}
                   </div>
                 ))}
               </div>
