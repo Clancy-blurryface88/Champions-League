@@ -196,44 +196,63 @@ function LiveLBTab() {
 
       if (liveMatches.length === 0) { setLiveInfo(null); return; }
 
+      // Collect ALL live DB matches (not just the first one)
       const unfinished = data.matches.filter(m => !m.is_finished);
-      let dbMatch = null, apiMatch = null;
+      const liveDbMatches = [];
       for (const lm of liveMatches) {
         const f = findDbMatch(lm, unfinished);
-        if (f) { dbMatch = f; apiMatch = lm; break; }
+        if (f) liveDbMatches.push({ dbMatch: f, apiMatch: lm });
       }
-      if (!dbMatch) return;
+      if (liveDbMatches.length === 0) return;
 
-      const homeScore = apiMatch.score?.fullTime?.home ?? apiMatch.score?.halfTime?.home ?? 0;
-      const awayScore = apiMatch.score?.fullTime?.away ?? apiMatch.score?.halfTime?.away ?? 0;
-      const liveMatch = { ...dbMatch, actual_score_a: homeScore, actual_score_b: awayScore };
-
-      const matchPreds = data.predictions.filter(p => p.match_id === dbMatch.id);
-      const latestMap  = {};
-      matchPreds.forEach(p => {
-        if (!latestMap[p.user_id] || new Date(p.created_at) > new Date(latestMap[p.user_id].created_at))
-          latestMap[p.user_id] = p;
-      });
       const confirmedMap = {};
       data.userStats.forEach(s => { confirmedMap[s.user_id] = s.total_points || 0; });
 
-      const built = Object.values(latestMap).map(pred => {
-        const b = calculateScore(pred, liveMatch);
-        const confirmed = confirmedMap[pred.user_id] || 0;
-        return { userId: pred.user_id, name: getName(pred.user_id), confirmed: parseFloat(confirmed.toFixed(2)), liveBonus: parseFloat(b.totalPoints.toFixed(2)), total: parseFloat((confirmed + b.totalPoints).toFixed(2)), predicted: `${pred.predicted_score_a}-${pred.predicted_score_b}` };
-      });
-      const predUsers = new Set(Object.keys(latestMap));
-      data.userStats.forEach(s => {
-        if (!predUsers.has(s.user_id))
-          built.push({ userId: s.user_id, name: getName(s.user_id), confirmed: parseFloat((s.total_points || 0).toFixed(2)), liveBonus: 0, total: parseFloat((s.total_points || 0).toFixed(2)), predicted: null });
-      });
+      // Sum live bonus across ALL concurrent live matches per user
+      const liveBonusMap = {};
+      for (const { dbMatch, apiMatch } of liveDbMatches) {
+        const homeScore = apiMatch.score?.fullTime?.home ?? apiMatch.score?.halfTime?.home ?? 0;
+        const awayScore = apiMatch.score?.fullTime?.away ?? apiMatch.score?.halfTime?.away ?? 0;
+        const liveMatch = { ...dbMatch, actual_score_a: homeScore, actual_score_b: awayScore };
+
+        const matchPreds = data.predictions.filter(p => p.match_id === dbMatch.id);
+        const latestMap  = {};
+        matchPreds.forEach(p => {
+          if (!latestMap[p.user_id] || new Date(p.created_at) > new Date(latestMap[p.user_id].created_at))
+            latestMap[p.user_id] = p;
+        });
+        for (const [userId, pred] of Object.entries(latestMap)) {
+          const b = calculateScore(pred, liveMatch);
+          if (!liveBonusMap[userId]) liveBonusMap[userId] = { liveBonus: 0, matchCount: 0 };
+          liveBonusMap[userId].liveBonus += b.totalPoints;
+          liveBonusMap[userId].matchCount += 1;
+          if (liveBonusMap[userId].matchCount === 1)
+            liveBonusMap[userId].predicted = `${pred.predicted_score_a}-${pred.predicted_score_b}`;
+          else
+            liveBonusMap[userId].predicted = `${liveBonusMap[userId].matchCount}⚽`;
+        }
+      }
+
+      const allUserIds = new Set([...Object.keys(liveBonusMap), ...data.userStats.map(s => s.user_id)]);
+      const built = [];
+      for (const userId of allUserIds) {
+        const confirmed  = confirmedMap[userId] || 0;
+        const liveBonus  = liveBonusMap[userId]?.liveBonus  || 0;
+        const predicted  = liveBonusMap[userId]?.predicted  || null;
+        built.push({ userId, name: getName(userId), confirmed: parseFloat(confirmed.toFixed(2)), liveBonus: parseFloat(liveBonus.toFixed(2)), total: parseFloat((confirmed + liveBonus).toFixed(2)), predicted });
+      }
       built.sort((a, b) => b.total - a.total);
       built.forEach((r, i) => { r.liveRank = i + 1; });
       built.forEach(r => { r.officialRank = officialRankMap.current[r.userId] ?? r.liveRank; });
 
       setIsInitialLoad(false);  // smooth reorder only, no re-reveal
       setRows(built);
-      setLiveInfo({ home: dbMatch.team_a, away: dbMatch.team_b, homeLogo: dbMatch.team_a_logo ?? null, awayLogo: dbMatch.team_b_logo ?? null, score: `${homeScore}–${awayScore}`, minute: apiMatch.minute ?? null });
+      setLiveInfo(liveDbMatches.map(({ dbMatch, apiMatch }) => ({
+        home: dbMatch.team_a, away: dbMatch.team_b,
+        homeLogo: dbMatch.team_a_logo ?? null, awayLogo: dbMatch.team_b_logo ?? null,
+        score: `${apiMatch.score?.fullTime?.home ?? apiMatch.score?.halfTime?.home ?? 0}–${apiMatch.score?.fullTime?.away ?? apiMatch.score?.halfTime?.away ?? 0}`,
+        minute: apiMatch.minute ?? null,
+      })));
     } catch (e) {
       console.error('[LiveLBTab]', e);
       if (!hasShownInitial.current) setStatus('error');
@@ -263,21 +282,22 @@ function LiveLBTab() {
     <div>
       <style>{`@keyframes lb-blur-focus { from { filter: blur(6px); opacity: 0; } to { filter: blur(0); opacity: 1; } }`}</style>
 
-      {/* live match chip */}
+      {/* live match chips — one per concurrent live match */}
       <AnimatePresence>
-        {liveInfo && (
-          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            className="mb-3 px-3 py-2 rounded-xl flex items-center gap-2"
+        {liveInfo && liveInfo.map((info, i) => (
+          <motion.div key={i} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            transition={{ delay: i * 0.08 }}
+            className="mb-2 px-3 py-2 rounded-xl flex items-center gap-2"
             style={{ background: 'rgba(52,211,153,.08)', border: '1px solid rgba(52,211,153,.25)' }}>
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
-            <TeamFlag logo={liveInfo.homeLogo} name={liveInfo.home} className="w-4 h-4 flex-shrink-0" />
-            <span className="font-bold text-xs text-emerald-400">{liveInfo.home}</span>
-            <span className="font-bold text-xs text-white tabular-nums">{liveInfo.score}</span>
-            <span className="font-bold text-xs text-emerald-400">{liveInfo.away}</span>
-            <TeamFlag logo={liveInfo.awayLogo} name={liveInfo.away} className="w-4 h-4 flex-shrink-0" />
-            {liveInfo.minute && <span className="text-slate-500 text-[10px] mr-1">{liveInfo.minute}'</span>}
+            <TeamFlag logo={info.homeLogo} name={info.home} className="w-4 h-4 flex-shrink-0" />
+            <span className="font-bold text-xs text-emerald-400">{info.home}</span>
+            <span className="font-bold text-xs text-white tabular-nums">{info.score}</span>
+            <span className="font-bold text-xs text-emerald-400">{info.away}</span>
+            <TeamFlag logo={info.awayLogo} name={info.away} className="w-4 h-4 flex-shrink-0" />
+            {info.minute && <span className="text-slate-500 text-[10px] mr-1">{info.minute}'</span>}
           </motion.div>
-        )}
+        ))}
       </AnimatePresence>
 
       <div style={{ maxWidth: 220, margin: '0 auto' }}>
