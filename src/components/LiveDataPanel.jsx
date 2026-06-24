@@ -108,7 +108,7 @@ function RankCard({ row, index, total, isInitial }) {
         <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%) skewX(6deg)', fontSize: 28, fontWeight: 900, color: RANK_COLOR(row.liveRank), opacity: 0.15, lineHeight: 1, userSelect: 'none', pointerEvents: 'none', transition: 'color .5s ease' }}>
           {row.liveRank}
         </span>
-        <div style={{ transform: 'skewX(6deg)', padding: '16px 6px 16px 34px' }}>
+        <div style={{ transform: 'skewX(6deg)', padding: '10px 6px 10px 34px' }}>
           <div className="flex items-center gap-1">
             <p className="flex-1 min-w-0 truncate text-xs font-semibold text-slate-200 text-center"
               style={isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}}>
@@ -124,8 +124,8 @@ function RankCard({ row, index, total, isInitial }) {
               <div className="flex flex-col gap-0.5 flex-shrink-0 items-end" style={{ minWidth: 36 }}>
                 {row.matchPredictions.map((mp, i) => (
                   <span key={i} className="text-[10px] font-mono flex-shrink-0 text-right"
-                    style={{ color: mp.isExact ? '#34d399' : mp.isHit ? '#86efac' : '#7dd3fc' }}>
-                    {mp.predicted}{mp.isExact ? '🎯' : mp.isHit ? '✅' : ''}
+                    style={{ color: '#7dd3fc' }}>
+                    {mp.predicted}{mp.isExact ? '🎯' : ''}
                   </span>
                 ))}
               </div>
