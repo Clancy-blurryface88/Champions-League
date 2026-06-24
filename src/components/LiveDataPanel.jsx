@@ -108,7 +108,7 @@ function RankCard({ row, index, total, isInitial }) {
         <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%) skewX(6deg)', fontSize: 28, fontWeight: 900, color: RANK_COLOR(row.liveRank), opacity: 0.15, lineHeight: 1, userSelect: 'none', pointerEvents: 'none', transition: 'color .5s ease' }}>
           {row.liveRank}
         </span>
-        <div style={{ transform: 'skewX(6deg)', padding: '10px 6px 10px 34px' }}>
+        <div style={{ transform: 'skewX(6deg)', padding: '16px 6px 16px 34px' }}>
           <div className="flex items-center gap-1">
             <p className="flex-1 min-w-0 truncate text-xs font-semibold text-slate-200 text-center"
               style={isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}}>
@@ -120,28 +120,23 @@ function RankCard({ row, index, total, isInitial }) {
             <div className="flex-shrink-0 w-8 flex justify-end">
               <DeltaIcon delta={delta} />
             </div>
+            {row.matchPredictions && row.matchPredictions.length > 0 ? (
+              <div className="flex flex-col gap-0.5 flex-shrink-0 items-end">
+                {row.matchPredictions.map((mp, i) => (
+                  <div key={i} className="flex items-center gap-0.5">
+                    <TeamFlag logo={mp.homeLogo} name={mp.home} className="w-3 h-3 flex-shrink-0" rounded="sm" />
+                    <span className="text-[9px] font-mono font-bold tabular-nums"
+                      style={{ color: mp.isExact ? '#34d399' : mp.isHit ? '#86efac' : '#475569' }}>
+                      {mp.predicted}
+                    </span>
+                    <TeamFlag logo={mp.awayLogo} name={mp.away} className="w-3 h-3 flex-shrink-0" rounded="sm" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <span className="w-10 flex-shrink-0" />
+            )}
           </div>
-          {row.matchPredictions && row.matchPredictions.length > 0 && (
-            <div className="flex flex-col gap-1 mt-1.5">
-              {row.matchPredictions.map((mp, i) => (
-                <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 rounded-md"
-                  style={{
-                    background: mp.isExact ? 'rgba(52,211,153,0.18)' : mp.isHit ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.04)',
-                    border: mp.isExact ? '1px solid rgba(52,211,153,0.55)' : mp.isHit ? '1px solid rgba(52,211,153,0.25)' : '1px solid rgba(255,255,255,0.08)',
-                    boxShadow: mp.isExact ? '0 0 8px rgba(52,211,153,0.25)' : 'none',
-                  }}>
-                  <TeamFlag logo={mp.homeLogo} name={mp.home} className="w-3.5 h-3.5 flex-shrink-0" rounded="sm" />
-                  <span className="text-[10px] font-mono font-bold flex-1 text-center tabular-nums"
-                    style={{ color: mp.isExact ? '#34d399' : mp.isHit ? '#86efac' : '#64748b' }}>
-                    {mp.predicted}
-                  </span>
-                  <TeamFlag logo={mp.awayLogo} name={mp.away} className="w-3.5 h-3.5 flex-shrink-0" rounded="sm" />
-                  {mp.isExact && <span className="text-[9px] ml-0.5">🎯</span>}
-                  {!mp.isExact && mp.isHit && <span className="text-[9px] ml-0.5 text-emerald-400">✓</span>}
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </motion.div>
