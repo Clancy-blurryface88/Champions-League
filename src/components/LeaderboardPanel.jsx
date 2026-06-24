@@ -221,7 +221,7 @@ export default function LeaderboardPanel({ onClose, user }) {
 
                   // עיכוב אקספוננציאלי — מקום אחרון מגיע מהר, מקום ראשון מגיע עם דרמה
                   const rank = totalParticipants - 1 - index;
-                  const cardAnimationDelay = Math.pow(rank, 1.6) * 0.36 + (position === 1 ? 0.6 : 0);
+                  const cardAnimationDelay = Math.pow(rank, 1.6) * 0.22 + (position === 1 ? 0.3 : 0);
                   const scoreAnimationDelay = cardAnimationDelay + 0.25;
                   const shockDelay = index * 0.28;
 
