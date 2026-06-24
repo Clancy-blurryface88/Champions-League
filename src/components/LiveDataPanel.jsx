@@ -91,7 +91,7 @@ function RankCard({ row, index, total, isInitial }) {
     <motion.div layout layoutId={`lb-${row.userId}`}
       initial={isInitial ? { opacity: 0, y: 14 } : false}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ layout: { type: 'spring', stiffness: 12, damping: 14 }, ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}) }}
+      transition={{ layout: { type: 'spring', stiffness: 5, damping: 22 }, ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}) }}
       className="relative mb-1">
       <div style={{ transform: 'skewX(-6deg)', borderRadius: 8, overflow: 'hidden', border: `2px solid ${RANK_BORDER(row.liveRank)}`, background: RANK_BG(row.liveRank), transition: 'border-color .5s ease, background .5s ease', position: 'relative' }}>
         <ShineBorder
@@ -123,10 +123,14 @@ function RankCard({ row, index, total, isInitial }) {
             {row.matchPredictions && row.matchPredictions.length > 0 ? (
               <div className="flex flex-col gap-0.5 flex-shrink-0 items-end" style={{ minWidth: 36 }}>
                 {row.matchPredictions.map((mp, i) => (
-                  <span key={i} className="text-[10px] font-mono flex-shrink-0 text-right"
-                    style={{ color: '#7dd3fc' }}>
-                    {mp.predicted}{mp.isExact ? '🎯' : ''}
-                  </span>
+                  <div key={i} className="flex items-center gap-0.5 flex-shrink-0">
+                    <TeamFlag logo={mp.homeLogo} name={mp.home} className="w-2.5 h-2.5 flex-shrink-0" rounded="sm" />
+                    <span className="text-[10px] font-mono font-bold tabular-nums leading-none"
+                      style={{ color: '#7dd3fc' }}>
+                      {mp.predicted}{mp.isExact ? '🎯' : ''}
+                    </span>
+                    <TeamFlag logo={mp.awayLogo} name={mp.away} className="w-2.5 h-2.5 flex-shrink-0" rounded="sm" />
+                  </div>
                 ))}
               </div>
             ) : (
