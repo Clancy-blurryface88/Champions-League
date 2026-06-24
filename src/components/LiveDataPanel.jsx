@@ -121,25 +121,16 @@ function RankCard({ row, index, total, isInitial }) {
               <DeltaIcon delta={delta} />
             </div>
             {row.matchPredictions && row.matchPredictions.length > 0 ? (
-              <div className="flex flex-col gap-0.5 flex-shrink-0" style={{ minWidth: 46 }}>
+              <div className="flex flex-col gap-0.5 flex-shrink-0 items-end" style={{ minWidth: 36 }}>
                 {row.matchPredictions.map((mp, i) => (
-                  <div key={i} className="flex items-center justify-end gap-0.5">
-                    <TeamFlag logo={mp.homeLogo} name={mp.home} className="w-2 h-2 flex-shrink-0" rounded="sm" />
-                    <span className="text-[8px] font-mono font-bold tabular-nums leading-none"
-                      style={{ color: mp.isExact ? '#34d399' : mp.isHit ? '#86efac' : '#64748b' }}>
-                      {mp.predicted}
-                    </span>
-                    <TeamFlag logo={mp.awayLogo} name={mp.away} className="w-2 h-2 flex-shrink-0" rounded="sm" />
-                    {mp.isExact
-                      ? <span style={{ fontSize: 8 }}>🎯</span>
-                      : mp.isHit
-                      ? <span style={{ fontSize: 8 }}>✅</span>
-                      : <span style={{ width: 10 }} />}
-                  </div>
+                  <span key={i} className="text-[10px] font-mono flex-shrink-0 text-right"
+                    style={{ color: mp.isExact ? '#34d399' : mp.isHit ? '#86efac' : '#7dd3fc' }}>
+                    {mp.predicted}{mp.isExact ? '🎯' : mp.isHit ? '✅' : ''}
+                  </span>
                 ))}
               </div>
             ) : (
-              <span className="flex-shrink-0" style={{ minWidth: 46 }} />
+              <span className="flex-shrink-0" style={{ minWidth: 36 }} />
             )}
           </div>
         </div>
