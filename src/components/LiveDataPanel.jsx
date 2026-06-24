@@ -314,7 +314,7 @@ function LiveLBTab() {
         ))}
       </AnimatePresence>
 
-      <div style={{ maxWidth: 220, margin: '0 auto' }}>
+      <div style={{ maxWidth: 248, margin: '0 auto' }}>
         <AnimatePresence>
           {rows.map((row, idx) => (
             <RankCard key={row.userId} row={row} index={idx} total={rows.length} isInitial={isInitialLoad} />
