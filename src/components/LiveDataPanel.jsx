@@ -109,8 +109,8 @@ function RankCard({ row, index, total, isInitial }) {
           {row.liveRank}
         </span>
         <div style={{ transform: 'skewX(6deg)', padding: '13px 14px 13px 32px' }}>
-          <div className="flex items-center gap-1">
-            <p className="flex-1 min-w-0 truncate text-[13px] font-semibold text-slate-200 text-center"
+          <div className="flex items-center gap-2.5">
+            <p className="flex-1 min-w-0 truncate text-[13px] font-semibold text-slate-200 text-left"
               style={isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}}>
               {row.name}
             </p>
