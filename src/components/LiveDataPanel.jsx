@@ -91,7 +91,7 @@ function RankCard({ row, index, total, isInitial }) {
     <motion.div layout layoutId={`lb-${row.userId}`}
       initial={isInitial ? { opacity: 0, y: 14 } : false}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ layout: { type: 'spring', stiffness: 5, damping: 22 }, ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}) }}
+      transition={{ layout: { type: 'spring', stiffness: 9, damping: 20 }, ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}) }}
       className="relative mb-1">
       <div style={{ transform: 'skewX(-6deg)', borderRadius: 8, overflow: 'hidden', border: `2px solid ${RANK_BORDER(row.liveRank)}`, background: RANK_BG(row.liveRank), transition: 'border-color .5s ease, background .5s ease', position: 'relative' }}>
         <ShineBorder
@@ -108,7 +108,7 @@ function RankCard({ row, index, total, isInitial }) {
         <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%) skewX(6deg)', fontSize: 28, fontWeight: 900, color: RANK_COLOR(row.liveRank), opacity: 0.15, lineHeight: 1, userSelect: 'none', pointerEvents: 'none', transition: 'color .5s ease' }}>
           {row.liveRank}
         </span>
-        <div style={{ transform: 'skewX(6deg)', padding: '10px 6px 10px 34px' }}>
+        <div style={{ transform: 'skewX(6deg)', padding: '10px 2px 10px 28px' }}>
           <div className="flex items-center gap-1">
             <p className="flex-1 min-w-0 truncate text-xs font-semibold text-slate-200 text-center"
               style={isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}}>
