@@ -108,7 +108,7 @@ function RankCard({ row, index, total, isInitial }) {
         <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%) skewX(6deg)', fontSize: 28, fontWeight: 900, color: RANK_COLOR(row.liveRank), opacity: 0.15, lineHeight: 1, userSelect: 'none', pointerEvents: 'none', transition: 'color .5s ease' }}>
           {row.liveRank}
         </span>
-        <div style={{ transform: 'skewX(6deg)', padding: '16px 6px 16px 34px' }}>
+        <div style={{ transform: 'skewX(6deg)', padding: '10px 6px 10px 34px' }}>
           <div className="flex items-center gap-1">
             <p className="flex-1 min-w-0 truncate text-xs font-semibold text-slate-200 text-center"
               style={isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}}>
@@ -117,18 +117,31 @@ function RankCard({ row, index, total, isInitial }) {
             <span className="text-[11px] font-bold text-emerald-400 tabular-nums flex-shrink-0">
               <ScoreCounter value={row.total} duration={scoreDur} delay={scoreDelay} showDecimals={true} />
             </span>
-            <div className="flex-shrink-0 w-10 flex justify-end">
+            <div className="flex-shrink-0 w-8 flex justify-end">
               <DeltaIcon delta={delta} />
             </div>
-            {row.predicted ? (
-              <span className="text-[10px] font-mono flex-shrink-0 w-8 text-right"
-                style={{ color: '#7dd3fc' }}>
-                {row.predicted}
-              </span>
-            ) : (
-              <span className="w-8 flex-shrink-0" />
-            )}
           </div>
+          {row.matchPredictions && row.matchPredictions.length > 0 && (
+            <div className="flex flex-col gap-1 mt-1.5">
+              {row.matchPredictions.map((mp, i) => (
+                <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 rounded-md"
+                  style={{
+                    background: mp.isExact ? 'rgba(52,211,153,0.18)' : mp.isHit ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.04)',
+                    border: mp.isExact ? '1px solid rgba(52,211,153,0.55)' : mp.isHit ? '1px solid rgba(52,211,153,0.25)' : '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: mp.isExact ? '0 0 8px rgba(52,211,153,0.25)' : 'none',
+                  }}>
+                  <TeamFlag logo={mp.homeLogo} name={mp.home} className="w-3.5 h-3.5 flex-shrink-0" rounded="sm" />
+                  <span className="text-[10px] font-mono font-bold flex-1 text-center tabular-nums"
+                    style={{ color: mp.isExact ? '#34d399' : mp.isHit ? '#86efac' : '#64748b' }}>
+                    {mp.predicted}
+                  </span>
+                  <TeamFlag logo={mp.awayLogo} name={mp.away} className="w-3.5 h-3.5 flex-shrink-0" rounded="sm" />
+                  {mp.isExact && <span className="text-[9px] ml-0.5">🎯</span>}
+                  {!mp.isExact && mp.isHit && <span className="text-[9px] ml-0.5 text-emerald-400">✓</span>}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </motion.div>
@@ -222,24 +235,30 @@ function LiveLBTab() {
             latestMap[p.user_id] = p;
         });
         for (const [userId, pred] of Object.entries(latestMap)) {
-          const b = calculateScore(pred, liveMatch);
-          if (!liveBonusMap[userId]) liveBonusMap[userId] = { liveBonus: 0, matchCount: 0 };
+          const b  = calculateScore(pred, liveMatch);
+          const pA = pred.predicted_score_a, pB = pred.predicted_score_b;
+          const pDir = pA > pB ? 'home' : pA < pB ? 'away' : 'draw';
+          const aDir = homeScore > awayScore ? 'home' : homeScore < awayScore ? 'away' : 'draw';
+          const isExact = pA === homeScore && pB === awayScore;
+          const isHit   = pDir === aDir;
+          if (!liveBonusMap[userId]) liveBonusMap[userId] = { liveBonus: 0, matchPredictions: [] };
           liveBonusMap[userId].liveBonus += b.totalPoints;
-          liveBonusMap[userId].matchCount += 1;
-          if (liveBonusMap[userId].matchCount === 1)
-            liveBonusMap[userId].predicted = `${pred.predicted_score_a}-${pred.predicted_score_b}`;
-          else
-            liveBonusMap[userId].predicted = `${liveBonusMap[userId].matchCount}⚽`;
+          liveBonusMap[userId].matchPredictions.push({
+            predicted: `${pA}-${pB}`,
+            homeLogo: dbMatch.team_a_logo ?? null, home: dbMatch.team_a,
+            awayLogo: dbMatch.team_b_logo ?? null, away: dbMatch.team_b,
+            isExact, isHit,
+          });
         }
       }
 
       const allUserIds = new Set([...Object.keys(liveBonusMap), ...data.userStats.map(s => s.user_id)]);
       const built = [];
       for (const userId of allUserIds) {
-        const confirmed  = confirmedMap[userId] || 0;
-        const liveBonus  = liveBonusMap[userId]?.liveBonus  || 0;
-        const predicted  = liveBonusMap[userId]?.predicted  || null;
-        built.push({ userId, name: getName(userId), confirmed: parseFloat(confirmed.toFixed(2)), liveBonus: parseFloat(liveBonus.toFixed(2)), total: parseFloat((confirmed + liveBonus).toFixed(2)), predicted });
+        const confirmed        = confirmedMap[userId] || 0;
+        const liveBonus        = liveBonusMap[userId]?.liveBonus        || 0;
+        const matchPredictions = liveBonusMap[userId]?.matchPredictions || [];
+        built.push({ userId, name: getName(userId), confirmed: parseFloat(confirmed.toFixed(2)), liveBonus: parseFloat(liveBonus.toFixed(2)), total: parseFloat((confirmed + liveBonus).toFixed(2)), matchPredictions });
       }
       built.sort((a, b) => b.total - a.total);
       built.forEach((r, i) => { r.liveRank = i + 1; });
