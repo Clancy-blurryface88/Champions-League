@@ -110,8 +110,8 @@ function RankCard({ row, index, total, isInitial }) {
         </span>
         <div style={{ transform: 'skewX(6deg)', padding: '13px 14px 13px 32px' }}>
           <div className="flex items-center gap-2.5">
-            <p className="flex-1 min-w-0 truncate text-[13px] font-semibold text-slate-200 text-left"
-              style={{ paddingLeft: 5, ...(isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}) }}>
+            <p className="flex-1 min-w-0 truncate text-[13px] font-semibold text-slate-200 text-center"
+              style={isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}}>
               {row.name}
             </p>
             <span className="text-[12px] font-bold text-emerald-400 tabular-nums flex-shrink-0">
@@ -130,7 +130,7 @@ function RankCard({ row, index, total, isInitial }) {
                       {mp.predicted}
                     </span>
                     <TeamFlag logo={mp.awayLogo} name={mp.away} size={9} className="flex-shrink-0" rounded="sm" />
-                    <span style={{ width: 14, display: 'inline-flex', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ width: 14, marginLeft: 4, display: 'inline-flex', justifyContent: 'center', flexShrink: 0 }}>
                       {mp.isExact ? <span style={{ fontSize: 10, lineHeight: 1 }}>🎯</span> : null}
                     </span>
                   </div>
