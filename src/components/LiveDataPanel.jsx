@@ -105,36 +105,36 @@ function RankCard({ row, index, total, isInitial }) {
             ['#475569','#64748b','#475569']
           }
         />
-        <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%) skewX(6deg)', fontSize: 28, fontWeight: 900, color: RANK_COLOR(row.liveRank), opacity: 0.15, lineHeight: 1, userSelect: 'none', pointerEvents: 'none', transition: 'color .5s ease' }}>
+        <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%) skewX(6deg)', fontSize: 32, fontWeight: 900, color: RANK_COLOR(row.liveRank), opacity: 0.15, lineHeight: 1, userSelect: 'none', pointerEvents: 'none', transition: 'color .5s ease' }}>
           {row.liveRank}
         </span>
-        <div style={{ transform: 'skewX(6deg)', padding: '10px 2px 10px 28px' }}>
+        <div style={{ transform: 'skewX(6deg)', padding: '13px 4px 13px 32px' }}>
           <div className="flex items-center gap-1">
-            <p className="flex-1 min-w-0 truncate text-xs font-semibold text-slate-200 text-center"
+            <p className="flex-1 min-w-0 truncate text-[13px] font-semibold text-slate-200 text-center"
               style={isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}}>
               {row.name}
             </p>
-            <span className="text-[11px] font-bold text-emerald-400 tabular-nums flex-shrink-0">
+            <span className="text-[12px] font-bold text-emerald-400 tabular-nums flex-shrink-0">
               <ScoreCounter value={row.total} duration={scoreDur} delay={scoreDelay} showDecimals={true} />
             </span>
             <div className="flex-shrink-0 w-8 flex justify-end">
               <DeltaIcon delta={delta} />
             </div>
             {row.matchPredictions && row.matchPredictions.length > 0 ? (
-              <div className="flex flex-col gap-0.5 flex-shrink-0 items-end" style={{ minWidth: 36 }}>
+              <div className="flex flex-col gap-0.5 flex-shrink-0 items-end" style={{ minWidth: 38 }}>
                 {row.matchPredictions.map((mp, i) => (
                   <div key={i} className="flex items-center gap-0.5 flex-shrink-0">
-                    <TeamFlag logo={mp.homeLogo} name={mp.home} size={8} className="flex-shrink-0" rounded="sm" />
-                    <span className="text-[10px] font-mono font-bold tabular-nums leading-none"
+                    <TeamFlag logo={mp.homeLogo} name={mp.home} size={9} className="flex-shrink-0" rounded="sm" />
+                    <span className="text-[11px] font-mono font-bold tabular-nums leading-none"
                       style={{ color: '#7dd3fc' }}>
                       {mp.predicted}{mp.isExact ? '🎯' : ''}
                     </span>
-                    <TeamFlag logo={mp.awayLogo} name={mp.away} size={8} className="flex-shrink-0" rounded="sm" />
+                    <TeamFlag logo={mp.awayLogo} name={mp.away} size={9} className="flex-shrink-0" rounded="sm" />
                   </div>
                 ))}
               </div>
             ) : (
-              <span className="flex-shrink-0" style={{ minWidth: 36 }} />
+              <span className="flex-shrink-0" style={{ minWidth: 38 }} />
             )}
           </div>
         </div>
