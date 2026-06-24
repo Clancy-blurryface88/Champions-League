@@ -124,12 +124,12 @@ function RankCard({ row, index, total, isInitial }) {
               <div className="flex flex-col gap-0.5 flex-shrink-0 items-end" style={{ minWidth: 36 }}>
                 {row.matchPredictions.map((mp, i) => (
                   <div key={i} className="flex items-center gap-0.5 flex-shrink-0">
-                    <TeamFlag logo={mp.homeLogo} name={mp.home} className="w-2.5 h-2.5 flex-shrink-0" rounded="sm" />
+                    <TeamFlag logo={mp.homeLogo} name={mp.home} size={8} className="flex-shrink-0" rounded="sm" />
                     <span className="text-[10px] font-mono font-bold tabular-nums leading-none"
                       style={{ color: '#7dd3fc' }}>
                       {mp.predicted}{mp.isExact ? '🎯' : ''}
                     </span>
-                    <TeamFlag logo={mp.awayLogo} name={mp.away} className="w-2.5 h-2.5 flex-shrink-0" rounded="sm" />
+                    <TeamFlag logo={mp.awayLogo} name={mp.away} size={8} className="flex-shrink-0" rounded="sm" />
                   </div>
                 ))}
               </div>
