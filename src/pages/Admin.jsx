@@ -16,9 +16,7 @@ import AdminScoring from "../components/admin/AdminScoring";
 import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
-import AdminApiExplorer from "../components/admin/AdminApiExplorer";
 import AdminGroupOverride from "../components/admin/AdminGroupOverride";
-import AdminChartGallery from "../components/admin/AdminChartGallery";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -77,9 +75,7 @@ export default function Admin() {
       case 'scoring': return <AdminScoring onUpdateComplete={() => {}} />;
       case 'import': return <AdminImportMatches />;
       case 'reset':      return <AdminReset />;
-      case 'api-explorer': return <AdminApiExplorer />;
       case 'group-override': return <AdminGroupOverride />;
-      case 'chart-gallery': return <AdminChartGallery />;
       default: return <AdminRounds />;
     }
   };
@@ -94,9 +90,7 @@ export default function Admin() {
     { id: 'scoring', label: 'Calculate Scores', icon: Calculator },
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
-    { id: 'api-explorer', label: 'API Explorer',    icon: BarChart3 },
     { id: 'group-override',   label: '🔀 סידור בתים',          icon: BarChart3 },
-    { id: 'chart-gallery',    label: '📊 גלריית ויזואליזציות', icon: BarChart3 },
   ];
 
   return (
