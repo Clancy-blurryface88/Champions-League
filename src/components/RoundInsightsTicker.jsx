@@ -361,7 +361,7 @@ export default function RoundInsightsTicker({ user }) {
         },
         ...(pointsChangePercentage !== null ? [{
           id: 3,
-          text: <><span className="text-white">אחוז שינוי בצבירת נקודות ממחזור קודם:</span> <span className={`${parseFloat(pointsChangePercentage) > 0 ? 'text-emerald-400' : parseFloat(pointsChangePercentage) < 0 ? 'text-red-400' : 'text-emerald-400'} font-bold`} dir="ltr">{parseFloat(pointsChangePercentage) > 0 ? '+' : ''}{parseFloat(pointsChangePercentage).toFixed(2)}%</span> <span className="text-slate-400 text-[13px] mr-1">(<span className="text-blue-300 font-bold">{parseFloat(userPoints).toFixed(2)} נק' בנוכחי</span> לעומת <span className="text-red-300 font-bold">{parseFloat(prevUserPoints).toFixed(2)} נק' בקודם</span>)</span></>,
+          text: <div className="flex flex-col gap-0.5"><div><span className="text-white">אחוז שינוי בצבירת נקודות ממחזור קודם:</span> <span className={`${parseFloat(pointsChangePercentage) > 0 ? 'text-emerald-400' : parseFloat(pointsChangePercentage) < 0 ? 'text-red-400' : 'text-emerald-400'} font-bold`} dir="ltr">{parseFloat(pointsChangePercentage) > 0 ? '+' : ''}{parseFloat(pointsChangePercentage).toFixed(2)}%</span></div><div className="text-slate-400 text-[12px]"><span className="text-blue-300 font-bold">{parseFloat(userPoints).toFixed(2)} נק' בנוכחי</span> לעומת <span className="text-red-300 font-bold">{parseFloat(prevUserPoints).toFixed(2)} נק' בקודם</span></div></div>,
           icon: <img src="https://media.base44.com/images/public/68656264510003eeef16bac3/2ee1df452_mobile-data_3466264.png" alt="Trend" className="w-[18px] h-[18px] object-contain" />
         }] : []),
         {
