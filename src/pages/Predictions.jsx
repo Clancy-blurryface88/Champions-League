@@ -156,6 +156,67 @@ function _computeTeamPositions(allMatches, groupOverrides = {}, bestThirdOrder =
   return positions;
 }
 
+function getTeamNeed(teamName, league, allMatches) {
+  if (!teamName || !league || !allMatches.length) return null;
+  const groupLetter = _toLetter(league);
+  if (!groupLetter) return null;
+  const groupMatches = allMatches.filter(m => _toLetter(m.league) === groupLetter);
+  const finished = groupMatches.filter(m => m.is_finished && m.actual_score_a != null);
+  const pending = groupMatches.filter(m => !m.is_finished);
+  const myMatch = pending.find(m => m.team_a === teamName || m.team_b === teamName);
+  if (!myMatch) return null;
+  const baseStandings = _calcStandings(finished);
+  if (!baseStandings.find(t => t.name === teamName)) return null;
+  const otherMatch = pending.find(m => m.id !== myMatch.id);
+  const otherCount = otherMatch ? 3 : 1;
+  const outcomes = [
+    { pa: 3, pb: 0, gfa: 1, gfb: 0 },
+    { pa: 1, pb: 1, gfa: 0, gfb: 0 },
+    { pa: 0, pb: 3, gfa: 0, gfb: 1 },
+  ];
+  let qualifyWin = 0, qualifyDraw = 0, qualifyLoss = 0;
+  for (const myOut of outcomes) {
+    for (const otherOut of (otherMatch ? outcomes : [{ pa: 0, pb: 0, gfa: 0, gfb: 0 }])) {
+      const ptsMap = {}, gdMap = {}, gfMap = {};
+      baseStandings.forEach(t => { ptsMap[t.name] = t.Pts; gdMap[t.name] = t.GD; gfMap[t.name] = t.GF; });
+      const isHome = myMatch.team_a === teamName;
+      const myPts = isHome ? myOut.pa : myOut.pb;
+      const oppPts = isHome ? myOut.pb : myOut.pa;
+      const myGF = isHome ? myOut.gfa : myOut.gfb;
+      const myGA = isHome ? myOut.gfb : myOut.gfa;
+      const opp = isHome ? myMatch.team_b : myMatch.team_a;
+      ptsMap[teamName] = (ptsMap[teamName] || 0) + myPts;
+      ptsMap[opp] = (ptsMap[opp] || 0) + oppPts;
+      gdMap[teamName] = (gdMap[teamName] || 0) + myGF - myGA;
+      gdMap[opp] = (gdMap[opp] || 0) + myGA - myGF;
+      gfMap[teamName] = (gfMap[teamName] || 0) + myGF;
+      gfMap[opp] = (gfMap[opp] || 0) + myGA;
+      if (otherMatch) {
+        ptsMap[otherMatch.team_a] = (ptsMap[otherMatch.team_a] || 0) + otherOut.pa;
+        ptsMap[otherMatch.team_b] = (ptsMap[otherMatch.team_b] || 0) + otherOut.pb;
+        gdMap[otherMatch.team_a] = (gdMap[otherMatch.team_a] || 0) + otherOut.gfa - otherOut.gfb;
+        gdMap[otherMatch.team_b] = (gdMap[otherMatch.team_b] || 0) + otherOut.gfb - otherOut.gfa;
+        gfMap[otherMatch.team_a] = (gfMap[otherMatch.team_a] || 0) + otherOut.gfa;
+        gfMap[otherMatch.team_b] = (gfMap[otherMatch.team_b] || 0) + otherOut.gfb;
+      }
+      const sorted = baseStandings.map(t => ({
+        name: t.name, Pts: ptsMap[t.name] || 0, GD: gdMap[t.name] || 0, GF: gfMap[t.name] || 0,
+      })).sort((a, b) => (b.Pts - a.Pts) || (b.GD - a.GD) || (b.GF - a.GF) || a.name.localeCompare(b.name));
+      const pos = sorted.findIndex(t => t.name === teamName) + 1;
+      if (pos <= 2) {
+        if (myPts === 3) qualifyWin++;
+        else if (myPts === 1) qualifyDraw++;
+        else qualifyLoss++;
+      }
+    }
+  }
+  if (qualifyLoss === otherCount) return { label: 'כבר עברה', color: '#4ade80' };
+  if (qualifyDraw === otherCount) return { label: 'תיקו מספיק', color: '#facc15' };
+  if (qualifyWin === otherCount)  return { label: 'חייבת לנצח', color: '#f97316' };
+  if (qualifyWin > 0)             return { label: 'ניצחון עשוי לעזור', color: '#fb923c' };
+  return { label: 'נפלה', color: '#ef4444' };
+}
+
 export default function Predictions() {
   const [currentRound, setCurrentRound] = useState(null);
   const [matches, setMatches] = useState([]);
@@ -183,6 +244,7 @@ export default function Predictions() {
   const [forcedClosed, setForcedClosed] = useState(new Set());
   const [arenaOpen, setArenaOpen] = useState(new Set());
   const [allMatchesForForm, setAllMatchesForForm] = useState([]);
+  const [allMatchesFull, setAllMatchesFull] = useState([]);
   const [arenaMatchesLoading, setArenaMatchesLoading] = useState(false);
   const arenaMatchesLoadedRef = useRef(false);
   const [teamPositions, setTeamPositions] = useState({});
@@ -239,6 +301,7 @@ export default function Predictions() {
           loadAllOverrides(),
         ]);
         setAllMatchesForForm(allData.filter(m => m.is_finished && m.actual_score_a != null));
+        setAllMatchesFull(allData);
         arenaMatchesLoadedRef.current = true;
         setTeamPositions(_computeTeamPositions(allData, groupOverrides, bestThirdOrder));
       } catch(e) { console.error(e); }
@@ -1083,6 +1146,11 @@ export default function Predictions() {
                               color={teamPositions[match.team_a].color}
                             />
                           )}
+                          {(() => { const n = getTeamNeed(match.team_a, match.league, allMatchesFull); return n ? (
+                            <span style={{ marginTop: 5, fontSize: 9, fontWeight: 700, color: n.color, border: `1px solid ${n.color}55`, borderRadius: 99, padding: '2px 6px', lineHeight: 1.3, textAlign: 'center', display: 'inline-block' }}>
+                              {n.label}
+                            </span>
+                          ) : null; })()}
                         </div>
                         <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center cursor-pointer"
@@ -1097,6 +1165,11 @@ export default function Predictions() {
                               color={teamPositions[match.team_b].color}
                             />
                           )}
+                          {(() => { const n = getTeamNeed(match.team_b, match.league, allMatchesFull); return n ? (
+                            <span style={{ marginTop: 5, fontSize: 9, fontWeight: 700, color: n.color, border: `1px solid ${n.color}55`, borderRadius: 99, padding: '2px 6px', lineHeight: 1.3, textAlign: 'center', display: 'inline-block' }}>
+                              {n.label}
+                            </span>
+                          ) : null; })()}
                         </div>
                       </div>
                     </div>
