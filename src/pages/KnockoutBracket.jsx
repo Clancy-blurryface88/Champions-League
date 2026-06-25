@@ -351,6 +351,16 @@ export default function KnockoutBracket() {
     return r;
   }, [allGroupMatches, groupOverrides]);
 
+  // Groups where ALL matches are finished → teams are confirmed, no ~ needed
+  const confirmedGroups = useMemo(() => {
+    const s = new Set();
+    ALL_GROUPS.forEach(g => {
+      const gm = allGroupMatches[g] || [];
+      if (gm.length > 0 && gm.every(m => m.is_finished)) s.add(g);
+    });
+    return s;
+  }, [allGroupMatches]);
+
   // 3rd-place assignment (with all manual overrides applied)
   const third3rd = useMemo(
     () => assign3rd(allGroupMatches, groupOverrides, bestThirdOrder, bracketSlotOverride),
@@ -379,7 +389,8 @@ export default function KnockoutBracket() {
       if (!label) return null;
       if (typeof label === 'object' && label.slot != null) {
         const t = third3rd[label.slot];
-        return t ? { name: t.name, logo: t.logo, projected: true } : null;
+        const isConfirmed = t && confirmedGroups.has(t.group);
+        return t ? { name: t.name, logo: t.logo, projected: !isConfirmed } : null;
       }
       if (typeof label === 'string' && label.startsWith('W')) {
         const num = parseInt(label.slice(1));
@@ -393,7 +404,7 @@ export default function KnockoutBracket() {
         const pos = parseInt(label[0]) - 1;
         const grp = label[1];
         const s = standings[grp] || [];
-        return s[pos] ? { name: s[pos].name, logo: s[pos].logo, projected: true } : null;
+        return s[pos] ? { name: s[pos].name, logo: s[pos].logo, projected: !confirmedGroups.has(grp) } : null;
       }
       return null;
     };
@@ -499,7 +510,7 @@ export default function KnockoutBracket() {
     const third    = { ...THIRD_SLOT, ...resolveOne(THIRD_SLOT) };
 
     return { leftR32, leftR16, leftQF, leftSF, rightR32, rightR16, rightQF, rightSF, final, third };
-  }, [standings, third3rd, knockoutMatches, bracketMatchOverride]);
+  }, [standings, third3rd, knockoutMatches, bracketMatchOverride, confirmedGroups]);
 
   // ─── SVG lines ─────────────────────────────────────────────────────────────
   const lineColor = 'rgba(71,85,105,0.55)';
