@@ -21,9 +21,12 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const [videoEnded, setVideoEnded] = React.useState(false);
 
-  if (isLoadingPublicSettings || isLoadingAuth) {
-    return <LoadingScreen />;
+  const isLoading = isLoadingPublicSettings || isLoadingAuth;
+
+  if (isLoading || !videoEnded) {
+    return <LoadingScreen loop={isLoading} onEnd={() => setVideoEnded(true)} />;
   }
 
   // Handle authentication errors
