@@ -19,69 +19,77 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
 
-const IntroVideo = ({ appReady, onDone }) => {
-  const [loop, setLoop] = React.useState(true);
-  React.useEffect(() => { if (appReady) setLoop(false); }, [appReady]);
-  return (
-    <div className="fixed inset-0 z-[9999] bg-black overflow-hidden">
-      <video
-        src="/wc2026-bumper.mp4"
-        autoPlay muted playsInline
-        loop={loop}
-        onEnded={onDone}
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-      {!appReady && (
-        <div className="absolute inset-0 flex items-end justify-center pb-10">
-          <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-        </div>
-      )}
-    </div>
-  );
-};
-
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const [introDone, setIntroDone] = React.useState(false);
+  const [fadingOut, setFadingOut] = React.useState(false);
+  const [loopVideo, setLoopVideo] = React.useState(true);
 
   const isLoading = isLoadingPublicSettings || isLoadingAuth;
 
-  if (!introDone) {
-    return <IntroVideo appReady={!isLoading} onDone={() => setIntroDone(true)} />;
-  }
+  React.useEffect(() => {
+    if (!isLoading && !introDone) setLoopVideo(false);
+  }, [isLoading, introDone]);
 
-  // Handle authentication errors
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
+  const handleVideoEnd = React.useCallback(() => {
+    setFadingOut(true);
+    setTimeout(() => setIntroDone(true), 600);
+  }, []);
+
+  const renderApp = () => {
+    if (authError) {
+      if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
+      if (authError.type === 'auth_required') { navigateToLogin(); return null; }
     }
-  }
+    return (
+      <Routes>
+        <Route path="/" element={
+          <LayoutWrapper currentPageName={mainPageKey}>
+            <MainPage />
+          </LayoutWrapper>
+        } />
+        {Object.entries(Pages).map(([path, Page]) => (
+          <Route
+            key={path}
+            path={`/${path}`}
+            element={
+              <LayoutWrapper currentPageName={path}>
+                <Page />
+              </LayoutWrapper>
+            }
+          />
+        ))}
+        <Route path="*" element={<PageNotFound />} />
+      </Routes>
+    );
+  };
 
-  // Render the main app
   return (
-    <Routes>
-      <Route path="/" element={
-        <LayoutWrapper currentPageName={mainPageKey}>
-          <MainPage />
-        </LayoutWrapper>
-      } />
-      {Object.entries(Pages).map(([path, Page]) => (
-        <Route
-          key={path}
-          path={`/${path}`}
-          element={
-            <LayoutWrapper currentPageName={path}>
-              <Page />
-            </LayoutWrapper>
-          }
-        />
-      ))}
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+    <>
+      {!isLoading && renderApp()}
+
+      {!introDone && (
+        <div
+          className="fixed inset-0 bg-black overflow-hidden"
+          style={{
+            zIndex: 9999,
+            opacity: fadingOut ? 0 : 1,
+            transition: fadingOut ? 'opacity 0.6s ease' : 'none',
+            pointerEvents: fadingOut ? 'none' : 'auto',
+          }}
+        >
+          <video
+            src="/wc2026-bumper.mp4"
+            autoPlay
+            muted
+            playsInline
+            loop={loopVideo}
+            onEnded={handleVideoEnd}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        </div>
+      )}
+    </>
   );
 };
 
