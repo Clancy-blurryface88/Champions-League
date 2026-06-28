@@ -1076,6 +1076,7 @@ export default function Predictions() {
                           <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words">
                             {match.team_a}
                           </RevealText>
+                          <span className="text-slate-400 text-[10px] leading-none text-center">(Home)</span>
                         </div>
                         <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center cursor-pointer"
@@ -1083,6 +1084,7 @@ export default function Predictions() {
                           <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words">
                             {match.team_b}
                           </RevealText>
+                          <span className="text-slate-400 text-[10px] leading-none text-center">(Away)</span>
                         </div>
                       </div>
                     </div>
