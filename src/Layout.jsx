@@ -908,14 +908,14 @@ export default function Layout({ children, currentPageName }) {
               exit={{ scale: 0, opacity: 0 }}
               whileTap={{ scale: 0.88 }}
               onClick={() => setShowDateSheet(true)}
-              className="fixed bottom-6 right-4 z-40 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl"
+              className="fixed bottom-6 right-4 z-40 w-11 h-11 rounded-full flex items-center justify-center shadow-2xl"
               style={{
                 background: 'linear-gradient(145deg, #1a3a2a 0%, #0d2018 100%)',
                 border: '1.5px solid rgba(245,197,24,0.5)',
                 boxShadow: '0 4px 24px rgba(0,0,0,0.5), 0 0 0 0 rgba(245,197,24,0.4)',
               }}
             >
-              <span className="text-2xl select-none">⚽</span>
+              <span className="text-xl select-none">⚽</span>
               <motion.span
                 animate={{ scale: [1, 1.15, 1] }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
