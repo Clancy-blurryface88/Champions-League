@@ -915,7 +915,7 @@ export default function Layout({ children, currentPageName }) {
                 boxShadow: '0 4px 24px rgba(0,0,0,0.5), 0 0 0 0 rgba(245,197,24,0.4)',
               }}
             >
-              <span className="text-xl select-none">⚽</span>
+              <span className="text-xl select-none">🏟️</span>
               <motion.span
                 animate={{ scale: [1, 1.15, 1] }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
