@@ -855,7 +855,7 @@ export default function Layout({ children, currentPageName }) {
                   exit={{ opacity: 0, scale: 0.7 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 22 }}
                   onClick={() => { setShowLiveData(true); setShowLeaderboard(false); }}
-                  className="relative flex items-center gap-1.5 px-3 py-2 rounded-full cursor-pointer"
+                  className="relative flex items-center gap-1.5 px-3 py-2.5 rounded-full cursor-pointer"
                   style={{
                     background: 'rgba(239,68,68,0.12)',
                     border: '1px solid rgba(239,68,68,0.45)',
