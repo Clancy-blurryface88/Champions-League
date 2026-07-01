@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { User, UserStats, Match } from "@/api/entities";
 import { Settings, LogOut, PlayCircle, Bell, BellOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,7 @@ export default function Layout({ children, currentPageName }) {
   const [hasLiveMatch, setHasLiveMatch] = useState(false);
   const [liveMatch, setLiveMatch] = useState(null);
   const [liveMatchCount, setLiveMatchCount] = useState(0);
+  const [showLiveIntro, setShowLiveIntro] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showYearlySummary, setShowYearlySummary] = useState(false); // NEW: State for YearlySummaryPanel
   const [showPushBanner, setShowPushBanner] = useState(false);
@@ -297,6 +298,11 @@ export default function Layout({ children, currentPageName }) {
         setHasLiveMatch(live.length > 0);
         setLiveMatch(live[0] || null);
         setLiveMatchCount(live.length);
+        if (live.length > 0 && !sessionStorage.getItem('live_intro_shown')) {
+          sessionStorage.setItem('live_intro_shown', '1');
+          setShowLiveIntro(true);
+          setTimeout(() => setShowLiveIntro(false), 2500);
+        }
       } catch {
         setHasLiveMatch(false);
       }
@@ -507,6 +513,7 @@ export default function Layout({ children, currentPageName }) {
   }
 
   return (
+    <LayoutGroup>
     <>
       <style jsx global>{`
         ::-webkit-scrollbar {
@@ -848,12 +855,13 @@ export default function Layout({ children, currentPageName }) {
             </DropdownMenu>
 
             <AnimatePresence>
-              {hasLiveMatch && (location.pathname === '/' || location.pathname.includes('Dashboard')) && (
+              {hasLiveMatch && !showLiveIntro && (location.pathname === '/' || location.pathname.includes('Dashboard')) && (
                 <motion.button
-                  initial={{ opacity: 0, scale: 0.7 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  layoutId="live-chip"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   exit={{ opacity: 0, scale: 0.7 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+                  transition={{ type: 'spring', stiffness: 180, damping: 26 }}
                   onClick={() => { setShowLiveData(true); setShowLeaderboard(false); }}
                   className="relative flex items-center gap-1.5 px-3 py-2.5 rounded-full cursor-pointer"
                   style={{
@@ -891,6 +899,64 @@ export default function Layout({ children, currentPageName }) {
             </AnimatePresence>
           </div>
         }
+
+        {/* Live Intro Overlay */}
+        <AnimatePresence>
+          {showLiveIntro && (
+            <>
+              <motion.div
+                key="live-intro-bg"
+                className="fixed inset-0 z-[55]"
+                style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+              />
+              <div className="fixed inset-0 z-[56] flex items-center justify-center pointer-events-none">
+                <motion.div
+                  layoutId="live-chip"
+                  className="rounded-2xl overflow-hidden"
+                  style={{
+                    background: 'rgba(8,18,32,0.95)',
+                    border: '1px solid rgba(239,68,68,0.5)',
+                    backdropFilter: 'blur(28px)',
+                    boxShadow: '0 0 60px rgba(239,68,68,0.18), 0 20px 60px rgba(0,0,0,0.7)',
+                  }}
+                  transition={{ type: 'spring', stiffness: 180, damping: 26 }}
+                >
+                  <div className="px-10 py-8 flex flex-col items-center gap-5">
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)' }}>
+                      <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+                      </span>
+                      <span className="text-red-400 text-xs font-bold tracking-widest uppercase">Live</span>
+                    </div>
+                    {liveMatch && (
+                      <div className="flex items-center gap-6" dir="ltr">
+                        <div className="flex flex-col items-center gap-2">
+                          {liveMatch.homeTeam?.crest && <img src={liveMatch.homeTeam.crest} className="w-16 h-16 object-contain drop-shadow-lg" alt="" />}
+                          <span className="text-white text-xs font-semibold opacity-70">{liveMatch.homeTeam?.tla}</span>
+                        </div>
+                        <span className="text-white text-5xl font-bold tracking-tight">
+                          {liveMatch.score?.fullTime?.home ?? '?'}<span className="text-slate-500 mx-2">-</span>{liveMatch.score?.fullTime?.away ?? '?'}
+                        </span>
+                        <div className="flex flex-col items-center gap-2">
+                          {liveMatch.awayTeam?.crest && <img src={liveMatch.awayTeam.crest} className="w-16 h-16 object-contain drop-shadow-lg" alt="" />}
+                          <span className="text-white text-xs font-semibold opacity-70">{liveMatch.awayTeam?.tla}</span>
+                        </div>
+                      </div>
+                    )}
+                    {liveMatchCount > 1 && (
+                      <span className="text-slate-400 text-xs">+{liveMatchCount - 1} משחקים נוספים</span>
+                    )}
+                  </div>
+                </motion.div>
+              </div>
+            </>
+          )}
+        </AnimatePresence>
 
         <MatchTickerBar onClick={() => setShowDateSheet(true)} />
 
@@ -1011,6 +1077,7 @@ export default function Layout({ children, currentPageName }) {
           })()}
         </AnimatePresence>
       </div>
-    </>);
+    </>
+    </LayoutGroup>);
 
 }
