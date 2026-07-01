@@ -974,8 +974,8 @@ export default function Layout({ children, currentPageName }) {
                           </div>
                         </div>
                         {liveUserPrediction && (
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-slate-400 text-xs">הניחוש שלי:</span>
+                          <div className="flex flex-col items-center gap-1 mt-1">
+                            <span className="text-slate-400 text-xs">הניחוש שלי</span>
                             <span className="text-amber-400 text-sm font-bold">
                               ({liveUserPrediction.predicted_score_a} - {liveUserPrediction.predicted_score_b})
                             </span>
