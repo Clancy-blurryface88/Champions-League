@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
-import { User, UserStats, Match } from "@/api/entities";
+import { User, UserStats, Match, Prediction } from "@/api/entities";
 import { Settings, LogOut, PlayCircle, Bell, BellOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MatchesByDateSheet from "./components/MatchesByDateSheet";
@@ -38,6 +38,7 @@ export default function Layout({ children, currentPageName }) {
   const [liveMatch, setLiveMatch] = useState(null);
   const [liveMatchCount, setLiveMatchCount] = useState(0);
   const [showLiveIntro, setShowLiveIntro] = useState(false);
+  const [liveUserPrediction, setLiveUserPrediction] = useState(null);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showYearlySummary, setShowYearlySummary] = useState(false); // NEW: State for YearlySummaryPanel
   const [showPushBanner, setShowPushBanner] = useState(false);
@@ -301,7 +302,7 @@ export default function Layout({ children, currentPageName }) {
         if (live.length > 0 && !sessionStorage.getItem('live_intro_shown')) {
           sessionStorage.setItem('live_intro_shown', '1');
           setShowLiveIntro(true);
-          setTimeout(() => setShowLiveIntro(false), 2500);
+          setTimeout(() => setShowLiveIntro(false), 3500);
         }
       } catch {
         setHasLiveMatch(false);
@@ -311,6 +312,30 @@ export default function Layout({ children, currentPageName }) {
     const iv = setInterval(checkLive, 60000);
     return () => clearInterval(iv);
   }, []);
+
+  // Fetch user prediction for the live match
+  useEffect(() => {
+    if (!liveMatch || !user?.id) return;
+    const fetchLivePrediction = async () => {
+      try {
+        const allMatches = await Match.list();
+        const apiHome = (liveMatch.homeTeam?.name || '').toLowerCase();
+        const apiAway = (liveMatch.awayTeam?.name || '').toLowerCase();
+        const supabaseMatch = allMatches.find(m => {
+          const a = (m.team_a || '').toLowerCase();
+          const b = (m.team_b || '').toLowerCase();
+          const homeMatch = apiHome.includes(a.slice(0, 4)) || a.includes(apiHome.slice(0, 4));
+          const awayMatch = apiAway.includes(b.slice(0, 4)) || b.includes(apiAway.slice(0, 4));
+          return homeMatch && awayMatch;
+        });
+        if (supabaseMatch) {
+          const preds = await Prediction.filter({ match_id: supabaseMatch.id, user_id: user.id });
+          if (preds.length > 0) setLiveUserPrediction(preds[0]);
+        }
+      } catch {}
+    };
+    fetchLivePrediction();
+  }, [liveMatch?.homeTeam?.name, user?.id]);
 
   // Load today's match count for FAB badge
   useEffect(() => {
@@ -934,18 +959,30 @@ export default function Layout({ children, currentPageName }) {
                       <span className="text-red-400 text-xs font-bold tracking-widest uppercase">Live</span>
                     </div>
                     {liveMatch && (
-                      <div className="flex items-center gap-6" dir="ltr">
-                        <div className="flex flex-col items-center gap-2">
-                          {liveMatch.homeTeam?.crest && <img src={liveMatch.homeTeam.crest} className="w-16 h-16 object-contain drop-shadow-lg" alt="" />}
-                          <span className="text-white text-xs font-semibold opacity-70">{liveMatch.homeTeam?.tla}</span>
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="flex items-center gap-6" dir="ltr">
+                          <div className="flex flex-col items-center gap-1.5 w-24">
+                            {liveMatch.homeTeam?.crest && <img src={liveMatch.homeTeam.crest} className="w-16 h-16 object-contain drop-shadow-lg" alt="" />}
+                            <span className="text-white text-xs font-bold text-center leading-tight">{liveMatch.homeTeam?.shortName || liveMatch.homeTeam?.name}</span>
+                            <span className="text-slate-500 text-[10px]">{liveMatch.homeTeam?.tla}</span>
+                          </div>
+                          <span className="text-white text-5xl font-bold tracking-tight">
+                            {liveMatch.score?.fullTime?.home ?? '?'}<span className="text-slate-500 mx-2">-</span>{liveMatch.score?.fullTime?.away ?? '?'}
+                          </span>
+                          <div className="flex flex-col items-center gap-1.5 w-24">
+                            {liveMatch.awayTeam?.crest && <img src={liveMatch.awayTeam.crest} className="w-16 h-16 object-contain drop-shadow-lg" alt="" />}
+                            <span className="text-white text-xs font-bold text-center leading-tight">{liveMatch.awayTeam?.shortName || liveMatch.awayTeam?.name}</span>
+                            <span className="text-slate-500 text-[10px]">{liveMatch.awayTeam?.tla}</span>
+                          </div>
                         </div>
-                        <span className="text-white text-5xl font-bold tracking-tight">
-                          {liveMatch.score?.fullTime?.home ?? '?'}<span className="text-slate-500 mx-2">-</span>{liveMatch.score?.fullTime?.away ?? '?'}
-                        </span>
-                        <div className="flex flex-col items-center gap-2">
-                          {liveMatch.awayTeam?.crest && <img src={liveMatch.awayTeam.crest} className="w-16 h-16 object-contain drop-shadow-lg" alt="" />}
-                          <span className="text-white text-xs font-semibold opacity-70">{liveMatch.awayTeam?.tla}</span>
-                        </div>
+                        {liveUserPrediction && (
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-slate-400 text-xs">הניחוש שלי:</span>
+                            <span className="text-amber-400 text-sm font-bold">
+                              ({liveUserPrediction.predicted_score_a} - {liveUserPrediction.predicted_score_b})
+                            </span>
+                          </div>
+                        )}
                       </div>
                     )}
                     {liveMatchCount > 1 && (
