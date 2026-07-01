@@ -768,7 +768,7 @@ export default function Layout({ children, currentPageName }) {
 
         {/* User Info & Admin Button */}
         {user &&
-        <div className="fixed top-[44px] right-4 z-40 flex flex-col items-center gap-3">
+        <div className="fixed top-[44px] right-4 z-40 flex flex-col items-center gap-5">
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
