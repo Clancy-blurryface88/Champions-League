@@ -561,7 +561,7 @@ export default function Layout({ children, currentPageName }) {
           </Button>
 
           <AnimatePresence>
-            {todayMatchCount > 0 && !showDateSheet && (
+            {(location.pathname === '/' || location.pathname.includes('Dashboard')) && todayMatchCount > 0 && !showDateSheet && (
               <motion.button
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -844,7 +844,7 @@ export default function Layout({ children, currentPageName }) {
             </DropdownMenu>
 
             <AnimatePresence>
-              {hasLiveMatch && (
+              {hasLiveMatch && (location.pathname === '/' || location.pathname.includes('Dashboard')) && (
                 <motion.button
                   initial={{ opacity: 0, scale: 0.7 }}
                   animate={{ opacity: 1, scale: 1 }}
