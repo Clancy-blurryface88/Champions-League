@@ -568,18 +568,18 @@ export default function Layout({ children, currentPageName }) {
                 exit={{ scale: 0, opacity: 0 }}
                 whileTap={{ scale: 0.88 }}
                 onClick={() => setShowDateSheet(true)}
-                className="relative w-9 h-9 rounded-full flex items-center justify-center"
+                className="relative w-11 h-11 rounded-full flex items-center justify-center shadow-2xl"
                 style={{
                   background: 'linear-gradient(145deg, #1a3a2a 0%, #0d2018 100%)',
                   border: '1.5px solid rgba(245,197,24,0.5)',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+                  boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
                 }}
               >
-                <span className="text-sm select-none">🏟️</span>
+                <span className="text-xl select-none">🏟️</span>
                 <motion.span
                   animate={{ scale: [1, 1.15, 1] }}
                   transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                  className="min-w-[16px] h-4 px-0.5 rounded-full bg-amber-400 text-black text-[9px] font-bold flex items-center justify-center"
+                  className="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 rounded-full bg-amber-400 text-black text-[9px] font-bold flex items-center justify-center shadow-md"
                 >
                   {todayMatchCount}
                 </motion.span>
@@ -764,7 +764,7 @@ export default function Layout({ children, currentPageName }) {
 
         {/* User Info & Admin Button */}
         {user &&
-        <div className="fixed top-[44px] right-4 z-40 flex flex-col items-center gap-1">
+        <div className="fixed top-[44px] right-4 z-40 flex flex-col items-center gap-3">
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
