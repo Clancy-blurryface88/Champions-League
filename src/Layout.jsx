@@ -302,7 +302,7 @@ export default function Layout({ children, currentPageName }) {
         if (live.length > 0 && !sessionStorage.getItem('live_intro_shown')) {
           sessionStorage.setItem('live_intro_shown', '1');
           setShowLiveIntro(true);
-          setTimeout(() => setShowLiveIntro(false), 3500);
+          setTimeout(() => setShowLiveIntro(false), 5500);
         }
       } catch {
         setHasLiveMatch(false);
@@ -963,16 +963,14 @@ export default function Layout({ children, currentPageName }) {
                         <div className="flex items-center gap-6" dir="ltr">
                           <div className="flex flex-col items-center gap-1.5 w-24">
                             {liveMatch.homeTeam?.crest && <img src={liveMatch.homeTeam.crest} className="w-16 h-16 object-contain drop-shadow-lg" alt="" />}
-                            <span className="text-white text-xs font-bold text-center leading-tight">{liveMatch.homeTeam?.shortName || liveMatch.homeTeam?.name}</span>
-                            <span className="text-slate-500 text-[10px]">{liveMatch.homeTeam?.tla}</span>
+                            <span className="text-slate-400 text-[11px]">{liveMatch.homeTeam?.tla}</span>
                           </div>
                           <span className="text-white text-5xl font-bold tracking-tight">
                             {liveMatch.score?.fullTime?.home ?? '?'}<span className="text-slate-500 mx-2">-</span>{liveMatch.score?.fullTime?.away ?? '?'}
                           </span>
                           <div className="flex flex-col items-center gap-1.5 w-24">
                             {liveMatch.awayTeam?.crest && <img src={liveMatch.awayTeam.crest} className="w-16 h-16 object-contain drop-shadow-lg" alt="" />}
-                            <span className="text-white text-xs font-bold text-center leading-tight">{liveMatch.awayTeam?.shortName || liveMatch.awayTeam?.name}</span>
-                            <span className="text-slate-500 text-[10px]">{liveMatch.awayTeam?.tla}</span>
+                            <span className="text-slate-400 text-[11px]">{liveMatch.awayTeam?.tla}</span>
                           </div>
                         </div>
                         {liveUserPrediction && (
