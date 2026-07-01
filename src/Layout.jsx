@@ -549,17 +549,43 @@ export default function Layout({ children, currentPageName }) {
           />
         )}
 
-        {/* כפתור המבורגר עם אייקון אסטרטגיה */}
-        <div className="fixed top-[38px] left-4 z-40">
+        {/* כפתור המבורגר + כפתור איצטדיון מתחתיו */}
+        <div className="fixed top-[38px] left-4 z-40 flex flex-col items-center gap-1">
           <Button
             variant="ghost"
             onClick={() => setShowSidebar(true)}
             className="p-0 w-[60px] h-[60px] flex items-center justify-center rounded-xl transition-colors hover:bg-slate-700/40 backdrop-blur-sm border-0 bg-transparent shadow-none">
-
             <img
               src="/football-field.png"
               alt="Menu" className="mb-2 w-full h-full object-contain rounded-lg" />
           </Button>
+
+          <AnimatePresence>
+            {todayMatchCount > 0 && !showDateSheet && (
+              <motion.button
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                whileTap={{ scale: 0.88 }}
+                onClick={() => setShowDateSheet(true)}
+                className="relative w-[52px] h-8 rounded-xl flex items-center justify-center gap-1"
+                style={{
+                  background: 'linear-gradient(145deg, #1a3a2a 0%, #0d2018 100%)',
+                  border: '1.5px solid rgba(245,197,24,0.5)',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+                }}
+              >
+                <span className="text-sm select-none">🏟️</span>
+                <motion.span
+                  animate={{ scale: [1, 1.15, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                  className="min-w-[16px] h-4 px-0.5 rounded-full bg-amber-400 text-black text-[9px] font-bold flex items-center justify-center"
+                >
+                  {todayMatchCount}
+                </motion.span>
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Floating Menu Cards */}
@@ -738,32 +764,7 @@ export default function Layout({ children, currentPageName }) {
 
         {/* User Info & Admin Button */}
         {user &&
-        <div className="fixed top-[44px] right-4 z-40 flex items-center gap-2">
-
-            <AnimatePresence>
-              {hasLiveMatch && (
-                <motion.button
-                  initial={{ opacity: 0, scale: 0.7 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.7 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-                  onClick={() => { setShowLiveData(true); setShowLeaderboard(false); }}
-                  className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-full cursor-pointer"
-                  style={{
-                    background: 'rgba(239,68,68,0.12)',
-                    border: '1px solid rgba(239,68,68,0.45)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
-                  }}
-                >
-                  <span className="relative flex h-2 w-2 flex-shrink-0">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
-                  </span>
-                  <span className="text-red-400 text-[11px] font-bold tracking-widest uppercase animate-pulse">Live</span>
-                </motion.button>
-              )}
-            </AnimatePresence>
+        <div className="fixed top-[44px] right-4 z-40 flex flex-col items-end gap-1">
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -841,6 +842,31 @@ export default function Layout({ children, currentPageName }) {
                 </motion.div>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            <AnimatePresence>
+              {hasLiveMatch && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.7 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+                  onClick={() => { setShowLiveData(true); setShowLeaderboard(false); }}
+                  className="relative flex items-center gap-1.5 px-2.5 py-1 rounded-full cursor-pointer"
+                  style={{
+                    background: 'rgba(239,68,68,0.12)',
+                    border: '1px solid rgba(239,68,68,0.45)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                  }}
+                >
+                  <span className="relative flex h-2 w-2 flex-shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                  </span>
+                  <span className="text-red-400 text-[11px] font-bold tracking-widest uppercase animate-pulse">Live</span>
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
         }
 
@@ -897,34 +923,6 @@ export default function Layout({ children, currentPageName }) {
             user={user} />
 
           }
-        </AnimatePresence>
-
-        {/* FAB - משחקי היום */}
-        <AnimatePresence>
-          {todayMatchCount > 0 && !showDateSheet && (
-            <motion.button
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              whileTap={{ scale: 0.88 }}
-              onClick={() => setShowDateSheet(true)}
-              className="fixed bottom-6 right-4 z-40 w-11 h-11 rounded-full flex items-center justify-center shadow-2xl"
-              style={{
-                background: 'linear-gradient(145deg, #1a3a2a 0%, #0d2018 100%)',
-                border: '1.5px solid rgba(245,197,24,0.5)',
-                boxShadow: '0 4px 24px rgba(0,0,0,0.5), 0 0 0 0 rgba(245,197,24,0.4)',
-              }}
-            >
-              <span className="text-xl select-none">🏟️</span>
-              <motion.span
-                animate={{ scale: [1, 1.15, 1] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 rounded-full bg-amber-400 text-black text-[9px] font-bold flex items-center justify-center shadow-md"
-              >
-                {todayMatchCount}
-              </motion.span>
-            </motion.button>
-          )}
         </AnimatePresence>
 
         <MatchesByDateSheet isOpen={showDateSheet} onClose={() => setShowDateSheet(false)} />
