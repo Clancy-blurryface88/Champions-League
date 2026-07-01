@@ -568,7 +568,7 @@ export default function Layout({ children, currentPageName }) {
                 exit={{ scale: 0, opacity: 0 }}
                 whileTap={{ scale: 0.88 }}
                 onClick={() => setShowDateSheet(true)}
-                className="relative w-[52px] h-8 rounded-xl flex items-center justify-center gap-1"
+                className="relative w-9 h-9 rounded-full flex items-center justify-center"
                 style={{
                   background: 'linear-gradient(145deg, #1a3a2a 0%, #0d2018 100%)',
                   border: '1.5px solid rgba(245,197,24,0.5)',
@@ -764,7 +764,7 @@ export default function Layout({ children, currentPageName }) {
 
         {/* User Info & Admin Button */}
         {user &&
-        <div className="fixed top-[44px] right-4 z-40 flex flex-col items-end gap-1">
+        <div className="fixed top-[44px] right-4 z-40 flex flex-col items-center gap-1">
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
