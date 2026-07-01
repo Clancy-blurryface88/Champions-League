@@ -855,12 +855,13 @@ export default function Layout({ children, currentPageName }) {
                   exit={{ opacity: 0, scale: 0.7 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 22 }}
                   onClick={() => { setShowLiveData(true); setShowLeaderboard(false); }}
-                  className="relative flex items-center gap-1.5 px-2.5 py-1 rounded-full cursor-pointer"
+                  className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full cursor-pointer"
                   style={{
                     background: 'rgba(239,68,68,0.12)',
                     border: '1px solid rgba(239,68,68,0.45)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
+                    backdropFilter: 'blur(28px) saturate(1.6)',
+                    WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 20px rgba(0,0,0,0.5)',
                   }}
                 >
                   <span className="relative flex h-2 w-2 flex-shrink-0">
