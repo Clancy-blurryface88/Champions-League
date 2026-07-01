@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, UserStats } from "@/api/entities";
+import { User, UserStats, Match } from "@/api/entities";
 import { Settings, LogOut, PlayCircle, Bell, BellOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MatchesByDateSheet from "./components/MatchesByDateSheet";
@@ -43,6 +43,7 @@ export default function Layout({ children, currentPageName }) {
   );
   const [showDateSheet, setShowDateSheet] = useState(false);
   const [touchEndY, setTouchEndY] = useState(null);
+  const [todayMatchCount, setTodayMatchCount] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -299,6 +300,22 @@ export default function Layout({ children, currentPageName }) {
     checkLive();
     const iv = setInterval(checkLive, 60000);
     return () => clearInterval(iv);
+  }, []);
+
+  // Load today's match count for FAB badge
+  useEffect(() => {
+    const todayKey = (() => {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    })();
+    Match.list().then(all => {
+      const count = all.filter(m => {
+        const md = new Date(m.match_date);
+        const k = `${md.getFullYear()}-${String(md.getMonth()+1).padStart(2,'0')}-${String(md.getDate()).padStart(2,'0')}`;
+        return k === todayKey;
+      }).length;
+      setTodayMatchCount(count);
+    }).catch(() => {});
   }, []);
 
   // Add effect to handle yearly summary panel opening
@@ -880,6 +897,34 @@ export default function Layout({ children, currentPageName }) {
             user={user} />
 
           }
+        </AnimatePresence>
+
+        {/* FAB - משחקי היום */}
+        <AnimatePresence>
+          {todayMatchCount > 0 && !showDateSheet && (
+            <motion.button
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              whileTap={{ scale: 0.88 }}
+              onClick={() => setShowDateSheet(true)}
+              className="fixed bottom-6 right-4 z-40 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl"
+              style={{
+                background: 'linear-gradient(145deg, #1a3a2a 0%, #0d2018 100%)',
+                border: '1.5px solid rgba(245,197,24,0.5)',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.5), 0 0 0 0 rgba(245,197,24,0.4)',
+              }}
+            >
+              <span className="text-2xl select-none">⚽</span>
+              <motion.span
+                animate={{ scale: [1, 1.15, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-amber-400 text-black text-[10px] font-bold flex items-center justify-center shadow-md"
+              >
+                {todayMatchCount}
+              </motion.span>
+            </motion.button>
+          )}
         </AnimatePresence>
 
         <MatchesByDateSheet isOpen={showDateSheet} onClose={() => setShowDateSheet(false)} />
