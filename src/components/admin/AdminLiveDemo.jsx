@@ -244,6 +244,243 @@ const SSwing     = makeStagger(()=>({rotate:-70,opacity:0,originY:0}), ()=>({rot
 const SMelt      = makeStagger(()=>({y:-25,scale:0.8,opacity:0}), ()=>({y:0,scale:1,opacity:1}), i=>({duration:0.9,ease:[0.16,1,0.3,1],delay:i*0.35}));
 const SColorFlash= makeStagger(()=>({scale:0,opacity:0,color:'#ef4444'}), ()=>({scale:1,opacity:1,color:'#ffffff'}), i=>({duration:0.6,delay:i*0.25}), ['#fbbf24','#475569','#fbbf24']);
 
+// ─── Dramatic custom components ─────────────────────────────────────────
+
+function MatrixDecode({ home, away }) {
+  const CHARS = '0123456789@#$%&';
+  const targets = [String(home), '-', String(away)];
+  const [shown, setShown] = useState(['?', '?', '?']);
+  useEffect(() => {
+    targets.forEach((target, idx) => {
+      let iter = 0;
+      const iv = setInterval(() => {
+        iter++;
+        setShown(p => { const n=[...p]; n[idx] = iter > 10+idx*5 ? target : CHARS[Math.floor(Math.random()*CHARS.length)]; return n; });
+        if (iter > 16+idx*5) clearInterval(iv);
+      }, 60);
+    });
+  }, []);
+  return (
+    <span style={{ display:'flex', alignItems:'center', gap:14, fontSize:52, fontWeight:900, fontFamily:'monospace' }}>
+      {shown.map((c,i) => <span key={i} style={{ color: i===1?'#475569':c===targets[i]?'#4ade80':'#22d3ee' }}>{c}</span>)}
+    </span>
+  );
+}
+
+function HackCount({ home, away }) {
+  const [h, setH] = useState(0); const [a, setA] = useState(0); const [done, setDone] = useState(false);
+  useEffect(() => {
+    let i=0;
+    const iv = setInterval(() => {
+      i++;
+      setH(Math.floor(Math.random()*10));
+      setA(Math.floor(Math.random()*10));
+      if (i>20) { clearInterval(iv); setH(home); setA(away); setDone(true); }
+    }, 50);
+    return ()=>clearInterval(iv);
+  }, []);
+  return (
+    <span style={{ display:'flex', alignItems:'center', gap:14, fontSize:52, fontWeight:900, fontFamily:'monospace' }}>
+      <span style={{ color: done?'#fff':'#22d3ee', transition:'color 0.3s' }}>{h}</span>
+      <span style={{ color:'#475569' }}>-</span>
+      <span style={{ color: done?'#fff':'#22d3ee', transition:'color 0.3s' }}>{a}</span>
+    </span>
+  );
+}
+
+function ErrorFix({ home, away }) {
+  const [phase, setPhase] = useState('err');
+  useEffect(() => {
+    setTimeout(()=>setPhase('flash'), 800);
+    setTimeout(()=>setPhase('ok'), 1400);
+  }, []);
+  const colors = { err:'#ef4444', flash:'#fbbf24', ok:'#fff' };
+  const vals = phase==='err' ? ['?','?','?'] : phase==='flash' ? ['!','!','!'] : [String(home),'-',String(away)];
+  return (
+    <motion.span
+      key={phase}
+      initial={{ opacity:0, scale:0.8 }}
+      animate={{ opacity:1, scale:1 }}
+      style={{ display:'flex', alignItems:'center', gap:14, fontSize:52, fontWeight:900 }}
+    >
+      {vals.map((v,i)=><span key={i} style={{ color: i===1&&phase==='ok'?'#475569':colors[phase] }}>{v}</span>)}
+    </motion.span>
+  );
+}
+
+function SatelliteScore({ home, away }) {
+  return (
+    <motion.span
+      initial={{ filter:'blur(30px) brightness(3)', scale:0.4, opacity:0 }}
+      animate={{ filter:'blur(0px) brightness(1)', scale:1, opacity:1 }}
+      transition={{ duration:1.2, ease:[0.16,1,0.3,1] }}
+      style={{ fontSize:52, fontWeight:900, letterSpacing:-2 }}
+    >
+      <span style={{ color:'#fff' }}>{home}</span>
+      <span style={{ color:'#475569', margin:'0 12px' }}>-</span>
+      <span style={{ color:'#fff' }}>{away}</span>
+    </motion.span>
+  );
+}
+
+function CrossfadeScore({ home, away }) {
+  const [cur, setCur] = useState({ h:0, a:0 });
+  useEffect(() => {
+    setTimeout(()=>setCur({ h:home, a:away }), 900);
+  }, []);
+  return (
+    <motion.span
+      animate={{ opacity:[1,0,1] }}
+      transition={{ duration:0.8, delay:0.7, times:[0,0.5,1] }}
+      style={{ display:'flex', alignItems:'center', gap:14, fontSize:52, fontWeight:900 }}
+    >
+      <span style={{ color:'#fbbf24' }}>{cur.h}</span>
+      <span style={{ color:'#475569' }}>-</span>
+      <span style={{ color:'#fbbf24' }}>{cur.a}</span>
+    </motion.span>
+  );
+}
+
+function AssembleScore({ home, away }) {
+  const parts = [String(home), '-', String(away)];
+  const offsets = [[-120,-80],[0,0],[120,-80]];
+  return (
+    <span style={{ display:'flex', alignItems:'center', gap:14, fontSize:52, fontWeight:900 }}>
+      {parts.map((p,i) => (
+        <motion.span key={i}
+          initial={{ x:offsets[i][0], y:offsets[i][1], opacity:0, scale:0 }}
+          animate={{ x:0, y:0, opacity:1, scale:1 }}
+          transition={{ type:'spring', stiffness:200, damping:16, delay:i*0.15 }}
+          style={{ color: i===1?'#475569':'#fff', display:'inline-block' }}
+        >{p}</motion.span>
+      ))}
+    </span>
+  );
+}
+
+function PendulumScore({ home, away }) {
+  const parts = [String(home), '-', String(away)];
+  return (
+    <span style={{ display:'flex', alignItems:'center', gap:14, fontSize:52, fontWeight:900 }}>
+      {parts.map((p,i) => (
+        <motion.span key={i}
+          initial={{ rotate:-120, opacity:0, originX:'50%', originY:'-200%' }}
+          animate={{ rotate:0, opacity:1 }}
+          transition={{ type:'spring', stiffness:80, damping:10, delay:i*0.25 }}
+          style={{ color: i===1?'#475569':'#fff', display:'inline-block' }}
+        >{p}</motion.span>
+      ))}
+    </span>
+  );
+}
+
+function MirrorUnfold({ home, away }) {
+  const parts = [String(home), '-', String(away)];
+  return (
+    <span style={{ display:'flex', alignItems:'center', gap:14, fontSize:52, fontWeight:900 }}>
+      {parts.map((p,i) => (
+        <motion.span key={i}
+          initial={{ scaleX:0, opacity:0 }}
+          animate={{ scaleX:1, opacity:1 }}
+          transition={{ duration:0.5, ease:[0.22,1,0.36,1], delay:i*0.2 }}
+          style={{ color: i===1?'#475569':'#fff', display:'inline-block', originX:'50%' }}
+        >{p}</motion.span>
+      ))}
+    </span>
+  );
+}
+
+function FireEmerge({ home, away }) {
+  const parts = [String(home), '-', String(away)];
+  return (
+    <span style={{ display:'flex', alignItems:'center', gap:14, fontSize:52, fontWeight:900 }}>
+      {parts.map((p,i) => (
+        <motion.span key={i}
+          initial={{ y:80, opacity:0, filter:'blur(8px)', color:'#ef4444' }}
+          animate={{ y:0, opacity:1, filter:'blur(0px)', color: i===1?'#475569':'#fff' }}
+          transition={{ duration:0.7, ease:[0.16,1,0.3,1], delay:i*0.2 }}
+          style={{ display:'inline-block' }}
+        >{p}</motion.span>
+      ))}
+    </span>
+  );
+}
+
+function IceFreeze({ home, away }) {
+  const parts = [String(home), '-', String(away)];
+  return (
+    <span style={{ display:'flex', alignItems:'center', gap:14, fontSize:52, fontWeight:900 }}>
+      {parts.map((p,i) => (
+        <motion.span key={i}
+          initial={{ scale:2, opacity:0, filter:'blur(10px) brightness(3)', color:'#bfdbfe' }}
+          animate={{ scale:1, opacity:1, filter:'blur(0px) brightness(1)', color: i===1?'#475569':'#93c5fd' }}
+          transition={{ duration:0.8, ease:'easeOut', delay:i*0.22 }}
+          style={{ display:'inline-block' }}
+        >{p}</motion.span>
+      ))}
+    </span>
+  );
+}
+
+function GoldPour({ home, away }) {
+  const parts = [String(home), '-', String(away)];
+  return (
+    <span style={{ display:'flex', alignItems:'center', gap:14, fontSize:52, fontWeight:900 }}>
+      {parts.map((p,i) => (
+        <motion.span key={i}
+          initial={{ y:-100, scaleY:0.1, opacity:0, color:'#fbbf24' }}
+          animate={{ y:0, scaleY:1, opacity:1, color:'#fbbf24' }}
+          transition={{ duration:0.6, ease:[0.22,1,0.36,1], delay:0.3+i*0.2 }}
+          style={{ display:'inline-block', originY:0, color: i===1?'#78350f':'#fbbf24' }}
+        >{p}</motion.span>
+      ))}
+    </span>
+  );
+}
+
+function RicochetScore({ home, away }) {
+  const parts = [String(home), '-', String(away)];
+  const paths = [
+    { x:[-200,100,-60,30,-15,0], y:[0,0,0,0,0,0] },
+    { x:[0,0,0,0,0,0], y:[-150,60,-30,15,-5,0] },
+    { x:[200,-100,60,-30,15,0], y:[0,0,0,0,0,0] },
+  ];
+  return (
+    <span style={{ display:'flex', alignItems:'center', gap:14, fontSize:52, fontWeight:900 }}>
+      {parts.map((p,i) => (
+        <motion.span key={i}
+          initial={{ x:paths[i].x[0], y:paths[i].y[0], opacity:0 }}
+          animate={{ x:0, y:0, opacity:1 }}
+          transition={{ duration:0.9, delay:i*0.1, type:'spring', stiffness:300, damping:8 }}
+          style={{ color: i===1?'#475569':'#fff', display:'inline-block' }}
+        >{p}</motion.span>
+      ))}
+    </span>
+  );
+}
+
+// Factory extras for dramatic styles
+const SNuke       = makeStagger(()=>({scale:0,opacity:0}), ()=>({scale:[0,12,0.6,1.2,1],opacity:[0,1,1,1,1]}), i=>({duration:1.1,delay:i*0.18}));
+const SSlam       = makeStagger(()=>({y:-500,opacity:0}), ()=>({y:[0,12,-6,3,-1,0],opacity:1}), i=>({duration:0.9,delay:i*0.15}));
+const SVortex     = makeStagger(()=>({rotate:-720,scale:0,opacity:0}), ()=>({rotate:0,scale:1,opacity:1}), i=>({type:'spring',stiffness:120,damping:12,delay:i*0.2}));
+const SMeteor     = makeStagger(()=>({x:200,y:-200,rotate:45,opacity:0}), ()=>({x:0,y:0,rotate:0,opacity:1}), i=>({type:'spring',stiffness:200,damping:16,delay:i*0.18}));
+const SThunder    = makeStagger(()=>({x:0,opacity:0}), ()=>({x:[-180,160,-120,90,-60,40,-20,10,0],opacity:1}), i=>({duration:0.7,delay:i*0.12}));
+const SCrush      = makeStagger(()=>({scale:4,opacity:0}), ()=>({scale:[4,0.4,1.2,0.85,1],opacity:[0,1,1,1,1]}), i=>({duration:0.9,delay:i*0.2}));
+const SSnap       = makeStagger(()=>({scale:0,opacity:0}), ()=>({scale:[0,1.8,0.7,1.1,1],opacity:1}), i=>({duration:0.4,delay:i*0.08}));
+const SMagnetic   = makeStagger((i)=>({x:i===0?-250:i===2?250:0, y:i===1?-120:0, opacity:0}), ()=>({x:0,y:0,opacity:1}), i=>({type:'spring',stiffness:180,damping:14,delay:i*0.1}));
+const SSlingshot  = makeStagger(()=>({x:-300,y:200,opacity:0,rotate:-30}), ()=>({x:0,y:0,opacity:1,rotate:0}), i=>({type:'spring',stiffness:250,damping:14,delay:i*0.15}));
+const SDropSplash = makeStagger(()=>({y:-400,opacity:0}), ()=>({y:[0,-20,8,-4,2,0],opacity:1}), i=>({duration:0.8,delay:i*0.2}));
+const SOrbital    = makeStagger((i)=>({rotate:i*120,scale:0,opacity:0,originX:'50%',originY:'150%'}), ()=>({rotate:0,scale:1,opacity:1}), i=>({type:'spring',stiffness:160,damping:14,delay:i*0.22}));
+const SSpringHeavy= makeStagger(()=>({y:-60,scale:0.2,opacity:0}), ()=>({y:0,scale:1,opacity:1}), i=>({type:'spring',stiffness:600,damping:8,delay:i*0.2}));
+const SIrisIn     = makeStagger(()=>({scale:0.01,opacity:0}), ()=>({scale:1,opacity:1}), i=>({type:'spring',stiffness:150,damping:10,delay:i*0.3}));
+const SSlowBurn   = makeStagger(()=>({opacity:0,filter:'blur(4px)'}), ()=>({opacity:1,filter:'blur(0px)'}), i=>({duration:1.8,ease:'easeInOut',delay:i*0.6}));
+const SFreezeUnfreeze = makeStagger(()=>({scale:0.95,opacity:0,filter:'saturate(0)'}), ()=>({scale:[0.95,0.95,0.95,1],opacity:[0,0,0,1],filter:'saturate(1)'}), i=>({duration:0.9,delay:0.5+i*0.15}));
+const SMovieTitle = makeStagger(()=>({letterSpacing:40,opacity:0,scale:0.8}), ()=>({letterSpacing:0,opacity:1,scale:1}), i=>({duration:1.0,ease:[0.16,1,0.3,1],delay:i*0.3}));
+const SDramaticPause = makeStagger(()=>({opacity:0,scale:1.5}), ()=>({opacity:[0,0,0,0,0,1],scale:[1.5,1.5,1.5,1.5,1.5,1]}), i=>({duration:2.0,delay:i*0.1}));
+const SWaveCascade= makeStagger((i)=>({y:i*30,opacity:0}), ()=>({y:0,opacity:1}), i=>({type:'spring',stiffness:260,damping:16,delay:i*0.12}));
+const SSmoke      = makeStagger(()=>({opacity:0,scale:1.4,filter:'blur(20px) saturate(0)'}), ()=>({opacity:1,scale:1,filter:'blur(0px) saturate(1)'}), i=>({duration:1.0,delay:i*0.28}));
+const SGoalExplode= makeStagger(()=>({scale:0,rotate:-15,opacity:0}), ()=>({scale:[0,1.6,0.85,1.1,1],rotate:[−15,10,-5,2,0],opacity:1}), i=>({duration:0.9,delay:i*0.15}));
+
 // ─── Score type router ──────────────────────────────────────────────────
 
 function ScoreDisplay({ type }) {
@@ -287,7 +524,40 @@ function ScoreDisplay({ type }) {
     case 's-depth':     return <SDepth home={h} away={a} />;
     case 's-swing':     return <SSwing home={h} away={a} />;
     case 's-melt':      return <SMelt home={h} away={a} />;
-    case 's-color':     return <SColorFlash home={h} away={a} />;
+    case 's-color':        return <SColorFlash home={h} away={a} />;
+    // Dramatic batch
+    case 'd-matrix':       return <MatrixDecode home={h} away={a} />;
+    case 'd-hack':         return <HackCount home={h} away={a} />;
+    case 'd-error':        return <ErrorFix home={h} away={a} />;
+    case 'd-satellite':    return <SatelliteScore home={h} away={a} />;
+    case 'd-crossfade':    return <CrossfadeScore home={h} away={a} />;
+    case 'd-assemble':     return <AssembleScore home={h} away={a} />;
+    case 'd-pendulum':     return <PendulumScore home={h} away={a} />;
+    case 'd-mirror':       return <MirrorUnfold home={h} away={a} />;
+    case 'd-fire':         return <FireEmerge home={h} away={a} />;
+    case 'd-ice':          return <IceFreeze home={h} away={a} />;
+    case 'd-gold':         return <GoldPour home={h} away={a} />;
+    case 'd-ricochet':     return <RicochetScore home={h} away={a} />;
+    case 'd-nuke':         return <SNuke home={h} away={a} />;
+    case 'd-slam':         return <SSlam home={h} away={a} />;
+    case 'd-vortex':       return <SVortex home={h} away={a} />;
+    case 'd-meteor':       return <SMeteor home={h} away={a} />;
+    case 'd-thunder':      return <SThunder home={h} away={a} />;
+    case 'd-crush':        return <SCrush home={h} away={a} />;
+    case 'd-snap':         return <SSnap home={h} away={a} />;
+    case 'd-magnetic':     return <SMagnetic home={h} away={a} />;
+    case 'd-slingshot':    return <SSlingshot home={h} away={a} />;
+    case 'd-dropsplash':   return <SDropSplash home={h} away={a} />;
+    case 'd-orbital':      return <SOrbital home={h} away={a} />;
+    case 'd-spring2':      return <SSpringHeavy home={h} away={a} />;
+    case 'd-iris':         return <SIrisIn home={h} away={a} />;
+    case 'd-slowburn':     return <SSlowBurn home={h} away={a} />;
+    case 'd-freeze':       return <SFreezeUnfreeze home={h} away={a} />;
+    case 'd-movietitle':   return <SMovieTitle home={h} away={a} />;
+    case 'd-pause':        return <SDramaticPause home={h} away={a} />;
+    case 'd-cascade':      return <SWaveCascade home={h} away={a} />;
+    case 'd-smoke':        return <SSmoke home={h} away={a} />;
+    case 'd-goal':         return <SGoalExplode home={h} away={a} />;
   }
 }
 
@@ -547,9 +817,66 @@ const STAGGER_STYLES = [
   { id:50, name:'Stagger Color Flash',category:'סטאגר', desc:'כל ספרה מבזיקה בצבע ומתלבנת',       scoreType:'s-color',     card:{background:'rgba(5,5,15,0.97)',border:'1px solid rgba(251,191,36,0.6)',boxShadow:'0 0 60px rgba(251,191,36,0.2)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.88)' },
 ];
 
-const ALL_STYLES = [...STYLES, ...STAGGER_STYLES];
+const C = (bg,br,sh) => ({ background:bg, border:br, boxShadow:sh });
+const E = (init,anim,trans,ov='rgba(0,0,0,0.85)') => ({ entry:{initial:init,animate:anim,transition:trans}, overlay:ov });
 
-const CATEGORIES = ['הכל', 'כניסה', 'מספרים', 'עיצוב', 'מיוחד', 'סטאגר'];
+const DRAMATIC_STYLES = [
+  { id:51, name:'Matrix Decode',    category:'דרמה', desc:'ספרות מפוצחות מתוך מטריקס', scoreType:'d-matrix',     ...C('rgba(0,10,0,0.97)','1px solid rgba(74,222,128,0.6)','0 0 60px rgba(74,222,128,0.25)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,8,0,0.95)') },
+  { id:52, name:'Hack Lock',        category:'דרמה', desc:'מחשב פורץ ונועל את התוצאה',  scoreType:'d-hack',       ...C('rgba(3,8,18,0.97)','1px solid rgba(34,211,238,0.5)','0 0 50px rgba(34,211,238,0.2)'), ...E({opacity:0},{opacity:1},{duration:0.3}) },
+  { id:53, name:'Error → Fix',      category:'דרמה', desc:'מראה שגיאה ואז מתקן לתוצאה', scoreType:'d-error',      ...C('rgba(8,3,3,0.97)','1px solid rgba(239,68,68,0.6)','0 0 60px rgba(239,68,68,0.25)'), ...E({opacity:0},{opacity:1},{duration:0.3}) },
+  { id:54, name:'Satellite Link',   category:'דרמה', desc:'מתפרק ומתחבר כמו שידור לוויין',scoreType:'d-satellite',  ...C('rgba(3,5,15,0.97)','1px solid rgba(99,102,241,0.5)','0 0 60px rgba(99,102,241,0.2)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,10,0.9)') },
+  { id:55, name:'Score Crossfade',  category:'דרמה', desc:'0-0 מתפוגג ל-1-1',            scoreType:'d-crossfade',  ...C('rgba(20,15,0,0.97)','1px solid rgba(251,191,36,0.5)','0 0 60px rgba(251,191,36,0.2)'), ...E({opacity:0},{opacity:1},{duration:0.3}) },
+  { id:56, name:'Particle Assemble',category:'דרמה', desc:'שלושה חלקים מתאספים ממרחק',  scoreType:'d-assemble',   ...C('rgba(8,18,32,0.97)','1px solid rgba(168,85,247,0.6)','0 0 70px rgba(168,85,247,0.25)'), ...E({opacity:0},{opacity:1},{duration:0.3}) },
+  { id:57, name:'Pendulum Swing',   category:'דרמה', desc:'ספרות מתנדנדות כמו מטוטלת',  scoreType:'d-pendulum',   ...C('rgba(8,18,32,0.97)','1px solid rgba(245,197,24,0.5)','0 0 50px rgba(245,197,24,0.15)'), ...E({opacity:0},{opacity:1},{duration:0.3}) },
+  { id:58, name:'Mirror Unfold',    category:'דרמה', desc:'כל ספרה נפתחת ממרכז כמו מראה',scoreType:'d-mirror',     ...C('rgba(5,10,20,0.97)','1px solid rgba(255,255,255,0.15)','0 20px 80px rgba(0,0,0,0.8)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,0,0.88)') },
+  { id:59, name:'Fire Emerge',      category:'דרמה', desc:'ספרות עולות מאש עם glow אדום', scoreType:'d-fire',       ...C('linear-gradient(180deg,rgba(20,3,0,0.97),rgba(10,2,0,0.97))','1px solid rgba(249,115,22,0.6)','0 0 80px rgba(239,68,68,0.35)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(12,2,0,0.92)') },
+  { id:60, name:'Ice Freeze',       category:'דרמה', desc:'ספרות מתקפאות ממפל אור קר',   scoreType:'d-ice',        ...C('linear-gradient(135deg,rgba(0,10,30,0.97),rgba(0,5,18,0.97))','1px solid rgba(147,197,253,0.5)','0 0 70px rgba(147,197,253,0.2)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,5,15,0.92)') },
+  { id:61, name:'Gold Pour',        category:'דרמה', desc:'ספרות שופעות מלמעלה כמו זהב',  scoreType:'d-gold',       ...C('linear-gradient(135deg,rgba(25,18,0,0.98),rgba(15,10,0,0.98))','2px solid rgba(245,197,24,0.7)','0 0 80px rgba(245,197,24,0.3), inset 0 1px rgba(245,197,24,0.2)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(10,7,0,0.92)') },
+  { id:62, name:'Ricochet',         category:'דרמה', desc:'ספרות מקפצות מקירות כמו כדור', scoreType:'d-ricochet',   ...C('rgba(8,18,32,0.97)','1px solid rgba(239,68,68,0.5)','0 0 60px rgba(239,68,68,0.2)'), ...E({opacity:0},{opacity:1},{duration:0.3}) },
+  { id:63, name:'Nuclear',          category:'דרמה', desc:'מתפוצץ ל-x12 ומתכווץ לתוצאה', scoreType:'d-nuke',       ...C('rgba(5,0,0,0.98)','1px solid rgba(239,68,68,0.7)','0 0 100px rgba(239,68,68,0.4)'), ...E({opacity:0},{opacity:1},{duration:0.2},'rgba(3,0,0,0.95)') },
+  { id:64, name:'Ground Slam',      category:'דרמה', desc:'נופל 500px וקופץ עם רעידה',    scoreType:'d-slam',       ...C('rgba(8,18,32,0.97)','1px solid rgba(245,197,24,0.5)','0 0 60px rgba(245,197,24,0.2)'), ...E({scale:0,opacity:0},{scale:1,opacity:1},{type:'spring',stiffness:200,damping:10}) },
+  { id:65, name:'Vortex Spin',      category:'דרמה', desc:'720° סיבוב ומתכווץ פנימה',     scoreType:'d-vortex',     ...C('rgba(5,3,20,0.97)','1px solid rgba(168,85,247,0.6)','0 0 80px rgba(168,85,247,0.3)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(3,2,12,0.92)') },
+  { id:66, name:'Meteor Strike',    category:'דרמה', desc:'נכנס בזווית 45° כמו מטאור',    scoreType:'d-meteor',     ...C('rgba(5,3,0,0.97)','1px solid rgba(251,191,36,0.6)','0 0 80px rgba(251,191,36,0.25), 0 0 150px rgba(239,68,68,0.1)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(4,2,0,0.92)') },
+  { id:67, name:'Thunder Shock',    category:'דרמה', desc:'רטט אופקי חזק כמו ברק',        scoreType:'d-thunder',    ...C('rgba(3,5,15,0.97)','1px solid rgba(250,204,21,0.7)','0 0 80px rgba(250,204,21,0.3)'), ...E({opacity:0},{opacity:1},{duration:0.2},'rgba(2,3,10,0.92)') },
+  { id:68, name:'Crush & Release',  category:'דרמה', desc:'גדל x4 ונמעך לתוצאה',          scoreType:'d-crush',      ...C('rgba(8,18,32,0.97)','1px solid rgba(239,68,68,0.5)','0 0 60px rgba(239,68,68,0.2)'), ...E({opacity:0},{opacity:1},{duration:0.3}) },
+  { id:69, name:'Instant Snap',     category:'דרמה', desc:'מופיע בבת אחת עם overshoot', scoreType:'d-snap',       ...C('rgba(8,18,32,0.97)','1px solid rgba(74,222,128,0.5)','0 0 60px rgba(74,222,128,0.2)'), ...E({scale:0},{scale:1},{type:'spring',stiffness:500,damping:10}) },
+  { id:70, name:'Magnetic Pull',    category:'דרמה', desc:'ספרות נמשכות ממרחק למרכז',     scoreType:'d-magnetic',   ...C('rgba(3,5,18,0.97)','1px solid rgba(99,102,241,0.6)','0 0 70px rgba(99,102,241,0.25)'), ...E({opacity:0},{opacity:1},{duration:0.3}) },
+  { id:71, name:'Slingshot',        category:'דרמה', desc:'נזרק מהפינה בזווית חדה',       scoreType:'d-slingshot',  ...C('rgba(8,18,32,0.97)','1px solid rgba(245,197,24,0.5)','0 0 60px rgba(245,197,24,0.2)'), ...E({opacity:0},{opacity:1},{duration:0.3}) },
+  { id:72, name:'Drop & Splash',    category:'דרמה', desc:'נופל ומתיז כמו טיפת מים',       scoreType:'d-dropsplash', ...C('rgba(0,8,20,0.97)','1px solid rgba(34,211,238,0.5)','0 0 70px rgba(34,211,238,0.2)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,5,15,0.9)') },
+  { id:73, name:'Orbital Entry',    category:'דרמה', desc:'מסתובב ממסלול מעגלי לנחיתה',  scoreType:'d-orbital',    ...C('rgba(3,5,20,0.97)','1px solid rgba(168,85,247,0.5)','0 0 70px rgba(168,85,247,0.25)'), ...E({opacity:0},{opacity:1},{duration:0.3}) },
+  { id:74, name:'Heavy Spring',     category:'דרמה', desc:'קפיץ כבד עם תנודות מרובות',    scoreType:'d-spring2',    ...C('rgba(8,18,32,0.97)','1px solid rgba(34,211,238,0.4)','0 0 60px rgba(34,211,238,0.15)'), ...E({opacity:0},{opacity:1},{duration:0.3}) },
+  { id:75, name:'Iris Open',        category:'דרמה', desc:'נפתח מנקודה אפסית כמו עדשה',  scoreType:'d-iris',       ...C('rgba(5,5,15,0.97)','1px solid rgba(255,255,255,0.12)','0 40px 100px rgba(0,0,0,0.9)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,0,0.95)') },
+  { id:76, name:'Slow Burn',        category:'דרמה', desc:'3 ספרות מתגלות אחת לאחת, לאט', scoreType:'d-slowburn',   ...C('rgba(3,3,3,0.98)','1px solid rgba(255,255,255,0.06)','0 40px 120px rgba(0,0,0,0.95)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,0,0.97)') },
+  { id:77, name:'Freeze Frame',     category:'דרמה', desc:'קפוא → פתאום חי',              scoreType:'d-freeze',     ...C('rgba(3,5,15,0.97)','1px solid rgba(147,197,253,0.3)','0 0 60px rgba(147,197,253,0.1)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,3,10,0.92)') },
+  { id:78, name:'Movie Title',      category:'דרמה', desc:'spacing מצטמצם כמו כותרת סרט', scoreType:'d-movietitle',  ...C('rgba(2,2,2,0.99)','1px solid rgba(255,255,255,0.08)','0 0 80px rgba(255,255,255,0.05)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,0,0.97)') },
+  { id:79, name:'Dramatic Pause',   category:'דרמה', desc:'מחכה 2 שניות ואז מגיע פתאום', scoreType:'d-pause',      ...C('rgba(8,18,32,0.97)','1px solid rgba(239,68,68,0.4)','0 0 60px rgba(239,68,68,0.15)'), ...E({opacity:0},{opacity:1},{duration:0.3}) },
+  { id:80, name:'Wave Cascade',     category:'דרמה', desc:'גל מדורג שמתפשט ממרכז',        scoreType:'d-cascade',    ...C('rgba(0,8,22,0.97)','1px solid rgba(34,211,238,0.5)','0 0 70px rgba(34,211,238,0.2)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,5,15,0.9)') },
+  { id:81, name:'Smoke Appear',     category:'דרמה', desc:'מגיח מעשן כמו קסמאי',          scoreType:'d-smoke',      ...C('rgba(5,5,8,0.98)','1px solid rgba(148,163,184,0.25)','0 0 60px rgba(148,163,184,0.1)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(2,2,4,0.95)') },
+  { id:82, name:'Goal Explosion',   category:'דרמה', desc:'כמו פיצוץ שער - rocket league', scoreType:'d-goal',       ...C('rgba(8,18,32,0.97)','2px solid rgba(245,197,24,0.8)','0 0 100px rgba(245,197,24,0.4), 0 0 200px rgba(239,68,68,0.1)'), ...E({scale:0,opacity:0},{scale:1,opacity:1},{type:'spring',stiffness:400,damping:8},'rgba(0,0,0,0.9)') },
+  // 18 more creative variations
+  { id:83, name:'Nuke + Glow Red',  category:'דרמה', desc:'פיצוץ ענק עם אורה אדומה',      scoreType:'d-nuke',       ...C('rgba(8,0,0,0.98)','2px solid rgba(239,68,68,0.8)','0 0 120px rgba(239,68,68,0.5), 0 0 60px rgba(239,68,68,0.3)'), ...E({opacity:0},{opacity:1},{duration:0.2},'rgba(5,0,0,0.95)') },
+  { id:84, name:'Slam + Gold',      category:'דרמה', desc:'נופל עם אורת זהב',              scoreType:'d-slam',       ...C('rgba(15,10,0,0.98)','2px solid rgba(245,197,24,0.8)','0 0 80px rgba(245,197,24,0.4)'), ...E({scale:0,opacity:0},{scale:1,opacity:1},{type:'spring',stiffness:300,damping:8}) },
+  { id:85, name:'Vortex + Purple',  category:'דרמה', desc:'מערבולת סגולה אינטנסיבית',      scoreType:'d-vortex',     ...C('rgba(10,0,20,0.98)','2px solid rgba(168,85,247,0.8)','0 0 100px rgba(168,85,247,0.45)'), ...E({opacity:0},{opacity:1},{duration:0.2},'rgba(5,0,12,0.95)') },
+  { id:86, name:'Meteor + Cyan',    category:'דרמה', desc:'מטאור כחול-ירוק שמאיר',        scoreType:'d-meteor',     ...C('rgba(0,8,15,0.98)','2px solid rgba(34,211,238,0.7)','0 0 90px rgba(34,211,238,0.35)'), ...E({opacity:0},{opacity:1},{duration:0.2},'rgba(0,4,10,0.95)') },
+  { id:87, name:'Thunder White',    category:'דרמה', desc:'ברק לבן עיוור',                  scoreType:'d-thunder',    ...C('rgba(5,5,5,0.98)','2px solid rgba(255,255,255,0.6)','0 0 100px rgba(255,255,255,0.3)'), ...E({opacity:0},{opacity:1},{duration:0.2},'rgba(0,0,0,0.95)') },
+  { id:88, name:'Assemble Gold',    category:'דרמה', desc:'חלקים זהובים מתאספים',          scoreType:'d-assemble',   ...C('rgba(12,8,0,0.98)','2px solid rgba(245,197,24,0.7)','0 0 80px rgba(245,197,24,0.3)'), ...E({opacity:0},{opacity:1},{duration:0.2},'rgba(8,5,0,0.95)') },
+  { id:89, name:'Fire + Slam',      category:'דרמה', desc:'עולה מאש ומתרסק למקומו',        scoreType:'d-fire',       ...C('rgba(15,3,0,0.98)','2px solid rgba(249,115,22,0.7)','0 0 100px rgba(239,68,68,0.45)'), ...E({scale:0,opacity:0},{scale:1,opacity:1},{type:'spring',stiffness:350,damping:10},'rgba(10,2,0,0.95)') },
+  { id:90, name:'Ice Shard',        category:'דרמה', desc:'שברי קרח מתחברים',              scoreType:'d-ice',        ...C('rgba(0,5,18,0.98)','2px solid rgba(147,197,253,0.7)','0 0 90px rgba(147,197,253,0.35)'), ...E({scale:0,opacity:0},{scale:1,opacity:1},{type:'spring',stiffness:300,damping:12},'rgba(0,3,12,0.95)') },
+  { id:91, name:'Gold Cascade',     category:'דרמה', desc:'ספרות זהב גולשות מלמעלה',       scoreType:'d-gold',       ...C('rgba(18,12,0,0.98)','2px solid rgba(245,197,24,0.8)','0 0 100px rgba(245,197,24,0.4), inset 0 1px rgba(255,220,100,0.2)'), ...E({opacity:0},{opacity:1},{duration:0.2},'rgba(10,7,0,0.95)') },
+  { id:92, name:'Matrix + Nuke',    category:'דרמה', desc:'פיצחון וניוקליאר בשילוב',       scoreType:'d-matrix',     ...C('rgba(0,8,0,0.98)','2px solid rgba(74,222,128,0.8)','0 0 100px rgba(74,222,128,0.4), 0 0 200px rgba(74,222,128,0.1)'), ...E({scale:0,opacity:0},{scale:1,opacity:1},{type:'spring',stiffness:400,damping:10},'rgba(0,5,0,0.97)') },
+  { id:93, name:'Slingshot Red',    category:'דרמה', desc:'נזרק בכח עם אורה אדומה',        scoreType:'d-slingshot',  ...C('rgba(10,2,2,0.98)','2px solid rgba(239,68,68,0.7)','0 0 90px rgba(239,68,68,0.35)'), ...E({opacity:0},{opacity:1},{duration:0.2},'rgba(6,1,1,0.95)') },
+  { id:94, name:'Orbital Gold',     category:'דרמה', desc:'מסלול מעגלי עם זהב',            scoreType:'d-orbital',    ...C('rgba(15,10,0,0.98)','2px solid rgba(245,197,24,0.7)','0 0 90px rgba(245,197,24,0.35)'), ...E({opacity:0},{opacity:1},{duration:0.2},'rgba(8,5,0,0.95)') },
+  { id:95, name:'Smoke + Purple',   category:'דרמה', desc:'עשן סגול מיסטי',                scoreType:'d-smoke',      ...C('rgba(8,3,15,0.98)','2px solid rgba(168,85,247,0.6)','0 0 80px rgba(168,85,247,0.3)'), ...E({opacity:0},{opacity:1},{duration:0.2},'rgba(5,2,10,0.97)') },
+  { id:96, name:'Crossfade Drama',  category:'דרמה', desc:'0-0 → תוצאה עם גלייד',          scoreType:'d-crossfade',  ...C('rgba(8,18,32,0.98)','2px solid rgba(34,211,238,0.6)','0 0 80px rgba(34,211,238,0.25)'), ...E({scale:0.5,opacity:0},{scale:1,opacity:1},{type:'spring',stiffness:200,damping:15}) },
+  { id:97, name:'Movie + Red',      category:'דרמה', desc:'כותרת סרט עם אורה אדומה',       scoreType:'d-movietitle', ...C('rgba(5,0,0,0.98)','2px solid rgba(239,68,68,0.6)','0 0 80px rgba(239,68,68,0.25)'), ...E({opacity:0},{opacity:1},{duration:0.2},'rgba(3,0,0,0.97)') },
+  { id:98, name:'Pendulum Extreme', category:'דרמה', desc:'מטוטלת ב-120° עם damping נמוך', scoreType:'d-pendulum',   ...C('rgba(8,18,32,0.98)','2px solid rgba(245,197,24,0.6)','0 0 80px rgba(245,197,24,0.25)'), ...E({scale:0.8,opacity:0},{scale:1,opacity:1},{type:'spring',stiffness:100,damping:8}) },
+  { id:99, name:'Goal + Cyan',      category:'דרמה', desc:'פיצוץ שער עם cyan blast',       scoreType:'d-goal',       ...C('rgba(0,8,18,0.98)','2px solid rgba(34,211,238,0.8)','0 0 120px rgba(34,211,238,0.5)'), ...E({scale:0,opacity:0},{scale:1,opacity:1},{type:'spring',stiffness:500,damping:8},'rgba(0,4,12,0.95)') },
+  { id:100, name:'Ultimate Drama',  category:'דרמה', desc:'נוקליאר + מטריקס + זהב',       scoreType:'d-nuke',       ...C('rgba(10,8,0,0.98)','2px solid rgba(245,197,24,0.9)','0 0 150px rgba(245,197,24,0.5), 0 0 300px rgba(239,68,68,0.15)'), ...E({scale:0,rotate:-20,opacity:0},{scale:1,rotate:0,opacity:1},{type:'spring',stiffness:300,damping:8},'rgba(5,4,0,0.97)') },
+];
+
+const ALL_STYLES = [...STYLES, ...STAGGER_STYLES, ...DRAMATIC_STYLES];
+
+const CATEGORIES = ['הכל', 'כניסה', 'מספרים', 'עיצוב', 'מיוחד', 'סטאגר', 'דרמה'];
 
 // ─── Preview Overlay ────────────────────────────────────────────────────
 
@@ -684,7 +1011,7 @@ export default function AdminLiveDemo() {
     <div className="text-white" dir="rtl">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-white">דמו אנימציות Live Overlay</h2>
-        <p className="text-slate-400 text-sm mt-1">50 סגנונות שונים — לחץ "הצג תצוגה מקדימה" לראות בגודל מלא</p>
+        <p className="text-slate-400 text-sm mt-1">100 סגנונות שונים — לחץ "הצג תצוגה מקדימה" לראות בגודל מלא</p>
       </div>
 
       {/* Category filter */}
