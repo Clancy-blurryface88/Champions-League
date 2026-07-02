@@ -479,7 +479,7 @@ const SMovieTitle = makeStagger(()=>({letterSpacing:40,opacity:0,scale:0.8}), ()
 const SDramaticPause = makeStagger(()=>({opacity:0,scale:1.5}), ()=>({opacity:[0,0,0,0,0,1],scale:[1.5,1.5,1.5,1.5,1.5,1]}), i=>({duration:2.0,delay:i*0.1}));
 const SWaveCascade= makeStagger((i)=>({y:i*30,opacity:0}), ()=>({y:0,opacity:1}), i=>({type:'spring',stiffness:260,damping:16,delay:i*0.12}));
 const SSmoke      = makeStagger(()=>({opacity:0,scale:1.4,filter:'blur(20px) saturate(0)'}), ()=>({opacity:1,scale:1,filter:'blur(0px) saturate(1)'}), i=>({duration:1.0,delay:i*0.28}));
-const SGoalExplode= makeStagger(()=>({scale:0,rotate:-15,opacity:0}), ()=>({scale:[0,1.6,0.85,1.1,1],rotate:[−15,10,-5,2,0],opacity:1}), i=>({duration:0.9,delay:i*0.15}));
+const SGoalExplode= makeStagger(()=>({scale:0,rotate:-15,opacity:0}), ()=>({scale:[0,1.6,0.85,1.1,1],rotate:[-15,10,-5,2,0],opacity:1}), i=>({duration:0.9,delay:i*0.15}));
 
 // ─── Score type router ──────────────────────────────────────────────────
 
