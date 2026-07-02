@@ -817,7 +817,7 @@ const STAGGER_STYLES = [
   { id:50, name:'Stagger Color Flash',category:'סטאגר', desc:'כל ספרה מבזיקה בצבע ומתלבנת',       scoreType:'s-color',     card:{background:'rgba(5,5,15,0.97)',border:'1px solid rgba(251,191,36,0.6)',boxShadow:'0 0 60px rgba(251,191,36,0.2)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.88)' },
 ];
 
-const C = (bg,br,sh) => ({ background:bg, border:br, boxShadow:sh });
+const C = (bg,br,sh) => ({ card: { background:bg, border:br, boxShadow:sh } });
 const E = (init,anim,trans,ov='rgba(0,0,0,0.85)') => ({ entry:{initial:init,animate:anim,transition:trans}, overlay:ov });
 
 const DRAMATIC_STYLES = [
