@@ -202,6 +202,48 @@ function FlickerScore({ home, away }) {
   );
 }
 
+// ─── Stagger factory ────────────────────────────────────────────────────
+
+function makeStagger(getInit, getAnim, getTrans, colors = ['#fff', '#475569', '#fff']) {
+  return function({ home, away }) {
+    const parts = [String(home), '-', String(away)];
+    return (
+      <span style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 52, fontWeight: 900 }}>
+        {parts.map((p, i) => (
+          <motion.span key={i} initial={getInit(i)} animate={getAnim(i)} transition={getTrans(i)}
+            style={{ color: colors[i], display: 'inline-block' }}>{p}</motion.span>
+        ))}
+      </span>
+    );
+  };
+}
+
+const SRise      = makeStagger(()=>({y:60,opacity:0}), ()=>({y:0,opacity:1}), i=>({type:'spring',stiffness:280,damping:18,delay:i*0.28}));
+const SLeft      = makeStagger(()=>({x:-80,opacity:0}), ()=>({x:0,opacity:1}), i=>({duration:0.45,ease:[0.22,1,0.36,1],delay:i*0.22}));
+const SRight     = makeStagger(()=>({x:80,opacity:0}), ()=>({x:0,opacity:1}), i=>({duration:0.45,ease:[0.22,1,0.36,1],delay:i*0.22}));
+const SPing      = makeStagger(()=>({scale:2.5,opacity:0}), ()=>({scale:1,opacity:1}), i=>({type:'spring',stiffness:400,damping:14,delay:i*0.25}));
+const SRotateCW  = makeStagger(()=>({rotate:90,opacity:0}), ()=>({rotate:0,opacity:1}), i=>({type:'spring',stiffness:260,damping:18,delay:i*0.3}));
+const SRotateCCW = makeStagger(()=>({rotate:-90,opacity:0}), ()=>({rotate:0,opacity:1}), i=>({type:'spring',stiffness:260,damping:18,delay:i*0.3}));
+const SBlurEach  = makeStagger(()=>({filter:'blur(14px)',opacity:0}), ()=>({filter:'blur(0px)',opacity:1}), i=>({duration:0.55,delay:i*0.28}));
+const SElastic   = makeStagger(()=>({scale:0,opacity:0}), ()=>({scale:[0,1.5,0.85,1.1,1],opacity:1}), i=>({duration:0.7,delay:i*0.2}));
+const SWave      = makeStagger((i)=>({y: i===1?0:40, opacity:0}), (i)=>({y:0,opacity:1}), i=>({type:'spring',stiffness:300,damping:16,delay:0.1+i*0.18}));
+const SFlipX     = makeStagger(()=>({rotateX:90,opacity:0}), ()=>({rotateX:0,opacity:1}), i=>({duration:0.5,ease:'easeOut',delay:i*0.28}));
+const SFlipY     = makeStagger(()=>({rotateY:90,opacity:0}), ()=>({rotateY:0,opacity:1}), i=>({duration:0.5,ease:'easeOut',delay:i*0.28}));
+const SSpin      = makeStagger(()=>({rotate:360,scale:0,opacity:0}), ()=>({rotate:0,scale:1,opacity:1}), i=>({type:'spring',stiffness:220,damping:16,delay:i*0.3}));
+const SZoom      = makeStagger(()=>({scale:5,opacity:0}), ()=>({scale:1,opacity:1}), i=>({duration:0.55,ease:'easeOut',delay:i*0.25}));
+const SSkew      = makeStagger(()=>({skewX:40,x:-30,opacity:0}), ()=>({skewX:0,x:0,opacity:1}), i=>({duration:0.4,ease:[0.22,1,0.36,1],delay:i*0.22}));
+const SGravity   = makeStagger(()=>({y:-120,opacity:0}), ()=>({y:0,opacity:1}), i=>({duration:0.5,ease:'easeIn',delay:i*0.2}));
+const SAntiGrav  = makeStagger(()=>({y:120,opacity:0}), ()=>({y:0,opacity:1}), i=>({duration:0.5,ease:'easeOut',delay:i*0.2}));
+const SReverse   = makeStagger(()=>({y:-30,opacity:0}), ()=>({y:0,opacity:1}), i=>({type:'spring',stiffness:300,damping:18,delay:(2-i)*0.28}));
+const SOutsideIn = makeStagger(i=>({y:i===1?0:-30,opacity:i===1?1:0,scale:i===1?1:0.5}), ()=>({y:0,opacity:1,scale:1}), i=>({type:'spring',stiffness:300,damping:18,delay:i===1?0.55:0.1}));
+const SInsideOut = makeStagger(i=>({y:i===1?-30:0,opacity:i===1?0:0,scale:0.5}), ()=>({y:0,opacity:1,scale:1}), i=>({type:'spring',stiffness:300,damping:18,delay:i===1?0.05:0.4}));
+const SRubber    = makeStagger(()=>({scale:0}), ()=>({scale:[0,1.6,0.75,1.2,0.92,1]}), i=>({duration:0.85,delay:i*0.22}));
+const SStrobe    = makeStagger(()=>({opacity:0}), ()=>({opacity:[0,1,0,1,0,1,1]}), i=>({duration:0.7,delay:i*0.25}));
+const SDepth     = makeStagger(()=>({z:-300,scale:0.1,opacity:0}), ()=>({z:0,scale:1,opacity:1}), i=>({type:'spring',stiffness:200,damping:18,delay:i*0.28}));
+const SSwing     = makeStagger(()=>({rotate:-70,opacity:0,originY:0}), ()=>({rotate:0,opacity:1}), i=>({type:'spring',stiffness:180,damping:12,delay:i*0.3}));
+const SMelt      = makeStagger(()=>({y:-25,scale:0.8,opacity:0}), ()=>({y:0,scale:1,opacity:1}), i=>({duration:0.9,ease:[0.16,1,0.3,1],delay:i*0.35}));
+const SColorFlash= makeStagger(()=>({scale:0,opacity:0,color:'#ef4444'}), ()=>({scale:1,opacity:1,color:'#ffffff'}), i=>({duration:0.6,delay:i*0.25}), ['#fbbf24','#475569','#fbbf24']);
+
 // ─── Score type router ──────────────────────────────────────────────────
 
 function ScoreDisplay({ type }) {
@@ -221,6 +263,31 @@ function ScoreDisplay({ type }) {
     case 'neon-cyan':  return <StaticScore home={h} away={a} color="#22d3ee" />;
     case 'white':
     default:           return <StaticScore home={h} away={a} />;
+    case 's-rise':      return <SRise home={h} away={a} />;
+    case 's-left':      return <SLeft home={h} away={a} />;
+    case 's-right':     return <SRight home={h} away={a} />;
+    case 's-ping':      return <SPing home={h} away={a} />;
+    case 's-cw':        return <SRotateCW home={h} away={a} />;
+    case 's-ccw':       return <SRotateCCW home={h} away={a} />;
+    case 's-blur-each': return <SBlurEach home={h} away={a} />;
+    case 's-elastic':   return <SElastic home={h} away={a} />;
+    case 's-wave':      return <SWave home={h} away={a} />;
+    case 's-flipx':     return <SFlipX home={h} away={a} />;
+    case 's-flipy':     return <SFlipY home={h} away={a} />;
+    case 's-spin':      return <SSpin home={h} away={a} />;
+    case 's-zoom':      return <SZoom home={h} away={a} />;
+    case 's-skew':      return <SSkew home={h} away={a} />;
+    case 's-gravity':   return <SGravity home={h} away={a} />;
+    case 's-anti':      return <SAntiGrav home={h} away={a} />;
+    case 's-reverse':   return <SReverse home={h} away={a} />;
+    case 's-outside':   return <SOutsideIn home={h} away={a} />;
+    case 's-inside':    return <SInsideOut home={h} away={a} />;
+    case 's-rubber':    return <SRubber home={h} away={a} />;
+    case 's-strobe':    return <SStrobe home={h} away={a} />;
+    case 's-depth':     return <SDepth home={h} away={a} />;
+    case 's-swing':     return <SSwing home={h} away={a} />;
+    case 's-melt':      return <SMelt home={h} away={a} />;
+    case 's-color':     return <SColorFlash home={h} away={a} />;
   }
 }
 
@@ -452,7 +519,37 @@ const STYLES = [
   },
 ];
 
-const CATEGORIES = ['הכל', 'כניסה', 'מספרים', 'עיצוב', 'מיוחד'];
+const STAGGER_STYLES = [
+  { id:26, name:'Stagger Rise',      category:'סטאגר', desc:'ספרות עולות מלמטה בזו אחר זו',      scoreType:'s-rise',      card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(99,102,241,0.5)',boxShadow:'0 0 50px rgba(99,102,241,0.15)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.8)' },
+  { id:27, name:'Stagger Left',      category:'סטאגר', desc:'ספרות נכנסות משמאל',                 scoreType:'s-left',      card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(245,197,24,0.4)',boxShadow:'0 0 50px rgba(245,197,24,0.12)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.8)' },
+  { id:28, name:'Stagger Right',     category:'סטאגר', desc:'ספרות נכנסות מימין',                  scoreType:'s-right',     card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(245,197,24,0.4)',boxShadow:'0 0 50px rgba(245,197,24,0.12)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.8)' },
+  { id:29, name:'Stagger Ping',      category:'סטאגר', desc:'כל ספרה מתכווצת מגודל ענק',          scoreType:'s-ping',      card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(239,68,68,0.5)',boxShadow:'0 0 50px rgba(239,68,68,0.18)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.82)' },
+  { id:30, name:'Stagger Rotate CW', category:'סטאגר', desc:'כל ספרה מסתובבת מ-90° עם כיוון השעון', scoreType:'s-cw',      card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(168,85,247,0.5)',boxShadow:'0 0 50px rgba(168,85,247,0.15)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.82)' },
+  { id:31, name:'Stagger Rotate CCW',category:'סטאגר', desc:'כל ספרה מסתובבת נגד כיוון השעון',    scoreType:'s-ccw',       card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(168,85,247,0.4)',boxShadow:'0 0 50px rgba(168,85,247,0.12)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.82)' },
+  { id:32, name:'Stagger Blur Each', category:'סטאגר', desc:'כל ספרה מתחדדת מטשטוש בנפרד',        scoreType:'s-blur-each', card:{background:'rgba(5,10,20,0.97)',border:'1px solid rgba(255,255,255,0.1)',boxShadow:'0 20px 60px rgba(0,0,0,0.7)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.78)' },
+  { id:33, name:'Stagger Elastic',   category:'סטאגר', desc:'כל ספרה קופצת ב-overshoot מאוד',     scoreType:'s-elastic',   card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(34,211,238,0.5)',boxShadow:'0 0 50px rgba(34,211,238,0.15)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.82)' },
+  { id:34, name:'Stagger Wave',      category:'סטאגר', desc:'גלים — האמצע מגיע ראשון',            scoreType:'s-wave',      card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(74,222,128,0.4)',boxShadow:'0 0 50px rgba(74,222,128,0.12)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.82)' },
+  { id:35, name:'Stagger Flip X',    category:'סטאגר', desc:'כל ספרה מתהפכת על ציר X',           scoreType:'s-flipx',     card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(251,191,36,0.5)',boxShadow:'0 0 50px rgba(251,191,36,0.15)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.82)' },
+  { id:36, name:'Stagger Flip Y',    category:'סטאגר', desc:'כל ספרה נפתחת כמו דלת על ציר Y',   scoreType:'s-flipy',     card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(251,191,36,0.4)',boxShadow:'0 0 50px rgba(251,191,36,0.12)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.82)' },
+  { id:37, name:'Stagger Spin',      category:'סטאגר', desc:'כל ספרה מסתובבת 360° ומתייצבת',     scoreType:'s-spin',      card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(239,68,68,0.5)',boxShadow:'0 0 50px rgba(239,68,68,0.18)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.85)' },
+  { id:38, name:'Stagger Zoom Far',  category:'סטאגר', desc:'כל ספרה מגיעה ממרחק רב',             scoreType:'s-zoom',      card:{background:'rgba(3,5,15,0.97)',border:'1px solid rgba(99,102,241,0.5)',boxShadow:'0 0 60px rgba(99,102,241,0.2)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.88)' },
+  { id:39, name:'Stagger Skew',      category:'סטאגר', desc:'כל ספרה נכנסת עם הטיה אלכסונית',    scoreType:'s-skew',      card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(245,197,24,0.5)',boxShadow:'0 0 50px rgba(245,197,24,0.15)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.82)' },
+  { id:40, name:'Stagger Gravity',   category:'סטאגר', desc:'כל ספרה נופלת בתאוצה (ease-in)',     scoreType:'s-gravity',   card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(239,68,68,0.4)',boxShadow:'0 0 50px rgba(239,68,68,0.15)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.82)' },
+  { id:41, name:'Stagger Anti-Grav', category:'סטאגר', desc:'כל ספרה עולה בהאטה (ease-out)',      scoreType:'s-anti',      card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(34,211,238,0.4)',boxShadow:'0 0 50px rgba(34,211,238,0.12)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.82)' },
+  { id:42, name:'Stagger Reverse',   category:'סטאגר', desc:'ספרות מגיעות מימין לשמאל',           scoreType:'s-reverse',   card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(168,85,247,0.5)',boxShadow:'0 0 50px rgba(168,85,247,0.15)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.82)' },
+  { id:43, name:'Outside → In',      category:'סטאגר', desc:'שני הצדדים קודם, המקף אחרון',        scoreType:'s-outside',   card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(74,222,128,0.5)',boxShadow:'0 0 50px rgba(74,222,128,0.15)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.82)' },
+  { id:44, name:'Inside → Out',      category:'סטאגר', desc:'המקף קודם, הספרות אחרון',            scoreType:'s-inside',    card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(251,191,36,0.5)',boxShadow:'0 0 50px rgba(251,191,36,0.15)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.82)' },
+  { id:45, name:'Stagger Rubber',    category:'סטאגר', desc:'כל ספרה מתמתחת ומתכווצת כגומי',      scoreType:'s-rubber',    card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(239,68,68,0.5)',boxShadow:'0 0 50px rgba(239,68,68,0.2)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.85)' },
+  { id:46, name:'Stagger Strobe',    category:'סטאגר', desc:'כל ספרה מהבהבת לפני שמתייצבת',       scoreType:'s-strobe',    card:{background:'#050505',border:'1px solid rgba(255,255,255,0.2)',boxShadow:'0 0 40px rgba(255,255,255,0.08)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.92)' },
+  { id:47, name:'Stagger 3D Depth',  category:'סטאגר', desc:'כל ספרה מגיחה ממעמקי הZ-axis',       scoreType:'s-depth',     card:{background:'rgba(3,5,15,0.97)',border:'1px solid rgba(99,102,241,0.6)',boxShadow:'0 0 70px rgba(99,102,241,0.25)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,5,0.9)' },
+  { id:48, name:'Stagger Swing',     category:'סטאגר', desc:'כל ספרה מתנדנדת כמו מטוטלת',         scoreType:'s-swing',     card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(245,197,24,0.5)',boxShadow:'0 0 50px rgba(245,197,24,0.15)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.82)' },
+  { id:49, name:'Stagger Melt',      category:'סטאגר', desc:'ספרות ממיסות פנימה לאט ומפנקות',     scoreType:'s-melt',      card:{background:'rgba(8,18,32,0.95)',border:'1px solid rgba(168,85,247,0.4)',boxShadow:'0 0 50px rgba(168,85,247,0.12)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.82)' },
+  { id:50, name:'Stagger Color Flash',category:'סטאגר', desc:'כל ספרה מבזיקה בצבע ומתלבנת',       scoreType:'s-color',     card:{background:'rgba(5,5,15,0.97)',border:'1px solid rgba(251,191,36,0.6)',boxShadow:'0 0 60px rgba(251,191,36,0.2)'}, entry:{initial:{opacity:0},animate:{opacity:1},transition:{duration:0.3}}, overlay:'rgba(0,0,0,0.88)' },
+];
+
+const ALL_STYLES = [...STYLES, ...STAGGER_STYLES];
+
+const CATEGORIES = ['הכל', 'כניסה', 'מספרים', 'עיצוב', 'מיוחד', 'סטאגר'];
 
 // ─── Preview Overlay ────────────────────────────────────────────────────
 
@@ -580,14 +677,14 @@ export default function AdminLiveDemo() {
   const [previewStyle, setPreviewStyle] = useState(null);
 
   const filtered = activeCategory === 'הכל'
-    ? STYLES
-    : STYLES.filter(s => s.category === activeCategory);
+    ? ALL_STYLES
+    : ALL_STYLES.filter(s => s.category === activeCategory);
 
   return (
     <div className="text-white" dir="rtl">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-white">דמו אנימציות Live Overlay</h2>
-        <p className="text-slate-400 text-sm mt-1">25 סגנונות שונים — לחץ "הצג תצוגה מקדימה" לראות בגודל מלא</p>
+        <p className="text-slate-400 text-sm mt-1">50 סגנונות שונים — לחץ "הצג תצוגה מקדימה" לראות בגודל מלא</p>
       </div>
 
       {/* Category filter */}
@@ -602,7 +699,7 @@ export default function AdminLiveDemo() {
               border: activeCategory === cat ? '1px solid rgba(59,130,246,0.5)' : '1px solid rgba(255,255,255,0.1)',
               color: activeCategory === cat ? '#93c5fd' : '#94a3b8',
             }}
-          >{cat} {cat === 'הכל' ? `(${STYLES.length})` : `(${STYLES.filter(s => s.category === cat).length})`}</button>
+          >{cat} {cat === 'הכל' ? `(${ALL_STYLES.length})` : `(${ALL_STYLES.filter(s => s.category === cat).length})`}</button>
         ))}
       </div>
 
