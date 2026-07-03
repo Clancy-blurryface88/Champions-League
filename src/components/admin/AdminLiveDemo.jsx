@@ -4,9 +4,9 @@ import { Play, X } from 'lucide-react';
 
 const MOCK = {
   homeTla: 'BRA', awayTla: 'ARG',
-  homeScore: 1, awayScore: 1,
+  homeScore: 2, awayScore: 2,
   prevHome: 0, prevAway: 0,
-  prediction: '0 - 2',
+  prediction: '1 - 2',
 };
 
 // ─── Score sub-components ──────────────────────────────────────────────
@@ -700,6 +700,329 @@ const SLiquid     = makeStagger(()=>({scaleX:0.01,scaleY:3,skewX:15,opacity:0}),
 const SBlinkOn    = makeStagger(()=>({opacity:0,scale:1.1}), ()=>({opacity:[0,1,0,0,1,0,1,0,1,1],scale:1}), i=>({duration:1.2,delay:i*0.2}));
 const SFall3D     = makeStagger(()=>({rotateX:-90,y:-40,opacity:0}), ()=>({rotateX:0,y:0,opacity:1}), i=>({type:'spring',stiffness:200,damping:16,delay:i*0.25}));
 
+// ─── Score counter components (0-0 → real score) ────────────────────────
+
+function buildGoalSeq(home, away) {
+  const seq = []; let h = 0, a = 0;
+  for (let i = 0; i < home + away; i++) {
+    if (h < home && (a >= away || i % 2 === 0)) h++; else a++;
+    seq.push({ h, a });
+  }
+  return seq;
+}
+
+// 1. Odometer Roll — digit strip scrolls upward like a car odometer
+function OdometerScore({ home, away }) {
+  function OdometerDigit({ target, delay = 0 }) {
+    return (
+      <div style={{ height: 64, overflow: 'hidden', display: 'inline-flex', alignItems: 'flex-start', verticalAlign: 'middle' }}>
+        <motion.div
+          initial={{ y: 0 }}
+          animate={{ y: -(target * 64) }}
+          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1], delay }}
+          style={{ display: 'flex', flexDirection: 'column' }}
+        >
+          {[0,1,2,3,4,5,6,7,8,9].map(d => (
+            <div key={d} style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 52, fontWeight: 900, color: '#fff', minWidth: 42, lineHeight: 1 }}>{d}</div>
+          ))}
+        </motion.div>
+      </div>
+    );
+  }
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <OdometerDigit target={home} delay={0.4} />
+      <span style={{ color: '#475569', fontSize: 52, fontWeight: 900 }}>-</span>
+      <OdometerDigit target={away} delay={0.75} />
+    </div>
+  );
+}
+
+// 2. Flip Board (Solari airport board)
+function FlipBoardScore({ home, away }) {
+  function FlipDigit({ target, startDelay = 0 }) {
+    const [cur, setCur] = useState(0);
+    const [phase, setPhase] = useState('idle');
+
+    useEffect(() => {
+      if (target === 0) return;
+      const doFlip = (to) => {
+        setTimeout(() => {
+          setPhase('hide');
+          setTimeout(() => { setCur(to); setPhase('show'); setTimeout(() => { setPhase('idle'); if (to < target) doFlip(to + 1); }, 180); }, 160);
+        }, to === 1 ? startDelay : 550);
+      };
+      doFlip(1);
+    }, []);
+
+    return (
+      <div style={{ width: 60, height: 78, background: 'linear-gradient(180deg,#1e293b,#0f172a)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid rgba(255,255,255,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.6)', position: 'relative', overflow: 'hidden' }}>
+        <motion.span
+          animate={{ rotateX: phase === 'hide' ? -90 : 0, opacity: phase === 'hide' ? 0 : 1, scale: phase === 'show' ? [0.85, 1] : 1 }}
+          transition={{ duration: 0.16 }}
+          style={{ fontSize: 50, fontWeight: 900, color: '#fbbf24', display: 'inline-block', fontFamily: 'monospace' }}
+        >{cur}</motion.span>
+        <div style={{ position: 'absolute', top: '50%', left: 4, right: 4, height: 1, background: 'rgba(0,0,0,0.6)', pointerEvents: 'none' }} />
+      </div>
+    );
+  }
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <FlipDigit target={home} startDelay={500} />
+      <span style={{ color: '#64748b', fontSize: 44, fontWeight: 900 }}>-</span>
+      <FlipDigit target={away} startDelay={home * 650 + 500} />
+    </div>
+  );
+}
+
+// 3. Goal Replay Sequence — flash + increment per goal
+function GoalReplayScore({ home, away }) {
+  const [h, setH] = useState(0);
+  const [a, setA] = useState(0);
+  const [flash, setFlash] = useState(false);
+  const [side, setSide] = useState(null);
+
+  useEffect(() => {
+    const seq = buildGoalSeq(home, away);
+    seq.forEach(({ h: nh, a: na }, i) => {
+      const prev = i > 0 ? seq[i-1] : { h: 0, a: 0 };
+      const sc = nh > prev.h ? 'h' : 'a';
+      setTimeout(() => {
+        setSide(sc); setFlash(true);
+        setTimeout(() => { setH(nh); setA(na); setFlash(false); }, 320);
+      }, 700 + i * 950);
+    });
+  }, []);
+
+  return (
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      <AnimatePresence>
+        {flash && (
+          <motion.div key="fl" initial={{ scale: 0.5, opacity: 0.9 }} animate={{ scale: 5, opacity: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.45 }}
+            style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle, rgba(239,68,68,0.9) 0%, transparent 65%)', pointerEvents: 'none', zIndex: 10 }} />
+        )}
+      </AnimatePresence>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 52, fontWeight: 900 }}>
+        <motion.span animate={{ scale: flash && side === 'h' ? 1.5 : 1, color: flash && side === 'h' ? '#ef4444' : '#fff' }} style={{ display: 'inline-block', minWidth: 38, textAlign: 'center' }}>{h}</motion.span>
+        <span style={{ color: '#475569' }}>-</span>
+        <motion.span animate={{ scale: flash && side === 'a' ? 1.5 : 1, color: flash && side === 'a' ? '#ef4444' : '#fff' }} style={{ display: 'inline-block', minWidth: 38, textAlign: 'center' }}>{a}</motion.span>
+      </div>
+    </div>
+  );
+}
+
+// 4. Typewriter Mistake — types score, corrects one by one
+function TypewriterMistakeScore({ home, away }) {
+  const [h, setH] = useState(0);
+  const [a, setA] = useState(0);
+  const [blink, setBlink] = useState(true);
+
+  useEffect(() => {
+    const seq = buildGoalSeq(home, away);
+    seq.forEach(({ h: nh, a: na }, i) => { setTimeout(() => { setH(nh); setA(na); }, 500 + i * 650); });
+    const iv = setInterval(() => setBlink(p => !p), 530);
+    return () => clearInterval(iv);
+  }, []);
+
+  return (
+    <span style={{ fontSize: 52, fontWeight: 900, fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: 10 }}>
+      <motion.span key={`h${h}`} initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} style={{ color: '#fff', minWidth: 38, display: 'inline-block', textAlign: 'center' }}>{h}</motion.span>
+      <span style={{ color: '#475569' }}>-</span>
+      <motion.span key={`a${a}`} initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} style={{ color: '#fff', minWidth: 38, display: 'inline-block', textAlign: 'center' }}>{a}</motion.span>
+      <span style={{ color: '#4ade80', opacity: blink ? 1 : 0, marginLeft: -6, fontSize: 42 }}>|</span>
+    </span>
+  );
+}
+
+// 5. Clock Tick — digit spins fast then decelerates to target
+function ClockTickScore({ home, away }) {
+  function TickDigit({ target, delay = 0 }) {
+    const [val, setVal] = useState(0);
+    const ref = useRef(0);
+
+    useEffect(() => {
+      const tos = [];
+      let t = delay;
+      const total = 10 + target;
+      for (let i = 0; i < total; i++) {
+        const d = t;
+        tos.push(setTimeout(() => { ref.current = (ref.current + 1) % 10; setVal(ref.current); }, d));
+        t += Math.min(55 + i * 22, 320);
+      }
+      tos.push(setTimeout(() => setVal(target), t + 80));
+      return () => tos.forEach(clearTimeout);
+    }, []);
+
+    return (
+      <motion.span key={val} initial={{ y: -14, opacity: 0.6 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.08 }}
+        style={{ fontSize: 52, fontWeight: 900, color: '#fbbf24', display: 'inline-block', minWidth: 38, textAlign: 'center', fontFamily: 'monospace' }}>
+        {val}
+      </motion.span>
+    );
+  }
+  return (
+    <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <TickDigit target={home} delay={300} />
+      <span style={{ color: '#475569', fontSize: 52, fontWeight: 900 }}>-</span>
+      <TickDigit target={away} delay={650} />
+    </span>
+  );
+}
+
+// 6. Sand Fall — 0 dissolves down, target reforms from above
+function SandFallScore({ home, away }) {
+  function DissolveDigit({ target, delay = 0 }) {
+    const [phase, setPhase] = useState('zero'); // zero → dissolve → reform
+
+    useEffect(() => {
+      setTimeout(() => setPhase('dissolve'), delay);
+      setTimeout(() => setPhase('reform'), delay + 420);
+    }, []);
+
+    return (
+      <div style={{ position: 'relative', width: 42, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <motion.span
+          animate={phase !== 'zero' ? { y: 50, opacity: 0, scale: 0.4, filter: 'blur(6px)' } : { y: 0, opacity: 1, scale: 1, filter: 'blur(0px)' }}
+          transition={{ duration: 0.38 }}
+          style={{ position: 'absolute', fontSize: 52, fontWeight: 900, color: '#94a3b8' }}
+        >0</motion.span>
+        <motion.span
+          initial={{ y: -50, opacity: 0, scale: 0.4, filter: 'blur(6px)' }}
+          animate={phase === 'reform' ? { y: 0, opacity: 1, scale: 1, filter: 'blur(0px)' } : { y: -50, opacity: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          style={{ position: 'absolute', fontSize: 52, fontWeight: 900, color: '#fff' }}
+        >{target}</motion.span>
+      </div>
+    );
+  }
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <DissolveDigit target={home} delay={400} />
+      <span style={{ color: '#475569', fontSize: 52, fontWeight: 900 }}>-</span>
+      <DissolveDigit target={away} delay={900} />
+    </div>
+  );
+}
+
+// 7. Scratch Card — grey cover peels back left→right to reveal score
+function ScratchCardScore({ home, away }) {
+  const [scratched, setScratched] = useState(false);
+  useEffect(() => { setTimeout(() => setScratched(true), 700); }, []);
+  return (
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      <span style={{ fontSize: 52, fontWeight: 900 }}>
+        <span style={{ color: '#fbbf24' }}>{home}</span>
+        <span style={{ color: '#475569', margin: '0 12px' }}>-</span>
+        <span style={{ color: '#fbbf24' }}>{away}</span>
+      </span>
+      <motion.div
+        initial={{ scaleX: 1, transformOrigin: 'right center' }}
+        animate={{ scaleX: scratched ? 0 : 1 }}
+        transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+        style={{ position: 'absolute', inset: '-6px', borderRadius: 8, background: 'repeating-linear-gradient(135deg, #334155 0px, #334155 10px, #3f4e63 10px, #3f4e63 20px)', pointerEvents: 'none' }}
+      />
+    </div>
+  );
+}
+
+// 8. Binary Decode — shows binary → flicker → decimal
+function BinaryDecodeScore({ home, away }) {
+  const toBin = n => n.toString(2).padStart(4, '0');
+  const [phase, setPhase] = useState('binary');
+
+  useEffect(() => {
+    setTimeout(() => setPhase('flicker'), 1000);
+    setTimeout(() => setPhase('number'), 1700);
+  }, []);
+
+  if (phase !== 'number') {
+    return (
+      <motion.div
+        animate={phase === 'flicker' ? { opacity: [1, 0.2, 1, 0.3, 1, 0.4, 1] } : { opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        style={{ fontSize: 26, fontWeight: 900, fontFamily: 'monospace', color: phase === 'flicker' ? '#fbbf24' : '#4ade80', letterSpacing: 3, textAlign: 'center' }}
+      >
+        {toBin(home)} — {toBin(away)}
+        <div style={{ fontSize: 11, color: '#64748b', letterSpacing: 1, marginTop: 4 }}>DECODING…</div>
+      </motion.div>
+    );
+  }
+  return (
+    <motion.span initial={{ scale: 0.5, opacity: 0, filter: 'blur(8px)' }} animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }} transition={{ type: 'spring', stiffness: 300, damping: 14 }}
+      style={{ fontSize: 52, fontWeight: 900, color: '#4ade80', textShadow: '0 0 20px rgba(74,222,128,0.5)', fontFamily: 'monospace' }}>
+      {home}<span style={{ color: '#166534', margin: '0 12px' }}>-</span>{away}
+    </motion.span>
+  );
+}
+
+// 9. Scoreboard Flash — old board blinks 0-0 then snaps to score
+function ScoreboardFlashScore({ home, away }) {
+  const [blinks, setBlinks] = useState(0);
+  const [revealed, setRevealed] = useState(false);
+
+  useEffect(() => {
+    let n = 0;
+    const iv = setInterval(() => {
+      n++; setBlinks(n);
+      if (n >= 6) { clearInterval(iv); setTimeout(() => setRevealed(true), 150); }
+    }, 240);
+    return () => clearInterval(iv);
+  }, []);
+
+  const isOn = blinks % 2 === 0;
+  if (!revealed) {
+    return (
+      <span style={{ fontSize: 52, fontWeight: 900, fontFamily: 'monospace', opacity: isOn ? 1 : 0.08, transition: 'opacity 0.08s' }}>
+        <span style={{ color: '#fff' }}>0</span><span style={{ color: '#475569', margin: '0 10px' }}>-</span><span style={{ color: '#fff' }}>0</span>
+      </span>
+    );
+  }
+  return (
+    <motion.span initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 350, damping: 14 }}
+      style={{ fontSize: 52, fontWeight: 900, fontFamily: 'monospace' }}>
+      <span style={{ color: '#fbbf24' }}>{home}</span>
+      <span style={{ color: '#475569', margin: '0 10px' }}>-</span>
+      <span style={{ color: '#fbbf24' }}>{away}</span>
+    </motion.span>
+  );
+}
+
+// 10. Heart Rate Monitor — ECG pulse per goal, digit jumps up
+function HeartRateScore({ home, away }) {
+  const [h, setH] = useState(0);
+  const [a, setA] = useState(0);
+  const [pulse, setPulse] = useState(false);
+  const [side, setSide] = useState(null);
+
+  useEffect(() => {
+    const seq = buildGoalSeq(home, away);
+    seq.forEach(({ h: nh, a: na }, i) => {
+      const prev = i > 0 ? seq[i-1] : { h: 0, a: 0 };
+      const sc = nh > prev.h ? 'h' : 'a';
+      setTimeout(() => {
+        setSide(sc); setPulse(true);
+        setTimeout(() => { setH(nh); setA(na); setPulse(false); }, 380);
+      }, 650 + i * 1000);
+    });
+  }, []);
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <AnimatePresence>
+        {pulse && (
+          <motion.div key="ecg" initial={{ scaleX: 0, opacity: 1 }} animate={{ scaleX: 1, opacity: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.45 }}
+            style={{ position: 'absolute', top: '50%', left: '-35px', right: '-35px', height: 2, background: 'linear-gradient(90deg,transparent,#ef4444 25%,#fbbf24 50%,#ef4444 75%,transparent)', transformOrigin: 'left center', filter: 'blur(1px)' }} />
+        )}
+      </AnimatePresence>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 52, fontWeight: 900 }}>
+        <motion.span animate={{ scale: pulse && side === 'h' ? [1, 1.6, 1] : 1 }} transition={{ duration: 0.3 }} style={{ color: '#fff', display: 'inline-block', minWidth: 38, textAlign: 'center' }}>{h}</motion.span>
+        <span style={{ color: '#475569' }}>-</span>
+        <motion.span animate={{ scale: pulse && side === 'a' ? [1, 1.6, 1] : 1 }} transition={{ duration: 0.3 }} style={{ color: '#fff', display: 'inline-block', minWidth: 38, textAlign: 'center' }}>{a}</motion.span>
+      </div>
+    </div>
+  );
+}
+
 // ─── Score type router ──────────────────────────────────────────────────
 
 function ScoreDisplay({ type }) {
@@ -824,6 +1147,17 @@ function ScoreDisplay({ type }) {
     case 'p-liquid':       return <SLiquid home={h} away={a} />;
     case 'p-blinkon':      return <SBlinkOn home={h} away={a} />;
     case 'p-fall3d':       return <SFall3D home={h} away={a} />;
+    // Counter batch (0-0 → real score)
+    case 'c-odometer':     return <OdometerScore home={h} away={a} />;
+    case 'c-flipboard':    return <FlipBoardScore home={h} away={a} />;
+    case 'c-goalreplay':   return <GoalReplayScore home={h} away={a} />;
+    case 'c-typewriter':   return <TypewriterMistakeScore home={h} away={a} />;
+    case 'c-clocktick':    return <ClockTickScore home={h} away={a} />;
+    case 'c-sandfall':     return <SandFallScore home={h} away={a} />;
+    case 'c-scratch':      return <ScratchCardScore home={h} away={a} />;
+    case 'c-binary':       return <BinaryDecodeScore home={h} away={a} />;
+    case 'c-scoreboard':   return <ScoreboardFlashScore home={h} away={a} />;
+    case 'c-heartrate':    return <HeartRateScore home={h} away={a} />;
   }
 }
 
@@ -1198,9 +1532,22 @@ const PREMIUM_STYLES = [
   { id:150, name:'Ultimate Premium',  category:'פרמיום',     desc:'נבולה + קפיץ + הילה משולשת',            scoreType:'p-nebula',    ...C('rgba(10,5,20,0.99)', '3px solid rgba(168,85,247,0.9)','0 0 120px rgba(168,85,247,0.5), 0 0 240px rgba(34,211,238,0.2), 0 0 360px rgba(245,197,24,0.06)'), ...E({scale:0,rotate:-15,opacity:0},{scale:1,rotate:0,opacity:1},{type:'spring',stiffness:200,damping:10},'rgba(6,3,14,0.98)') },
 ];
 
-const ALL_STYLES = [...STYLES, ...STAGGER_STYLES, ...DRAMATIC_STYLES, ...PREMIUM_STYLES];
+const COUNTER_STYLES = [
+  { id:151, name:'Odometer Roll',      category:'ספירה', desc:'ספרות גוללות למעלה כמו מד-קילומטרים',    scoreType:'c-odometer',   ...C('rgba(5,5,5,0.98)',   '2px solid rgba(255,255,255,0.15)','0 0 60px rgba(255,255,255,0.06), inset 0 0 40px rgba(0,0,0,0.5)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,0,0.95)') },
+  { id:152, name:'Flip Board',         category:'ספירה', desc:'לוח נחיות — כל ספרה מתהפכת בנפרד',        scoreType:'c-flipboard',  ...C('rgba(8,12,24,0.98)', '2px solid rgba(251,191,36,0.5)','0 0 50px rgba(251,191,36,0.15)'),                                    ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(4,6,14,0.97)') },
+  { id:153, name:'Goal Replay',        category:'ספירה', desc:'כל שער נפרד: פלאש אדום + ספרה עולה',      scoreType:'c-goalreplay',  ...C('rgba(8,18,32,0.97)', '2px solid rgba(239,68,68,0.6)','0 0 70px rgba(239,68,68,0.25)'),                                     ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.95)') },
+  { id:154, name:'Typewriter Fix',     category:'ספירה', desc:'מקליד ומתקן שגיאות עד לתוצאה הנכונה',    scoreType:'c-typewriter',  ...C('#0a0a0a',            '2px solid rgba(74,222,128,0.5)','0 0 40px rgba(74,222,128,0.15)'),                                       ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,0,0.95)') },
+  { id:155, name:'Clock Tick',         category:'ספירה', desc:'ספרות מסתחררות ומאטות עד שנעצרות',        scoreType:'c-clocktick',   ...C('rgba(15,10,0,0.98)', '2px solid rgba(251,191,36,0.6)','0 0 60px rgba(251,191,36,0.2)'),                                     ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(10,7,0,0.97)') },
+  { id:156, name:'Sand Fall',          category:'ספירה', desc:'0 מתפורר למטה, התוצאה נבנית מלמעלה',     scoreType:'c-sandfall',    ...C('rgba(5,5,5,0.98)',   '1px solid rgba(148,163,184,0.2)','0 40px 80px rgba(0,0,0,0.9)'),                                      ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,0,0.97)') },
+  { id:157, name:'Scratch Card',       category:'ספירה', desc:'כרטיס גרד מתגלה משמאל לימין',              scoreType:'c-scratch',     ...C('rgba(8,18,32,0.97)', '2px solid rgba(245,197,24,0.5)','0 0 50px rgba(245,197,24,0.15)'),                                    ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.95)') },
+  { id:158, name:'Binary Decode',      category:'ספירה', desc:'מציג בינארי → מפצח → ספרות עשרוניות',     scoreType:'c-binary',      ...C('rgba(0,8,0,0.98)',   '2px solid rgba(74,222,128,0.6)','0 0 60px rgba(74,222,128,0.2)'),                                     ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,5,0,0.97)') },
+  { id:159, name:'Scoreboard Flash',   category:'ספירה', desc:'לוח ישן מהבהב 0-0 ואז מתקפל לתוצאה',     scoreType:'c-scoreboard',  ...C('rgba(10,8,0,0.98)',  '2px solid rgba(251,191,36,0.7)','0 0 70px rgba(251,191,36,0.25), inset 0 0 30px rgba(0,0,0,0.5)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(6,5,0,0.97)') },
+  { id:160, name:'Heart Rate Monitor', category:'ספירה', desc:'דופק ECG לכל שער, ספרה קופצת עם פולס',    scoreType:'c-heartrate',   ...C('rgba(8,18,32,0.97)', '2px solid rgba(239,68,68,0.5)','0 0 60px rgba(239,68,68,0.2)'),                                     ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.95)') },
+];
 
-const CATEGORIES = ['הכל', 'כניסה', 'מספרים', 'עיצוב', 'מיוחד', 'סטאגר', 'דרמה', 'רטרו', 'קוסמי', 'טיפוגרפיה', 'אופטי', 'פרמיום'];
+const ALL_STYLES = [...STYLES, ...STAGGER_STYLES, ...DRAMATIC_STYLES, ...PREMIUM_STYLES, ...COUNTER_STYLES];
+
+const CATEGORIES = ['הכל', 'כניסה', 'מספרים', 'עיצוב', 'מיוחד', 'סטאגר', 'דרמה', 'רטרו', 'קוסמי', 'טיפוגרפיה', 'אופטי', 'פרמיום', 'ספירה'];
 
 // ─── Preview Overlay ────────────────────────────────────────────────────
 
@@ -1284,7 +1631,7 @@ function PreviewOverlay({ style, onClose }) {
 // ─── Style Card ─────────────────────────────────────────────────────────
 
 function StyleCard({ style, onPreview }) {
-  const CATEGORY_COLOR = { כניסה: '#3b82f6', מספרים: '#8b5cf6', עיצוב: '#f59e0b', מיוחד: '#ef4444' };
+  const CATEGORY_COLOR = { כניסה:'#3b82f6', מספרים:'#8b5cf6', עיצוב:'#f59e0b', מיוחד:'#ef4444', סטאגר:'#06b6d4', דרמה:'#ec4899', רטרו:'#84cc16', קוסמי:'#a855f7', טיפוגרפיה:'#f97316', אופטי:'#14b8a6', פרמיום:'#fbbf24', ספירה:'#22d3ee' };
   return (
     <div
       className="rounded-xl p-4 flex flex-col gap-3 cursor-pointer hover:scale-[1.02] transition-transform"
@@ -1335,7 +1682,7 @@ export default function AdminLiveDemo() {
     <div className="text-white" dir="rtl">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-white">דמו אנימציות Live Overlay</h2>
-        <p className="text-slate-400 text-sm mt-1">150 סגנונות שונים — לחץ "הצג תצוגה מקדימה" לראות בגודל מלא</p>
+        <p className="text-slate-400 text-sm mt-1">160 סגנונות שונים — לחץ "הצג תצוגה מקדימה" לראות בגודל מלא</p>
       </div>
 
       {/* Category filter */}
