@@ -481,6 +481,225 @@ const SWaveCascade= makeStagger((i)=>({y:i*30,opacity:0}), ()=>({y:0,opacity:1})
 const SSmoke      = makeStagger(()=>({opacity:0,scale:1.4,filter:'blur(20px) saturate(0)'}), ()=>({opacity:1,scale:1,filter:'blur(0px) saturate(1)'}), i=>({duration:1.0,delay:i*0.28}));
 const SGoalExplode= makeStagger(()=>({scale:0,rotate:-15,opacity:0}), ()=>({scale:[0,1.6,0.85,1.1,1],rotate:[-15,10,-5,2,0],opacity:1}), i=>({duration:0.9,delay:i*0.15}));
 
+// ─── Premium custom components ───────────────────────────────────────────
+
+function CRTScore({ home, away }) {
+  return (
+    <div style={{ position:'relative', display:'inline-block' }}>
+      <motion.div initial={{ scaleY:0.02, filter:'brightness(4) blur(2px)' }} animate={{ scaleY:1, filter:'brightness(1) blur(0px)' }} transition={{ duration:0.45, ease:[0.22,1,0.36,1] }}>
+        <span style={{ fontSize:52, fontWeight:900, fontFamily:'monospace', color:'#4ade80', textShadow:'0 0 8px #4ade80, 0 0 24px rgba(74,222,128,0.4)', letterSpacing:2 }}>
+          {home}<span style={{ color:'#166534', margin:'0 12px' }}>-</span>{away}
+        </span>
+      </motion.div>
+      <div style={{ position:'absolute', inset:0, background:'repeating-linear-gradient(to bottom,transparent 0px,transparent 3px,rgba(0,0,0,0.25) 3px,rgba(0,0,0,0.25) 4px)', pointerEvents:'none' }} />
+    </div>
+  );
+}
+
+function VHSScore({ home, away }) {
+  return (
+    <div style={{ position:'relative', display:'inline-block' }}>
+      <motion.span initial={{ filter:'saturate(0) brightness(2.5)', skewX:6 }} animate={{ filter:'saturate(1) brightness(1)', skewX:0 }} transition={{ duration:0.7, ease:'easeOut' }} style={{ fontSize:52, fontWeight:900, display:'block' }}>
+        <span style={{ color:'#fff' }}>{home}</span><span style={{ color:'#475569', margin:'0 12px' }}>-</span><span style={{ color:'#fff' }}>{away}</span>
+      </motion.span>
+      <div style={{ position:'absolute', inset:0, background:'repeating-linear-gradient(transparent,transparent 2px,rgba(255,50,50,0.07) 2px,rgba(255,50,50,0.07) 3px,transparent 3px,transparent 5px,rgba(50,50,255,0.07) 5px,rgba(50,50,255,0.07) 6px)', pointerEvents:'none' }} />
+    </div>
+  );
+}
+
+function NeonSignOnScore({ home, away }) {
+  const [ph, setPh] = useState(0);
+  useEffect(() => {
+    const delays = [80,100,60,140,80,350];
+    const phases = [0,1,0,1,0,2];
+    let i = 0;
+    const run = () => {
+      if (i >= phases.length) return;
+      const d = delays[i] || 100;
+      setTimeout(() => { setPh(phases[i]); i++; run(); }, d);
+    };
+    run();
+  }, []);
+  const col = ['transparent','rgba(240,171,252,0.2)','#f0abfc'][ph] ?? '#f0abfc';
+  const sh = ph === 2 ? '0 0 10px #f0abfc, 0 0 28px rgba(240,171,252,0.6), 0 0 55px rgba(240,171,252,0.25)' : 'none';
+  return (
+    <span style={{ fontSize:52, fontWeight:900, fontFamily:'monospace', color:col, textShadow:sh, transition:'all 0.07s', letterSpacing:3 }}>
+      {home}<span style={{ margin:'0 14px', color:ph===2?'#a855f7':'transparent' }}>-</span>{away}
+    </span>
+  );
+}
+
+function PolaroidScore({ home, away }) {
+  return (
+    <motion.span initial={{ filter:'sepia(1) brightness(0.4) contrast(0.5) blur(4px)', scale:0.92 }} animate={{ filter:'sepia(0) brightness(1) contrast(1) blur(0px)', scale:1 }} transition={{ duration:1.4, ease:'easeOut' }} style={{ fontSize:52, fontWeight:900, display:'inline-block' }}>
+      <span style={{ color:'#fef3c7' }}>{home}</span><span style={{ color:'#78716c', margin:'0 12px' }}>-</span><span style={{ color:'#fef3c7' }}>{away}</span>
+    </motion.span>
+  );
+}
+
+function FilmBurnScore({ home, away }) {
+  return (
+    <motion.span initial={{ filter:'brightness(12) saturate(0)', scale:0.8 }} animate={{ filter:['brightness(12) saturate(0)','brightness(3) saturate(0.4)','brightness(1) saturate(1)'], scale:1 }} transition={{ duration:0.85, times:[0,0.25,1] }} style={{ fontSize:52, fontWeight:900, display:'inline-block' }}>
+      <span style={{ color:'#fff' }}>{home}</span><span style={{ color:'#475569', margin:'0 12px' }}>-</span><span style={{ color:'#fff' }}>{away}</span>
+    </motion.span>
+  );
+}
+
+function NebulaScore({ home, away }) {
+  return (
+    <motion.span initial={{ opacity:0, scale:0.25, filter:'blur(30px)', color:'#a855f7' }} animate={{ opacity:1, scale:1, filter:'blur(0px)', color:'#e9d5ff' }} transition={{ duration:1.4, ease:[0.16,1,0.3,1] }} style={{ fontSize:52, fontWeight:900, display:'inline-block', textShadow:'0 0 40px rgba(168,85,247,0.7), 0 0 80px rgba(168,85,247,0.3)' }}>
+      {home}<span style={{ color:'#6b21a8', margin:'0 12px' }}>-</span>{away}
+    </motion.span>
+  );
+}
+
+function StarWarpScore({ home, away }) {
+  return (
+    <motion.span initial={{ scaleX:5, scaleY:0.1, opacity:0, filter:'blur(8px) brightness(4)' }} animate={{ scaleX:1, scaleY:1, opacity:1, filter:'blur(0px) brightness(1)' }} transition={{ duration:0.55, ease:'easeOut' }} style={{ fontSize:52, fontWeight:900, display:'inline-block' }}>
+      <span style={{ color:'#e0f2fe' }}>{home}</span><span style={{ color:'#475569', margin:'0 12px' }}>-</span><span style={{ color:'#e0f2fe' }}>{away}</span>
+    </motion.span>
+  );
+}
+
+function HologramScore({ home, away }) {
+  const [scan, setScan] = useState(0);
+  useEffect(() => {
+    let f = 0;
+    const iv = setInterval(() => { f += 5; setScan(f % 80); }, 30);
+    setTimeout(() => clearInterval(iv), 2500);
+    return () => clearInterval(iv);
+  }, []);
+  return (
+    <div style={{ position:'relative', display:'inline-block' }}>
+      <motion.span initial={{ rotateX:75, opacity:0, filter:'blur(8px)' }} animate={{ rotateX:0, opacity:1, filter:'blur(0px)' }} transition={{ duration:0.7, ease:'easeOut' }} style={{ fontSize:52, fontWeight:900, display:'inline-block', perspective:400, color:'#22d3ee', textShadow:'0 0 10px #22d3ee, 0 0 30px rgba(34,211,238,0.5)', letterSpacing:2 }}>
+        {home}<span style={{ color:'#164e63', margin:'0 12px' }}>-</span>{away}
+      </motion.span>
+      <div style={{ position:'absolute', top:scan+'%', left:'-5%', right:'-5%', height:2, background:'rgba(34,211,238,0.45)', filter:'blur(1px)', pointerEvents:'none' }} />
+    </div>
+  );
+}
+
+function ChromaticScore({ home, away }) {
+  const txt = `${home} - ${away}`;
+  const s = { position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:52, fontWeight:900, whiteSpace:'nowrap' };
+  return (
+    <div style={{ position:'relative', fontSize:52, fontWeight:900, minWidth:140, height:64 }}>
+      <motion.div initial={{ x:-18, opacity:0 }} animate={{ x:0, opacity:0.5 }} transition={{ duration:0.7 }} style={{ ...s, color:'#ef4444' }}>{txt}</motion.div>
+      <motion.div initial={{ x:18, opacity:0 }} animate={{ x:0, opacity:0.5 }} transition={{ duration:0.7 }} style={{ ...s, color:'#22d3ee' }}>{txt}</motion.div>
+      <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.55, duration:0.35 }} style={{ ...s, color:'#fff' }}>{txt}</motion.div>
+    </div>
+  );
+}
+
+function ScanlineRevealScore({ home, away }) {
+  return (
+    <div style={{ position:'relative', overflow:'hidden', display:'inline-block' }}>
+      <span style={{ fontSize:52, fontWeight:900, color:'#fff', display:'block', lineHeight:1 }}>
+        {home}<span style={{ color:'#475569', margin:'0 12px' }}>-</span>{away}
+      </span>
+      <motion.div initial={{ scaleY:1, transformOrigin:'top center' }} animate={{ scaleY:0 }} transition={{ duration:0.65, ease:'easeInOut', delay:0.2 }} style={{ position:'absolute', inset:'-4px', background:'rgba(3,13,26,0.99)' }} />
+    </div>
+  );
+}
+
+function EchoScore({ home, away }) {
+  const txt = `${home} - ${away}`;
+  return (
+    <div style={{ position:'relative', fontSize:52, fontWeight:900, minWidth:140, height:64 }}>
+      {[3,2,1,0].map(i => (
+        <motion.div key={i} initial={{ x:(3-i)*28, y:(3-i)*(-18), opacity:0, scale:1+(3-i)*0.1 }} animate={{ x:0, y:0, opacity:i===0?1:0, scale:1 }} transition={{ duration:0.75, delay:i*0.1, ease:'easeOut' }} style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', color:i===0?'#fff':'rgba(255,255,255,0.12)', whiteSpace:'nowrap' }}>
+          {txt}
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+function VariableWeightScore({ home, away }) {
+  return (
+    <motion.span initial={{ fontWeight:100, letterSpacing:18, opacity:0 }} animate={{ fontWeight:900, letterSpacing:-2, opacity:1 }} transition={{ duration:0.95, ease:[0.22,1,0.36,1] }} style={{ fontSize:52, display:'inline-block' }}>
+      <span style={{ color:'#fff' }}>{home}</span><span style={{ color:'#475569', margin:'0 8px' }}>-</span><span style={{ color:'#fff' }}>{away}</span>
+    </motion.span>
+  );
+}
+
+function OutlineScore({ home, away }) {
+  const parts = [String(home),'-',String(away)];
+  return (
+    <span style={{ fontSize:52, fontWeight:900, display:'flex', alignItems:'center', gap:14 }}>
+      {parts.map((p,i) => (
+        <motion.span key={i}
+          initial={{ color:'transparent', textShadow:`0 0 0 ${i===1?'#475569':'#fff'}, 0 0 22px ${i===1?'#475569':'#fff'}` }}
+          animate={{ color:i===1?'#475569':'#fff', textShadow:'none' }}
+          transition={{ duration:0.6, delay:0.2+i*0.28, ease:'easeOut' }}
+          style={{ display:'inline-block' }}
+        >{p}</motion.span>
+      ))}
+    </span>
+  );
+}
+
+function ShadowLiftScore({ home, away }) {
+  return (
+    <motion.span initial={{ color:'rgba(255,255,255,0.03)', y:-18 }} animate={{ color:'#fff', y:0 }} transition={{ duration:0.85, ease:[0.16,1,0.3,1] }} style={{ fontSize:52, fontWeight:900, display:'inline-block' }}>
+      {home}<span style={{ color:'#475569', margin:'0 12px' }}>-</span>{away}
+    </motion.span>
+  );
+}
+
+function EmbossScore({ home, away }) {
+  return (
+    <motion.span
+      initial={{ color:'rgba(255,255,255,0.03)', textShadow:'none' }}
+      animate={{ color:['rgba(255,255,255,0.03)','#fbbf24'], textShadow:['none','3px 3px 6px rgba(0,0,0,0.9), -1px -1px 3px rgba(255,255,255,0.15), 0 0 30px rgba(245,197,24,0.4)'] }}
+      transition={{ duration:1.1 }}
+      style={{ fontSize:52, fontWeight:900, display:'inline-block', letterSpacing:-1 }}
+    >
+      {home}<span style={{ color:'#78350f', margin:'0 12px' }}>-</span>{away}
+    </motion.span>
+  );
+}
+
+function ChromeScore({ home, away }) {
+  return (
+    <motion.div initial={{ opacity:0, y:22 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.7, ease:[0.16,1,0.3,1] }} style={{ fontSize:52, fontWeight:900, display:'inline-block', background:'linear-gradient(180deg,#fff 0%,#94a3b8 30%,#fff 52%,#64748b 72%,#e2e8f0 100%)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text', letterSpacing:-1 }}>
+      {home} - {away}
+    </motion.div>
+  );
+}
+
+// ─── Premium factory variants ─────────────────────────────────────────────
+const SPrism      = makeStagger(()=>({scale:0,opacity:0,rotate:120}), ()=>({scale:1,opacity:1,rotate:0}), i=>({type:'spring',stiffness:220,damping:14,delay:i*0.2}), ['#f97316','#475569','#22d3ee']);
+const SSqueeze    = makeStagger(()=>({scaleX:0.01,opacity:0}), ()=>({scaleX:1,opacity:1}), i=>({type:'spring',stiffness:300,damping:18,delay:i*0.22}));
+const SStretchY   = makeStagger(()=>({scaleY:0.01,opacity:0}), ()=>({scaleY:1,opacity:1}), i=>({type:'spring',stiffness:280,damping:16,delay:i*0.2}));
+const SConstrict  = makeStagger(()=>({scaleX:0.01,scaleY:3,opacity:0}), ()=>({scaleX:1,scaleY:1,opacity:1}), i=>({type:'spring',stiffness:200,damping:15,delay:i*0.22}));
+const SFatPop     = makeStagger(()=>({scaleX:4,scaleY:0.01,opacity:0}), ()=>({scaleX:1,scaleY:1,opacity:1}), i=>({type:'spring',stiffness:180,damping:14,delay:i*0.2}));
+const SDiagTL     = makeStagger(()=>({x:-80,y:-80,opacity:0,rotate:-30,scale:0.5}), ()=>({x:0,y:0,opacity:1,rotate:0,scale:1}), i=>({type:'spring',stiffness:240,damping:16,delay:i*0.2}));
+const SDiagBR     = makeStagger(()=>({x:80,y:80,opacity:0,rotate:30,scale:0.5}), ()=>({x:0,y:0,opacity:1,rotate:0,scale:1}), i=>({type:'spring',stiffness:240,damping:16,delay:i*0.2}));
+const SDiagTR     = makeStagger(()=>({x:80,y:-80,opacity:0,rotate:30,scale:0.5}), ()=>({x:0,y:0,opacity:1,rotate:0,scale:1}), i=>({type:'spring',stiffness:240,damping:16,delay:i*0.2}));
+const SDiagBL     = makeStagger(()=>({x:-80,y:80,opacity:0,rotate:-30,scale:0.5}), ()=>({x:0,y:0,opacity:1,rotate:0,scale:1}), i=>({type:'spring',stiffness:240,damping:16,delay:i*0.2}));
+const SZigZag     = makeStagger((i)=>({x:i%2===0?-90:90,y:i*(-35),opacity:0}), ()=>({x:0,y:0,opacity:1}), i=>({type:'spring',stiffness:240,damping:16,delay:i*0.18}));
+const SBigShrink  = makeStagger(()=>({scale:4,opacity:0}), ()=>({scale:1,opacity:1}), i=>({type:'spring',stiffness:150,damping:12,delay:i*0.25}));
+const SGlowPurple = makeStagger(()=>({opacity:0,scale:0.4,filter:'blur(22px)'}), ()=>({opacity:1,scale:1,filter:'blur(0px)'}), i=>({duration:0.75,ease:'easeOut',delay:i*0.3}), ['#f0abfc','#475569','#f0abfc']);
+const SPerspL     = makeStagger(()=>({rotateY:-70,opacity:0,scale:0.5}), ()=>({rotateY:0,opacity:1,scale:1}), i=>({duration:0.55,ease:'easeOut',delay:i*0.25}));
+const SPerspR     = makeStagger(()=>({rotateY:70,opacity:0,scale:0.5}), ()=>({rotateY:0,opacity:1,scale:1}), i=>({duration:0.55,ease:'easeOut',delay:i*0.25}));
+const SPerspT     = makeStagger(()=>({rotateX:70,opacity:0,scale:0.5}), ()=>({rotateX:0,opacity:1,scale:1}), i=>({duration:0.55,ease:'easeOut',delay:i*0.25}));
+const SPerspB     = makeStagger(()=>({rotateX:-70,opacity:0,scale:0.5}), ()=>({rotateX:0,opacity:1,scale:1}), i=>({duration:0.55,ease:'easeOut',delay:i*0.25}));
+const STiltL      = makeStagger(()=>({rotate:45,opacity:0,scale:0.5,x:-30}), ()=>({rotate:0,opacity:1,scale:1,x:0}), i=>({type:'spring',stiffness:250,damping:14,delay:i*0.2}));
+const STiltR      = makeStagger(()=>({rotate:-45,opacity:0,scale:0.5,x:30}), ()=>({rotate:0,opacity:1,scale:1,x:0}), i=>({type:'spring',stiffness:250,damping:14,delay:i*0.2}));
+const SFlyFast    = makeStagger(()=>({x:-300,opacity:0,scale:1.5}), ()=>({x:0,opacity:1,scale:1}), i=>({type:'spring',stiffness:200,damping:14,delay:i*0.1}));
+const SBreathIn   = makeStagger(()=>({scale:0.01,opacity:0}), ()=>({scale:[0.01,1.45,0.88,1.1,1],opacity:[0,1,1,1,1]}), i=>({duration:1.0,delay:i*0.28}));
+const SRipple     = makeStagger((i)=>({scale:i===1?1:0,opacity:0}), ()=>({scale:1,opacity:1}), i=>({type:'spring',stiffness:300,damping:18,delay:i===1?0:0.35+Math.abs(i-1)*0.2}));
+const SFloatUp    = makeStagger(()=>({y:30,opacity:0,filter:'blur(8px)'}), ()=>({y:0,opacity:1,filter:'blur(0px)'}), i=>({duration:0.72,ease:'easeOut',delay:i*0.28}), ['#c7d2fe','#475569','#c7d2fe']);
+const SAltWave    = makeStagger((i)=>({y:i%2===0?60:-60,opacity:0}), ()=>({y:0,opacity:1}), i=>({type:'spring',stiffness:260,damping:16,delay:i*0.22}));
+const SFireworks  = makeStagger(()=>({scale:0,rotate:720,opacity:0}), ()=>({scale:1,rotate:0,opacity:1}), i=>({type:'spring',stiffness:160,damping:12,delay:i*0.25}));
+const STelegraph  = makeStagger(()=>({opacity:0}), ()=>({opacity:[0,1,0,1,0,1,0,1,1]}), i=>({duration:0.9,delay:i*0.35}));
+const SGoldRushS  = makeStagger(()=>({y:-60,opacity:0}), ()=>({y:0,opacity:1}), i=>({duration:0.6,ease:[0.22,1,0.36,1],delay:i*0.2}), ['#fbbf24','#92400e','#fbbf24']);
+const SDriftR     = makeStagger(()=>({x:40,rotate:10,opacity:0}), ()=>({x:0,rotate:0,opacity:1}), i=>({type:'spring',stiffness:200,damping:15,delay:i*0.28}));
+const SLiquid     = makeStagger(()=>({scaleX:0.01,scaleY:3,skewX:15,opacity:0}), ()=>({scaleX:1,scaleY:1,skewX:0,opacity:1}), i=>({duration:0.75,ease:[0.22,1,0.36,1],delay:i*0.22}));
+const SBlinkOn    = makeStagger(()=>({opacity:0,scale:1.1}), ()=>({opacity:[0,1,0,0,1,0,1,0,1,1],scale:1}), i=>({duration:1.2,delay:i*0.2}));
+const SFall3D     = makeStagger(()=>({rotateX:-90,y:-40,opacity:0}), ()=>({rotateX:0,y:0,opacity:1}), i=>({type:'spring',stiffness:200,damping:16,delay:i*0.25}));
+
 // ─── Score type router ──────────────────────────────────────────────────
 
 function ScoreDisplay({ type }) {
@@ -558,6 +777,53 @@ function ScoreDisplay({ type }) {
     case 'd-cascade':      return <SWaveCascade home={h} away={a} />;
     case 'd-smoke':        return <SSmoke home={h} away={a} />;
     case 'd-goal':         return <SGoalExplode home={h} away={a} />;
+    // Premium batch
+    case 'p-crt':          return <CRTScore home={h} away={a} />;
+    case 'p-vhs':          return <VHSScore home={h} away={a} />;
+    case 'p-neon-on':      return <NeonSignOnScore home={h} away={a} />;
+    case 'p-polaroid':     return <PolaroidScore home={h} away={a} />;
+    case 'p-filmburn':     return <FilmBurnScore home={h} away={a} />;
+    case 'p-nebula':       return <NebulaScore home={h} away={a} />;
+    case 'p-starwarp':     return <StarWarpScore home={h} away={a} />;
+    case 'p-hologram':     return <HologramScore home={h} away={a} />;
+    case 'p-chromatic':    return <ChromaticScore home={h} away={a} />;
+    case 'p-scanline':     return <ScanlineRevealScore home={h} away={a} />;
+    case 'p-echo':         return <EchoScore home={h} away={a} />;
+    case 'p-varweight':    return <VariableWeightScore home={h} away={a} />;
+    case 'p-outline':      return <OutlineScore home={h} away={a} />;
+    case 'p-shadowlift':   return <ShadowLiftScore home={h} away={a} />;
+    case 'p-emboss':       return <EmbossScore home={h} away={a} />;
+    case 'p-chrome':       return <ChromeScore home={h} away={a} />;
+    case 'p-squeeze':      return <SSqueeze home={h} away={a} />;
+    case 'p-stretchy':     return <SStretchY home={h} away={a} />;
+    case 'p-constrict':    return <SConstrict home={h} away={a} />;
+    case 'p-fatpop':       return <SFatPop home={h} away={a} />;
+    case 'p-diagtl':       return <SDiagTL home={h} away={a} />;
+    case 'p-diagbr':       return <SDiagBR home={h} away={a} />;
+    case 'p-diagtr':       return <SDiagTR home={h} away={a} />;
+    case 'p-diagbl':       return <SDiagBL home={h} away={a} />;
+    case 'p-zigzag':       return <SZigZag home={h} away={a} />;
+    case 'p-bigshrink':    return <SBigShrink home={h} away={a} />;
+    case 'p-prism':        return <SPrism home={h} away={a} />;
+    case 'p-glowp':        return <SGlowPurple home={h} away={a} />;
+    case 'p-perspl':       return <SPerspL home={h} away={a} />;
+    case 'p-perspr':       return <SPerspR home={h} away={a} />;
+    case 'p-perspt':       return <SPerspT home={h} away={a} />;
+    case 'p-perspb':       return <SPerspB home={h} away={a} />;
+    case 'p-tiltl':        return <STiltL home={h} away={a} />;
+    case 'p-tiltr':        return <STiltR home={h} away={a} />;
+    case 'p-flyfast':      return <SFlyFast home={h} away={a} />;
+    case 'p-breathin':     return <SBreathIn home={h} away={a} />;
+    case 'p-ripple':       return <SRipple home={h} away={a} />;
+    case 'p-floatup':      return <SFloatUp home={h} away={a} />;
+    case 'p-altwave':      return <SAltWave home={h} away={a} />;
+    case 'p-fireworks':    return <SFireworks home={h} away={a} />;
+    case 'p-telegraph':    return <STelegraph home={h} away={a} />;
+    case 'p-goldrush':     return <SGoldRushS home={h} away={a} />;
+    case 'p-driftr':       return <SDriftR home={h} away={a} />;
+    case 'p-liquid':       return <SLiquid home={h} away={a} />;
+    case 'p-blinkon':      return <SBlinkOn home={h} away={a} />;
+    case 'p-fall3d':       return <SFall3D home={h} away={a} />;
   }
 }
 
@@ -874,9 +1140,67 @@ const DRAMATIC_STYLES = [
   { id:100, name:'Ultimate Drama',  category:'דרמה', desc:'נוקליאר + מטריקס + זהב',       scoreType:'d-nuke',       ...C('rgba(10,8,0,0.98)','2px solid rgba(245,197,24,0.9)','0 0 150px rgba(245,197,24,0.5), 0 0 300px rgba(239,68,68,0.15)'), ...E({scale:0,rotate:-20,opacity:0},{scale:1,rotate:0,opacity:1},{type:'spring',stiffness:300,damping:8},'rgba(5,4,0,0.97)') },
 ];
 
-const ALL_STYLES = [...STYLES, ...STAGGER_STYLES, ...DRAMATIC_STYLES];
+const PREMIUM_STYLES = [
+  // === רטרו ===
+  { id:101, name:'CRT Monitor',       category:'רטרו',       desc:'מסך ירוק קלאסי עם שורות סריקה',    scoreType:'p-crt',       ...C('rgba(0,8,0,0.97)',   '1px solid rgba(74,222,128,0.5)','0 0 50px rgba(74,222,128,0.2)'),                                                                      ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,5,0,0.95)') },
+  { id:102, name:'VHS Tape',          category:'רטרו',       desc:'עיוות וצבע VHS וינטג\'',             scoreType:'p-vhs',       ...C('#050505',            '1px solid rgba(255,255,255,0.15)','0 0 40px rgba(255,255,255,0.05)'),                                                             ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,0,0.95)') },
+  { id:103, name:'Neon Sign On',      category:'רטרו',       desc:'ניאון מהבהב ומתאיר בהדרגה',         scoreType:'p-neon-on',   ...C('rgba(5,0,10,0.97)',  '1px solid rgba(240,171,252,0.6)','0 0 50px rgba(168,85,247,0.25)'),                                                             ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(3,0,8,0.95)') },
+  { id:104, name:'Polaroid Develop',  category:'רטרו',       desc:'מצלמה מיידית — מסיפיה לצבע',        scoreType:'p-polaroid',  ...C('rgba(20,16,10,0.97)','1px solid rgba(254,243,199,0.3)','0 20px 60px rgba(0,0,0,0.8)'),                                                              ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(12,10,6,0.95)') },
+  { id:105, name:'Film Burn',         category:'רטרו',       desc:'בהבהוב פילם חשיפה מוגזמת',           scoreType:'p-filmburn',  ...C('rgba(5,5,5,0.98)',   '1px solid rgba(255,255,255,0.1)','0 0 80px rgba(255,255,255,0.05)'),                                                           ...E({opacity:0},{opacity:1},{duration:0.2},'rgba(0,0,0,0.97)') },
+  { id:106, name:'Arcade Squeeze',    category:'רטרו',       desc:'נמשך לצדדים ומתפשט כמו ספרייט',     scoreType:'p-squeeze',   ...C('rgba(0,0,15,0.97)',  '2px solid rgba(34,211,238,0.6)','0 0 50px rgba(34,211,238,0.2)'),                                                             ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,10,0.95)') },
+  { id:107, name:'Teletype',          category:'רטרו',       desc:'מהבהב כמו מכונת כתיבה ישנה',         scoreType:'p-telegraph', ...C('#0a0a0a',            '1px solid rgba(74,222,128,0.4)','0 0 30px rgba(74,222,128,0.12)'),                                                            ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,0,0.95)') },
+  { id:108, name:'Scanline Reveal',   category:'רטרו',       desc:'וילון שורות קלטה מתרומם',            scoreType:'p-scanline',  ...C('rgba(5,10,18,0.97)','1px solid rgba(99,102,241,0.5)','0 0 50px rgba(99,102,241,0.15)'),                                                             ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(3,6,12,0.95)') },
+  { id:109, name:'Echo Ghost',        category:'רטרו',       desc:'4 תמונות רפאים מתאחדות',             scoreType:'p-echo',      ...C('rgba(5,5,5,0.97)',   '1px solid rgba(255,255,255,0.08)','0 40px 80px rgba(0,0,0,0.9)'),                                                           ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,0,0.97)') },
+  { id:110, name:'Blink On',          category:'רטרו',       desc:'הבהובים בלתי סדירים עד הדלקה',       scoreType:'p-blinkon',   ...C('rgba(3,3,3,0.97)',   '1px solid rgba(251,191,36,0.5)','0 0 40px rgba(251,191,36,0.15)'),                                                           ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(2,2,2,0.97)') },
+  // === קוסמי ===
+  { id:111, name:'Nebula Form',       category:'קוסמי',      desc:'מתהווה מענן נבולה סגולה',            scoreType:'p-nebula',    ...C('rgba(8,2,20,0.97)',  '1px solid rgba(168,85,247,0.5)','0 0 70px rgba(168,85,247,0.25), 0 0 140px rgba(168,85,247,0.08)'),                          ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,1,14,0.97)') },
+  { id:112, name:'Star Warp',         category:'קוסמי',      desc:'מתמתח ממהירות אור ומתייצב',          scoreType:'p-starwarp',  ...C('rgba(2,4,15,0.98)',  '1px solid rgba(224,242,254,0.3)','0 0 60px rgba(186,230,253,0.1)'),                                                          ...E({opacity:0},{opacity:1},{duration:0.2},'rgba(1,2,10,0.97)') },
+  { id:113, name:'Hologram Scan',     category:'קוסמי',      desc:'הקרנה הולוגרפית עם קרן סריקה',       scoreType:'p-hologram',  ...C('rgba(0,8,18,0.97)',  '1px solid rgba(34,211,238,0.6)','0 0 60px rgba(34,211,238,0.2), inset 0 0 40px rgba(34,211,238,0.05)'),                  ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,4,12,0.95)') },
+  { id:114, name:'Chromatic Blast',   category:'קוסמי',      desc:'הפרדת RGB ואחדות לאחר רגע',          scoreType:'p-chromatic', ...C('rgba(5,5,5,0.98)',   '1px solid rgba(255,255,255,0.1)','0 0 60px rgba(255,255,255,0.04)'),                                                          ...E({opacity:0},{opacity:1},{duration:0.2},'rgba(0,0,0,0.97)') },
+  { id:115, name:'Purple Glow Cloud', category:'קוסמי',      desc:'עולה מאובך סגול זוהר',                scoreType:'p-glowp',     ...C('rgba(8,2,18,0.97)',  '1px solid rgba(168,85,247,0.5)','0 0 70px rgba(168,85,247,0.25)'),                                                           ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,1,12,0.97)') },
+  { id:116, name:'Diagonal TL',       category:'קוסמי',      desc:'מגיע מהפינה השמאלית עליונה',          scoreType:'p-diagtl',    ...C('rgba(5,5,15,0.97)', '1px solid rgba(99,102,241,0.5)','0 0 60px rgba(99,102,241,0.2)'),                                                            ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(3,3,10,0.95)') },
+  { id:117, name:'Fat Pop',           category:'קוסמי',      desc:'מסחוט אופקי לקפיץ עגול',              scoreType:'p-fatpop',    ...C('rgba(5,8,20,0.97)',  '1px solid rgba(139,92,246,0.5)','0 0 60px rgba(139,92,246,0.2)'),                                                           ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(3,5,14,0.95)') },
+  { id:118, name:'ZigZag Entry',      category:'קוסמי',      desc:'כל ספרה מגיחה בצד חליפי',             scoreType:'p-zigzag',    ...C('rgba(8,18,32,0.97)', '1px solid rgba(245,197,24,0.5)','0 0 60px rgba(245,197,24,0.2)'),                                                           ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.95)') },
+  { id:119, name:'Big Shrink',        category:'קוסמי',      desc:'ענק x4 ומתכווץ לתוצאה',               scoreType:'p-bigshrink', ...C('rgba(8,18,32,0.97)', '1px solid rgba(239,68,68,0.5)','0 0 60px rgba(239,68,68,0.2)'),                                                            ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.9)') },
+  { id:120, name:'Prism Colors',      category:'קוסמי',      desc:'נסחף עם צבעים ומתמצע',                scoreType:'p-prism',     ...C('rgba(5,5,5,0.98)',   '1px solid rgba(249,115,22,0.5)','0 0 60px rgba(249,115,22,0.15), 0 0 120px rgba(34,211,238,0.08)'),                        ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(2,2,2,0.97)') },
+  // === טיפוגרפיה ===
+  { id:121, name:'Variable Weight',   category:'טיפוגרפיה',  desc:'מ-thin ל-black בשניה אחת',            scoreType:'p-varweight', ...C('rgba(8,18,32,0.97)', '1px solid rgba(255,255,255,0.12)','0 20px 60px rgba(0,0,0,0.7)'),                                                         ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,0,0.9)') },
+  { id:122, name:'Outline Reveal',    category:'טיפוגרפיה',  desc:'מתגלה כהילת אור ואז מתמלא',           scoreType:'p-outline',   ...C('rgba(5,10,20,0.97)','1px solid rgba(255,255,255,0.1)','0 20px 60px rgba(0,0,0,0.8)'),                                                          ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,0,0.95)') },
+  { id:123, name:'Shadow Lift',       category:'טיפוגרפיה',  desc:'צף מתוך צל עמוק',                     scoreType:'p-shadowlift',...C('rgba(5,5,5,0.98)',   '1px solid rgba(255,255,255,0.06)','0 40px 100px rgba(0,0,0,0.95)'),                                                     ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,0,0.97)') },
+  { id:124, name:'Emboss Gold',       category:'טיפוגרפיה',  desc:'מגולף בזהב מהמשטח',                   scoreType:'p-emboss',    ...C('rgba(15,10,0,0.97)','2px solid rgba(245,197,24,0.6)','0 0 60px rgba(245,197,24,0.2)'),                                                          ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(10,7,0,0.97)') },
+  { id:125, name:'Persp. Left',       category:'טיפוגרפיה',  desc:'מגלגל נכנס ממישור שמאלי',              scoreType:'p-perspl',    ...C('rgba(8,18,32,0.97)','1px solid rgba(99,102,241,0.5)','0 0 60px rgba(99,102,241,0.2)'),                                                          ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,22,0.95)') },
+  { id:126, name:'Persp. Right',      category:'טיפוגרפיה',  desc:'מגלגל נכנס ממישור ימני',               scoreType:'p-perspr',    ...C('rgba(8,18,32,0.97)','1px solid rgba(99,102,241,0.4)','0 0 60px rgba(99,102,241,0.15)'),                                                         ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,22,0.95)') },
+  { id:127, name:'Persp. Top',        category:'טיפוגרפיה',  desc:'מגלגל נכנס ממישור עליון',               scoreType:'p-perspt',    ...C('rgba(8,18,32,0.97)','1px solid rgba(168,85,247,0.5)','0 0 60px rgba(168,85,247,0.2)'),                                                         ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,22,0.95)') },
+  { id:128, name:'Tilt In Left',      category:'טיפוגרפיה',  desc:'מוטה 45° ונוחת מהשמאל',               scoreType:'p-tiltl',     ...C('rgba(8,18,32,0.97)','1px solid rgba(239,68,68,0.5)','0 0 60px rgba(239,68,68,0.2)'),                                                            ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,22,0.9)') },
+  { id:129, name:'Tilt In Right',     category:'טיפוגרפיה',  desc:'מוטה 45° ונוחת מהימין',                scoreType:'p-tiltr',     ...C('rgba(8,18,32,0.97)','1px solid rgba(239,68,68,0.4)','0 0 60px rgba(239,68,68,0.15)'),                                                           ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,22,0.9)') },
+  { id:130, name:'Float Up Indigo',   category:'טיפוגרפיה',  desc:'עולה מטשטוש בצבע אינדיגו',             scoreType:'p-floatup',   ...C('rgba(10,5,30,0.97)','1px solid rgba(99,102,241,0.6)','0 0 60px rgba(99,102,241,0.25)'),                                                         ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(6,3,20,0.97)') },
+  // === אופטי ===
+  { id:131, name:'Chrome Metal',      category:'אופטי',      desc:'ברק מתכת עם גרדיאנט עליון',           scoreType:'p-chrome',    ...C('rgba(5,8,15,0.98)',  '1px solid rgba(148,163,184,0.3)','0 0 60px rgba(148,163,184,0.1)'),                                                          ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(2,4,10,0.97)') },
+  { id:132, name:'Constrict Morph',   category:'אופטי',      desc:'נמתח אנכית ומתכווץ לצורה',             scoreType:'p-constrict', ...C('rgba(8,18,32,0.97)', '1px solid rgba(34,211,238,0.5)','0 0 60px rgba(34,211,238,0.2)'),                                                          ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,12,22,0.95)') },
+  { id:133, name:'Fast Fly In',       category:'אופטי',      desc:'טסות ממהירות גבוהה משמאל',             scoreType:'p-flyfast',   ...C('rgba(8,18,32,0.97)', '1px solid rgba(245,197,24,0.4)','0 0 50px rgba(245,197,24,0.15)'),                                                         ...E({opacity:0},{opacity:1},{duration:0.2},'rgba(5,10,20,0.95)') },
+  { id:134, name:'Breath In',         category:'אופטי',      desc:'קפיצת נשימה — מנקודה לאוברשוט',        scoreType:'p-breathin',  ...C('rgba(8,18,32,0.97)', '1px solid rgba(168,85,247,0.5)','0 0 60px rgba(168,85,247,0.2)'),                                                          ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.95)') },
+  { id:135, name:'Ripple Center',     category:'אופטי',      desc:'המקף מגיע ראשון ואז הקצוות',           scoreType:'p-ripple',    ...C('rgba(0,8,20,0.97)',  '1px solid rgba(34,211,238,0.5)','0 0 60px rgba(34,211,238,0.2)'),                                                          ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,5,14,0.95)') },
+  { id:136, name:'Alt Wave',          category:'אופטי',      desc:'ספרות מגיחות ממעלה ומטה חלופי',        scoreType:'p-altwave',   ...C('rgba(8,18,32,0.97)', '1px solid rgba(74,222,128,0.5)','0 0 60px rgba(74,222,128,0.18)'),                                                         ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,12,22,0.95)') },
+  { id:137, name:'Fireworks Spin',    category:'אופטי',      desc:'מסתובב 720° ומתכווץ כמו זיקוק',        scoreType:'p-fireworks', ...C('rgba(5,5,5,0.98)',   '1px solid rgba(245,197,24,0.6)','0 0 80px rgba(245,197,24,0.25), 0 0 160px rgba(239,68,68,0.08)'),                       ...E({opacity:0},{opacity:1},{duration:0.2},'rgba(2,2,2,0.97)') },
+  { id:138, name:'Gold Rush Stagger', category:'אופטי',      desc:'ספרות זהובות יורדות בזה אחר זה',       scoreType:'p-goldrush',  ...C('rgba(20,12,0,0.97)','2px solid rgba(245,197,24,0.7)','0 0 70px rgba(245,197,24,0.3)'),                                                           ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(12,8,0,0.97)') },
+  { id:139, name:'Drift Right',       category:'אופטי',      desc:'נסחף מהימין בעדינות לנחיתה',            scoreType:'p-driftr',    ...C('rgba(8,18,32,0.97)', '1px solid rgba(148,163,184,0.3)','0 20px 60px rgba(0,0,0,0.7)'),                                                         ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.92)') },
+  { id:140, name:'Liquid Morph',      category:'אופטי',      desc:'נוזל הנמשך לצדדים ומתייצב',             scoreType:'p-liquid',    ...C('rgba(0,8,20,0.97)',  '1px solid rgba(147,197,253,0.4)','0 0 60px rgba(147,197,253,0.15)'),                                                      ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,5,15,0.95)') },
+  // === פרמיום ===
+  { id:141, name:'Stretch Pop',       category:'פרמיום',     desc:'נמתח אנכית ומתפוצץ לצורה',             scoreType:'p-stretchy',  ...C('rgba(5,5,18,0.97)',  '2px solid rgba(139,92,246,0.6)','0 0 70px rgba(139,92,246,0.25)'),                                                         ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(3,3,12,0.97)') },
+  { id:142, name:'Diagonal TR',       category:'פרמיום',     desc:'מגיע מהפינה הימנית עליונה',             scoreType:'p-diagtr',    ...C('rgba(5,0,10,0.97)',  '2px solid rgba(240,171,252,0.6)','0 0 70px rgba(168,85,247,0.3)'),                                                         ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(3,0,8,0.97)') },
+  { id:143, name:'Diagonal BL',       category:'פרמיום',     desc:'מגיע מהפינה השמאלית תחתונה',            scoreType:'p-diagbl',    ...C('rgba(0,5,15,0.97)',  '2px solid rgba(34,211,238,0.6)','0 0 70px rgba(34,211,238,0.25)'),                                                         ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,3,12,0.97)') },
+  { id:144, name:'Persp. Bottom',     category:'פרמיום',     desc:'מגלגל נכנס ממישור תחתון',               scoreType:'p-perspb',    ...C('rgba(8,18,32,0.97)', '2px solid rgba(245,197,24,0.6)','0 0 70px rgba(245,197,24,0.25)'),                                                         ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,22,0.97)') },
+  { id:145, name:'3D Fall Forward',   category:'פרמיום',     desc:'נופל קדימה על ציר X',                   scoreType:'p-fall3d',    ...C('rgba(5,5,5,0.98)',   '2px solid rgba(255,255,255,0.12)','0 40px 100px rgba(0,0,0,0.9)'),                                                       ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,0,0.97)') },
+  { id:146, name:'Emboss Extreme',    category:'פרמיום',     desc:'חריטת זהב ממעמקי החושך',                scoreType:'p-emboss',    ...C('rgba(20,12,2,0.97)', '2px solid rgba(245,197,24,0.7)','0 0 80px rgba(245,197,24,0.35), 0 0 160px rgba(245,197,24,0.08)'),                     ...E({scale:0.2,opacity:0},{scale:1,opacity:1},{type:'spring',stiffness:120,damping:10},'rgba(12,7,1,0.97)') },
+  { id:147, name:'VHS Neon',          category:'פרמיום',     desc:'VHS בצבעי ניאון סגול',                  scoreType:'p-vhs',       ...C('rgba(0,0,8,0.98)',   '2px solid rgba(240,171,252,0.5)','0 0 60px rgba(168,85,247,0.2), 4px 0 rgba(34,211,238,0.15)'),                        ...E({opacity:0,x:-20},{opacity:1,x:0},{type:'spring',stiffness:200,damping:16},'rgba(0,0,5,0.97)') },
+  { id:148, name:'CRT Overdrive',     category:'פרמיום',     desc:'CRT ענק עם glow קיצוני',                scoreType:'p-crt',       ...C('rgba(0,5,0,0.98)',   '2px solid rgba(74,222,128,0.7)','0 0 100px rgba(74,222,128,0.4), 0 0 200px rgba(74,222,128,0.08)'),                    ...E({scaleY:0.01,opacity:0},{scaleY:1,opacity:1},{duration:0.5,ease:[0.22,1,0.36,1]},'rgba(0,3,0,0.97)') },
+  { id:149, name:'Hologram Elite',    category:'פרמיום',     desc:'הולוגרם פרמיום עם הילה מרובדת',         scoreType:'p-hologram',  ...C('rgba(0,5,12,0.98)',  '2px solid rgba(34,211,238,0.7)','0 0 100px rgba(34,211,238,0.4), 0 0 200px rgba(34,211,238,0.08), inset 0 0 60px rgba(34,211,238,0.04)'), ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,3,8,0.97)') },
+  { id:150, name:'Ultimate Premium',  category:'פרמיום',     desc:'נבולה + קפיץ + הילה משולשת',            scoreType:'p-nebula',    ...C('rgba(10,5,20,0.99)', '3px solid rgba(168,85,247,0.9)','0 0 120px rgba(168,85,247,0.5), 0 0 240px rgba(34,211,238,0.2), 0 0 360px rgba(245,197,24,0.06)'), ...E({scale:0,rotate:-15,opacity:0},{scale:1,rotate:0,opacity:1},{type:'spring',stiffness:200,damping:10},'rgba(6,3,14,0.98)') },
+];
 
-const CATEGORIES = ['הכל', 'כניסה', 'מספרים', 'עיצוב', 'מיוחד', 'סטאגר', 'דרמה'];
+const ALL_STYLES = [...STYLES, ...STAGGER_STYLES, ...DRAMATIC_STYLES, ...PREMIUM_STYLES];
+
+const CATEGORIES = ['הכל', 'כניסה', 'מספרים', 'עיצוב', 'מיוחד', 'סטאגר', 'דרמה', 'רטרו', 'קוסמי', 'טיפוגרפיה', 'אופטי', 'פרמיום'];
 
 // ─── Preview Overlay ────────────────────────────────────────────────────
 
@@ -1011,7 +1335,7 @@ export default function AdminLiveDemo() {
     <div className="text-white" dir="rtl">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-white">דמו אנימציות Live Overlay</h2>
-        <p className="text-slate-400 text-sm mt-1">100 סגנונות שונים — לחץ "הצג תצוגה מקדימה" לראות בגודל מלא</p>
+        <p className="text-slate-400 text-sm mt-1">150 סגנונות שונים — לחץ "הצג תצוגה מקדימה" לראות בגודל מלא</p>
       </div>
 
       {/* Category filter */}
