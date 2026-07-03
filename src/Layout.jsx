@@ -15,6 +15,7 @@ import LeaderboardPanel from "./components/LeaderboardPanel";
 import WelcomeModal from "./components/WelcomeModal";
 import ExactHitsPanel from "./components/ExactHitsPanel";
 import IntroVideoModal from "./components/IntroVideoModal";
+import DailyRecapModal from "./components/DailyRecapModal";
 // This import is kept as per outline
 import { createPageUrl } from "@/utils";
 import { LoaderBar } from "./components/ui/LoaderBar";
@@ -29,6 +30,8 @@ export default function Layout({ children, currentPageName }) {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showIntroVideoModal, setShowIntroVideoModal] = useState(false);
+  const [showDailyRecap, setShowDailyRecap] = useState(false);
+  const [dailyRecapForce, setDailyRecapForce] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
@@ -196,6 +199,8 @@ export default function Layout({ children, currentPageName }) {
             setShowWelcomeModal(true);
           } else if (!hasSeenVideo) {
             setShowIntroVideoModal(true);
+          } else {
+            setShowDailyRecap(true);
           }
         }
 
@@ -368,6 +373,17 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('openYearlySummaryPanel', handleOpenYearlySummaryPanel);
   }, []);
 
+  // Add effect to handle daily recap panel opening (voluntary reopen from Dashboard)
+  useEffect(() => {
+    const handleOpenDailyRecapPanel = () => {
+      setDailyRecapForce(true);
+      setShowDailyRecap(true);
+    };
+
+    window.addEventListener('openDailyRecapPanel', handleOpenDailyRecapPanel);
+    return () => window.removeEventListener('openDailyRecapPanel', handleOpenDailyRecapPanel);
+  }, []);
+
   // כפתור Back במובייל — סוגר panels לפי סדר עדיפות (ref למניעת stale closure)
   const panelStateRef = useRef({});
   useEffect(() => {
@@ -501,6 +517,7 @@ export default function Layout({ children, currentPageName }) {
     } catch (error) {
       console.error("❌ Failed to update intro video status:", error);
     }
+    setShowDailyRecap(true);
     navigate(createPageUrl("Dashboard"));
   };
 
@@ -1010,6 +1027,16 @@ export default function Layout({ children, currentPageName }) {
         <IntroVideoModal
           isOpen={showIntroVideoModal}
           onVideoCompleted={handleIntroVideoCompleted} />
+
+        <AnimatePresence>
+          {showDailyRecap &&
+          <DailyRecapModal
+            isOpen={showDailyRecap}
+            forceShow={dailyRecapForce}
+            user={user}
+            onClose={() => { setShowDailyRecap(false); setDailyRecapForce(false); }} />
+          }
+        </AnimatePresence>
 
         <AnimatePresence>
           {showLeaderboard &&

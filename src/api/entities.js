@@ -512,3 +512,18 @@ export const AiBrief = {
     return data;
   },
 };
+
+// ============================================
+// DAILY BRIEF ENTITY (AI headline for the daily recap)
+// ============================================
+export const DailyBrief = {
+  forDate: async (recapDate) => {
+    const { data, error } = await supabase
+      .from('daily_briefs')
+      .select('recap_date, brief_he, generated_at')
+      .eq('recap_date', recapDate)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+};
