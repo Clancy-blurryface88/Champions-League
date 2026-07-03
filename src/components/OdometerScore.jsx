@@ -66,7 +66,8 @@ export default function OdometerScore({ home = 0, away = 0 }) {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <OdometerDigit target={h} delayMs={900} />
+      {/* layout animation ~500ms + 1500ms pause = 2000ms before first digit rolls */}
+      <OdometerDigit target={h} delayMs={2000} />
       <span
         style={{
           color: '#475569',
@@ -78,7 +79,7 @@ export default function OdometerScore({ home = 0, away = 0 }) {
       >
         -
       </span>
-      <OdometerDigit target={a} delayMs={1350} />
+      <OdometerDigit target={a} delayMs={2500} />
     </div>
   );
 }
