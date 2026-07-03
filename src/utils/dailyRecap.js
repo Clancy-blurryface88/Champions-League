@@ -91,9 +91,44 @@ export function computeDailyRecap({ matches, predictions, profiles, userId, reca
     const gap = sorted[0][0] === userId ? 0 : parseFloat(((sorted[0][1] || 0) - (scores[userId] || 0)).toFixed(2));
     return { rank, gap };
   };
-  const before = rankAndGap(calcCumScores(recapDate, false));
-  const after = rankAndGap(calcCumScores(recapDate, true));
+  const beforeScores = calcCumScores(recapDate, false);
+  const afterScores = calcCumScores(recapDate, true);
+  const before = rankAndGap(beforeScores);
+  const after = rankAndGap(afterScores);
   const rankChange = before.rank != null && after.rank != null ? before.rank - after.rank : null;
+
+  // ── Who did I pass, who passed me (cumulative rank, before vs. after) ──
+  const rankOf = (scores, uid) => {
+    const sorted = Object.entries(scores).sort(([ida, a], [idb, b]) => b - a || ida.localeCompare(idb));
+    const idx = sorted.findIndex(([id]) => id === uid);
+    return idx === -1 ? null : idx;
+  };
+  const overtook = [];
+  const overtakenBy = [];
+  if (before.rank != null && after.rank != null) {
+    const myBeforeIdx = rankOf(beforeScores, userId);
+    const myAfterIdx = rankOf(afterScores, userId);
+    Object.keys(afterScores).forEach((uid) => {
+      if (uid === userId) return;
+      const theirBeforeIdx = rankOf(beforeScores, uid);
+      const theirAfterIdx = rankOf(afterScores, uid);
+      if (theirBeforeIdx == null || theirAfterIdx == null) return;
+      const wasAbove = theirBeforeIdx < myBeforeIdx;
+      const isAboveNow = theirAfterIdx < myAfterIdx;
+      if (wasAbove && !isAboveNow) overtook.push({ userId: uid, name: nameFor(uid) });
+      else if (!wasAbove && isAboveNow) overtakenBy.push({ userId: uid, name: nameFor(uid) });
+    });
+  }
+
+  // ── Group average points for the day (context for "how did I do") ─────
+  const dayPointsByUser = {};
+  dayPredictions.forEach((p) => {
+    dayPointsByUser[p.user_id] = (dayPointsByUser[p.user_id] || 0) + (p.points_earned || 0);
+  });
+  const dayParticipants = Object.keys(dayPointsByUser);
+  const groupAveragePoints = dayParticipants.length > 0
+    ? parseFloat((Object.values(dayPointsByUser).reduce((s, v) => s + v, 0) / dayParticipants.length).toFixed(2))
+    : null;
 
   // ── Group highlight: "king of the day" (most exact hits, tie-break points) ─
   const perUser = {};
@@ -139,6 +174,10 @@ export function computeDailyRecap({ matches, predictions, profiles, userId, reca
       rankChange,
       gapBefore: before.gap,
       gapAfter: after.gap,
+      groupAveragePoints,
+      vsAverage: groupAveragePoints != null ? parseFloat((personalPoints - groupAveragePoints).toFixed(2)) : null,
+      overtook,
+      overtakenBy,
     },
     kingOfDay,
   };
