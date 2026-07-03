@@ -79,7 +79,7 @@ export default function OdometerScore({ home = 0, away = 0 }) {
       >
         -
       </span>
-      <OdometerDigit target={a} delayMs={2500} />
+      <OdometerDigit target={a} delayMs={2650} />
     </div>
   );
 }
