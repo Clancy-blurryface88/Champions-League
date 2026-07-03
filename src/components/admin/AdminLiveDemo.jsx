@@ -715,15 +715,15 @@ function buildGoalSeq(home, away) {
 function OdometerScore({ home, away }) {
   function OdometerDigit({ target, delay = 0 }) {
     return (
-      <div style={{ height: 64, overflow: 'hidden', display: 'inline-flex', alignItems: 'flex-start', verticalAlign: 'middle' }}>
+      <div style={{ height: 66, width: 44, overflow: 'hidden', position: 'relative', display: 'inline-block' }}>
         <motion.div
           initial={{ y: 0 }}
-          animate={{ y: -(target * 64) }}
-          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1], delay }}
-          style={{ display: 'flex', flexDirection: 'column' }}
+          animate={{ y: -(target * 66) }}
+          transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1], delay }}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0 }}
         >
           {[0,1,2,3,4,5,6,7,8,9].map(d => (
-            <div key={d} style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 52, fontWeight: 900, color: '#fff', minWidth: 42, lineHeight: 1 }}>{d}</div>
+            <div key={d} style={{ height: 66, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 52, fontWeight: 900, color: '#fff', lineHeight: 1 }}>{d}</div>
           ))}
         </motion.div>
       </div>
@@ -732,8 +732,8 @@ function OdometerScore({ home, away }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
       <OdometerDigit target={home} delay={0.4} />
-      <span style={{ color: '#475569', fontSize: 52, fontWeight: 900 }}>-</span>
-      <OdometerDigit target={away} delay={0.75} />
+      <span style={{ color: '#475569', fontSize: 52, fontWeight: 900, lineHeight: '66px', display: 'inline-block' }}>-</span>
+      <OdometerDigit target={away} delay={0.8} />
     </div>
   );
 }
@@ -1023,6 +1023,600 @@ function HeartRateScore({ home, away }) {
   );
 }
 
+// ─── 20 More Counter Styles ──────────────────────────────────────────────
+
+// 11. Gas Pump — mechanical digit boxes with green LED feel
+function GasPumpScore({ home, away }) {
+  function PumpDigit({ target, delay = 0 }) {
+    const [val, setVal] = useState(0);
+    useEffect(() => {
+      if (!target) return;
+      const ts = [];
+      for (let i = 1; i <= target; i++) ts.push(setTimeout(() => setVal(i), delay + i * 320));
+      return () => ts.forEach(clearTimeout);
+    }, []);
+    return (
+      <div style={{ width: 52, height: 72, background: '#050505', border: '2px solid #1f2937', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.8)' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(0,0,0,0.6),transparent 40%,transparent 60%,rgba(0,0,0,0.6))', zIndex: 1, pointerEvents: 'none' }} />
+        <motion.span key={val} initial={{ y: -22, opacity: 0.5 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.1, ease: 'easeOut' }}
+          style={{ fontSize: 48, fontWeight: 900, color: '#4ade80', fontFamily: 'monospace', textShadow: '0 0 10px rgba(74,222,128,0.7)', zIndex: 2 }}>{val}</motion.span>
+      </div>
+    );
+  }
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <PumpDigit target={home} delay={300} />
+      <span style={{ color: '#1f2937', fontSize: 44, fontWeight: 900 }}>-</span>
+      <PumpDigit target={away} delay={home * 360 + 450} />
+    </div>
+  );
+}
+
+// 12. Dice Roll — die faces change rapidly then settle
+function DiceRollScore({ home, away }) {
+  function Die({ target, delay = 0 }) {
+    const [face, setFace] = useState(1);
+    const [done, setDone] = useState(false);
+    useEffect(() => {
+      const t = setTimeout(() => {
+        const speeds = [55,60,70,85,105,135,175,225,290,380];
+        let i = 0;
+        const tick = () => {
+          setFace(f => (f % 6) + 1);
+          if (i >= speeds.length) { setFace(Math.max(target, 1)); setDone(true); return; }
+          setTimeout(tick, speeds[i++]);
+        };
+        tick();
+      }, delay);
+      return () => clearTimeout(t);
+    }, []);
+    const dotMap = { 1:[[50,50]], 2:[[28,28],[72,72]], 3:[[28,28],[50,50],[72,72]], 4:[[28,28],[72,28],[28,72],[72,72]], 5:[[28,28],[72,28],[50,50],[28,72],[72,72]], 6:[[28,20],[72,20],[28,50],[72,50],[28,80],[72,80]] };
+    const pts = dotMap[face] || dotMap[1];
+    return (
+      <motion.div animate={{ rotate: done ? 0 : [0,12,-12,9,-7,4,0] }} transition={{ duration: 0.7 }}
+        style={{ width: 66, height: 66, background: '#f8fafc', borderRadius: 10, position: 'relative', boxShadow: done ? '0 0 20px rgba(99,102,241,0.5), 2px 4px 10px rgba(0,0,0,0.5)' : '2px 4px 10px rgba(0,0,0,0.5)', border: '1px solid #e2e8f0', transition: 'box-shadow 0.3s' }}>
+        {pts.map(([x, y], i) => (
+          <div key={i} style={{ position: 'absolute', width: 11, height: 11, borderRadius: '50%', background: '#1e293b', left: `${x}%`, top: `${y}%`, transform: 'translate(-50%,-50%)' }} />
+        ))}
+      </motion.div>
+    );
+  }
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+      <Die target={home} delay={300} />
+      <span style={{ color: '#475569', fontSize: 40, fontWeight: 900 }}>-</span>
+      <Die target={away} delay={950} />
+    </div>
+  );
+}
+
+// 13. Traffic Light — red → yellow → green, then score bursts in
+function TrafficLightScore({ home, away }) {
+  const [light, setLight] = useState('red');
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const ts = [setTimeout(() => setLight('yellow'), 800), setTimeout(() => setLight('green'), 1500), setTimeout(() => setShow(true), 1800)];
+    return () => ts.forEach(clearTimeout);
+  }, []);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+      <div style={{ display: 'flex', gap: 10, padding: '8px 14px', background: '#111', borderRadius: 22, border: '2px solid #1f2937' }}>
+        {['red','yellow','green'].map(c => (
+          <motion.div key={c}
+            animate={{ opacity: light === c ? 1 : 0.15, boxShadow: light === c ? `0 0 16px 5px ${c === 'red' ? '#ef4444' : c === 'yellow' ? '#fbbf24' : '#4ade80'}` : 'none' }}
+            style={{ width: 20, height: 20, borderRadius: '50%', background: c === 'red' ? '#ef4444' : c === 'yellow' ? '#fbbf24' : '#4ade80' }} />
+        ))}
+      </div>
+      <AnimatePresence>
+        {show && (
+          <motion.span key="s" initial={{ scale: 0.4, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 450, damping: 14 }}
+            style={{ fontSize: 52, fontWeight: 900, color: '#4ade80', textShadow: '0 0 24px rgba(74,222,128,0.55)' }}>
+            {home}<span style={{ color: '#1a3a22', margin: '0 10px' }}>-</span>{away}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// 14. Lottery Balls — balls pop up for each goal, then final score
+function LotteryBallsScore({ home, away }) {
+  const [balls, setBalls] = useState([]);
+  useEffect(() => {
+    const seq = buildGoalSeq(home, away);
+    seq.forEach(({ h: nh, a: na }, i) => {
+      const prev = i > 0 ? seq[i - 1] : { h: 0, a: 0 };
+      const side = nh > prev.h ? 'h' : 'a';
+      setTimeout(() => setBalls(b => [...b, { id: i, side, num: i + 1 }]), 500 + i * 750);
+    });
+  }, []);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+      <div style={{ display: 'flex', gap: 8, minHeight: 52, alignItems: 'center' }}>
+        {balls.map(b => (
+          <motion.div key={b.id} initial={{ scale: 0, y: 28 }} animate={{ scale: 1, y: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 14 }}
+            style={{ width: 46, height: 46, borderRadius: '50%', background: b.side === 'h' ? 'linear-gradient(135deg,#3b82f6,#1d4ed8)' : 'linear-gradient(135deg,#ef4444,#b91c1c)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(0,0,0,0.45)', border: '2px solid rgba(255,255,255,0.2)' }}>
+            <span style={{ color: '#fff', fontSize: 17, fontWeight: 900 }}>{b.num}</span>
+          </motion.div>
+        ))}
+      </div>
+      {balls.length === home + away && (
+        <motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, type: 'spring', stiffness: 250, damping: 14 }}
+          style={{ fontSize: 48, fontWeight: 900, color: '#fff' }}>
+          {home}<span style={{ color: '#334155', margin: '0 10px' }}>-</span>{away}
+        </motion.span>
+      )}
+    </div>
+  );
+}
+
+// 15. Roman Numerals — shows Roman then morphs to Arabic
+function RomanNumeralScore({ home, away }) {
+  const toRoman = n => ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX'][n] || String(n);
+  const [phase, setPhase] = useState('roman');
+  useEffect(() => {
+    const ts = [setTimeout(() => setPhase('fade'), 1400), setTimeout(() => setPhase('arabic'), 1900)];
+    return () => ts.forEach(clearTimeout);
+  }, []);
+  if (phase !== 'arabic') {
+    return (
+      <motion.span animate={phase === 'fade' ? { opacity: 0, scale: 0.8, filter: 'blur(6px)' } : { opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
+        style={{ fontSize: 40, fontWeight: 900, color: '#fbbf24', letterSpacing: 5, fontFamily: 'serif', textShadow: '0 0 20px rgba(251,191,36,0.4)' }}>
+        {toRoman(home)} · {toRoman(away)}
+      </motion.span>
+    );
+  }
+  return (
+    <motion.span initial={{ opacity: 0, scale: 1.5, filter: 'blur(8px)' }} animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} transition={{ type: 'spring', stiffness: 220, damping: 16 }}
+      style={{ fontSize: 52, fontWeight: 900, color: '#fff' }}>
+      {home}<span style={{ color: '#475569', margin: '0 12px' }}>-</span>{away}
+    </motion.span>
+  );
+}
+
+// 16. Morse Code — dots/dashes blink then number emerges
+function MorseCodeScore({ home, away }) {
+  const morse = { 0:'- - - - -', 1:'. - - - -', 2:'. . - - -', 3:'. . . - -', 4:'. . . . -', 5:'. . . . .', 6:'- . . . .', 7:'- - . . .', 8:'- - - . .', 9:'- - - - .' };
+  const [phase, setPhase] = useState('morse');
+  useEffect(() => {
+    const ts = [setTimeout(() => setPhase('decode'), 1400), setTimeout(() => setPhase('number'), 2000)];
+    return () => ts.forEach(clearTimeout);
+  }, []);
+  if (phase !== 'number') {
+    return (
+      <div style={{ textAlign: 'center' }}>
+        <motion.div animate={phase === 'decode' ? { opacity: [1, 0.3, 1, 0.2, 0] } : { opacity: 1 }} transition={{ duration: 0.55 }}
+          style={{ fontSize: 20, letterSpacing: 5, color: '#22d3ee', fontFamily: 'monospace', lineHeight: 1.8 }}>
+          <div>{morse[home]}</div>
+          <div style={{ color: '#475569', fontSize: 12, letterSpacing: 2 }}>— · —</div>
+          <div>{morse[away]}</div>
+        </motion.div>
+      </div>
+    );
+  }
+  return (
+    <motion.span initial={{ opacity: 0, y: 18, filter: 'blur(4px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ type: 'spring', stiffness: 280, damping: 15 }}
+      style={{ fontSize: 52, fontWeight: 900, color: '#22d3ee', textShadow: '0 0 24px rgba(34,211,238,0.45)' }}>
+      {home}<span style={{ color: '#164e63', margin: '0 12px' }}>-</span>{away}
+    </motion.span>
+  );
+}
+
+// 17. Thermometer — bars rise from 0 to goal count
+function ThermometerScore({ home, away }) {
+  const max = Math.max(home, away, 1);
+  const pct = n => `${(n / max) * 82}%`;
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 18 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+        <span style={{ color: '#64748b', fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>{MOCK.homeTla}</span>
+        <div style={{ width: 28, height: 84, background: 'rgba(255,255,255,0.06)', borderRadius: 14, overflow: 'hidden', position: 'relative', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <motion.div initial={{ height: 0 }} animate={{ height: pct(home) }} transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(180deg,#60a5fa,#1d4ed8)', borderRadius: 14 }} />
+        </div>
+        <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1.6, type: 'spring', stiffness: 320, damping: 14 }}
+          style={{ fontSize: 38, fontWeight: 900, color: '#60a5fa' }}>{home}</motion.span>
+      </div>
+      <span style={{ color: '#334155', fontSize: 38, fontWeight: 900, paddingBottom: 10 }}>-</span>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+        <span style={{ color: '#64748b', fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>{MOCK.awayTla}</span>
+        <div style={{ width: 28, height: 84, background: 'rgba(255,255,255,0.06)', borderRadius: 14, overflow: 'hidden', position: 'relative', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <motion.div initial={{ height: 0 }} animate={{ height: pct(away) }} transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1], delay: 0.85 }}
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(180deg,#f87171,#b91c1c)', borderRadius: 14 }} />
+        </div>
+        <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 2.0, type: 'spring', stiffness: 320, damping: 14 }}
+          style={{ fontSize: 38, fontWeight: 900, color: '#f87171' }}>{away}</motion.span>
+      </div>
+    </div>
+  );
+}
+
+// 18. ATM Display — sequential machine messages then score
+function ATMDisplayScore({ home, away }) {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const ts = [setTimeout(() => setStep(1), 700), setTimeout(() => setStep(2), 1400)];
+    return () => ts.forEach(clearTimeout);
+  }, []);
+  const lines = ['PROCESSING…', 'SCORE FOUND ✓', null];
+  return (
+    <div style={{ background: '#001400', border: '2px solid #14532d', borderRadius: 6, padding: '14px 22px', fontFamily: 'monospace', minWidth: 210, textAlign: 'center' }}>
+      {step < 2 ? (
+        <motion.div key={step} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}
+          style={{ fontSize: 14, color: '#4ade80', letterSpacing: 3 }}>{lines[step]}</motion.div>
+      ) : (
+        <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 280, damping: 14 }}>
+          <div style={{ fontSize: 10, color: '#166534', letterSpacing: 3, marginBottom: 6 }}>SCORE CONFIRMED</div>
+          <div style={{ fontSize: 50, fontWeight: 900, color: '#4ade80', textShadow: '0 0 14px rgba(74,222,128,0.55)' }}>{home} - {away}</div>
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
+// 19. Safe Dial — combo lock dials spin then click to number
+function SafeDialScore({ home, away }) {
+  function Dial({ target, delay = 0 }) {
+    const [cur, setCur] = useState('0');
+    const [settled, setSettled] = useState(false);
+    const ref = useRef(0);
+    useEffect(() => {
+      const t = setTimeout(() => {
+        let iter = 0;
+        const total = 14 + target * 3;
+        const tick = () => {
+          if (iter >= total) { setCur(String(target)); setSettled(true); return; }
+          ref.current = (ref.current + 1) % 10;
+          setCur(String(ref.current));
+          iter++;
+          setTimeout(tick, Math.min(40 + iter * 12, 240));
+        };
+        tick();
+      }, delay);
+      return () => clearTimeout(t);
+    }, []);
+    return (
+      <div style={{ width: 66, height: 66, borderRadius: '50%', border: `3px solid ${settled ? '#fbbf24' : '#334155'}`, background: 'radial-gradient(circle,#1e293b,#0f172a)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: settled ? '0 0 22px rgba(251,191,36,0.5)' : 'none', transition: 'border-color 0.3s,box-shadow 0.3s' }}>
+        <motion.span key={cur} initial={{ y: -12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.08 }}
+          style={{ fontSize: 28, fontWeight: 900, color: settled ? '#fbbf24' : '#64748b', fontFamily: 'monospace' }}>{cur}</motion.span>
+      </div>
+    );
+  }
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+      <Dial target={home} delay={300} />
+      <span style={{ color: '#334155', fontSize: 40, fontWeight: 900 }}>-</span>
+      <Dial target={away} delay={home * 430 + 500} />
+    </div>
+  );
+}
+
+// 20. Progress Bars — fill per team then numbers pop
+function ProgressBarScore({ home, away }) {
+  const total = home + away || 1;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: 230 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ color: '#64748b', fontSize: 10, fontWeight: 700, width: 28, letterSpacing: 1 }}>{MOCK.homeTla}</span>
+        <div style={{ flex: 1, height: 10, background: 'rgba(255,255,255,0.07)', borderRadius: 5, overflow: 'hidden' }}>
+          <motion.div initial={{ width: 0 }} animate={{ width: `${(home / total) * 100}%` }} transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
+            style={{ height: '100%', background: 'linear-gradient(90deg,#3b82f6,#60a5fa)', borderRadius: 5 }} />
+        </div>
+        <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1.5, type: 'spring', stiffness: 300, damping: 12 }}
+          style={{ fontSize: 22, fontWeight: 900, color: '#3b82f6', width: 22, textAlign: 'right' }}>{home}</motion.span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ color: '#64748b', fontSize: 10, fontWeight: 700, width: 28, letterSpacing: 1 }}>{MOCK.awayTla}</span>
+        <div style={{ flex: 1, height: 10, background: 'rgba(255,255,255,0.07)', borderRadius: 5, overflow: 'hidden' }}>
+          <motion.div initial={{ width: 0 }} animate={{ width: `${(away / total) * 100}%` }} transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.8 }}
+            style={{ height: '100%', background: 'linear-gradient(90deg,#ef4444,#f87171)', borderRadius: 5 }} />
+        </div>
+        <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1.9, type: 'spring', stiffness: 300, damping: 12 }}
+          style={{ fontSize: 22, fontWeight: 900, color: '#ef4444', width: 22, textAlign: 'right' }}>{away}</motion.span>
+      </div>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.3 }}
+        style={{ textAlign: 'center', fontSize: 40, fontWeight: 900, color: '#fff', marginTop: 4 }}>
+        {home}<span style={{ color: '#334155', margin: '0 8px' }}>-</span>{away}
+      </motion.div>
+    </div>
+  );
+}
+
+// 21. Poker Cards — face-down then flip to show numbers
+function PokerCardsScore({ home, away }) {
+  function Card({ value, delay = 0, accent = '#1d4ed8' }) {
+    const [flipped, setFlipped] = useState(false);
+    useEffect(() => { const t = setTimeout(() => setFlipped(true), delay); return () => clearTimeout(t); }, []);
+    return (
+      <div style={{ perspective: 320, width: 62, height: 84 }}>
+        <motion.div animate={{ rotateY: flipped ? 180 : 0 }} transition={{ duration: 0.55, ease: 'easeInOut' }}
+          style={{ width: '100%', height: '100%', position: 'relative', transformStyle: 'preserve-3d' }}>
+          <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', background: 'linear-gradient(135deg,#1e3a5f,#0f2040)', borderRadius: 8, border: '2px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 24, opacity: 0.3 }}>★</span>
+          </div>
+          <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', background: '#f8fafc', borderRadius: 8, border: '2px solid #e2e8f0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.35)' }}>
+            <span style={{ fontSize: 30, fontWeight: 900, color: accent, lineHeight: 1 }}>{value}</span>
+            <span style={{ fontSize: 16, color: accent }}>♦</span>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <Card value={home} delay={500} accent="#1d4ed8" />
+      <span style={{ color: '#334155', fontSize: 30, fontWeight: 900 }}>vs</span>
+      <Card value={away} delay={1100} accent="#b91c1c" />
+    </div>
+  );
+}
+
+// 22. Loading Percentage — bar fills with %, then score pops in
+function LoadingPctScore({ home, away }) {
+  const [pct, setPct] = useState(0);
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    let p = 0;
+    const iv = setInterval(() => {
+      p += Math.random() * 9 + 3;
+      if (p >= 100) { p = 100; clearInterval(iv); setTimeout(() => setDone(true), 350); }
+      setPct(Math.round(p));
+    }, 55);
+    return () => clearInterval(iv);
+  }, []);
+  if (!done) {
+    return (
+      <div style={{ width: 210, textAlign: 'center' }}>
+        <div style={{ fontSize: 12, color: '#475569', letterSpacing: 3, marginBottom: 10 }}>LOADING SCORE…</div>
+        <div style={{ height: 6, background: 'rgba(255,255,255,0.07)', borderRadius: 3, overflow: 'hidden', marginBottom: 8 }}>
+          <motion.div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg,#6366f1,#a78bfa)', borderRadius: 3 }} />
+        </div>
+        <div style={{ fontSize: 13, color: '#8b5cf6', fontFamily: 'monospace' }}>{pct}%</div>
+      </div>
+    );
+  }
+  return (
+    <motion.span initial={{ scale: 0.45, opacity: 0, filter: 'blur(10px)' }} animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }} transition={{ type: 'spring', stiffness: 280, damping: 14 }}
+      style={{ fontSize: 52, fontWeight: 900, color: '#fff' }}>
+      {home}<span style={{ color: '#475569', margin: '0 12px' }}>-</span>{away}
+    </motion.span>
+  );
+}
+
+// 23. Neon Counter — glowing neon digits tick up per goal
+function NeonCounterScore({ home, away }) {
+  const [h, setH] = useState(0);
+  const [a, setA] = useState(0);
+  useEffect(() => {
+    buildGoalSeq(home, away).forEach(({ h: nh, a: na }, i) => {
+      setTimeout(() => { setH(nh); setA(na); }, 500 + i * 680);
+    });
+  }, []);
+  const glow = n => n > 0 ? '0 0 8px currentColor,0 0 28px currentColor,0 0 55px currentColor' : 'none';
+  return (
+    <span style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 52, fontWeight: 900, fontFamily: 'monospace' }}>
+      <motion.span key={`h-${h}`} initial={{ scale: 1.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 420, damping: 12 }}
+        style={{ color: '#e879f9', textShadow: glow(h), minWidth: 38, textAlign: 'center', display: 'inline-block' }}>{h}</motion.span>
+      <span style={{ color: '#334155' }}>-</span>
+      <motion.span key={`a-${a}`} initial={{ scale: 1.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 420, damping: 12 }}
+        style={{ color: '#e879f9', textShadow: glow(a), minWidth: 38, textAlign: 'center', display: 'inline-block' }}>{a}</motion.span>
+    </span>
+  );
+}
+
+// 24. Film Countdown — 5-4-3-2-1 then score
+function FilmCountdownScore({ home, away }) {
+  const [count, setCount] = useState(5);
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setCount(c => { if (c <= 1) { clearInterval(iv); setDone(true); return 0; } return c - 1; });
+    }, 340);
+    return () => clearInterval(iv);
+  }, []);
+  if (!done) {
+    return (
+      <div style={{ position: 'relative', display: 'inline-block' }}>
+        <motion.div key={count} initial={{ scale: 2, opacity: 0, rotate: -8 }} animate={{ scale: 1, opacity: 1, rotate: 0 }} exit={{ scale: 0.2, opacity: 0 }} transition={{ duration: 0.26 }}
+          style={{ fontSize: 84, fontWeight: 900, color: '#fff', textShadow: '0 0 40px rgba(255,255,255,0.4)', fontFamily: 'monospace', lineHeight: 1 }}>{count}</motion.div>
+        <div style={{ position: 'absolute', inset: 0, border: '3px solid rgba(255,255,255,0.18)', borderRadius: 4, pointerEvents: 'none' }} />
+      </div>
+    );
+  }
+  return (
+    <motion.span initial={{ scale: 0.3, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 360, damping: 14 }}
+      style={{ fontSize: 52, fontWeight: 900, color: '#fff' }}>
+      {home}<span style={{ color: '#475569', margin: '0 12px' }}>-</span>{away}
+    </motion.span>
+  );
+}
+
+// 25. Spin Wheel — fortune wheel circles spin then lock on target
+function SpinWheelScore({ home, away }) {
+  function Wheel({ target, delay = 0 }) {
+    const [cur, setCur] = useState(0);
+    const [settled, setSettled] = useState(false);
+    const ref = useRef(0);
+    useEffect(() => {
+      const t = setTimeout(() => {
+        let iter = 0;
+        const total = 18 + target * 3;
+        const tick = () => {
+          if (iter >= total) { setCur(target); setSettled(true); return; }
+          ref.current = (ref.current + 1) % 10;
+          setCur(ref.current);
+          iter++;
+          setTimeout(tick, Math.min(38 + iter * 11, 260));
+        };
+        tick();
+      }, delay);
+      return () => clearTimeout(t);
+    }, []);
+    return (
+      <motion.div animate={{ rotate: settled ? [0, 12, -8, 5, -3, 0] : 0 }} transition={{ duration: 0.6 }}
+        style={{ width: 66, height: 66, borderRadius: '50%', border: `3px solid ${settled ? '#fbbf24' : '#334155'}`, background: 'radial-gradient(circle,#1e293b 60%,#0f172a)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: settled ? '0 0 22px rgba(251,191,36,0.5)' : 'none', transition: 'border-color 0.3s,box-shadow 0.3s' }}>
+        <span style={{ fontSize: 30, fontWeight: 900, color: settled ? '#fbbf24' : '#64748b', fontFamily: 'monospace' }}>{cur}</span>
+      </motion.div>
+    );
+  }
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+      <Wheel target={home} delay={300} />
+      <span style={{ color: '#334155', fontSize: 40, fontWeight: 900 }}>-</span>
+      <Wheel target={away} delay={900} />
+    </div>
+  );
+}
+
+// 26. Barcode Scan — laser sweeps then number appears
+function BarcodeScanScore({ home, away }) {
+  const [scanY, setScanY] = useState(0);
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    let y = 0;
+    const iv = setInterval(() => {
+      y += 3.5;
+      setScanY(y);
+      if (y >= 100) { clearInterval(iv); setTimeout(() => setDone(true), 300); }
+    }, 18);
+    return () => clearInterval(iv);
+  }, []);
+  if (!done) {
+    return (
+      <div style={{ position: 'relative', width: 160, height: 72 }}>
+        <div style={{ display: 'flex', gap: 2, height: '100%', alignItems: 'stretch', padding: '0 4px' }}>
+          {Array.from({ length: 26 }, (_, i) => (
+            <div key={i} style={{ flex: i % 3 === 0 ? 2 : 1, background: i % 2 === 0 ? 'rgba(255,255,255,0.9)' : 'transparent', borderRadius: 1 }} />
+          ))}
+        </div>
+        <div style={{ position: 'absolute', left: '-2px', right: '-2px', top: `${scanY}%`, height: 2, background: 'rgba(239,68,68,0.95)', filter: 'blur(1px)', boxShadow: '0 0 8px #ef4444,0 0 18px rgba(239,68,68,0.4)', pointerEvents: 'none' }} />
+      </div>
+    );
+  }
+  return (
+    <motion.span initial={{ opacity: 0, scale: 0.8, filter: 'blur(6px)' }} animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} transition={{ type: 'spring', stiffness: 280, damping: 14 }}
+      style={{ fontSize: 52, fontWeight: 900, color: '#fff' }}>
+      {home}<span style={{ color: '#334155', margin: '0 12px' }}>-</span>{away}
+    </motion.span>
+  );
+}
+
+// 27. Goal Stamps — stamp impression per goal, score updates live
+function GoalStampScore({ home, away }) {
+  const [hCount, setHCount] = useState(0);
+  const [aCount, setACount] = useState(0);
+  useEffect(() => {
+    buildGoalSeq(home, away).forEach(({ h: nh, a: na }, i) => {
+      setTimeout(() => { setHCount(nh); setACount(na); }, 450 + i * 720);
+    });
+  }, []);
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+      <div style={{ display: 'flex', gap: 5, minWidth: 52, justifyContent: 'flex-end' }}>
+        {Array.from({ length: hCount }, (_, i) => (
+          <motion.div key={i} initial={{ scale: 2.5, opacity: 0, rotate: -25 }} animate={{ scale: 1, opacity: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 12 }}
+            style={{ width: 24, height: 24, background: 'rgba(59,130,246,0.18)', border: '2px solid #3b82f6', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 11, color: '#3b82f6' }}>⚽</span>
+          </motion.div>
+        ))}
+      </div>
+      <div style={{ fontSize: 44, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <motion.span key={hCount} initial={{ scale: 1.6, color: '#3b82f6' }} animate={{ scale: 1, color: '#fff' }} transition={{ duration: 0.35 }}>{hCount}</motion.span>
+        <span style={{ color: '#334155', fontSize: 32 }}>-</span>
+        <motion.span key={`a-${aCount}`} initial={{ scale: 1.6, color: '#ef4444' }} animate={{ scale: 1, color: '#fff' }} transition={{ duration: 0.35 }}>{aCount}</motion.span>
+      </div>
+      <div style={{ display: 'flex', gap: 5, minWidth: 52 }}>
+        {Array.from({ length: aCount }, (_, i) => (
+          <motion.div key={i} initial={{ scale: 2.5, opacity: 0, rotate: 25 }} animate={{ scale: 1, opacity: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 12 }}
+            style={{ width: 24, height: 24, background: 'rgba(239,68,68,0.18)', border: '2px solid #ef4444', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 11, color: '#ef4444' }}>⚽</span>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// 28. Wormhole — 0-0 gets sucked in, real score emerges
+function WormholeScore({ home, away }) {
+  const [phase, setPhase] = useState('show');
+  useEffect(() => {
+    const ts = [setTimeout(() => setPhase('suck'), 600), setTimeout(() => setPhase('emerge'), 1250)];
+    return () => ts.forEach(clearTimeout);
+  }, []);
+  return (
+    <div style={{ position: 'relative', display: 'inline-block', minWidth: 180, textAlign: 'center' }}>
+      {phase === 'show' && (
+        <motion.span initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} style={{ fontSize: 52, fontWeight: 900, color: '#64748b', display: 'block' }}>
+          0<span style={{ margin: '0 12px', color: '#334155' }}>-</span>0
+        </motion.span>
+      )}
+      {phase === 'suck' && (
+        <motion.span initial={{ scale: 1, opacity: 1, rotate: 0 }} animate={{ scale: 0.02, opacity: 0, rotate: 540, filter: 'blur(10px)' }} transition={{ duration: 0.55, ease: 'easeIn' }}
+          style={{ fontSize: 52, fontWeight: 900, color: '#64748b', display: 'block' }}>
+          0<span style={{ margin: '0 12px', color: '#334155' }}>-</span>0
+        </motion.span>
+      )}
+      {phase === 'emerge' && (
+        <motion.span initial={{ scale: 0.02, opacity: 0, rotate: -540, filter: 'blur(10px)' }} animate={{ scale: 1, opacity: 1, rotate: 0, filter: 'blur(0px)' }} transition={{ type: 'spring', stiffness: 190, damping: 14 }}
+          style={{ fontSize: 52, fontWeight: 900, color: '#fff', display: 'block' }}>
+          {home}<span style={{ margin: '0 12px', color: '#334155' }}>-</span>{away}
+        </motion.span>
+      )}
+    </div>
+  );
+}
+
+// 29. Domino Fall — digits topple into place
+function DominoScore({ home, away }) {
+  const [fallen, setFallen] = useState([false, false, false]);
+  useEffect(() => {
+    [380, 860, 1340].forEach((d, i) => setTimeout(() => setFallen(p => { const n = [...p]; n[i] = true; return n; }), d));
+  }, []);
+  const parts = [String(home), '-', String(away)];
+  const cols = ['#60a5fa', '#475569', '#f87171'];
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+      {parts.map((p, i) => (
+        <motion.div key={i}
+          initial={{ rotateZ: -90, y: -22, opacity: 0.35 }}
+          animate={fallen[i] ? { rotateZ: 0, y: 0, opacity: 1 } : { rotateZ: -90, y: -22, opacity: 0.35 }}
+          transition={{ type: 'spring', stiffness: 210, damping: 13 }}
+          style={{ transformOrigin: 'bottom center', fontSize: 54, fontWeight: 900, color: cols[i], display: 'inline-block' }}>
+          {p}
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+// 30. Question Reveal — ?-? then digits pop in one by one
+function QuestionRevealScore({ home, away }) {
+  const [rev, setRev] = useState([false, false, false]);
+  useEffect(() => {
+    [380, 680, 980].forEach((d, i) => setTimeout(() => setRev(p => { const n = [...p]; n[i] = true; return n; }), d));
+  }, []);
+  const parts = [String(home), '-', String(away)];
+  const cols = ['#fff', '#334155', '#fff'];
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 54, fontWeight: 900 }}>
+      {parts.map((p, i) => (
+        <div key={i} style={{ position: 'relative', minWidth: i === 1 ? 26 : 40, textAlign: 'center' }}>
+          <AnimatePresence mode="wait">
+            {rev[i] ? (
+              <motion.span key="v" initial={{ scale: 1.6, opacity: 0, filter: 'blur(4px)' }} animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }} exit={{ scale: 0, opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 14 }}
+                style={{ color: cols[i], display: 'block' }}>{p}</motion.span>
+            ) : (
+              <motion.span key="q" exit={{ scale: 0, opacity: 0, rotate: 180 }} transition={{ duration: 0.18 }}
+                style={{ color: '#1e293b', display: 'block' }}>{i === 1 ? '-' : '?'}</motion.span>
+            )}
+          </AnimatePresence>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── Score type router ──────────────────────────────────────────────────
 
 function ScoreDisplay({ type }) {
@@ -1158,6 +1752,26 @@ function ScoreDisplay({ type }) {
     case 'c-binary':       return <BinaryDecodeScore home={h} away={a} />;
     case 'c-scoreboard':   return <ScoreboardFlashScore home={h} away={a} />;
     case 'c-heartrate':    return <HeartRateScore home={h} away={a} />;
+    case 'c-gaspump':     return <GasPumpScore home={h} away={a} />;
+    case 'c-dice':        return <DiceRollScore home={h} away={a} />;
+    case 'c-traffic':     return <TrafficLightScore home={h} away={a} />;
+    case 'c-lottery':     return <LotteryBallsScore home={h} away={a} />;
+    case 'c-roman':       return <RomanNumeralScore home={h} away={a} />;
+    case 'c-morse':       return <MorseCodeScore home={h} away={a} />;
+    case 'c-thermo':      return <ThermometerScore home={h} away={a} />;
+    case 'c-atm':         return <ATMDisplayScore home={h} away={a} />;
+    case 'c-safedial':    return <SafeDialScore home={h} away={a} />;
+    case 'c-progress':    return <ProgressBarScore home={h} away={a} />;
+    case 'c-poker':       return <PokerCardsScore home={h} away={a} />;
+    case 'c-loading':     return <LoadingPctScore home={h} away={a} />;
+    case 'c-neon':        return <NeonCounterScore home={h} away={a} />;
+    case 'c-film':        return <FilmCountdownScore home={h} away={a} />;
+    case 'c-spinwheel':   return <SpinWheelScore home={h} away={a} />;
+    case 'c-barcode':     return <BarcodeScanScore home={h} away={a} />;
+    case 'c-stamps':      return <GoalStampScore home={h} away={a} />;
+    case 'c-wormhole':    return <WormholeScore home={h} away={a} />;
+    case 'c-domino':      return <DominoScore home={h} away={a} />;
+    case 'c-question':    return <QuestionRevealScore home={h} away={a} />;
   }
 }
 
@@ -1545,9 +2159,32 @@ const COUNTER_STYLES = [
   { id:160, name:'Heart Rate Monitor', category:'ספירה', desc:'דופק ECG לכל שער, ספרה קופצת עם פולס',    scoreType:'c-heartrate',   ...C('rgba(8,18,32,0.97)', '2px solid rgba(239,68,68,0.5)','0 0 60px rgba(239,68,68,0.2)'),                                     ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.95)') },
 ];
 
-const ALL_STYLES = [...STYLES, ...STAGGER_STYLES, ...DRAMATIC_STYLES, ...PREMIUM_STYLES, ...COUNTER_STYLES];
+const COUNTER_STYLES_2 = [
+  { id:161, name:'Gas Pump',        category:'ספירה', desc:'תצוגת LED ירוק — ספרות מתקתקות כמו משאבת דלק',   scoreType:'c-gaspump',   ...C('#050505',           '2px solid #1f2937','inset 0 0 30px rgba(0,0,0,0.9)'),                                ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,0,0.97)') },
+  { id:162, name:'Dice Roll',       category:'ספירה', desc:'קוביות מסתחררות ונוחתות על המספר הנכון',          scoreType:'c-dice',      ...C('rgba(8,18,32,0.97)', '2px solid rgba(99,102,241,0.5)','0 0 50px rgba(99,102,241,0.18)'),                              ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.95)') },
+  { id:163, name:'Traffic Light',   category:'ספירה', desc:'אדום → צהוב → ירוק, ואז התוצאה פורצת',           scoreType:'c-traffic',   ...C('rgba(8,18,32,0.97)', '2px solid rgba(74,222,128,0.4)','0 0 50px rgba(74,222,128,0.12)'),                              ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,12,22,0.95)') },
+  { id:164, name:'Lottery Balls',   category:'ספירה', desc:'כדורי הגרלה קופצים לכל שער',                      scoreType:'c-lottery',   ...C('rgba(8,18,32,0.97)', '2px solid rgba(251,191,36,0.5)','0 0 60px rgba(251,191,36,0.15)'),                              ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.95)') },
+  { id:165, name:'Roman Numerals',  category:'ספירה', desc:'II · II מומר ל-2-2 בהמרה דרמטית',               scoreType:'c-roman',     ...C('rgba(10,8,0,0.98)',  '2px solid rgba(251,191,36,0.55)','0 0 55px rgba(251,191,36,0.2)'),                               ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(7,5,0,0.97)') },
+  { id:166, name:'Morse Code',      category:'ספירה', desc:'קוד מורס מהבהב ומתפוגג לתוצאה',                   scoreType:'c-morse',     ...C('rgba(0,18,26,0.98)', '2px solid rgba(34,211,238,0.5)','0 0 55px rgba(34,211,238,0.18)'),                               ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,12,18,0.97)') },
+  { id:167, name:'Thermometer',     category:'ספירה', desc:'עמוד כחול/אדום עולה לפי מספר שערים',              scoreType:'c-thermo',    ...C('rgba(8,18,32,0.97)', '1px solid rgba(148,163,184,0.2)','0 40px 80px rgba(0,0,0,0.9)'),                                 ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.97)') },
+  { id:168, name:'ATM Display',     category:'ספירה', desc:'מסך ATM ירוק: PROCESSING → תוצאה',               scoreType:'c-atm',       ...C('#001400',            '2px solid #14532d','0 0 40px rgba(20,83,45,0.3)'),                                              ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,8,0,0.97)') },
+  { id:169, name:'Safe Dial',       category:'ספירה', desc:'חוגות כספת מסתובבות ונולחות על המספר',            scoreType:'c-safedial',  ...C('rgba(8,18,32,0.97)', '2px solid rgba(251,191,36,0.45)','0 0 50px rgba(251,191,36,0.15)'),                              ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.95)') },
+  { id:170, name:'Progress Bars',   category:'ספירה', desc:'פסי טעינה לכל קבוצה, ואז תוצאה מופיעה',          scoreType:'c-progress',  ...C('rgba(8,18,32,0.97)', '1px solid rgba(148,163,184,0.15)','0 20px 60px rgba(0,0,0,0.8)'),                                ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.95)') },
+  { id:171, name:'Poker Cards',     category:'ספירה', desc:'קלפים הפוכים מתהפכים וחושפים את התוצאה',          scoreType:'c-poker',     ...C('rgba(8,18,32,0.97)', '2px solid rgba(148,163,184,0.3)','0 20px 60px rgba(0,0,0,0.8)'),                                 ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.95)') },
+  { id:172, name:'Loading %',       category:'ספירה', desc:'סרגל טעינה בסגול, 100% → תוצאה מתפרצת',          scoreType:'c-loading',   ...C('rgba(8,8,24,0.98)',  '2px solid rgba(139,92,246,0.5)','0 0 50px rgba(139,92,246,0.18)'),                               ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,5,18,0.97)') },
+  { id:173, name:'Neon Counter',    category:'ספירה', desc:'ניאון ורוד זוהר ספור שערים אחד-אחד',              scoreType:'c-neon',      ...C('rgba(8,0,18,0.98)',  '2px solid rgba(232,121,249,0.5)','0 0 60px rgba(232,121,249,0.2)'),                               ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,0,14,0.97)') },
+  { id:174, name:'Film Countdown',  category:'ספירה', desc:'5-4-3-2-1 כמו פתיח סרט, ואז פצצת תוצאה',         scoreType:'c-film',      ...C('rgba(5,5,5,0.98)',   '2px solid rgba(255,255,255,0.25)','0 0 60px rgba(255,255,255,0.05)'),                               ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,0,0.97)') },
+  { id:175, name:'Spin Wheel',      category:'ספירה', desc:'גלגלת מזל מסתובבת ומאטת לתוצאה',                  scoreType:'c-spinwheel', ...C('rgba(8,18,32,0.97)', '2px solid rgba(251,191,36,0.45)','0 0 50px rgba(251,191,36,0.15)'),                              ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.95)') },
+  { id:176, name:'Barcode Scan',    category:'ספירה', desc:'לייזר סורק ברקוד ומפענח לתוצאה',                  scoreType:'c-barcode',   ...C('rgba(5,5,5,0.98)',   '2px solid rgba(239,68,68,0.4)','0 0 40px rgba(239,68,68,0.1)'),                                  ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(0,0,0,0.97)') },
+  { id:177, name:'Goal Stamps',     category:'ספירה', desc:'חותמת כדורגל מוטבעת לכל שער',                     scoreType:'c-stamps',    ...C('rgba(8,18,32,0.97)', '1px solid rgba(148,163,184,0.2)','0 20px 60px rgba(0,0,0,0.8)'),                                 ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.95)') },
+  { id:178, name:'Wormhole',        category:'ספירה', desc:'0-0 נבלע בחור תולעת, התוצאה מופיעה מהשני',       scoreType:'c-wormhole',  ...C('rgba(8,18,32,0.97)', '2px solid rgba(139,92,246,0.5)','0 0 60px rgba(139,92,246,0.2)'),                                 ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.97)') },
+  { id:179, name:'Domino Fall',     category:'ספירה', desc:'ספרות נופלות כדומינו אחת אחרי השניה',             scoreType:'c-domino',    ...C('rgba(8,18,32,0.97)', '2px solid rgba(96,165,250,0.4)','0 0 50px rgba(96,165,250,0.12)'),                               ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.95)') },
+  { id:180, name:'Question Reveal', category:'ספירה', desc:'?-? מתגלה ספרה אחרי ספרה בקפיצה',                scoreType:'c-question',  ...C('rgba(8,18,32,0.97)', '2px solid rgba(148,163,184,0.2)','0 20px 60px rgba(0,0,0,0.8)'),                                 ...E({opacity:0},{opacity:1},{duration:0.3},'rgba(5,10,20,0.95)') },
+];
 
-const CATEGORIES = ['הכל', 'כניסה', 'מספרים', 'עיצוב', 'מיוחד', 'סטאגר', 'דרמה', 'רטרו', 'קוסמי', 'טיפוגרפיה', 'אופטי', 'פרמיום', 'ספירה'];
+const ALL_STYLES = [...COUNTER_STYLES, ...COUNTER_STYLES_2];
+
+const CATEGORIES = ['הכל', 'ספירה'];
 
 // ─── Preview Overlay ────────────────────────────────────────────────────
 
