@@ -22,6 +22,7 @@ import AppBackground from "./components/AppBackground";
 import LiveDataPanel from "./components/LiveDataPanel"; // Added: Import LiveDataPanel
 import MatchTickerBar from "./components/MatchTickerBar";
 import YearlySummaryPanel from "./components/YearlySummaryPanel"; // NEW: YearlySummaryPanel
+import OdometerScore from "./components/OdometerScore";
 
 export default function Layout({ children, currentPageName }) {
   const [user, setUser] = useState(null);
@@ -965,9 +966,10 @@ export default function Layout({ children, currentPageName }) {
                             {liveMatch.homeTeam?.crest && <img src={liveMatch.homeTeam.crest} className="w-16 h-16 object-contain drop-shadow-lg" alt="" />}
                             <span className="text-slate-400 text-[11px]">{liveMatch.homeTeam?.tla}</span>
                           </div>
-                          <span className="text-white text-5xl font-bold tracking-tight">
-                            {liveMatch.score?.fullTime?.home ?? '?'}<span className="text-slate-500 mx-2">-</span>{liveMatch.score?.fullTime?.away ?? '?'}
-                          </span>
+                          <OdometerScore
+                            home={liveMatch.score?.fullTime?.home ?? 0}
+                            away={liveMatch.score?.fullTime?.away ?? 0}
+                          />
                           <div className="flex flex-col items-center gap-1.5 w-24">
                             {liveMatch.awayTeam?.crest && <img src={liveMatch.awayTeam.crest} className="w-16 h-16 object-contain drop-shadow-lg" alt="" />}
                             <span className="text-slate-400 text-[11px]">{liveMatch.awayTeam?.tla}</span>
