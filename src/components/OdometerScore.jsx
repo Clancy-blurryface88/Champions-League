@@ -1,24 +1,52 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useEffect, useRef } from "react";
+import { motion, useAnimation } from "framer-motion";
 
-function OdometerDigit({ target = 0, delay = 0 }) {
+const DIGIT_H = 64;
+
+function OdometerDigit({ target = 0, delayMs = 400 }) {
+  const controls = useAnimation();
+  const mounted = useRef(false);
+
+  useEffect(() => {
+    mounted.current = true;
+    const t = setTimeout(() => {
+      if (mounted.current) {
+        controls.start({
+          y: -(target * DIGIT_H),
+          transition: { duration: 1.4, ease: [0.22, 1, 0.36, 1] },
+        });
+      }
+    }, delayMs);
+    return () => {
+      mounted.current = false;
+      clearTimeout(t);
+    };
+  }, [target, delayMs]);
+
   return (
-    <div style={{ height: 66, width: 44, overflow: 'hidden', position: 'relative', display: 'inline-block' }}>
+    <div
+      style={{
+        height: DIGIT_H,
+        width: 42,
+        overflow: 'hidden',
+        position: 'relative',
+        flexShrink: 0,
+      }}
+    >
       <motion.div
         initial={{ y: 0 }}
-        animate={{ y: -(target * 66) }}
-        transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1], delay }}
+        animate={controls}
         style={{ position: 'absolute', top: 0, left: 0, right: 0 }}
       >
         {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => (
           <div
             key={d}
             style={{
-              height: 66,
+              height: DIGIT_H,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 52,
+              fontSize: 50,
               fontWeight: 900,
               color: '#fff',
               lineHeight: 1,
@@ -37,12 +65,20 @@ export default function OdometerScore({ home = 0, away = 0 }) {
   const a = Math.min(Math.max(Number(away) || 0, 0), 9);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <OdometerDigit target={h} delay={0.4} />
-      <span style={{ color: '#475569', fontSize: 52, fontWeight: 900, lineHeight: '66px', display: 'inline-block' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <OdometerDigit target={h} delayMs={900} />
+      <span
+        style={{
+          color: '#475569',
+          fontSize: 50,
+          fontWeight: 900,
+          lineHeight: `${DIGIT_H}px`,
+          flexShrink: 0,
+        }}
+      >
         -
       </span>
-      <OdometerDigit target={a} delay={0.8} />
+      <OdometerDigit target={a} delayMs={1350} />
     </div>
   );
 }

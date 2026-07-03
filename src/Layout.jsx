@@ -942,8 +942,8 @@ export default function Layout({ children, currentPageName }) {
               <div className="fixed inset-0 z-[56] flex items-center justify-center pointer-events-none">
                 <motion.div
                   layoutId="live-chip"
-                  className="rounded-2xl overflow-hidden"
-                  style={{
+                  className="rounded-2xl"
+                  style={{ overflow: 'visible',
                     background: 'rgba(8,18,32,0.95)',
                     border: '1px solid rgba(239,68,68,0.5)',
                     backdropFilter: 'blur(28px)',
