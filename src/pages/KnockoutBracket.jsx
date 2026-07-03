@@ -9,7 +9,7 @@ import { loadAllOverrides, applyOverride, applyBestThirdOrder } from '@/utils/gr
 // ─── Layout constants ────────────────────────────────────────────────────────
 const CH = 64;   // card height
 const CW = 118;  // card width
-const CG = 6;    // gap between R32 cards
+const CG = 20;   // gap between R32 cards (room for the date/time line below each card)
 const CN = 22;   // connector width
 
 const COL = CW + CN; // 140
@@ -42,9 +42,10 @@ const qfTop     = i => qfCtr(i) - CH / 2;
 const sfCtr     = () => (qfCtr(0) + qfCtr(1)) / 2;
 const sfTop     = () => sfCtr() - CH / 2;
 
-const TOTAL_H   = r32Top(7) + CH;
-const THIRD_Y   = TOTAL_H + 18;
-const CONTAINER_H = THIRD_Y + CH;
+const TOTAL_H     = r32Top(7) + CH;
+const ROUND_LBL_Y = TOTAL_H + 18;      // below the last R32 row's date/time label
+const THIRD_Y      = ROUND_LBL_Y + 16;
+const CONTAINER_H  = THIRD_Y + CH + 16; // + room for the date/time label under the 3rd-place card
 
 // ─── Groups ──────────────────────────────────────────────────────────────────
 const ALL_GROUPS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
@@ -235,6 +236,28 @@ function assign3rd(allGroupMatches, groupOverrides = {}, bestThirdOrder = null, 
 }
 
 
+// ─── Date/time formatting ──────────────────────────────────────────────────────
+function fmtDateTime(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mi = String(d.getMinutes()).padStart(2, '0');
+  return `${dd}/${mm} · ${hh}:${mi}`;
+}
+
+function MatchDateLabel({ matchDate }) {
+  const label = fmtDateTime(matchDate);
+  if (!label) return null;
+  return (
+    <div style={{ textAlign: 'center', fontSize: 8, color: '#64748b', marginTop: 3, whiteSpace: 'nowrap' }}>
+      {label}
+    </div>
+  );
+}
+
 // ─── SVG bracket line ─────────────────────────────────────────────────────────
 function BracketArm({ x1, y1a, y1b, x2, y2, color = 'rgba(100,116,139,0.5)', xMid }) {
   const mx = xMid ?? (x1 + (x2 - x1) / 2);
@@ -278,20 +301,23 @@ function TeamRow({ team, score, won, isFinished, dimmed }) {
   );
 }
 
-function MatchCard({ homeTeam, awayTeam, homeScore, awayScore, isFinished, width = CW }) {
+function MatchCard({ homeTeam, awayTeam, homeScore, awayScore, isFinished, matchDate, width = CW }) {
   const homeWon = isFinished && homeScore > awayScore;
   const awayWon = isFinished && awayScore > homeScore;
   return (
-    <div style={{
-      width, height: CH,
-      background: 'rgba(10,18,35,0.92)',
-      border: '1px solid rgba(255,255,255,0.09)',
-      borderRadius: 6, overflow:'hidden',
-      display:'flex', flexDirection:'column', justifyContent:'center',
-    }}>
-      <TeamRow team={homeTeam} score={homeScore} won={homeWon} isFinished={isFinished} dimmed={awayWon} />
-      <div style={{ height:1, background:'rgba(255,255,255,0.06)', margin:'0 6px' }} />
-      <TeamRow team={awayTeam} score={awayScore} won={awayWon} isFinished={isFinished} dimmed={homeWon} />
+    <div style={{ width }}>
+      <div style={{
+        height: CH,
+        background: 'rgba(10,18,35,0.92)',
+        border: '1px solid rgba(255,255,255,0.09)',
+        borderRadius: 6, overflow:'hidden',
+        display:'flex', flexDirection:'column', justifyContent:'center',
+      }}>
+        <TeamRow team={homeTeam} score={homeScore} won={homeWon} isFinished={isFinished} dimmed={awayWon} />
+        <div style={{ height:1, background:'rgba(255,255,255,0.06)', margin:'0 6px' }} />
+        <TeamRow team={awayTeam} score={awayScore} won={awayWon} isFinished={isFinished} dimmed={homeWon} />
+      </div>
+      <MatchDateLabel matchDate={matchDate} />
     </div>
   );
 }
@@ -495,7 +521,7 @@ export default function KnockoutBracket() {
         }
       }
 
-      return { homeTeam: displayHome, awayTeam: displayAway, homeScore, awayScore, isFinished };
+      return { homeTeam: displayHome, awayTeam: displayAway, homeScore, awayScore, isFinished, matchDate: dbMatch?.match_date || null };
     };
 
     const leftR32  = LEFT_R32.map(s  => ({ ...s, ...resolveOne(s) }));
@@ -690,16 +716,20 @@ export default function KnockoutBracket() {
                 <div style={{ height:1, background:'rgba(245,197,24,0.2)', margin:'0 6px' }} />
                 <TeamRow team={resolved.final.awayTeam} score={resolved.final.awayScore} won={resolved.final.isFinished && resolved.final.awayScore > resolved.final.homeScore} isFinished={resolved.final.isFinished} />
               </div>
+              <MatchDateLabel matchDate={resolved.final.matchDate} />
               </div>
             )}
 
             {/* THIRD PLACE */}
             {abs(FINAL_X, THIRD_Y, FINAL_CW,
-              <div style={{ height:CH, background:'rgba(148,163,184,0.06)', border:'1px solid rgba(148,163,184,0.15)', borderRadius:8, overflow:'hidden', display:'flex', flexDirection:'column', justifyContent:'center' }}>
-                <div style={{ textAlign:'center', fontSize:8, color:'#64748b', fontWeight:700, letterSpacing:1, paddingTop:2 }}>מקום 3</div>
-                <TeamRow team={resolved.third.homeTeam} score={resolved.third.homeScore} won={false} isFinished={resolved.third.isFinished} />
-                <div style={{ height:1, background:'rgba(148,163,184,0.1)', margin:'0 6px' }} />
-                <TeamRow team={resolved.third.awayTeam} score={resolved.third.awayScore} won={false} isFinished={resolved.third.isFinished} />
+              <div>
+                <div style={{ height:CH, background:'rgba(148,163,184,0.06)', border:'1px solid rgba(148,163,184,0.15)', borderRadius:8, overflow:'hidden', display:'flex', flexDirection:'column', justifyContent:'center' }}>
+                  <div style={{ textAlign:'center', fontSize:8, color:'#64748b', fontWeight:700, letterSpacing:1, paddingTop:2 }}>מקום 3</div>
+                  <TeamRow team={resolved.third.homeTeam} score={resolved.third.homeScore} won={false} isFinished={resolved.third.isFinished} />
+                  <div style={{ height:1, background:'rgba(148,163,184,0.1)', margin:'0 6px' }} />
+                  <TeamRow team={resolved.third.awayTeam} score={resolved.third.awayScore} won={false} isFinished={resolved.third.isFinished} />
+                </div>
+                <MatchDateLabel matchDate={resolved.third.matchDate} />
               </div>
             )}
 
@@ -733,7 +763,7 @@ export default function KnockoutBracket() {
               { x: LQF_X,  label: 'רבע גמר' },
               { x: LSF_X,  label: 'חצי גמר' },
             ].map(({ x, label }) => (
-              <div key={x} style={{ position:'absolute', left:x, top: TOTAL_H + 4, width:CW, textAlign:'center', fontSize:8, color:'#475569', fontWeight:600 }}>
+              <div key={x} style={{ position:'absolute', left:x, top: ROUND_LBL_Y, width:CW, textAlign:'center', fontSize:8, color:'#475569', fontWeight:600 }}>
                 {label}
               </div>
             ))}
@@ -743,7 +773,7 @@ export default function KnockoutBracket() {
               { x: RR16_X, label: 'שמינית גמר' },
               { x: RR32_X, label: 'שמינית 32' },
             ].map(({ x, label }) => (
-              <div key={x} style={{ position:'absolute', left:x, top: TOTAL_H + 4, width:CW, textAlign:'center', fontSize:8, color:'#475569', fontWeight:600 }}>
+              <div key={x} style={{ position:'absolute', left:x, top: ROUND_LBL_Y, width:CW, textAlign:'center', fontSize:8, color:'#475569', fontWeight:600 }}>
                 {label}
               </div>
             ))}
