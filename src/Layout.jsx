@@ -204,18 +204,10 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
           overflow: 'hidden',
         }}
       >
-        <div style={{ perspective: 1000 }}>
-          <motion.div
-            initial={{ rotateY: -85, opacity: 0 }}
-            animate={{
-              rotateY: 0, opacity: 1,
-              transition: {
-                rotateY: { duration: 1.1, ease: 'easeOut' },
-                opacity: { duration: 0.35, ease: 'easeOut' },
-              },
-            }}
-            style={{ transformStyle: 'preserve-3d', backfaceVisibility: 'hidden' }}
-          >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.94 }}
+          animate={{ opacity: 1, scale: 1, transition: { duration: 0.4, ease: 'easeOut' } }}
+        >
             <div className="px-6 py-6 flex flex-col items-center gap-4">
               <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)' }}>
                 <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
@@ -236,13 +228,13 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
                     </div>
                     <div style={{ width: 34, height: 50, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
                       <div style={{ transform: 'scale(0.8)', transformOrigin: 'top left', width: 42, height: 64 }}>
-                        <OdometerDigit target={homeScore} delayMs={1300} />
+                        <OdometerDigit target={homeScore} delayMs={500} />
                       </div>
                     </div>
                     <span style={{ color: '#475569', fontSize: 34, fontWeight: 900 }}>-</span>
                     <div style={{ width: 34, height: 50, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
                       <div style={{ transform: 'scale(0.8)', transformOrigin: 'top left', width: 42, height: 64 }}>
-                        <OdometerDigit target={awayScore} delayMs={1600} />
+                        <OdometerDigit target={awayScore} delayMs={800} />
                       </div>
                     </div>
                     <div className="relative flex flex-col items-center">
@@ -264,8 +256,7 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
                 <span className="text-slate-400 text-xs">+{liveMatchCount - 1} משחקים נוספים</span>
               )}
             </div>
-          </motion.div>
-        </div>
+        </motion.div>
       </div>
     </motion.div>
   );
