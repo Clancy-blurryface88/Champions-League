@@ -59,29 +59,28 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
   const progress = useProgressReveal(target);
 
   return (
-    <div style={{ perspective: 900 }}>
-      <div
+    <div style={{ perspective: 1000 }}>
+      <motion.div
+        initial={{ rotateY: -110, opacity: 0 }}
+        animate={{ rotateY: 0, opacity: 1 }}
+        exit={{ rotateY: 110, opacity: 0 }}
+        transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
         style={{
+          transformStyle: 'preserve-3d',
+          backfaceVisibility: 'hidden',
           padding: 2.5,
           borderRadius: 20,
           background: `conic-gradient(from 180deg, #ef4444 ${progress * 360}deg, rgba(255,255,255,0.08) ${progress * 360}deg 360deg)`,
           boxShadow: '0 0 30px rgba(239,68,68,0.2)',
         }}
       >
-        <motion.div
-          layoutId="live-chip"
-          initial={{ rotateY: 90, opacity: 0 }}
-          animate={{ rotateY: 0, opacity: 1 }}
-          exit={{ opacity: 0 }}
+        <div
           className="rounded-2xl"
           style={{
-            transformStyle: 'preserve-3d',
-            overflow: 'visible',
             background: 'rgba(8,18,32,0.95)',
             backdropFilter: 'blur(28px)',
             boxShadow: '0 0 60px rgba(239,68,68,0.18), 0 20px 60px rgba(0,0,0,0.7)',
           }}
-          transition={{ type: 'spring', stiffness: 180, damping: 26 }}
         >
           <div className="px-10 py-8 flex flex-col items-center gap-5">
             <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)' }}>
@@ -122,8 +121,8 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
               <span className="text-slate-400 text-xs">+{liveMatchCount - 1} משחקים נוספים</span>
             )}
           </div>
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
     </div>
   );
 }
