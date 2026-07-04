@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, Hourglass, Radio, Volleyball, Box } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, Hourglass, Radio, Volleyball, Box, Clock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
@@ -21,6 +21,7 @@ import AdminNextMatchDesignsDemo from "../components/admin/AdminNextMatchDesigns
 import AdminLiveMatchDesignsDemo from "../components/admin/AdminLiveMatchDesignsDemo";
 import AdminMatchBadgeDesignsDemo from "../components/admin/AdminMatchBadgeDesignsDemo";
 import AdminMatchBadgeDesignsDemo2 from "../components/admin/AdminMatchBadgeDesignsDemo2";
+import AdminMinuteMarkerDemo from "../components/admin/AdminMinuteMarkerDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -84,6 +85,7 @@ export default function Admin() {
       case 'live-match-designs': return <AdminLiveMatchDesignsDemo />;
       case 'match-badge-designs': return <AdminMatchBadgeDesignsDemo />;
       case 'match-badge-designs-2': return <AdminMatchBadgeDesignsDemo2 />;
+      case 'minute-marker-demo': return <AdminMinuteMarkerDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -103,6 +105,7 @@ export default function Admin() {
     { id: 'live-match-designs', label: '🔴 עיצובי משחק חי', icon: Radio },
     { id: 'match-badge-designs', label: '🏟️ עיצובי כפתור משחקי היום', icon: Volleyball },
     { id: 'match-badge-designs-2', label: '🎲 כפתור משחקים - סבב 2', icon: Box },
+    { id: 'minute-marker-demo', label: '⏰ סמן דקה על הטבעת', icon: Clock },
   ];
 
   return (
