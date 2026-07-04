@@ -61,13 +61,22 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
   return (
     <div style={{ perspective: 1000 }}>
       <motion.div
-        initial={{ rotateY: -110, opacity: 0 }}
-        animate={{ rotateY: 0, opacity: 1 }}
-        exit={{ rotateY: 110, opacity: 0 }}
-        transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+        initial={{ rotateY: -85, opacity: 0 }}
+        animate={{
+          rotateY: 0, opacity: 1, scale: 1, x: 0, y: 0,
+          transition: {
+            rotateY: { duration: 1.1, ease: 'easeOut' },
+            opacity: { duration: 0.35, ease: 'easeOut' },
+          },
+        }}
+        exit={{
+          rotateY: 70, scale: 0.15, x: '38vw', y: '-42vh', opacity: 0,
+          transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] },
+        }}
         style={{
           transformStyle: 'preserve-3d',
           backfaceVisibility: 'hidden',
+          willChange: 'transform, opacity',
           padding: 2.5,
           borderRadius: 20,
           background: `conic-gradient(from 180deg, #ef4444 ${progress * 360}deg, rgba(255,255,255,0.08) ${progress * 360}deg 360deg)`,
