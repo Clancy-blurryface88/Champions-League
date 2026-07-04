@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, Hourglass, Radio } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, Hourglass, Radio, Volleyball } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
@@ -19,6 +19,7 @@ import AdminReset from "../components/admin/AdminReset";
 import AdminGroupOverride from "../components/admin/AdminGroupOverride";
 import AdminNextMatchDesignsDemo from "../components/admin/AdminNextMatchDesignsDemo";
 import AdminLiveMatchDesignsDemo from "../components/admin/AdminLiveMatchDesignsDemo";
+import AdminMatchBadgeDesignsDemo from "../components/admin/AdminMatchBadgeDesignsDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -80,6 +81,7 @@ export default function Admin() {
       case 'group-override': return <AdminGroupOverride />;
       case 'next-match-designs': return <AdminNextMatchDesignsDemo />;
       case 'live-match-designs': return <AdminLiveMatchDesignsDemo />;
+      case 'match-badge-designs': return <AdminMatchBadgeDesignsDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -97,6 +99,7 @@ export default function Admin() {
     { id: 'group-override',   label: '🔀 סידור בתים',          icon: BarChart3 },
     { id: 'next-match-designs', label: '⏳ עיצובי משחק הבא', icon: Hourglass },
     { id: 'live-match-designs', label: '🔴 עיצובי משחק חי', icon: Radio },
+    { id: 'match-badge-designs', label: '🏟️ עיצובי כפתור משחקי היום', icon: Volleyball },
   ];
 
   return (
