@@ -35,6 +35,10 @@ import TeamFlag from "./components/TeamFlag";
 // genuinely has no minute for this match. Eases in from 0 on first mount.
 function useLiveMinuteProgress(liveMatch) {
   const [progress, setProgress] = useState(0);
+  // Increments each time the ring finishes "catching up" to the real minute
+  // (first mount, or after re-anchoring on a fresh poll) — lets the UI flash
+  // the minute number right as the ring settles into place.
+  const [settledTick, setSettledTick] = useState(0);
   const startedRef = useRef(false);
 
   useEffect(() => {
@@ -61,17 +65,21 @@ function useLiveMinuteProgress(liveMatch) {
         const eased = 1 - Math.pow(1 - p, 3);
         setProgress(target * eased);
         if (p < 1) raf = requestAnimationFrame(tick);
-        else beginLiveTicking();
+        else {
+          beginLiveTicking();
+          setSettledTick((t) => t + 1);
+        }
       };
       raf = requestAnimationFrame(tick);
     } else {
       beginLiveTicking();
+      setSettledTick((t) => t + 1);
     }
 
     return () => { if (raf) cancelAnimationFrame(raf); if (iv) clearInterval(iv); };
   }, [liveMatch]);
 
-  return progress;
+  return { progress, settledTick };
 }
 
 // The live-match intro card: sized/margined like the Next Match card (never
@@ -81,7 +89,7 @@ function useLiveMinuteProgress(liveMatch) {
 // — sharing it with the small corner LIVE chip made framer-motion interpolate
 // their very different border-radii and left the chip looking squared-off.
 function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCount }) {
-  const progress = useLiveMinuteProgress(liveMatch);
+  const { progress, settledTick } = useLiveMinuteProgress(liveMatch);
   const minute = liveMatch ? Math.floor(progress * 90) : null;
   const homeScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.home ?? 0) || 0, 0), 9);
   const awayScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.away ?? 0) || 0, 0), 9);
@@ -131,7 +139,19 @@ function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCo
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
                 </span>
                 <span className="text-red-400 text-xs font-bold tracking-widest uppercase">Live</span>
-                {minute != null && <span className="text-white/50 text-xs font-bold">· {minute}'</span>}
+                {minute != null && (
+                  <motion.span
+                    key={settledTick}
+                    animate={settledTick > 0
+                      ? { opacity: [1, 0.15, 1, 0.15, 1], color: ['rgba(255,255,255,0.5)', '#FFD700', 'rgba(255,255,255,0.5)', '#FFD700', 'rgba(255,255,255,0.5)'] }
+                      : { opacity: 1 }}
+                    transition={{ duration: 0.9 }}
+                    className="text-xs font-bold"
+                    style={{ color: 'rgba(255,255,255,0.5)' }}
+                  >
+                    · {minute}'
+                  </motion.span>
+                )}
               </div>
               {liveMatch && (
                 <div className="flex flex-col items-center gap-1">
