@@ -26,6 +26,64 @@ import { OdometerDigit } from "./components/OdometerScore";
 import MatchCountdown from "./components/MatchCountdown";
 import TeamFlag from "./components/TeamFlag";
 
+// Measures a ref'd element's rendered box size, updating on resize (the live
+// card's width is responsive — min(370px, 92vw) — so the ring's actual
+// dimensions aren't known ahead of render).
+function useElementSize(ref) {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => setSize({ width: el.offsetWidth, height: el.offsetHeight });
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [ref]);
+  return size;
+}
+
+// Where a ray from the box's center at `angleDeg` (0° = top, clockwise —
+// matching CSS conic-gradient's own angle convention) exits a rounded
+// rectangle of the given half-width/half-height/corner-radius. This is what
+// lets the minute chip ride exactly on the ring's visual edge instead of
+// tracing a plain circle that doesn't match the card's actual rounded-rect
+// shape.
+function roundedRectEdgePoint(angleDeg, halfW, halfH, r) {
+  const rad = (angleDeg * Math.PI) / 180;
+  const dx = Math.sin(rad);
+  const dy = -Math.cos(rad);
+  if (halfW <= 0 || halfH <= 0) return { x: 0, y: 0 };
+  const rr = Math.min(r, halfW, halfH);
+
+  if (Math.abs(dx) < 1e-6) return { x: 0, y: dy > 0 ? halfH : -halfH };
+  if (Math.abs(dy) < 1e-6) return { x: dx > 0 ? halfW : -halfW, y: 0 };
+
+  const signX = dx > 0 ? 1 : -1;
+  const signY = dy > 0 ? 1 : -1;
+
+  // Straight vertical edge (x = ±halfW)
+  {
+    const t = (signX * halfW) / dx;
+    const y = dy * t;
+    if (Math.abs(y) <= halfH - rr) return { x: signX * halfW, y };
+  }
+  // Straight horizontal edge (y = ±halfH)
+  {
+    const t = (signY * halfH) / dy;
+    const x = dx * t;
+    if (Math.abs(x) <= halfW - rr) return { x, y: signY * halfH };
+  }
+  // Rounded corner — nearest circle centered at (±(halfW-rr), ±(halfH-rr))
+  const cx = signX * (halfW - rr);
+  const cy = signY * (halfH - rr);
+  const B = -2 * (dx * cx + dy * cy);
+  const C = cx * cx + cy * cy - rr * rr;
+  const disc = Math.max(B * B - 4 * C, 0);
+  const t = (-B + Math.sqrt(disc)) / 2;
+  return { x: dx * t, y: dy * t };
+}
+
 // Real, continuously-live match progress (0→1 over a 90-minute match).
 // Anchors to the API's own `minute` whenever it provides one (accounts for
 // stoppage time, delayed kickoffs, etc. — far more accurate than assuming
@@ -94,8 +152,14 @@ function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCo
   const homeScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.home ?? 0) || 0, 0), 9);
   const awayScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.away ?? 0) || 0, 0), 9);
 
+  const RING_RADIUS = 20;
+  const ringRef = useRef(null);
+  const ringSize = useElementSize(ringRef);
+  const marker = roundedRectEdgePoint(progress * 360, ringSize.width / 2, ringSize.height / 2, RING_RADIUS);
+
   return (
     <motion.div
+      ref={ringRef}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: 0.3 } }}
       exit={{
@@ -104,13 +168,33 @@ function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCo
       }}
       className="rounded-2xl"
       style={{
+        position: 'relative',
         padding: 2.5,
-        borderRadius: 20,
+        borderRadius: RING_RADIUS,
         maxWidth: 'min(370px, 92vw)',
         background: `conic-gradient(from 0deg, #ef4444 ${progress * 360}deg, rgba(255,255,255,0.08) ${progress * 360}deg 360deg)`,
         boxShadow: '0 0 30px rgba(239,68,68,0.2)',
       }}
     >
+      {minute != null && ringSize.width > 0 && (
+        <motion.div
+          key={settledTick}
+          animate={settledTick > 0 ? { scale: [1, 1.5, 1] } : { scale: 1 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          style={{
+            position: 'absolute',
+            left: ringSize.width / 2 + marker.x,
+            top: ringSize.height / 2 + marker.y,
+            transform: 'translate(-50%, -50%)',
+            background: '#FFD700', color: '#000', fontWeight: 900, fontSize: 11,
+            borderRadius: 999, padding: '2px 7px', whiteSpace: 'nowrap',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.5), 0 0 0 2px #030d1a',
+            zIndex: 5,
+          }}
+        >
+          {minute}'
+        </motion.div>
+      )}
       <div
         className="rounded-2xl"
         style={{
@@ -139,19 +223,6 @@ function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCo
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
                 </span>
                 <span className="text-red-400 text-xs font-bold tracking-widest uppercase">Live</span>
-                {minute != null && (
-                  <motion.span
-                    key={settledTick}
-                    animate={settledTick > 0
-                      ? { opacity: [1, 0.15, 1, 0.15, 1], color: ['rgba(255,255,255,0.5)', '#FFD700', 'rgba(255,255,255,0.5)', '#FFD700', 'rgba(255,255,255,0.5)'] }
-                      : { opacity: 1 }}
-                    transition={{ duration: 0.9 }}
-                    className="text-xs font-bold"
-                    style={{ color: 'rgba(255,255,255,0.5)' }}
-                  >
-                    · {minute}'
-                  </motion.span>
-                )}
               </div>
               {liveMatch && (
                 <div className="flex flex-col items-center gap-1">
