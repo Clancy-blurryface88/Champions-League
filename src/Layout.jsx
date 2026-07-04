@@ -151,6 +151,11 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
   const minute = liveMatch ? Math.floor(progress * 90) : null;
   const homeScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.home ?? 0) || 0, 0), 9);
   const awayScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.away ?? 0) || 0, 0), 9);
+  // Hold the digits at 0 until the ring finishes its reveal — the roll to the
+  // real score then plays right as/after the minute settles into place,
+  // instead of racing ahead on its own fixed timer.
+  const displayHomeScore = settledTick > 0 ? homeScore : 0;
+  const displayAwayScore = settledTick > 0 ? awayScore : 0;
 
   const RING_RADIUS = 20;
   const ringRef = useRef(null);
@@ -228,13 +233,13 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
                     </div>
                     <div style={{ width: 34, height: 50, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
                       <div style={{ transform: 'scale(0.8)', transformOrigin: 'top left', width: 42, height: 64 }}>
-                        <OdometerDigit target={homeScore} delayMs={500} />
+                        <OdometerDigit target={displayHomeScore} delayMs={150} />
                       </div>
                     </div>
                     <span style={{ color: '#475569', fontSize: 34, fontWeight: 900 }}>-</span>
                     <div style={{ width: 34, height: 50, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
                       <div style={{ transform: 'scale(0.8)', transformOrigin: 'top left', width: 42, height: 64 }}>
-                        <OdometerDigit target={awayScore} delayMs={800} />
+                        <OdometerDigit target={displayAwayScore} delayMs={400} />
                       </div>
                     </div>
                     <div className="relative flex flex-col items-center">
