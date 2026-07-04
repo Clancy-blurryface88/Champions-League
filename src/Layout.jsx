@@ -57,7 +57,7 @@ function useProgressReveal(target, duration = 1200) {
 // (out of 90), with its content flipping in on a 3D Y-axis. No layoutId here
 // — sharing it with the small corner LIVE chip made framer-motion interpolate
 // their very different border-radii and left the chip looking squared-off.
-function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
+function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCount }) {
   const minute = liveMatch?.minute ?? null;
   const target = minute != null ? Math.min(minute / 90, 1) : 0;
   const progress = useProgressReveal(target);
@@ -111,12 +111,12 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
                 <div className="flex flex-col items-center gap-3">
                   <div className="flex items-center gap-6" dir="ltr">
                     <div className="flex flex-col items-center gap-1.5 w-16">
-                      {liveMatch.homeTeam?.crest && <img src={liveMatch.homeTeam.crest} className="w-14 h-14 object-contain drop-shadow-lg" alt="" />}
+                      <TeamFlag logo={liveDbMatch?.team_a_logo || liveMatch.homeTeam?.crest} name={liveMatch.homeTeam?.name} className="w-14 h-14" animate={false} />
                       <span className="text-slate-400 text-[11px]">{liveMatch.homeTeam?.tla}</span>
                     </div>
                     <span className="text-slate-500 font-bold text-sm">VS</span>
                     <div className="flex flex-col items-center gap-1.5 w-16">
-                      {liveMatch.awayTeam?.crest && <img src={liveMatch.awayTeam.crest} className="w-14 h-14 object-contain drop-shadow-lg" alt="" />}
+                      <TeamFlag logo={liveDbMatch?.team_b_logo || liveMatch.awayTeam?.crest} name={liveMatch.awayTeam?.name} className="w-14 h-14" animate={false} />
                       <span className="text-slate-400 text-[11px]">{liveMatch.awayTeam?.tla}</span>
                     </div>
                   </div>
@@ -162,6 +162,7 @@ export default function Layout({ children, currentPageName }) {
   const [showLiveIntro, setShowLiveIntro] = useState(false);
   const [liveUserPrediction, setLiveUserPrediction] = useState(null);
   const [livePredictionLoading, setLivePredictionLoading] = useState(false);
+  const [liveDbMatch, setLiveDbMatch] = useState(null);
   const [liveCheckDone, setLiveCheckDone] = useState(false);
   const [nextMatch, setNextMatch] = useState(null);
   const [nextMatchChecked, setNextMatchChecked] = useState(false);
@@ -473,10 +474,11 @@ export default function Layout({ children, currentPageName }) {
 
   // Fetch user prediction for the live match
   useEffect(() => {
-    if (!liveMatch || !user?.id) { setLivePredictionLoading(false); return; }
+    if (!liveMatch || !user?.id) { setLivePredictionLoading(false); setLiveDbMatch(null); return; }
     let cancelled = false;
     setLivePredictionLoading(true);
     setLiveUserPrediction(null);
+    setLiveDbMatch(null);
     const fetchLivePrediction = async () => {
       try {
         const allMatches = await Match.list();
@@ -490,6 +492,7 @@ export default function Layout({ children, currentPageName }) {
           return homeMatch && awayMatch;
         });
         if (supabaseMatch) {
+          if (!cancelled) setLiveDbMatch(supabaseMatch);
           const preds = await Prediction.filter({ match_id: supabaseMatch.id, user_id: user.id });
           if (preds.length > 0 && !cancelled) setLiveUserPrediction(preds[0]);
         }
@@ -1129,6 +1132,7 @@ export default function Layout({ children, currentPageName }) {
               <div className="fixed inset-0 z-[56] flex items-center justify-center pointer-events-none">
                 <LiveMatchCard
                   liveMatch={liveMatch}
+                  liveDbMatch={liveDbMatch}
                   liveUserPrediction={liveUserPrediction}
                   liveMatchCount={liveMatchCount}
                 />
