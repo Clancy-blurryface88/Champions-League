@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MatchOddsBar from './MatchOddsBar';
 import CrowdWisdomStats from './CrowdWisdomStats';
+import TeamFlag from '@/components/TeamFlag';
 
 function getTeamForm(allMatches, teamName) {
   const played = allMatches
@@ -83,6 +84,34 @@ function FormDots({ form }) {
   );
 }
 
+function AvgGoals({ scored, conceded }) {
+  if (scored == null) return null;
+  return (
+    <span className="text-[10px] font-medium flex items-center flex-shrink-0">
+      <span>⚽</span>
+      <span style={{
+        background: 'linear-gradient(135deg, #bbf7d0, #4ade80)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        marginLeft: 2,
+      }}>{scored}</span>
+      <span className="text-slate-600 mx-1">/</span>
+      <span style={{ color: '#f87171' }}>✕ {conceded}</span>
+    </span>
+  );
+}
+
+function TeamFormRow({ logo, name, form, avgGoals, avgConceded }) {
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <TeamFlag logo={logo} name={name} className="w-6 h-6" animate={false} rounded="sm" />
+      <FormDots form={form} />
+      <AvgGoals scored={avgGoals} conceded={avgConceded} />
+    </div>
+  );
+}
+
 export default function MatchArenaSection({ match, isLocked, allMatches, loading }) {
   const formA = useMemo(() => getTeamForm(allMatches, match.team_a), [allMatches, match.team_a]);
   const formB = useMemo(() => getTeamForm(allMatches, match.team_b), [allMatches, match.team_b]);
@@ -114,45 +143,25 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
-            className="flex items-start justify-between gap-2 px-0.5"
+            className="flex flex-col gap-2.5 px-0.5"
           >
-            {/* Team A form */}
-            <div className="flex flex-col items-start gap-1">
-              <FormDots form={formA.last5} />
-              {formA.avgGoals != null && (
-                <span className="text-[10px] font-medium flex items-center">
-                  <span>⚽</span>
-                  <span style={{
-                    background: 'linear-gradient(135deg, #bbf7d0, #4ade80)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    marginLeft: 2,
-                  }}>{formA.avgGoals}</span>
-                  <span className="text-slate-600 mx-1">/</span>
-                  <span style={{ color: '#f87171' }}>✕ {formA.avgConceded}</span>
-                </span>
-              )}
-            </div>
+            {/* Home team form */}
+            <TeamFormRow
+              logo={match.team_a_logo}
+              name={match.team_a}
+              form={formA.last5}
+              avgGoals={formA.avgGoals}
+              avgConceded={formA.avgConceded}
+            />
 
-{/* Team B form */}
-            <div className="flex flex-col items-end gap-1">
-              <FormDots form={formB.last5} />
-              {formB.avgGoals != null && (
-                <span className="text-[10px] font-medium flex items-center">
-                  <span>⚽</span>
-                  <span style={{
-                    background: 'linear-gradient(135deg, #bbf7d0, #4ade80)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    marginLeft: 2,
-                  }}>{formB.avgGoals}</span>
-                  <span className="text-slate-600 mx-1">/</span>
-                  <span style={{ color: '#f87171' }}>✕ {formB.avgConceded}</span>
-                </span>
-              )}
-            </div>
+            {/* Away team form */}
+            <TeamFormRow
+              logo={match.team_b_logo}
+              name={match.team_b}
+              form={formB.last5}
+              avgGoals={formB.avgGoals}
+              avgConceded={formB.avgConceded}
+            />
           </motion.div>
         ) : null}
 
