@@ -65,9 +65,11 @@ function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCo
   return (
     <motion.div
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0, scale: 0.85 }}
-      transition={{ duration: 0.3 }}
+      animate={{ opacity: 1, transition: { duration: 0.3 } }}
+      exit={{
+        scale: 0.15, x: '38vw', y: '-42vh', opacity: 0,
+        transition: { duration: 0.55, ease: [0.4, 0, 0.2, 1] },
+      }}
       className="rounded-2xl"
       style={{
         padding: 2.5,
@@ -125,11 +127,13 @@ function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCo
                     away={liveMatch.score?.fullTime?.away ?? 0}
                   />
                   {liveUserPrediction && (
-                    <div className="flex flex-col items-center gap-1 mt-1">
+                    <div className="flex flex-col items-center gap-1.5 mt-1">
                       <span className="text-slate-400 text-xs">הניחוש שלי</span>
-                      <span className="text-amber-400 text-sm font-bold">
-                        ({liveUserPrediction.predicted_score_a} - {liveUserPrediction.predicted_score_b})
-                      </span>
+                      <div className="flex items-center gap-6" dir="ltr">
+                        <span className="w-16 text-center text-amber-400 text-sm font-bold">{liveUserPrediction.predicted_score_a}</span>
+                        <span className="text-slate-500 font-bold text-sm">-</span>
+                        <span className="w-16 text-center text-amber-400 text-sm font-bold">{liveUserPrediction.predicted_score_b}</span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -426,6 +430,12 @@ export default function Layout({ children, currentPageName }) {
         const res = await fetch(`/api/football?competition=WC&filter=LIVE&dateFrom=${prevLocalDate}&dateTo=${localDate}`);
         const json = await res.json();
         const live = (json.matches || []).filter(m => m.status === 'IN_PLAY' || m.status === 'PAUSED');
+        // Flip prediction-loading on in the same batch as hasLiveMatch, so the
+        // "show the overlay" trigger effect never sees hasLiveMatch=true paired
+        // with a stale livePredictionLoading=false from before the fetch effect
+        // below even started — otherwise the card could flash in without its
+        // prediction row and have it pop in a moment later.
+        if (live.length > 0) setLivePredictionLoading(true);
         setHasLiveMatch(live.length > 0);
         setLiveMatch(live[0] || null);
         setLiveMatchCount(live.length);
@@ -446,6 +456,7 @@ export default function Layout({ children, currentPageName }) {
   // check is still in flight.
   useEffect(() => {
     if (authLoading || !liveCheckDone || !nextMatchChecked) return;
+    if (hasLiveMatch && livePredictionLoading) return; // wait so the card appears complete, prediction included
     if (sessionStorage.getItem('match_intro_shown')) return;
     sessionStorage.setItem('match_intro_shown', '1');
     if (hasLiveMatch) {
@@ -453,7 +464,7 @@ export default function Layout({ children, currentPageName }) {
     } else if (nextMatch) {
       setShowNextMatchIntro(true);
     }
-  }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch]);
+  }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading]);
 
   // Auto-dismiss the next-match intro after a generous viewing window.
   useEffect(() => {

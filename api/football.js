@@ -83,11 +83,15 @@ export default async function handler(req, res) {
           return m.status === 'IN_PLAY' || m.status === 'PAUSED' || (!isDone && hasStarted && likelyPlaying);
         })
         .map(m => {
+          // football-data.org doesn't reliably expose a live "minute" field even
+          // when it correctly flags a match IN_PLAY/PAUSED, so always compute a
+          // sensible one ourselves from kickoff time — otherwise the minute-based
+          // progress ring in the UI never has anything to show.
+          const elapsed = Math.max(0, Math.floor((now - new Date(m.utcDate)) / 60000));
           if (m.status !== 'IN_PLAY' && m.status !== 'PAUSED') {
-            const elapsed = Math.floor((new Date() - new Date(m.utcDate)) / 60000);
             return { ...m, status: 'IN_PLAY', minute: elapsed };
           }
-          return m;
+          return { ...m, minute: m.minute ?? elapsed };
         });
     } else if (filter === 'FINISHED') {
       matches = matches.filter(m => m.status === 'FINISHED');
