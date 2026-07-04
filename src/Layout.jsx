@@ -26,19 +26,24 @@ import { OdometerDigit } from "./components/OdometerScore";
 import MatchCountdown from "./components/MatchCountdown";
 import TeamFlag from "./components/TeamFlag";
 
-// Real, continuously-live match progress (0→1 over a 90-minute match),
-// computed from actual elapsed wall-clock time since kickoff — not from the
-// 60s-interval poll's `minute` field, so it ticks forward every second
-// instead of jumping in big steps. Eases in from 0 the first time it mounts,
-// then updates live every second from then on.
-function useLiveMinuteProgress(utcDate) {
+// Real, continuously-live match progress (0→1 over a 90-minute match).
+// Anchors to the API's own `minute` whenever it provides one (accounts for
+// stoppage time, delayed kickoffs, etc. — far more accurate than assuming
+// elapsed-since-scheduled-kickoff), then extrapolates smoothly every second
+// between polls, re-anchoring (self-correcting) every time a fresh poll comes
+// in. Only falls back to a naive elapsed-since-kickoff estimate when the API
+// genuinely has no minute for this match. Eases in from 0 on first mount.
+function useLiveMinuteProgress(liveMatch) {
   const [progress, setProgress] = useState(0);
   const startedRef = useRef(false);
 
   useEffect(() => {
-    if (!utcDate) { setProgress(0); return; }
-    const kickoff = new Date(utcDate).getTime();
-    const compute = () => Math.max(0, Math.min((Date.now() - kickoff) / 60000 / 90, 1));
+    if (!liveMatch) { setProgress(0); return; }
+    const anchorAt = Date.now();
+    const anchorMinute = liveMatch.minute != null
+      ? liveMatch.minute
+      : (liveMatch.utcDate ? Math.max(0, (anchorAt - new Date(liveMatch.utcDate).getTime()) / 60000) : 0);
+    const compute = () => Math.max(0, Math.min((anchorMinute + (Date.now() - anchorAt) / 60000) / 90, 1));
 
     let raf, iv;
     const beginLiveTicking = () => {
@@ -64,7 +69,7 @@ function useLiveMinuteProgress(utcDate) {
     }
 
     return () => { if (raf) cancelAnimationFrame(raf); if (iv) clearInterval(iv); };
-  }, [utcDate]);
+  }, [liveMatch]);
 
   return progress;
 }
@@ -76,8 +81,8 @@ function useLiveMinuteProgress(utcDate) {
 // — sharing it with the small corner LIVE chip made framer-motion interpolate
 // their very different border-radii and left the chip looking squared-off.
 function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCount }) {
-  const progress = useLiveMinuteProgress(liveMatch?.utcDate);
-  const minute = liveMatch?.utcDate ? Math.floor(progress * 90) : (liveMatch?.minute ?? null);
+  const progress = useLiveMinuteProgress(liveMatch);
+  const minute = liveMatch ? Math.floor(progress * 90) : null;
   const homeScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.home ?? 0) || 0, 0), 9);
   const awayScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.away ?? 0) || 0, 0), 9);
 
