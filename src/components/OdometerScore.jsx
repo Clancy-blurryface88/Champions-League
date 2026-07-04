@@ -3,7 +3,7 @@ import { motion, useAnimation } from "framer-motion";
 
 const DIGIT_H = 64;
 
-function OdometerDigit({ target = 0, delayMs = 400 }) {
+export function OdometerDigit({ target = 0, delayMs = 400 }) {
   const controls = useAnimation();
   const mounted = useRef(false);
 

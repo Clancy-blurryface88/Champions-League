@@ -22,33 +22,51 @@ import AppBackground from "./components/AppBackground";
 import LiveDataPanel from "./components/LiveDataPanel"; // Added: Import LiveDataPanel
 import MatchTickerBar from "./components/MatchTickerBar";
 import YearlySummaryPanel from "./components/YearlySummaryPanel"; // NEW: YearlySummaryPanel
-import OdometerScore from "./components/OdometerScore";
+import { OdometerDigit } from "./components/OdometerScore";
 import MatchCountdown from "./components/MatchCountdown";
 import TeamFlag from "./components/TeamFlag";
 
-// Animates 0 → target with easing, and — on subsequent calls — smoothly
-// continues from wherever it last landed instead of restarting at 0.
-function useProgressReveal(target, duration = 1200) {
-  const [value, setValue] = useState(0);
-  const valueRef = useRef(0);
+// Real, continuously-live match progress (0→1 over a 90-minute match),
+// computed from actual elapsed wall-clock time since kickoff — not from the
+// 60s-interval poll's `minute` field, so it ticks forward every second
+// instead of jumping in big steps. Eases in from 0 the first time it mounts,
+// then updates live every second from then on.
+function useLiveMinuteProgress(utcDate) {
+  const [progress, setProgress] = useState(0);
+  const startedRef = useRef(false);
+
   useEffect(() => {
-    const from = valueRef.current;
-    let raf;
-    let cancelled = false;
-    const start = performance.now();
-    const tick = (now) => {
-      if (cancelled) return;
-      const p = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - p, 3);
-      const v = from + (target - from) * eased;
-      valueRef.current = v;
-      setValue(v);
-      if (p < 1) raf = requestAnimationFrame(tick);
+    if (!utcDate) { setProgress(0); return; }
+    const kickoff = new Date(utcDate).getTime();
+    const compute = () => Math.max(0, Math.min((Date.now() - kickoff) / 60000 / 90, 1));
+
+    let raf, iv;
+    const beginLiveTicking = () => {
+      setProgress(compute());
+      iv = setInterval(() => setProgress(compute()), 1000);
     };
-    raf = requestAnimationFrame(tick);
-    return () => { cancelled = true; cancelAnimationFrame(raf); };
-  }, [target, duration]);
-  return value;
+
+    if (!startedRef.current) {
+      startedRef.current = true;
+      const target = compute();
+      const revealStart = performance.now();
+      const revealDuration = 900;
+      const tick = (now) => {
+        const p = Math.min((now - revealStart) / revealDuration, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        setProgress(target * eased);
+        if (p < 1) raf = requestAnimationFrame(tick);
+        else beginLiveTicking();
+      };
+      raf = requestAnimationFrame(tick);
+    } else {
+      beginLiveTicking();
+    }
+
+    return () => { if (raf) cancelAnimationFrame(raf); if (iv) clearInterval(iv); };
+  }, [utcDate]);
+
+  return progress;
 }
 
 // The live-match intro card: sized/margined like the Next Match card (never
@@ -58,9 +76,10 @@ function useProgressReveal(target, duration = 1200) {
 // — sharing it with the small corner LIVE chip made framer-motion interpolate
 // their very different border-radii and left the chip looking squared-off.
 function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCount }) {
-  const minute = liveMatch?.minute ?? null;
-  const target = minute != null ? Math.min(minute / 90, 1) : 0;
-  const progress = useProgressReveal(target);
+  const progress = useLiveMinuteProgress(liveMatch?.utcDate);
+  const minute = liveMatch?.utcDate ? Math.floor(progress * 90) : (liveMatch?.minute ?? null);
+  const homeScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.home ?? 0) || 0, 0), 9);
+  const awayScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.away ?? 0) || 0, 0), 9);
 
   return (
     <motion.div
@@ -110,7 +129,7 @@ function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCo
                 {minute != null && <span className="text-white/50 text-xs font-bold">· {minute}'</span>}
               </div>
               {liveMatch && (
-                <div className="flex flex-col items-center gap-3">
+                <div className="flex flex-col items-center gap-1">
                   <div className="flex items-center gap-6" dir="ltr">
                     <div className="flex flex-col items-center gap-1.5 w-16">
                       <TeamFlag logo={liveDbMatch?.team_a_logo || liveMatch.homeTeam?.crest} name={liveMatch.homeTeam?.name} className="w-14 h-14" animate={false} />
@@ -122,18 +141,18 @@ function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCo
                       <span className="text-slate-400 text-[11px]">{liveMatch.awayTeam?.tla}</span>
                     </div>
                   </div>
-                  <OdometerScore
-                    home={liveMatch.score?.fullTime?.home ?? 0}
-                    away={liveMatch.score?.fullTime?.away ?? 0}
-                  />
+                  {/* Score digits sit in the same w-16 columns as the flags above, so each digit lines up directly under its team */}
+                  <div className="flex items-center gap-6" dir="ltr" style={{ transform: 'scale(0.6)', transformOrigin: 'center', margin: '-14px 0' }}>
+                    <div className="w-16 flex justify-center"><OdometerDigit target={homeScore} delayMs={300} /></div>
+                    <span style={{ color: '#475569', fontSize: 50, fontWeight: 900 }}>-</span>
+                    <div className="w-16 flex justify-center"><OdometerDigit target={awayScore} delayMs={550} /></div>
+                  </div>
                   {liveUserPrediction && (
-                    <div className="flex flex-col items-center gap-1.5 mt-1">
+                    <div className="flex flex-col items-center gap-1 mt-2">
                       <span className="text-slate-400 text-xs">הניחוש שלי</span>
-                      <div className="flex items-center gap-6" dir="ltr">
-                        <span className="w-16 text-center text-amber-400 text-sm font-bold">{liveUserPrediction.predicted_score_a}</span>
-                        <span className="text-slate-500 font-bold text-sm">-</span>
-                        <span className="w-16 text-center text-amber-400 text-sm font-bold">{liveUserPrediction.predicted_score_b}</span>
-                      </div>
+                      <span className="text-amber-400 text-sm font-bold" dir="ltr">
+                        ({liveUserPrediction.predicted_score_a} - {liveUserPrediction.predicted_score_b})
+                      </span>
                     </div>
                   )}
                 </div>
