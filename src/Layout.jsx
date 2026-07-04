@@ -23,6 +23,8 @@ import LiveDataPanel from "./components/LiveDataPanel"; // Added: Import LiveDat
 import MatchTickerBar from "./components/MatchTickerBar";
 import YearlySummaryPanel from "./components/YearlySummaryPanel"; // NEW: YearlySummaryPanel
 import OdometerScore from "./components/OdometerScore";
+import MatchCountdown from "./components/MatchCountdown";
+import TeamFlag from "./components/TeamFlag";
 
 export default function Layout({ children, currentPageName }) {
   const [user, setUser] = useState(null);
@@ -41,6 +43,10 @@ export default function Layout({ children, currentPageName }) {
   const [showLiveIntro, setShowLiveIntro] = useState(false);
   const [liveUserPrediction, setLiveUserPrediction] = useState(null);
   const [livePredictionLoading, setLivePredictionLoading] = useState(false);
+  const [liveCheckDone, setLiveCheckDone] = useState(false);
+  const [nextMatch, setNextMatch] = useState(null);
+  const [nextMatchChecked, setNextMatchChecked] = useState(false);
+  const [showNextMatchIntro, setShowNextMatchIntro] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showYearlySummary, setShowYearlySummary] = useState(false); // NEW: State for YearlySummaryPanel
   const [showPushBanner, setShowPushBanner] = useState(false);
@@ -304,6 +310,8 @@ export default function Layout({ children, currentPageName }) {
         setLiveMatchCount(live.length);
       } catch {
         setHasLiveMatch(false);
+      } finally {
+        setLiveCheckDone(true);
       }
     };
     checkLive();
@@ -311,14 +319,27 @@ export default function Layout({ children, currentPageName }) {
     return () => clearInterval(iv);
   }, []);
 
-  // Show the live intro overlay only once the app's own loader has finished —
-  // otherwise its countdown burns down silently behind the loading screen.
+  // Show one intro overlay after the app's own loader has finished — live
+  // match takes priority; otherwise the next upcoming match, if any. Waiting
+  // for both checks to resolve avoids flashing the wrong one while the live
+  // check is still in flight.
   useEffect(() => {
-    if (authLoading || !hasLiveMatch) return;
-    if (sessionStorage.getItem('live_intro_shown')) return;
-    sessionStorage.setItem('live_intro_shown', '1');
-    setShowLiveIntro(true);
-  }, [authLoading, hasLiveMatch]);
+    if (authLoading || !liveCheckDone || !nextMatchChecked) return;
+    if (sessionStorage.getItem('match_intro_shown')) return;
+    sessionStorage.setItem('match_intro_shown', '1');
+    if (hasLiveMatch) {
+      setShowLiveIntro(true);
+    } else if (nextMatch) {
+      setShowNextMatchIntro(true);
+    }
+  }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch]);
+
+  // Auto-dismiss the next-match intro after a generous viewing window.
+  useEffect(() => {
+    if (!showNextMatchIntro) return;
+    const t = setTimeout(() => setShowNextMatchIntro(false), 8000);
+    return () => clearTimeout(t);
+  }, [showNextMatchIntro]);
 
   // Fetch user prediction for the live match
   useEffect(() => {
@@ -368,7 +389,7 @@ export default function Layout({ children, currentPageName }) {
     return () => clearTimeout(cap);
   }, [showLiveIntro]);
 
-  // Load today's match count for FAB badge
+  // Load today's match count for FAB badge + find the next upcoming match
   useEffect(() => {
     const todayKey = (() => {
       const d = new Date();
@@ -381,7 +402,13 @@ export default function Layout({ children, currentPageName }) {
         return k === todayKey;
       }).length;
       setTodayMatchCount(count);
-    }).catch(() => {});
+
+      const now = new Date();
+      const upcoming = all
+        .filter(m => !m.is_finished && new Date(m.match_date) > now)
+        .sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
+      setNextMatch(upcoming[0] || null);
+    }).catch(() => {}).finally(() => setNextMatchChecked(true));
   }, []);
 
   // Add effect to handle yearly summary panel opening
@@ -1018,6 +1045,64 @@ export default function Layout({ children, currentPageName }) {
                     {liveMatchCount > 1 && (
                       <span className="text-slate-400 text-xs">+{liveMatchCount - 1} משחקים נוספים</span>
                     )}
+                  </div>
+                </motion.div>
+              </div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Next Match Intro Overlay — shown once per session when there's no live match */}
+        <AnimatePresence>
+          {showNextMatchIntro && nextMatch && (
+            <>
+              <motion.div
+                key="next-match-intro-bg"
+                className="fixed inset-0 z-[55]"
+                style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+              />
+              <div className="fixed inset-0 z-[56] flex items-center justify-center pointer-events-none">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="rounded-2xl"
+                  style={{
+                    background: 'rgba(8,18,32,0.95)',
+                    border: '1px solid rgba(245,197,24,0.4)',
+                    backdropFilter: 'blur(28px)',
+                    boxShadow: '0 0 60px rgba(245,197,24,0.15), 0 20px 60px rgba(0,0,0,0.7)',
+                  }}
+                  transition={{ type: 'spring', stiffness: 180, damping: 26 }}
+                >
+                  <div className="px-10 py-8 flex flex-col items-center gap-5">
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(245,197,24,0.12)', border: '1px solid rgba(245,197,24,0.35)' }}>
+                      <span className="text-amber-400 text-xs font-bold tracking-widest uppercase">המשחק הבא</span>
+                    </div>
+
+                    <div className="flex items-center gap-6" dir="ltr">
+                      <div className="flex flex-col items-center gap-1.5 w-20">
+                        <TeamFlag logo={nextMatch.team_a_logo} name={nextMatch.team_a} className="w-14 h-14" animate={false} />
+                        <span className="text-slate-400 text-[11px] text-center">{nextMatch.team_a}</span>
+                      </div>
+                      <span className="text-slate-500 font-bold text-sm">VS</span>
+                      <div className="flex flex-col items-center gap-1.5 w-20">
+                        <TeamFlag logo={nextMatch.team_b_logo} name={nextMatch.team_b} className="w-14 h-14" animate={false} />
+                        <span className="text-slate-400 text-[11px] text-center">{nextMatch.team_b}</span>
+                      </div>
+                    </div>
+
+                    <div className="text-slate-300 text-sm">
+                      {new Date(nextMatch.match_date).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' })}
+                      {' · '}
+                      {new Date(nextMatch.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+
+                    <MatchCountdown target={nextMatch.match_date} />
                   </div>
                 </motion.div>
               </div>
