@@ -43,6 +43,7 @@ export default function Layout({ children, currentPageName }) {
   const [liveMatchCount, setLiveMatchCount] = useState(0);
   const [showLiveIntro, setShowLiveIntro] = useState(false);
   const [liveUserPrediction, setLiveUserPrediction] = useState(null);
+  const [livePredictionLoading, setLivePredictionLoading] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showYearlySummary, setShowYearlySummary] = useState(false); // NEW: State for YearlySummaryPanel
   const [showPushBanner, setShowPushBanner] = useState(false);
@@ -292,7 +293,8 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('openLiveDataPanel', handleOpenLiveDataPanel);
   }, []);
 
-  // Poll for live matches to show/hide the LIVE button
+  // Poll for live matches to show/hide the LIVE button (detection only — the
+  // intro-overlay trigger is a separate effect below, gated on the loader).
   useEffect(() => {
     const checkLive = async () => {
       try {
@@ -305,11 +307,6 @@ export default function Layout({ children, currentPageName }) {
         setHasLiveMatch(live.length > 0);
         setLiveMatch(live[0] || null);
         setLiveMatchCount(live.length);
-        if (live.length > 0 && !sessionStorage.getItem('live_intro_shown')) {
-          sessionStorage.setItem('live_intro_shown', '1');
-          setShowLiveIntro(true);
-          setTimeout(() => setShowLiveIntro(false), 5500);
-        }
       } catch {
         setHasLiveMatch(false);
       }
@@ -319,9 +316,21 @@ export default function Layout({ children, currentPageName }) {
     return () => clearInterval(iv);
   }, []);
 
+  // Show the live intro overlay only once the app's own loader has finished —
+  // otherwise its countdown burns down silently behind the loading screen.
+  useEffect(() => {
+    if (authLoading || !hasLiveMatch) return;
+    if (sessionStorage.getItem('live_intro_shown')) return;
+    sessionStorage.setItem('live_intro_shown', '1');
+    setShowLiveIntro(true);
+  }, [authLoading, hasLiveMatch]);
+
   // Fetch user prediction for the live match
   useEffect(() => {
-    if (!liveMatch || !user?.id) return;
+    if (!liveMatch || !user?.id) { setLivePredictionLoading(false); return; }
+    let cancelled = false;
+    setLivePredictionLoading(true);
+    setLiveUserPrediction(null);
     const fetchLivePrediction = async () => {
       try {
         const allMatches = await Match.list();
@@ -336,12 +345,33 @@ export default function Layout({ children, currentPageName }) {
         });
         if (supabaseMatch) {
           const preds = await Prediction.filter({ match_id: supabaseMatch.id, user_id: user.id });
-          if (preds.length > 0) setLiveUserPrediction(preds[0]);
+          if (preds.length > 0 && !cancelled) setLiveUserPrediction(preds[0]);
         }
-      } catch {}
+      } catch {
+        // no prediction to show — overlay still proceeds with just the live score
+      } finally {
+        if (!cancelled) setLivePredictionLoading(false);
+      }
     };
     fetchLivePrediction();
+    return () => { cancelled = true; };
   }, [liveMatch?.homeTeam?.name, user?.id]);
+
+  // Auto-dismiss the live intro — but only start the countdown once we know
+  // whether there's a prediction to show, so it never disappears mid-fetch.
+  useEffect(() => {
+    if (!showLiveIntro || livePredictionLoading) return;
+    const t = setTimeout(() => setShowLiveIntro(false), 7000);
+    return () => clearTimeout(t);
+  }, [showLiveIntro, livePredictionLoading]);
+
+  // Hard safety cap — never let the overlay block the UI indefinitely even
+  // if the prediction fetch hangs.
+  useEffect(() => {
+    if (!showLiveIntro) return;
+    const cap = setTimeout(() => setShowLiveIntro(false), 16000);
+    return () => clearTimeout(cap);
+  }, [showLiveIntro]);
 
   // Load today's match count for FAB badge
   useEffect(() => {
