@@ -236,13 +236,13 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
                     </div>
                     <div style={{ width: 34, height: 50, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
                       <div style={{ transform: 'scale(0.8)', transformOrigin: 'top left', width: 42, height: 64 }}>
-                        <OdometerDigit target={homeScore} delayMs={300} />
+                        <OdometerDigit target={homeScore} delayMs={1300} />
                       </div>
                     </div>
                     <span style={{ color: '#475569', fontSize: 34, fontWeight: 900 }}>-</span>
                     <div style={{ width: 34, height: 50, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
                       <div style={{ transform: 'scale(0.8)', transformOrigin: 'top left', width: 42, height: 64 }}>
-                        <OdometerDigit target={awayScore} delayMs={550} />
+                        <OdometerDigit target={awayScore} delayMs={1600} />
                       </div>
                     </div>
                     <div className="relative flex flex-col items-center">
