@@ -53,10 +53,10 @@ function useProgressReveal(target, duration = 1200) {
 
 // The live-match intro card: sized/margined like the Next Match card (never
 // touches the screen edges on narrow phones), ringed by a conic-gradient
-// border that fills according to the match minute (out of 90), with its
-// content flipping in on a 3D Y-axis. Exit reuses the shared layoutId morph
-// back into the small corner LIVE chip — accurate, since framer-motion
-// measures the chip's real position instead of us guessing coordinates.
+// border that fills clockwise from the top according to the match minute
+// (out of 90), with its content flipping in on a 3D Y-axis. No layoutId here
+// — sharing it with the small corner LIVE chip made framer-motion interpolate
+// their very different border-radii and left the chip looking squared-off.
 function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
   const minute = liveMatch?.minute ?? null;
   const target = minute != null ? Math.min(minute / 90, 1) : 0;
@@ -64,17 +64,16 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
 
   return (
     <motion.div
-      layoutId="live-chip"
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ type: 'spring', stiffness: 180, damping: 26 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, scale: 0.85 }}
+      transition={{ duration: 0.3 }}
       className="rounded-2xl"
       style={{
         padding: 2.5,
         borderRadius: 20,
         maxWidth: 'min(320px, 90vw)',
-        background: `conic-gradient(from 180deg, #ef4444 ${progress * 360}deg, rgba(255,255,255,0.08) ${progress * 360}deg 360deg)`,
+        background: `conic-gradient(from 0deg, #ef4444 ${progress * 360}deg, rgba(255,255,255,0.08) ${progress * 360}deg 360deg)`,
         boxShadow: '0 0 30px rgba(239,68,68,0.2)',
       }}
     >
