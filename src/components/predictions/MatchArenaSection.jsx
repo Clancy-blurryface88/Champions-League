@@ -23,7 +23,11 @@ function getTeamForm(allMatches, teamName) {
     totalGoals += scored;
     totalConceded += conceded;
     const result = scored > conceded ? 'W' : scored < conceded ? 'L' : 'D';
-    return { result, scored, conceded, opponent: isHome ? m.team_b : m.team_a };
+    return {
+      result, scored, conceded,
+      opponent: isHome ? m.team_b : m.team_a,
+      opponentLogo: isHome ? m.team_b_logo : m.team_a_logo,
+    };
   });
 
   return {
@@ -40,43 +44,27 @@ const R = {
   L: { bg: 'rgba(248,113,113,0.18)', bd: 'rgba(248,113,113,0.52)', tx: '#f87171', so: '#dc2626' },
 };
 
-const SHORT_NAMES = {
-  'Saudi Arabia':       'Saudia',
-  'South Korea':        'S.Korea',
-  'United States':      'USA',
-  'New Zealand':        'N.Zealand',
-  'Ivory Coast':        'C.Ivoire',
-  'DR Congo':           'Congo',
-  'Congo DR':           'Congo',
-  'South Africa':       'S.Africa',
-  'Korea Republic':     'K.Republic',
-  'Bosnia-Herzegovina': 'Bosnia',
-  'IR Iran':            'Iran',
-  'Cabo Verde':         'C.Verde',
-};
-const shorten = (name) => SHORT_NAMES[name] || name;
-
 function FormDots({ form }) {
   if (!form?.length) return <span className="text-[10px] text-slate-600">—</span>;
   return (
-    <div className="flex gap-[5px]">
+    <div className="flex gap-2.5">
       {form.map((item, i) => {
         const s = R[item.result];
         return (
-          <div key={i} style={{
-            width: 34, height: 48,
-            background: `linear-gradient(160deg, ${s.bg}, rgba(255,255,255,0.02))`,
-            border: `1px solid ${s.bd}`,
-            borderRadius: 5,
-            transform: 'perspective(80px) rotateX(12deg) rotateY(-8deg)',
-            boxShadow: `3px 3px 0 ${s.so}35`,
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-            gap: 2, padding: '3px 4px',
-          }}>
-            <span style={{ fontSize: 10, fontWeight: 900, color: s.tx, lineHeight: 1 }}>{item.result}</span>
-            <span style={{ fontSize: 10, fontWeight: 900, color: '#fff', lineHeight: 1 }}>{item.scored}:{item.conceded}</span>
-            <span style={{ fontSize: 7, color: s.tx, lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 30, textAlign: 'center' }}>{shorten(item.opponent)}</span>
+          <div key={i} className="flex flex-col items-center gap-1">
+            <div
+              className="rounded-full flex items-center justify-center flex-shrink-0"
+              style={{
+                width: 34, height: 34,
+                background: s.bg,
+                border: `2px solid ${s.tx}`,
+                boxShadow: `0 0 0 3px ${s.bg}, 0 2px 6px rgba(0,0,0,0.25)`,
+              }}
+              title={`${item.result} · ${item.scored}:${item.conceded} מול ${item.opponent}`}
+            >
+              <TeamFlag logo={item.opponentLogo} name={item.opponent} className="w-7 h-7" animate={false} rounded="full" />
+            </div>
+            <span className="font-bold" style={{ fontSize: 10, color: s.tx, lineHeight: 1 }}>{item.scored}:{item.conceded}</span>
           </div>
         );
       })}
