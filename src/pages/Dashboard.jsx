@@ -3,7 +3,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Settings, CalendarDays } from "lucide-react";
+import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TournamentHeader from "../components/TournamentHeader";
 import AppBackground from "../components/AppBackground";
@@ -131,17 +131,10 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Daily Recap + Admin Panel Buttons */}
-        <div className="w-full max-w-4xl mx-auto px-4">
-          <div className="flex justify-center gap-3">
-            <Button
-              onClick={() => window.dispatchEvent(new Event('openDailyRecapPanel'))}
-              className="bg-slate-800 hover:bg-slate-700 border border-slate-600"
-              variant="outline">
-              <CalendarDays className="w-4 h-4 mr-2" />
-              סיכום אתמול
-            </Button>
-            {user?.is_admin && (
+        {/* Admin Panel Button */}
+        {user?.is_admin && (
+          <div className="w-full max-w-4xl mx-auto px-4">
+            <div className="flex justify-center">
               <Button
                 onClick={handleAdminPanel}
                 className="bg-slate-800 hover:bg-slate-700 border border-slate-600"
@@ -149,9 +142,9 @@ export default function Dashboard() {
                 <Settings className="w-4 h-4 mr-2" />
                 Admin Panel
               </Button>
-            )}
+            </div>
           </div>
-        </div>
+        )}
 
       </div>
 
