@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 
 function diff(target) {
   const ms = Math.max(new Date(target).getTime() - Date.now(), 0);
@@ -10,6 +10,8 @@ function diff(target) {
   };
 }
 
+// Same glass-pill countdown used on the match prediction cards (Predictions.jsx)
+// — kept identical so the "time left" treatment reads consistently everywhere.
 export default function MatchCountdown({ target }) {
   const [t, setT] = useState(() => diff(target));
 
@@ -20,24 +22,29 @@ export default function MatchCountdown({ target }) {
   }, [target]);
 
   const units = [
-    [t.days, 'ימים'],
-    [t.hours, 'שעות'],
-    [t.minutes, 'דק'],
-    [t.seconds, 'שנ'],
+    { val: t.seconds, label: 'שניות' },
+    { val: t.minutes, label: 'דקות' },
+    { val: t.hours, label: 'שעות' },
+    { val: t.days, label: 'ימים' },
   ];
 
   return (
-    <div className="flex items-center gap-2" dir="ltr">
-      {units.map(([value, label]) => (
-        <div key={label} className="text-center">
-          <div
-            className="rounded-lg px-2.5 py-1.5 font-mono text-lg font-bold text-white"
-            style={{ background: 'rgba(245,197,24,0.12)', border: '1px solid rgba(245,197,24,0.35)', minWidth: 44 }}
-          >
-            {String(value).padStart(2, '0')}
+    <div dir="rtl" className="relative overflow-hidden flex rounded-2xl" style={{
+      background: 'rgba(255,255,255,0.06)',
+      backdropFilter: 'blur(40px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+      border: '1px solid rgba(255,255,255,0.18)',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.35)',
+    }}>
+      <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.14) 0%, transparent 100%)', borderRadius: '16px 16px 0 0' }} />
+      {units.map((item, i) => (
+        <Fragment key={item.label}>
+          <div className="relative flex flex-col items-center px-3 py-2">
+            <span className="font-extrabold leading-none mb-0.5" style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.92)' }}>{item.val}</span>
+            <span className="text-[9px] font-semibold" style={{ color: 'rgba(255,255,255,0.45)' }}>{item.label}</span>
           </div>
-          <div className="text-[9px] text-slate-400 mt-1">{label}</div>
-        </div>
+          {i < units.length - 1 && <div className="self-center" style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.12)' }} />}
+        </Fragment>
       ))}
     </div>
   );

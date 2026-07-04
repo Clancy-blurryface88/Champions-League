@@ -47,6 +47,7 @@ export default function Layout({ children, currentPageName }) {
   const [nextMatch, setNextMatch] = useState(null);
   const [nextMatchChecked, setNextMatchChecked] = useState(false);
   const [showNextMatchIntro, setShowNextMatchIntro] = useState(false);
+  const [nextMatchPrediction, setNextMatchPrediction] = useState(null);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showYearlySummary, setShowYearlySummary] = useState(false); // NEW: State for YearlySummaryPanel
   const [showPushBanner, setShowPushBanner] = useState(false);
@@ -340,6 +341,16 @@ export default function Layout({ children, currentPageName }) {
     const t = setTimeout(() => setShowNextMatchIntro(false), 8000);
     return () => clearTimeout(t);
   }, [showNextMatchIntro]);
+
+  // Fetch the user's own prediction for the next match (already our DB match — no name matching needed)
+  useEffect(() => {
+    if (!nextMatch?.id || !user?.id) { setNextMatchPrediction(null); return; }
+    let cancelled = false;
+    Prediction.filter({ match_id: nextMatch.id, user_id: user.id })
+      .then((preds) => { if (!cancelled && preds.length > 0) setNextMatchPrediction(preds[0]); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [nextMatch?.id, user?.id]);
 
   // Fetch user prediction for the live match
   useEffect(() => {
@@ -1096,13 +1107,25 @@ export default function Layout({ children, currentPageName }) {
                       </div>
                     </div>
 
-                    <div className="text-slate-300 text-sm">
-                      {new Date(nextMatch.match_date).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' })}
-                      {' · '}
-                      {new Date(nextMatch.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className="text-slate-400 text-[11px] tracking-wide">
+                        {new Date(nextMatch.match_date).toLocaleDateString('he-IL', { weekday: 'long', day: '2-digit', month: '2-digit' })}
+                      </span>
+                      <span className="text-white text-xl font-black" dir="ltr">
+                        {new Date(nextMatch.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     </div>
 
                     <MatchCountdown target={nextMatch.match_date} />
+
+                    {nextMatchPrediction && (
+                      <div className="flex flex-col items-center gap-1 mt-1">
+                        <span className="text-slate-400 text-xs">הניחוש שלי</span>
+                        <span className="text-amber-400 text-sm font-bold">
+                          ({nextMatchPrediction.predicted_score_a} - {nextMatchPrediction.predicted_score_b})
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               </div>
