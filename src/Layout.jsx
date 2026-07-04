@@ -146,7 +146,7 @@ function useLiveMinuteProgress(liveMatch) {
 // (out of 90), with its content flipping in on a 3D Y-axis. No layoutId here
 // — sharing it with the small corner LIVE chip made framer-motion interpolate
 // their very different border-radii and left the chip looking squared-off.
-function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCount }) {
+function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
   const { progress, settledTick } = useLiveMinuteProgress(liveMatch);
   const minute = liveMatch ? Math.floor(progress * 90) : null;
   const homeScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.home ?? 0) || 0, 0), 9);
@@ -226,11 +226,13 @@ function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCo
               </div>
               {liveMatch && (
                 <div className="flex flex-col items-center gap-1">
-                  {/* Flags flank the score directly, symmetrically, in one row */}
+                  {/* Flags flank the score directly, vertically centered on the digits (the
+                      team-code label is absolutely positioned so it doesn't push the flag
+                      itself up relative to the shorter digit boxes) */}
                   <div className="flex items-center gap-3" dir="ltr">
-                    <div className="flex flex-col items-center gap-1">
-                      <TeamFlag logo={liveDbMatch?.team_a_logo || liveMatch.homeTeam?.crest} name={liveMatch.homeTeam?.name} className="w-12 h-12" animate={false} />
-                      <span className="text-slate-400 text-[10px]">{liveMatch.homeTeam?.tla}</span>
+                    <div className="relative flex flex-col items-center">
+                      <TeamFlag logo={liveMatch.homeTeam?.crest} name={liveMatch.homeTeam?.name} className="w-12 h-12" animate={false} />
+                      <span className="absolute top-full mt-1 text-slate-400 text-[10px] whitespace-nowrap">{liveMatch.homeTeam?.tla}</span>
                     </div>
                     <div style={{ width: 34, height: 50, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
                       <div style={{ transform: 'scale(0.8)', transformOrigin: 'top left', width: 42, height: 64 }}>
@@ -243,9 +245,9 @@ function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCo
                         <OdometerDigit target={awayScore} delayMs={550} />
                       </div>
                     </div>
-                    <div className="flex flex-col items-center gap-1">
-                      <TeamFlag logo={liveDbMatch?.team_b_logo || liveMatch.awayTeam?.crest} name={liveMatch.awayTeam?.name} className="w-12 h-12" animate={false} />
-                      <span className="text-slate-400 text-[10px]">{liveMatch.awayTeam?.tla}</span>
+                    <div className="relative flex flex-col items-center">
+                      <TeamFlag logo={liveMatch.awayTeam?.crest} name={liveMatch.awayTeam?.name} className="w-12 h-12" animate={false} />
+                      <span className="absolute top-full mt-1 text-slate-400 text-[10px] whitespace-nowrap">{liveMatch.awayTeam?.tla}</span>
                     </div>
                   </div>
                   {liveUserPrediction && (
@@ -286,7 +288,6 @@ export default function Layout({ children, currentPageName }) {
   const [showLiveIntro, setShowLiveIntro] = useState(false);
   const [liveUserPrediction, setLiveUserPrediction] = useState(null);
   const [livePredictionLoading, setLivePredictionLoading] = useState(false);
-  const [liveDbMatch, setLiveDbMatch] = useState(null);
   const [liveCheckDone, setLiveCheckDone] = useState(false);
   const [nextMatch, setNextMatch] = useState(null);
   const [nextMatchChecked, setNextMatchChecked] = useState(false);
@@ -605,11 +606,10 @@ export default function Layout({ children, currentPageName }) {
 
   // Fetch user prediction for the live match
   useEffect(() => {
-    if (!liveMatch || !user?.id) { setLivePredictionLoading(false); setLiveDbMatch(null); return; }
+    if (!liveMatch || !user?.id) { setLivePredictionLoading(false); return; }
     let cancelled = false;
     setLivePredictionLoading(true);
     setLiveUserPrediction(null);
-    setLiveDbMatch(null);
     const fetchLivePrediction = async () => {
       try {
         const allMatches = await Match.list();
@@ -623,7 +623,6 @@ export default function Layout({ children, currentPageName }) {
           return homeMatch && awayMatch;
         });
         if (supabaseMatch) {
-          if (!cancelled) setLiveDbMatch(supabaseMatch);
           const preds = await Prediction.filter({ match_id: supabaseMatch.id, user_id: user.id });
           if (preds.length > 0 && !cancelled) setLiveUserPrediction(preds[0]);
         }
@@ -1263,7 +1262,6 @@ export default function Layout({ children, currentPageName }) {
               <div className="fixed inset-0 z-[56] flex items-center justify-center pointer-events-none">
                 <LiveMatchCard
                   liveMatch={liveMatch}
-                  liveDbMatch={liveDbMatch}
                   liveUserPrediction={liveUserPrediction}
                   liveMatchCount={liveMatchCount}
                 />
