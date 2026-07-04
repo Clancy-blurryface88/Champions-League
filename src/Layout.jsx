@@ -93,7 +93,7 @@ function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCo
       style={{
         padding: 2.5,
         borderRadius: 20,
-        maxWidth: 'min(320px, 90vw)',
+        maxWidth: 'min(370px, 92vw)',
         background: `conic-gradient(from 0deg, #ef4444 ${progress * 360}deg, rgba(255,255,255,0.08) ${progress * 360}deg 360deg)`,
         boxShadow: '0 0 30px rgba(239,68,68,0.2)',
       }}
@@ -130,25 +130,25 @@ function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCo
               </div>
               {liveMatch && (
                 <div className="flex flex-col items-center gap-1">
-                  {/* Flags flank the score directly, in one row */}
-                  <div className="flex items-center gap-2.5" dir="ltr">
+                  {/* Flags flank the score directly, symmetrically, in one row */}
+                  <div className="flex items-center gap-3" dir="ltr">
                     <div className="flex flex-col items-center gap-1">
-                      <TeamFlag logo={liveDbMatch?.team_a_logo || liveMatch.homeTeam?.crest} name={liveMatch.homeTeam?.name} className="w-11 h-11" animate={false} />
+                      <TeamFlag logo={liveDbMatch?.team_a_logo || liveMatch.homeTeam?.crest} name={liveMatch.homeTeam?.name} className="w-12 h-12" animate={false} />
                       <span className="text-slate-400 text-[10px]">{liveMatch.homeTeam?.tla}</span>
                     </div>
-                    <div style={{ width: 26, height: 38, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
-                      <div style={{ transform: 'scale(0.6)', transformOrigin: 'top left', width: 42, height: 64 }}>
+                    <div style={{ width: 34, height: 50, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
+                      <div style={{ transform: 'scale(0.8)', transformOrigin: 'top left', width: 42, height: 64 }}>
                         <OdometerDigit target={homeScore} delayMs={300} />
                       </div>
                     </div>
-                    <span style={{ color: '#475569', fontSize: 26, fontWeight: 900 }}>-</span>
-                    <div style={{ width: 26, height: 38, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
-                      <div style={{ transform: 'scale(0.6)', transformOrigin: 'top left', width: 42, height: 64 }}>
+                    <span style={{ color: '#475569', fontSize: 34, fontWeight: 900 }}>-</span>
+                    <div style={{ width: 34, height: 50, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
+                      <div style={{ transform: 'scale(0.8)', transformOrigin: 'top left', width: 42, height: 64 }}>
                         <OdometerDigit target={awayScore} delayMs={550} />
                       </div>
                     </div>
                     <div className="flex flex-col items-center gap-1">
-                      <TeamFlag logo={liveDbMatch?.team_b_logo || liveMatch.awayTeam?.crest} name={liveMatch.awayTeam?.name} className="w-11 h-11" animate={false} />
+                      <TeamFlag logo={liveDbMatch?.team_b_logo || liveMatch.awayTeam?.crest} name={liveMatch.awayTeam?.name} className="w-12 h-12" animate={false} />
                       <span className="text-slate-400 text-[10px]">{liveMatch.awayTeam?.tla}</span>
                     </div>
                   </div>
