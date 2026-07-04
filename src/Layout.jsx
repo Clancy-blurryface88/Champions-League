@@ -50,7 +50,7 @@ function useLiveMinuteProgress(utcDate) {
       startedRef.current = true;
       const target = compute();
       const revealStart = performance.now();
-      const revealDuration = 900;
+      const revealDuration = 2200;
       const tick = (now) => {
         const p = Math.min((now - revealStart) / revealDuration, 1);
         const eased = 1 - Math.pow(1 - p, 3);
@@ -130,22 +130,27 @@ function LiveMatchCard({ liveMatch, liveDbMatch, liveUserPrediction, liveMatchCo
               </div>
               {liveMatch && (
                 <div className="flex flex-col items-center gap-1">
-                  <div className="flex items-center gap-6" dir="ltr">
-                    <div className="flex flex-col items-center gap-1.5 w-16">
-                      <TeamFlag logo={liveDbMatch?.team_a_logo || liveMatch.homeTeam?.crest} name={liveMatch.homeTeam?.name} className="w-14 h-14" animate={false} />
-                      <span className="text-slate-400 text-[11px]">{liveMatch.homeTeam?.tla}</span>
+                  {/* Flags flank the score directly, in one row */}
+                  <div className="flex items-center gap-2.5" dir="ltr">
+                    <div className="flex flex-col items-center gap-1">
+                      <TeamFlag logo={liveDbMatch?.team_a_logo || liveMatch.homeTeam?.crest} name={liveMatch.homeTeam?.name} className="w-11 h-11" animate={false} />
+                      <span className="text-slate-400 text-[10px]">{liveMatch.homeTeam?.tla}</span>
                     </div>
-                    <span className="text-slate-500 font-bold text-sm">VS</span>
-                    <div className="flex flex-col items-center gap-1.5 w-16">
-                      <TeamFlag logo={liveDbMatch?.team_b_logo || liveMatch.awayTeam?.crest} name={liveMatch.awayTeam?.name} className="w-14 h-14" animate={false} />
-                      <span className="text-slate-400 text-[11px]">{liveMatch.awayTeam?.tla}</span>
+                    <div style={{ width: 26, height: 38, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
+                      <div style={{ transform: 'scale(0.6)', transformOrigin: 'top left', width: 42, height: 64 }}>
+                        <OdometerDigit target={homeScore} delayMs={300} />
+                      </div>
                     </div>
-                  </div>
-                  {/* Score digits sit in the same w-16 columns as the flags above, so each digit lines up directly under its team */}
-                  <div className="flex items-center gap-6" dir="ltr" style={{ transform: 'scale(0.6)', transformOrigin: 'center', margin: '-14px 0' }}>
-                    <div className="w-16 flex justify-center"><OdometerDigit target={homeScore} delayMs={300} /></div>
-                    <span style={{ color: '#475569', fontSize: 50, fontWeight: 900 }}>-</span>
-                    <div className="w-16 flex justify-center"><OdometerDigit target={awayScore} delayMs={550} /></div>
+                    <span style={{ color: '#475569', fontSize: 26, fontWeight: 900 }}>-</span>
+                    <div style={{ width: 26, height: 38, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
+                      <div style={{ transform: 'scale(0.6)', transformOrigin: 'top left', width: 42, height: 64 }}>
+                        <OdometerDigit target={awayScore} delayMs={550} />
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <TeamFlag logo={liveDbMatch?.team_b_logo || liveMatch.awayTeam?.crest} name={liveMatch.awayTeam?.name} className="w-11 h-11" animate={false} />
+                      <span className="text-slate-400 text-[10px]">{liveMatch.awayTeam?.tla}</span>
+                    </div>
                   </div>
                   {liveUserPrediction && (
                     <div className="flex flex-col items-center gap-1 mt-2">
