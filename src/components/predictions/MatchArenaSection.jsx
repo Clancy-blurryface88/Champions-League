@@ -75,7 +75,7 @@ function FormDots({ form }) {
 function AvgGoals({ scored, conceded }) {
   if (scored == null) return null;
   return (
-    <span className="text-[10px] font-medium flex items-center flex-shrink-0">
+    <span className="text-[10px] font-medium flex items-center flex-shrink-0 self-center">
       <span>⚽</span>
       <span style={{
         background: 'linear-gradient(135deg, #bbf7d0, #4ade80)',
@@ -92,7 +92,7 @@ function AvgGoals({ scored, conceded }) {
 
 function TeamFormRow({ logo, name, form, avgGoals, avgConceded }) {
   return (
-    <div className="flex items-center justify-center gap-3 flex-wrap">
+    <div className="flex items-start justify-center gap-3 flex-wrap">
       <div
         className="rounded-full flex items-center justify-center flex-shrink-0"
         style={{ width: 34, height: 34, background: 'rgba(255,255,255,0.06)', border: '2px solid rgba(255,255,255,0.18)' }}
@@ -100,7 +100,7 @@ function TeamFormRow({ logo, name, form, avgGoals, avgConceded }) {
         <TeamFlag logo={logo} name={name} className="w-7 h-7" animate={false} rounded="full" />
       </div>
 
-      <div className="flex-shrink-0" style={{ width: 1, height: 30, background: 'rgba(255,255,255,0.12)' }} />
+      <div className="flex-shrink-0 self-center" style={{ width: 1, height: 30, background: 'rgba(255,255,255,0.12)' }} />
 
       <FormDots form={form} />
       <AvgGoals scored={avgGoals} conceded={avgConceded} />
