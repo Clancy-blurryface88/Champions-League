@@ -92,8 +92,13 @@ function AvgGoals({ scored, conceded }) {
 
 function TeamFormRow({ logo, name, form, avgGoals, avgConceded }) {
   return (
-    <div className="flex items-center gap-2 flex-wrap">
-      <TeamFlag logo={logo} name={name} className="w-6 h-6" animate={false} rounded="sm" />
+    <div className="flex items-center justify-center gap-2.5 flex-wrap">
+      <div
+        className="rounded-full flex items-center justify-center flex-shrink-0"
+        style={{ width: 34, height: 34, background: 'rgba(255,255,255,0.06)', border: '2px solid rgba(255,255,255,0.18)' }}
+      >
+        <TeamFlag logo={logo} name={name} className="w-7 h-7" animate={false} rounded="full" />
+      </div>
       <FormDots form={form} />
       <AvgGoals scored={avgGoals} conceded={avgConceded} />
     </div>
