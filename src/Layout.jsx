@@ -51,88 +51,98 @@ function useProgressReveal(target, duration = 1200) {
   return value;
 }
 
-// The live-match intro card: flips in on a 3D Y-axis, and is ringed by a
-// conic-gradient border that fills according to the match minute (out of 90).
+// The live-match intro card: sized/margined like the Next Match card (never
+// touches the screen edges on narrow phones), ringed by a conic-gradient
+// border that fills according to the match minute (out of 90), with its
+// content flipping in on a 3D Y-axis. Exit reuses the shared layoutId morph
+// back into the small corner LIVE chip — accurate, since framer-motion
+// measures the chip's real position instead of us guessing coordinates.
 function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
   const minute = liveMatch?.minute ?? null;
   const target = minute != null ? Math.min(minute / 90, 1) : 0;
   const progress = useProgressReveal(target);
 
   return (
-    <div style={{ perspective: 1000 }}>
-      <motion.div
-        initial={{ rotateY: -85, opacity: 0 }}
-        animate={{
-          rotateY: 0, opacity: 1, scale: 1, x: 0, y: 0,
-          transition: {
-            rotateY: { duration: 1.1, ease: 'easeOut' },
-            opacity: { duration: 0.35, ease: 'easeOut' },
-          },
-        }}
-        exit={{
-          rotateY: 70, scale: 0.15, x: '38vw', y: '-42vh', opacity: 0,
-          transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] },
-        }}
+    <motion.div
+      layoutId="live-chip"
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ type: 'spring', stiffness: 180, damping: 26 }}
+      className="rounded-2xl"
+      style={{
+        padding: 2.5,
+        borderRadius: 20,
+        maxWidth: 'min(320px, 90vw)',
+        background: `conic-gradient(from 180deg, #ef4444 ${progress * 360}deg, rgba(255,255,255,0.08) ${progress * 360}deg 360deg)`,
+        boxShadow: '0 0 30px rgba(239,68,68,0.2)',
+      }}
+    >
+      <div
+        className="rounded-2xl"
         style={{
-          transformStyle: 'preserve-3d',
-          backfaceVisibility: 'hidden',
-          willChange: 'transform, opacity',
-          padding: 2.5,
-          borderRadius: 20,
-          background: `conic-gradient(from 180deg, #ef4444 ${progress * 360}deg, rgba(255,255,255,0.08) ${progress * 360}deg 360deg)`,
-          boxShadow: '0 0 30px rgba(239,68,68,0.2)',
+          background: 'rgba(8,18,32,0.95)',
+          backdropFilter: 'blur(28px)',
+          boxShadow: '0 0 60px rgba(239,68,68,0.18), 0 20px 60px rgba(0,0,0,0.7)',
+          overflow: 'hidden',
         }}
       >
-        <div
-          className="rounded-2xl"
-          style={{
-            background: 'rgba(8,18,32,0.95)',
-            backdropFilter: 'blur(28px)',
-            boxShadow: '0 0 60px rgba(239,68,68,0.18), 0 20px 60px rgba(0,0,0,0.7)',
-          }}
-        >
-          <div className="px-10 py-8 flex flex-col items-center gap-5">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)' }}>
-              <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
-              </span>
-              <span className="text-red-400 text-xs font-bold tracking-widest uppercase">Live</span>
-              {minute != null && <span className="text-white/50 text-xs font-bold">· {minute}'</span>}
-            </div>
-            {liveMatch && (
-              <div className="flex flex-col items-center gap-3">
-                <div className="flex items-center gap-6" dir="ltr">
-                  <div className="flex flex-col items-center gap-1.5 w-24">
-                    {liveMatch.homeTeam?.crest && <img src={liveMatch.homeTeam.crest} className="w-16 h-16 object-contain drop-shadow-lg" alt="" />}
-                    <span className="text-slate-400 text-[11px]">{liveMatch.homeTeam?.tla}</span>
+        <div style={{ perspective: 1000 }}>
+          <motion.div
+            initial={{ rotateY: -85, opacity: 0 }}
+            animate={{
+              rotateY: 0, opacity: 1,
+              transition: {
+                rotateY: { duration: 1.1, ease: 'easeOut' },
+                opacity: { duration: 0.35, ease: 'easeOut' },
+              },
+            }}
+            style={{ transformStyle: 'preserve-3d', backfaceVisibility: 'hidden' }}
+          >
+            <div className="px-6 py-6 flex flex-col items-center gap-4">
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)' }}>
+                <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+                </span>
+                <span className="text-red-400 text-xs font-bold tracking-widest uppercase">Live</span>
+                {minute != null && <span className="text-white/50 text-xs font-bold">· {minute}'</span>}
+              </div>
+              {liveMatch && (
+                <div className="flex flex-col items-center gap-3">
+                  <div className="flex items-center gap-6" dir="ltr">
+                    <div className="flex flex-col items-center gap-1.5 w-16">
+                      {liveMatch.homeTeam?.crest && <img src={liveMatch.homeTeam.crest} className="w-14 h-14 object-contain drop-shadow-lg" alt="" />}
+                      <span className="text-slate-400 text-[11px]">{liveMatch.homeTeam?.tla}</span>
+                    </div>
+                    <span className="text-slate-500 font-bold text-sm">VS</span>
+                    <div className="flex flex-col items-center gap-1.5 w-16">
+                      {liveMatch.awayTeam?.crest && <img src={liveMatch.awayTeam.crest} className="w-14 h-14 object-contain drop-shadow-lg" alt="" />}
+                      <span className="text-slate-400 text-[11px]">{liveMatch.awayTeam?.tla}</span>
+                    </div>
                   </div>
                   <OdometerScore
                     home={liveMatch.score?.fullTime?.home ?? 0}
                     away={liveMatch.score?.fullTime?.away ?? 0}
                   />
-                  <div className="flex flex-col items-center gap-1.5 w-24">
-                    {liveMatch.awayTeam?.crest && <img src={liveMatch.awayTeam.crest} className="w-16 h-16 object-contain drop-shadow-lg" alt="" />}
-                    <span className="text-slate-400 text-[11px]">{liveMatch.awayTeam?.tla}</span>
-                  </div>
+                  {liveUserPrediction && (
+                    <div className="flex flex-col items-center gap-1 mt-1">
+                      <span className="text-slate-400 text-xs">הניחוש שלי</span>
+                      <span className="text-amber-400 text-sm font-bold">
+                        ({liveUserPrediction.predicted_score_a} - {liveUserPrediction.predicted_score_b})
+                      </span>
+                    </div>
+                  )}
                 </div>
-                {liveUserPrediction && (
-                  <div className="flex flex-col items-center gap-1 mt-1">
-                    <span className="text-slate-400 text-xs">הניחוש שלי</span>
-                    <span className="text-amber-400 text-sm font-bold">
-                      ({liveUserPrediction.predicted_score_a} - {liveUserPrediction.predicted_score_b})
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-            {liveMatchCount > 1 && (
-              <span className="text-slate-400 text-xs">+{liveMatchCount - 1} משחקים נוספים</span>
-            )}
-          </div>
+              )}
+              {liveMatchCount > 1 && (
+                <span className="text-slate-400 text-xs">+{liveMatchCount - 1} משחקים נוספים</span>
+              )}
+            </div>
+          </motion.div>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </motion.div>
   );
 }
 
