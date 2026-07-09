@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, Hourglass, Radio, Volleyball, Box, Clock } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
@@ -17,11 +17,6 @@ import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminGroupOverride from "../components/admin/AdminGroupOverride";
-import AdminNextMatchDesignsDemo from "../components/admin/AdminNextMatchDesignsDemo";
-import AdminLiveMatchDesignsDemo from "../components/admin/AdminLiveMatchDesignsDemo";
-import AdminMatchBadgeDesignsDemo from "../components/admin/AdminMatchBadgeDesignsDemo";
-import AdminMatchBadgeDesignsDemo2 from "../components/admin/AdminMatchBadgeDesignsDemo2";
-import AdminMinuteMarkerDemo from "../components/admin/AdminMinuteMarkerDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -81,11 +76,6 @@ export default function Admin() {
       case 'import': return <AdminImportMatches />;
       case 'reset':      return <AdminReset />;
       case 'group-override': return <AdminGroupOverride />;
-      case 'next-match-designs': return <AdminNextMatchDesignsDemo />;
-      case 'live-match-designs': return <AdminLiveMatchDesignsDemo />;
-      case 'match-badge-designs': return <AdminMatchBadgeDesignsDemo />;
-      case 'match-badge-designs-2': return <AdminMatchBadgeDesignsDemo2 />;
-      case 'minute-marker-demo': return <AdminMinuteMarkerDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -101,11 +91,6 @@ export default function Admin() {
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'group-override',   label: '🔀 סידור בתים',          icon: BarChart3 },
-    { id: 'next-match-designs', label: '⏳ עיצובי משחק הבא', icon: Hourglass },
-    { id: 'live-match-designs', label: '🔴 עיצובי משחק חי', icon: Radio },
-    { id: 'match-badge-designs', label: '🏟️ עיצובי כפתור משחקי היום', icon: Volleyball },
-    { id: 'match-badge-designs-2', label: '🎲 כפתור משחקים - סבב 2', icon: Box },
-    { id: 'minute-marker-demo', label: '⏰ סמן דקה על הטבעת', icon: Clock },
   ];
 
   return (
