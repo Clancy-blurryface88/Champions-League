@@ -20,6 +20,7 @@ import AdminGroupOverride from "../components/admin/AdminGroupOverride";
 import AdminNextMatchDesigns10 from "../components/admin/AdminNextMatchDesigns10";
 import AdminNextMatchDesigns10B from "../components/admin/AdminNextMatchDesigns10B";
 import AdminNextMatchDesigns15C from "../components/admin/AdminNextMatchDesigns15C";
+import AdminNextMatchDesigns15D from "../components/admin/AdminNextMatchDesigns15D";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -82,6 +83,7 @@ export default function Admin() {
       case 'next-match-designs-10': return <AdminNextMatchDesigns10 />;
       case 'next-match-designs-10b': return <AdminNextMatchDesigns10B />;
       case 'next-match-designs-15c': return <AdminNextMatchDesigns15C />;
+      case 'next-match-designs-15d': return <AdminNextMatchDesigns15D />;
       default: return <AdminRounds />;
     }
   };
@@ -100,6 +102,7 @@ export default function Admin() {
     { id: 'next-match-designs-10', label: '🎨 10 עיצובים - משחק הבא', icon: Sparkles },
     { id: 'next-match-designs-10b', label: '🎨 עוד 10 עיצובים - סבב 2', icon: Sparkles },
     { id: 'next-match-designs-15c', label: '🎨 15 עיצובים (אנימציה) - סבב 3', icon: Sparkles },
+    { id: 'next-match-designs-15d', label: '🎨 15 עיצובים (דגלים) - סבב 4', icon: Sparkles },
   ];
 
   return (
