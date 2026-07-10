@@ -19,6 +19,9 @@ import AdminReset from "../components/admin/AdminReset";
 import AdminGroupOverride from "../components/admin/AdminGroupOverride";
 import AdminLiveMatchDesigns10A from "../components/admin/AdminLiveMatchDesigns10A";
 import AdminLiveMatchDesigns10B from "../components/admin/AdminLiveMatchDesigns10B";
+import AdminLiveMatchDesigns10C from "../components/admin/AdminLiveMatchDesigns10C";
+import AdminLiveMatchDesigns10D from "../components/admin/AdminLiveMatchDesigns10D";
+import AdminLiveMatchDesigns10E from "../components/admin/AdminLiveMatchDesigns10E";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -80,6 +83,9 @@ export default function Admin() {
       case 'group-override': return <AdminGroupOverride />;
       case 'live-match-designs-10a': return <AdminLiveMatchDesigns10A />;
       case 'live-match-designs-10b': return <AdminLiveMatchDesigns10B />;
+      case 'live-match-designs-10c': return <AdminLiveMatchDesigns10C />;
+      case 'live-match-designs-10d': return <AdminLiveMatchDesigns10D />;
+      case 'live-match-designs-10e': return <AdminLiveMatchDesigns10E />;
       default: return <AdminRounds />;
     }
   };
@@ -97,6 +103,9 @@ export default function Admin() {
     { id: 'group-override',   label: '🔀 סידור בתים',          icon: BarChart3 },
     { id: 'live-match-designs-10a', label: '🎨 10 עיצובים - משחק חי (דקה)', icon: Sparkles },
     { id: 'live-match-designs-10b', label: '🎨 10 עיצובים - משחק חי (חשיפה)', icon: Sparkles },
+    { id: 'live-match-designs-10c', label: '🎨 10 עיצובים - תוצאה (סבב 2)', icon: Sparkles },
+    { id: 'live-match-designs-10d', label: '🎨 10 עיצובים - תג דקה (סבב 2)', icon: Sparkles },
+    { id: 'live-match-designs-10e', label: '🎨 10 עיצובים - כניסה (סבב 2)', icon: Sparkles },
   ];
 
   return (

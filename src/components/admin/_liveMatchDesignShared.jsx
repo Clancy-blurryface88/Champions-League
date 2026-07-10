@@ -29,7 +29,7 @@ const RX = 20;
    badge's update-motion and the score digit's change-motion are swappable
    per design, so every mock-up reads as "the current card" with one detail
    changed — not a different card. */
-export function LiveCardShell({ progress, minute, homeScore = LIVE.homeScore, awayScore = LIVE.awayScore, ScoreDigit, MinuteBadge = DefaultMinuteBadge, entranceDelays }) {
+export function LiveCardShell({ progress, minute, homeScore = LIVE.homeScore, awayScore = LIVE.awayScore, ScoreDigit = DefaultScoreDigit, MinuteBadge = DefaultMinuteBadge, entranceDelays }) {
   const { pathRef, point } = useRectEdgePoint(progress);
   const d = { badge: 0, flags: 0.1, score: 0.25, ...entranceDelays };
   return (
