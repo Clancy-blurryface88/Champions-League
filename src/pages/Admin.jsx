@@ -25,6 +25,7 @@ import AdminLiveMatchDesigns10E from "../components/admin/AdminLiveMatchDesigns1
 import AdminLiveMatchDesigns10F from "../components/admin/AdminLiveMatchDesigns10F";
 import AdminLiveMatchDesigns10G from "../components/admin/AdminLiveMatchDesigns10G";
 import AdminLiveMatchDesigns10H from "../components/admin/AdminLiveMatchDesigns10H";
+import AdminNextMatchLeaderboardDemo from "../components/admin/AdminNextMatchLeaderboardDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -92,6 +93,7 @@ export default function Admin() {
       case 'live-match-designs-10f': return <AdminLiveMatchDesigns10F />;
       case 'live-match-designs-10g': return <AdminLiveMatchDesigns10G />;
       case 'live-match-designs-10h': return <AdminLiveMatchDesigns10H />;
+      case 'next-match-leaderboard-demo': return <AdminNextMatchLeaderboardDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -115,6 +117,7 @@ export default function Admin() {
     { id: 'live-match-designs-10f', label: '🎨 10 עיצובים - תוצאה (סבב 3)', icon: Sparkles },
     { id: 'live-match-designs-10g', label: '🎨 10 עיצובים - תג דקה (סבב 3)', icon: Sparkles },
     { id: 'live-match-designs-10h', label: '🎨 10 עיצובים - כניסה (סבב 3)', icon: Sparkles },
+    { id: 'next-match-leaderboard-demo', label: '🏆 דמו: משחק הבא → טבלת משתתפים', icon: Sparkles },
   ];
 
   return (
