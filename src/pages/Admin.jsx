@@ -18,6 +18,7 @@ import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminGroupOverride from "../components/admin/AdminGroupOverride";
 import AdminLeaderboardRevealGallery from "../components/admin/AdminLeaderboardRevealGallery";
+import AdminLeaderboardRevealGallery2 from "../components/admin/AdminLeaderboardRevealGallery2";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -78,6 +79,7 @@ export default function Admin() {
       case 'reset':      return <AdminReset />;
       case 'group-override': return <AdminGroupOverride />;
       case 'leaderboard-reveal-gallery': return <AdminLeaderboardRevealGallery />;
+      case 'leaderboard-reveal-gallery-2': return <AdminLeaderboardRevealGallery2 />;
       default: return <AdminRounds />;
     }
   };
@@ -94,6 +96,7 @@ export default function Admin() {
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'group-override',   label: '🔀 סידור בתים',          icon: BarChart3 },
     { id: 'leaderboard-reveal-gallery', label: '🏆 20 רעיונות: משחק הבא → טבלת משתתפים', icon: Sparkles },
+    { id: 'leaderboard-reveal-gallery-2', label: '🏆🔥 20 רעיונות נוספים - דרמה ומתח', icon: Sparkles },
   ];
 
   return (
