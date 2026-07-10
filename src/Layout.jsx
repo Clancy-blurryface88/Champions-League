@@ -117,9 +117,17 @@ function useLiveMinuteProgress(liveMatch) {
     if (!startedRef.current) {
       startedRef.current = true;
       const target = compute();
-      const revealStart = performance.now();
       const revealDuration = 2200;
+      // Anchor the reveal's t=0 to the first rAF callback's own timestamp,
+      // not to a performance.now() read beforehand — any delay between
+      // scheduling this effect and the browser's next paint (Layout mounts a
+      // lot at once) would otherwise already eat into revealDuration before
+      // the first frame ever renders, making the ring appear to "jump" to
+      // its target instead of visibly filling from empty.
+      setProgress(0);
+      let revealStart = null;
       const tick = (now) => {
+        if (revealStart === null) revealStart = now;
         const p = Math.min((now - revealStart) / revealDuration, 1);
         const eased = 1 - Math.pow(1 - p, 3);
         setProgress(target * eased);
