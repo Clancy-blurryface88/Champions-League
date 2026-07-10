@@ -17,15 +17,7 @@ import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminGroupOverride from "../components/admin/AdminGroupOverride";
-import AdminLiveMatchDesigns10A from "../components/admin/AdminLiveMatchDesigns10A";
-import AdminLiveMatchDesigns10B from "../components/admin/AdminLiveMatchDesigns10B";
-import AdminLiveMatchDesigns10C from "../components/admin/AdminLiveMatchDesigns10C";
-import AdminLiveMatchDesigns10D from "../components/admin/AdminLiveMatchDesigns10D";
-import AdminLiveMatchDesigns10E from "../components/admin/AdminLiveMatchDesigns10E";
-import AdminLiveMatchDesigns10F from "../components/admin/AdminLiveMatchDesigns10F";
-import AdminLiveMatchDesigns10G from "../components/admin/AdminLiveMatchDesigns10G";
-import AdminLiveMatchDesigns10H from "../components/admin/AdminLiveMatchDesigns10H";
-import AdminNextMatchLeaderboardDemo from "../components/admin/AdminNextMatchLeaderboardDemo";
+import AdminLeaderboardRevealGallery from "../components/admin/AdminLeaderboardRevealGallery";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -85,15 +77,7 @@ export default function Admin() {
       case 'import': return <AdminImportMatches />;
       case 'reset':      return <AdminReset />;
       case 'group-override': return <AdminGroupOverride />;
-      case 'live-match-designs-10a': return <AdminLiveMatchDesigns10A />;
-      case 'live-match-designs-10b': return <AdminLiveMatchDesigns10B />;
-      case 'live-match-designs-10c': return <AdminLiveMatchDesigns10C />;
-      case 'live-match-designs-10d': return <AdminLiveMatchDesigns10D />;
-      case 'live-match-designs-10e': return <AdminLiveMatchDesigns10E />;
-      case 'live-match-designs-10f': return <AdminLiveMatchDesigns10F />;
-      case 'live-match-designs-10g': return <AdminLiveMatchDesigns10G />;
-      case 'live-match-designs-10h': return <AdminLiveMatchDesigns10H />;
-      case 'next-match-leaderboard-demo': return <AdminNextMatchLeaderboardDemo />;
+      case 'leaderboard-reveal-gallery': return <AdminLeaderboardRevealGallery />;
       default: return <AdminRounds />;
     }
   };
@@ -109,15 +93,7 @@ export default function Admin() {
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'group-override',   label: '🔀 סידור בתים',          icon: BarChart3 },
-    { id: 'live-match-designs-10a', label: '🎨 10 עיצובים - משחק חי (דקה)', icon: Sparkles },
-    { id: 'live-match-designs-10b', label: '🎨 10 עיצובים - משחק חי (חשיפה)', icon: Sparkles },
-    { id: 'live-match-designs-10c', label: '🎨 10 עיצובים - תוצאה (סבב 2)', icon: Sparkles },
-    { id: 'live-match-designs-10d', label: '🎨 10 עיצובים - תג דקה (סבב 2)', icon: Sparkles },
-    { id: 'live-match-designs-10e', label: '🎨 10 עיצובים - כניסה (סבב 2)', icon: Sparkles },
-    { id: 'live-match-designs-10f', label: '🎨 10 עיצובים - תוצאה (סבב 3)', icon: Sparkles },
-    { id: 'live-match-designs-10g', label: '🎨 10 עיצובים - תג דקה (סבב 3)', icon: Sparkles },
-    { id: 'live-match-designs-10h', label: '🎨 10 עיצובים - כניסה (סבב 3)', icon: Sparkles },
-    { id: 'next-match-leaderboard-demo', label: '🏆 דמו: משחק הבא → טבלת משתתפים', icon: Sparkles },
+    { id: 'leaderboard-reveal-gallery', label: '🏆 20 רעיונות: משחק הבא → טבלת משתתפים', icon: Sparkles },
   ];
 
   return (
