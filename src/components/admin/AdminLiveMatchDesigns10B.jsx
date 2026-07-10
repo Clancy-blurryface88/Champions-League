@@ -1,233 +1,132 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import TeamFlag from '../TeamFlag';
-import { LIVE, Shell, DesignGrid } from './_liveMatchDesignShared';
+import { LIVE, LiveCardShell, DefaultScoreDigit, Shell, DesignGrid } from './_liveMatchDesignShared';
 
 /* ──────────────────────────────────────────────────────────────────────────
-   Live Match card — batch B: score-reveal-flourish concepts.
-   Same automatic entrance model as the current LiveMatchCard: the minute
-   settles first, then the score plays its reveal moment on its own —
-   no gesture required. Each has an optional "🔁 שחזר" replay button.
+   Live Match card — batch B: minute-badge UPDATE styles + component
+   ENTRANCE-choreography styles. Same exact card as production — every
+   design here changes only (a) how the gold minute badge reacts when the
+   minute ticks, or (b) the order/timing the badge/flags/score fade in on
+   mount. The ring, flags, and score digit stay exactly as today.
    Temporary comparison tab — pick one, then it gets wired in and both
    batch files get removed.
    ────────────────────────────────────────────────────────────────────────── */
 
-const Flags = ({ size = 'w-9 h-9' }) => (
-  <div className="flex items-center gap-3" dir="ltr">
-    <TeamFlag logo={LIVE.homeCode} name={LIVE.home} className={size} />
-    <TeamFlag logo={LIVE.awayCode} name={LIVE.away} className={size} />
-  </div>
+const BumpMinute = ({ onClick }) => (
+  <button onClick={onClick} className="text-[10px] text-slate-400 hover:text-amber-300 underline underline-offset-2 mt-2">🔁 עדכן דקה</button>
 );
-const Minute = () => <span className="text-slate-400 text-[10px]">{LIVE.minute}'</span>;
 const Replay = ({ onClick }) => (
-  <button onClick={onClick} className="text-[10px] text-slate-400 hover:text-amber-300 underline underline-offset-2">🔁 שחזר</button>
+  <button onClick={onClick} className="text-[10px] text-slate-400 hover:text-amber-300 underline underline-offset-2 mt-2">🔁 שחזר כניסה</button>
 );
 
-/* ── 1. Broadcast Slam ────────────────────────────────────────────────────── */
-function B1() {
-  const [key, setKey] = useState(0);
-  return (
-    <Shell key={key} style={{ flexDirection: 'column', gap: 10 }}>
-      <Flags /><Minute />
-      <div style={{ position: 'relative' }}>
-        <motion.div initial={{ opacity: 0.9 }} animate={{ opacity: 0 }} transition={{ delay: 0.6, duration: 0.25 }} style={{ position: 'absolute', inset: -10, background: '#fff', borderRadius: 8 }} />
-        <motion.span initial={{ scale: 2.2, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.55, type: 'spring', stiffness: 320, damping: 14 }}
-          style={{ fontFamily: "'Russo One', sans-serif", fontSize: 22, color: '#fff', position: 'relative' }}>{LIVE.homeScore} - {LIVE.awayScore}</motion.span>
-      </div>
-      <Replay onClick={() => setKey((k) => k + 1)} />
-    </Shell>
-  );
+function useBumpableMinute() {
+  const [minute, setMinute] = useState(LIVE.minute);
+  const bump = () => setMinute((m) => Math.min(m + 3, 90));
+  return { minute, bump };
 }
 
-/* ── 2. Slot Reel Landing ─────────────────────────────────────────────────── */
-function ReelDigit({ target, delay }) {
-  const seq = [Math.floor(Math.random() * 10), Math.floor(Math.random() * 10), Math.floor(Math.random() * 10), target];
+/* ── 1. Ripple Burst Badge ────────────────────────────────────────────────── */
+function Badge_Ripple({ minute }) {
   return (
-    <div style={{ width: 22, height: 26, overflow: 'hidden', borderRadius: 4, background: 'rgba(245,197,24,0.08)', border: '1px solid rgba(245,197,24,0.3)' }}>
-      <motion.div initial={{ y: 0 }} animate={{ y: -26 * (seq.length - 1) }} transition={{ delay, duration: 0.6, ease: 'easeIn' }}>
-        {seq.map((n, i) => <div key={i} style={{ height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace', fontWeight: 800, color: '#f5c518' }}>{n}</div>)}
-      </motion.div>
+    <div style={{ position: 'relative' }}>
+      <motion.span key={`ripple-${minute}`} initial={{ scale: 1, opacity: 0.6 }} animate={{ scale: 2.2, opacity: 0 }} transition={{ duration: 0.6 }}
+        style={{ position: 'absolute', inset: 0, borderRadius: 999, background: '#FFD700' }} />
+      <span style={{ position: 'relative', background: '#FFD700', color: '#000', fontWeight: 900, fontSize: 11, borderRadius: 999, padding: '2px 7px', boxShadow: '0 2px 8px rgba(0,0,0,0.5), 0 0 0 2px #030d1a' }}>{minute}'</span>
     </div>
   );
 }
-function B2() {
-  const [key, setKey] = useState(0);
+
+/* ── 2. Color Shift Badge ─────────────────────────────────────────────────── */
+function Badge_ColorShift({ minute }) {
   return (
-    <Shell key={key} style={{ flexDirection: 'column', gap: 12 }}>
-      <Flags /><Minute />
-      <div className="flex items-center gap-2">
-        <ReelDigit target={LIVE.homeScore} delay={0.5} />
-        <span className="text-slate-500 text-xs">-</span>
-        <ReelDigit target={LIVE.awayScore} delay={0.65} />
-      </div>
-      <Replay onClick={() => setKey((k) => k + 1)} />
-    </Shell>
+    <motion.span key={minute} animate={{ backgroundColor: ['#fff', '#fff', '#FFD700'] }} transition={{ duration: 0.7 }}
+      style={{ color: '#000', fontWeight: 900, fontSize: 11, borderRadius: 999, padding: '2px 7px', boxShadow: '0 2px 8px rgba(0,0,0,0.5), 0 0 0 2px #030d1a' }}>{minute}'</motion.span>
   );
 }
 
-/* ── 3. Gold Pulse Settle ─────────────────────────────────────────────────── */
-function B3() {
-  const [key, setKey] = useState(0);
+/* ── 3. Glow Burst Badge ──────────────────────────────────────────────────── */
+function Badge_GlowBurst({ minute }) {
   return (
-    <Shell key={key} style={{ flexDirection: 'column', gap: 10 }}>
-      <Flags /><Minute />
-      <motion.span
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0, color: ['#f5c518', '#f5c518', '#fff'], textShadow: ['0 0 0px rgba(245,197,24,0)', '0 0 20px rgba(245,197,24,0.8)', '0 0 0px rgba(245,197,24,0)'] }}
-        transition={{ delay: 0.5, duration: 1.3, times: [0, 0.3, 1] }}
-        style={{ fontFamily: "'Russo One', sans-serif", fontSize: 22 }}
-      >{LIVE.homeScore} - {LIVE.awayScore}</motion.span>
-      <Replay onClick={() => setKey((k) => k + 1)} />
-    </Shell>
+    <motion.span key={minute} animate={{ boxShadow: ['0 0 0px rgba(245,197,24,0)', '0 0 18px rgba(245,197,24,0.9)', '0 2px 8px rgba(0,0,0,0.5)'] }} transition={{ duration: 0.6 }}
+      style={{ background: '#FFD700', color: '#000', fontWeight: 900, fontSize: 11, borderRadius: 999, padding: '2px 7px' }}>{minute}'</motion.span>
   );
 }
 
-/* ── 4. LIVE Chip Flicker ─────────────────────────────────────────────────── */
-function B4() {
-  const [key, setKey] = useState(0);
+/* ── 4. Bounce Hop Badge ──────────────────────────────────────────────────── */
+function Badge_BounceHop({ minute }) {
   return (
-    <Shell key={key} style={{ flexDirection: 'column', gap: 10 }}>
-      <Flags /><Minute />
-      <div className="flex items-center gap-2">
-        <motion.span initial={{ opacity: 0.4 }} animate={{ opacity: [0.4, 1, 0.4, 1] }} transition={{ delay: 0.4, duration: 0.6 }}
-          style={{ fontSize: 8, fontWeight: 800, color: '#f87171', border: '1px solid rgba(248,113,113,0.5)', borderRadius: 999, padding: '2px 6px' }}>LIVE</motion.span>
-        <motion.span initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6 }}
-          style={{ fontFamily: "'Russo One', sans-serif", fontSize: 20, color: '#fff' }}>{LIVE.homeScore} - {LIVE.awayScore}</motion.span>
-      </div>
-      <Replay onClick={() => setKey((k) => k + 1)} />
-    </Shell>
+    <motion.span key={minute} animate={{ y: [0, -9, 0] }} transition={{ duration: 0.4, ease: 'easeOut' }}
+      style={{ display: 'inline-block', background: '#FFD700', color: '#000', fontWeight: 900, fontSize: 11, borderRadius: 999, padding: '2px 7px', boxShadow: '0 2px 8px rgba(0,0,0,0.5), 0 0 0 2px #030d1a' }}>{minute}'</motion.span>
   );
 }
 
-/* ── 5. Metallic Light Sweep ──────────────────────────────────────────────── */
-function B5() {
-  const [key, setKey] = useState(0);
+/* ── 5. Shake Twitch Badge ────────────────────────────────────────────────── */
+function Badge_Shake({ minute }) {
   return (
-    <Shell key={key} style={{ flexDirection: 'column', gap: 10 }}>
-      <Flags /><Minute />
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} style={{ position: 'relative', overflow: 'hidden' }}>
-        <span style={{ fontFamily: "'Russo One', sans-serif", fontSize: 22, color: '#fff' }}>{LIVE.homeScore} - {LIVE.awayScore}</span>
-        <motion.div initial={{ x: '-120%' }} animate={{ x: '220%' }} transition={{ delay: 0.7, duration: 0.7, ease: 'easeIn' }}
-          style={{ position: 'absolute', top: 0, bottom: 0, width: '30%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent)', transform: 'skewX(-20deg)' }} />
-      </motion.div>
-      <Replay onClick={() => setKey((k) => k + 1)} />
-    </Shell>
+    <motion.span key={minute} animate={{ x: [0, -3, 3, -2, 0] }} transition={{ duration: 0.35 }}
+      style={{ display: 'inline-block', background: '#FFD700', color: '#000', fontWeight: 900, fontSize: 11, borderRadius: 999, padding: '2px 7px', boxShadow: '0 2px 8px rgba(0,0,0,0.5), 0 0 0 2px #030d1a' }}>{minute}'</motion.span>
   );
 }
 
-/* ── 6. Goal Count-Up ─────────────────────────────────────────────────────── */
-function useCountUp(target, start, active) {
-  const [n, setN] = useState(0);
-  useEffect(() => {
-    if (!active) { setN(0); return; }
-    let i = 0;
-    const t = setTimeout(function tick() {
-      i += 1; setN(i);
-      if (i < target) setTimeout(tick, 380);
-    }, start);
-    return () => clearTimeout(t);
-  }, [active, target, start]);
-  return n;
-}
-function B6() {
-  const [key, setKey] = useState(0);
-  const home = useCountUp(LIVE.homeScore, 500, true);
-  const away = useCountUp(LIVE.awayScore, 500, true);
+/* ── 6. Size Morph Pulse Badge ────────────────────────────────────────────── */
+function Badge_SizeMorph({ minute }) {
   return (
-    <Shell key={key} style={{ flexDirection: 'column', gap: 10 }}>
-      <Flags /><Minute />
-      <div className="flex items-center gap-2">
-        <motion.span key={home} initial={{ scale: 1.4 }} animate={{ scale: 1 }} style={{ fontFamily: "'Russo One', sans-serif", fontSize: 22, color: '#fff' }}>{home}</motion.span>
-        <span className="text-slate-500">-</span>
-        <motion.span key={away} initial={{ scale: 1.4 }} animate={{ scale: 1 }} style={{ fontFamily: "'Russo One', sans-serif", fontSize: 22, color: '#fff' }}>{away}</motion.span>
-      </div>
-      <Replay onClick={() => setKey((k) => k + 1)} />
-    </Shell>
+    <motion.span key={minute} animate={{ scale: [1, 1.35, 1] }} transition={{ duration: 0.4, ease: 'easeOut' }}
+      style={{ display: 'inline-block', background: '#FFD700', color: '#000', fontWeight: 900, fontSize: 11, borderRadius: 999, padding: '2px 8px', boxShadow: '0 2px 8px rgba(0,0,0,0.5), 0 0 0 2px #030d1a' }}>{minute}'</motion.span>
   );
 }
 
-/* ── 7. Referee Whistle Beat ──────────────────────────────────────────────── */
-function B7() {
-  const [key, setKey] = useState(0);
-  return (
-    <Shell key={key} style={{ flexDirection: 'column', gap: 10 }}>
-      <Flags /><Minute />
-      <motion.span initial={{ scale: 1, opacity: 1 }} animate={{ scale: [1, 1.5, 1], opacity: [1, 1, 0] }} transition={{ delay: 0.3, duration: 0.4 }}
-        style={{ position: 'absolute', fontSize: 20 }}>🔺</motion.span>
-      <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.75 }}
-        style={{ fontFamily: "'Russo One', sans-serif", fontSize: 22, color: '#fff' }}>{LIVE.homeScore} - {LIVE.awayScore}</motion.span>
-      <Replay onClick={() => setKey((k) => k + 1)} />
-    </Shell>
-  );
+function makeBadgeDesign(Badge) {
+  return function DesignCard() {
+    const { minute, bump } = useBumpableMinute();
+    return (
+      <Shell style={{ flexDirection: 'column', gap: 4, minHeight: 300 }}>
+        <LiveCardShell progress={minute / 90} minute={minute} ScoreDigit={DefaultScoreDigit} MinuteBadge={Badge} />
+        <BumpMinute onClick={bump} />
+      </Shell>
+    );
+  };
 }
 
-/* ── 8. CRT Power-On Scoreboard ───────────────────────────────────────────── */
-function B8() {
-  const [key, setKey] = useState(0);
-  return (
-    <Shell key={key} style={{ flexDirection: 'column', gap: 10 }}>
-      <Flags /><Minute />
-      <motion.div initial={{ scaleY: 0.02, opacity: 0 }} animate={{ scaleY: [0.02, 1.15, 0.9, 1], opacity: 1 }} transition={{ delay: 0.5, duration: 0.5, times: [0, 0.5, 0.8, 1] }}
-        style={{ padding: '5px 14px', borderRadius: 6, background: '#0a0f0a', border: '1px solid #1a2a1a' }}>
-        <span style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 800, color: '#4ade80', textShadow: '0 0 8px #4ade80' }}>{LIVE.homeScore}-{LIVE.awayScore}</span>
-      </motion.div>
-      <Replay onClick={() => setKey((k) => k + 1)} />
-    </Shell>
-  );
-}
-
-/* ── 9. Collide-In Digits ─────────────────────────────────────────────────── */
-function B9() {
-  const [key, setKey] = useState(0);
-  return (
-    <Shell key={key} style={{ flexDirection: 'column', gap: 10 }}>
-      <Flags /><Minute />
-      <div className="flex items-center gap-2">
-        <motion.span initial={{ x: -60, opacity: 0 }} animate={{ x: [-60, 3, 0], opacity: 1 }} transition={{ delay: 0.5, duration: 0.5, ease: 'easeOut' }}
-          style={{ fontFamily: "'Russo One', sans-serif", fontSize: 22, color: '#fff' }}>{LIVE.homeScore}</motion.span>
-        <span className="text-slate-500">-</span>
-        <motion.span initial={{ x: 60, opacity: 0 }} animate={{ x: [60, -3, 0], opacity: 1 }} transition={{ delay: 0.5, duration: 0.5, ease: 'easeOut' }}
-          style={{ fontFamily: "'Russo One', sans-serif", fontSize: 22, color: '#fff' }}>{LIVE.awayScore}</motion.span>
-      </div>
-      <Replay onClick={() => setKey((k) => k + 1)} />
-    </Shell>
-  );
-}
-
-/* ── 10. Gold Underline Draw ──────────────────────────────────────────────── */
-function B10() {
-  const [key, setKey] = useState(0);
-  return (
-    <Shell key={key} style={{ flexDirection: 'column', gap: 8 }}>
-      <Flags /><Minute />
-      <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-        style={{ fontFamily: "'Russo One', sans-serif", fontSize: 22, color: '#fff' }}>{LIVE.homeScore} - {LIVE.awayScore}</motion.span>
-      <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.8, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        style={{ width: 60, height: 2, background: '#f5c518', transformOrigin: 'center', boxShadow: '0 0 6px #f5c518' }} />
-      <Replay onClick={() => setKey((k) => k + 1)} />
-    </Shell>
-  );
+/* ── 7–10. Entrance choreography variants (badge/flags/score stagger) ────── */
+function makeEntranceDesign(entranceDelays, drawRing = false) {
+  return function DesignCard() {
+    const [key, setKey] = useState(0);
+    const [progress, setProgress] = useState(drawRing ? 0 : LIVE.minute / 90);
+    useEffect(() => {
+      if (!drawRing) return;
+      setProgress(0);
+      const t = setTimeout(() => setProgress(LIVE.minute / 90), 30);
+      return () => clearTimeout(t);
+    }, [key, drawRing]);
+    return (
+      <Shell key={key} style={{ flexDirection: 'column', gap: 4, minHeight: 300 }}>
+        <LiveCardShell progress={progress} minute={LIVE.minute} ScoreDigit={DefaultScoreDigit} entranceDelays={entranceDelays} />
+        <Replay onClick={() => setKey((k) => k + 1)} />
+      </Shell>
+    );
+  };
 }
 
 const DESIGNS = [
-  { id: 1, name: 'Broadcast Slam', Comp: B1 },
-  { id: 2, name: 'Slot Reel Landing', Comp: B2 },
-  { id: 3, name: 'Gold Pulse Settle', Comp: B3 },
-  { id: 4, name: 'LIVE Chip Flicker', Comp: B4 },
-  { id: 5, name: 'Metallic Light Sweep', Comp: B5 },
-  { id: 6, name: 'Goal Count-Up', Comp: B6 },
-  { id: 7, name: 'Referee Whistle Beat', Comp: B7 },
-  { id: 8, name: 'CRT Power-On Scoreboard', Comp: B8 },
-  { id: 9, name: 'Collide-In Digits', Comp: B9 },
-  { id: 10, name: 'Gold Underline Draw', Comp: B10 },
+  { id: 1, name: 'Ripple Burst Badge', Comp: makeBadgeDesign(Badge_Ripple) },
+  { id: 2, name: 'Color Shift Badge', Comp: makeBadgeDesign(Badge_ColorShift) },
+  { id: 3, name: 'Glow Burst Badge', Comp: makeBadgeDesign(Badge_GlowBurst) },
+  { id: 4, name: 'Bounce Hop Badge', Comp: makeBadgeDesign(Badge_BounceHop) },
+  { id: 5, name: 'Shake Twitch Badge', Comp: makeBadgeDesign(Badge_Shake) },
+  { id: 6, name: 'Size Morph Pulse Badge', Comp: makeBadgeDesign(Badge_SizeMorph) },
+  { id: 7, name: 'Entrance: Score-First Anticipation', Comp: makeEntranceDesign({ score: 0, flags: 0.18, badge: 0.36 }) },
+  { id: 8, name: 'Entrance: Flags Converge First', Comp: makeEntranceDesign({ flags: 0, badge: 0.22, score: 0.4 }) },
+  { id: 9, name: 'Entrance: Soft Simultaneous', Comp: makeEntranceDesign({ badge: 0.1, flags: 0.14, score: 0.16 }) },
+  { id: 10, name: 'Entrance: Ring Draws, Then Reveal', Comp: makeEntranceDesign({ badge: 0.5, flags: 0.6, score: 0.75 }, true) },
 ];
 
 export default function AdminLiveMatchDesigns10B() {
   const [chosen, setChosen] = useState(null);
   return (
     <DesignGrid
-      title="10 עיצובים — כרטיס משחק חי (רגע חשיפת התוצאה, אוטומטי)"
-      subtitle="הדקה מתיישבת קודם, ואז התוצאה 'נכנסת' ברגע דרמטי משלה — בדיוק כמו היום, רק ואריאציות שונות"
+      title="10 עיצובים — אותו כרטיס משחק חי, רק עדכון דקה / סדר הופעת רכיבים שונה"
+      subtitle="הכרטיס, הטבעת, הדגלים והתוצאה זהים להיום — #1-6: לחץ 'עדכן דקה' לראות את התג מגיב; #7-10: לחץ 'שחזר כניסה' לראות סדר הופעה שונה"
       designs={DESIGNS}
       chosen={chosen}
       setChosen={setChosen}
