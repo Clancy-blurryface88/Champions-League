@@ -18,6 +18,7 @@ import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminGroupOverride from "../components/admin/AdminGroupOverride";
 import AdminLiveTableShapeGallery from "../components/admin/AdminLiveTableShapeGallery";
+import AdminLiveTableShapeGallery2 from "../components/admin/AdminLiveTableShapeGallery2";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -78,6 +79,7 @@ export default function Admin() {
       case 'reset':      return <AdminReset />;
       case 'group-override': return <AdminGroupOverride />;
       case 'live-table-shapes': return <AdminLiveTableShapeGallery />;
+      case 'live-table-shapes-2': return <AdminLiveTableShapeGallery2 />;
       default: return <AdminRounds />;
     }
   };
@@ -94,6 +96,7 @@ export default function Admin() {
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'group-override',   label: '🔀 סידור בתים',          icon: BarChart3 },
     { id: 'live-table-shapes', label: '🔷 20 צורות לטבלת לייב', icon: Sparkles },
+    { id: 'live-table-shapes-2', label: '🔷🔥 30 עוד יותר - טבלת לייב', icon: Sparkles },
   ];
 
   return (
