@@ -22,6 +22,9 @@ import AdminLiveMatchDesigns10B from "../components/admin/AdminLiveMatchDesigns1
 import AdminLiveMatchDesigns10C from "../components/admin/AdminLiveMatchDesigns10C";
 import AdminLiveMatchDesigns10D from "../components/admin/AdminLiveMatchDesigns10D";
 import AdminLiveMatchDesigns10E from "../components/admin/AdminLiveMatchDesigns10E";
+import AdminLiveMatchDesigns10F from "../components/admin/AdminLiveMatchDesigns10F";
+import AdminLiveMatchDesigns10G from "../components/admin/AdminLiveMatchDesigns10G";
+import AdminLiveMatchDesigns10H from "../components/admin/AdminLiveMatchDesigns10H";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -86,6 +89,9 @@ export default function Admin() {
       case 'live-match-designs-10c': return <AdminLiveMatchDesigns10C />;
       case 'live-match-designs-10d': return <AdminLiveMatchDesigns10D />;
       case 'live-match-designs-10e': return <AdminLiveMatchDesigns10E />;
+      case 'live-match-designs-10f': return <AdminLiveMatchDesigns10F />;
+      case 'live-match-designs-10g': return <AdminLiveMatchDesigns10G />;
+      case 'live-match-designs-10h': return <AdminLiveMatchDesigns10H />;
       default: return <AdminRounds />;
     }
   };
@@ -106,6 +112,9 @@ export default function Admin() {
     { id: 'live-match-designs-10c', label: '🎨 10 עיצובים - תוצאה (סבב 2)', icon: Sparkles },
     { id: 'live-match-designs-10d', label: '🎨 10 עיצובים - תג דקה (סבב 2)', icon: Sparkles },
     { id: 'live-match-designs-10e', label: '🎨 10 עיצובים - כניסה (סבב 2)', icon: Sparkles },
+    { id: 'live-match-designs-10f', label: '🎨 10 עיצובים - תוצאה (סבב 3)', icon: Sparkles },
+    { id: 'live-match-designs-10g', label: '🎨 10 עיצובים - תג דקה (סבב 3)', icon: Sparkles },
+    { id: 'live-match-designs-10h', label: '🎨 10 עיצובים - כניסה (סבב 3)', icon: Sparkles },
   ];
 
   return (
