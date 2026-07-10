@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { User, UserStats, Match, Prediction } from "@/api/entities";
-import { Settings, LogOut, PlayCircle, Bell, BellOff } from "lucide-react";
+import { Settings, LogOut, PlayCircle, Bell, BellOff, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MatchesByDateSheet from "./components/MatchesByDateSheet";
 import {
@@ -25,6 +25,7 @@ import YearlySummaryPanel from "./components/YearlySummaryPanel"; // NEW: Yearly
 import { OdometerDigit } from "./components/OdometerScore";
 import MatchCountdown from "./components/MatchCountdown";
 import TeamFlag from "./components/TeamFlag";
+import LiveLeaderboard from "./components/LiveLeaderboard";
 
 // Measures a ref'd element's rendered box size, updating on resize (the live
 // card's width is responsive — min(370px, 92vw) — so the ring's actual
@@ -282,6 +283,7 @@ export default function Layout({ children, currentPageName }) {
   const [liveMatch, setLiveMatch] = useState(null);
   const [liveMatchCount, setLiveMatchCount] = useState(0);
   const [showLiveIntro, setShowLiveIntro] = useState(false);
+  const [showLiveLeaderboard, setShowLiveLeaderboard] = useState(false);
   const [liveUserPrediction, setLiveUserPrediction] = useState(null);
   const [livePredictionLoading, setLivePredictionLoading] = useState(false);
   const [liveCheckDone, setLiveCheckDone] = useState(false);
@@ -647,6 +649,17 @@ export default function Layout({ children, currentPageName }) {
     const cap = setTimeout(() => setShowLiveIntro(false), 16000);
     return () => clearTimeout(cap);
   }, [showLiveIntro]);
+
+  // Once the live-match intro card closes, surface the live leaderboard so
+  // its data starts loading right as the card leaves the screen instead of
+  // sitting inline (and fetching) the whole time the intro is up.
+  const wasShowingLiveIntro = useRef(false);
+  useEffect(() => {
+    if (wasShowingLiveIntro.current && !showLiveIntro && hasLiveMatch) {
+      setShowLiveLeaderboard(true);
+    }
+    wasShowingLiveIntro.current = showLiveIntro;
+  }, [showLiveIntro, hasLiveMatch]);
 
   // Load today's match count for FAB badge + find the next upcoming match
   useEffect(() => {
@@ -1261,6 +1274,55 @@ export default function Layout({ children, currentPageName }) {
                   liveUserPrediction={liveUserPrediction}
                   liveMatchCount={liveMatchCount}
                 />
+              </div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Live Leaderboard Overlay — opens right after the live-match intro
+            closes, in a mobile-sized container; closing it returns home */}
+        <AnimatePresence>
+          {showLiveLeaderboard && (
+            <>
+              <motion.div
+                key="live-lb-bg"
+                className="fixed inset-0 z-[55]"
+                style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                onClick={() => { setShowLiveLeaderboard(false); navigate(createPageUrl("Dashboard")); }}
+              />
+              <div className="fixed inset-0 z-[56] flex items-center justify-center px-4 pointer-events-none">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.94, y: 12 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.94, y: 12 }}
+                  transition={{ duration: 0.35, ease: 'easeOut' }}
+                  className="pointer-events-auto rounded-2xl w-full flex flex-col"
+                  style={{
+                    maxWidth: 'min(400px, 92vw)',
+                    maxHeight: '82vh',
+                    background: 'rgba(8,18,32,0.95)',
+                    backdropFilter: 'blur(28px)',
+                    boxShadow: '0 0 60px rgba(239,68,68,0.18), 0 20px 60px rgba(0,0,0,0.7)',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                    <span className="text-white text-sm font-bold">טבלת דירוג חיה</span>
+                    <button
+                      onClick={() => { setShowLiveLeaderboard(false); navigate(createPageUrl("Dashboard")); }}
+                      className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all border border-white/8"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-white/10">
+                    <LiveLeaderboard />
+                  </div>
+                </motion.div>
               </div>
             </>
           )}

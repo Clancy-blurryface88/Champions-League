@@ -14,7 +14,6 @@ import { Round } from "@/api/entities"; // NEW: Import Round entity
 import { motion, AnimatePresence } from "framer-motion";
 import LottieAnimation from "@/components/ui/LottieAnimation";
 import RoundInsightsTicker from "../components/RoundInsightsTicker";
-import LiveLeaderboard from "../components/LiveLeaderboard";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -124,11 +123,6 @@ export default function Dashboard() {
 
       <div className="relative z-[1] flex-1 flex flex-col items-center justify-center w-full gap-10 md:gap-16 pt-8 pb-12">
         <TournamentHeader />
-
-        {/* Live Leaderboard Section — same table/effects as the live panel */}
-        <div className="w-full max-w-md mx-auto px-4">
-          <LiveLeaderboard />
-        </div>
 
         {/* Rounds Marquee Section */}
         {rounds.length > 0 && (
