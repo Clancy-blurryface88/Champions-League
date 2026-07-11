@@ -28,7 +28,7 @@ function FlagWithPixels({ code, name, px, animate, r = 'rounded-md' }) {
   return (
     <div
       ref={ref}
-      className={`relative ${r} overflow-hidden flex-shrink-0 shadow-md`}
+      className={`relative ${r} overflow-hidden flex-shrink-0`}
       style={{ width: px, height: px, minWidth: px }}
     >
       <span
@@ -59,7 +59,7 @@ function FlagWithPixels({ code, name, px, animate, r = 'rounded-md' }) {
 function FlagSimple({ code, name, px }) {
   return (
     <span
-      className="fi fis rounded-full flex-shrink-0 shadow-sm"
+      className="fi fis rounded-full flex-shrink-0"
       style={{ width: px, height: px, fontSize: px, display: 'inline-block', backgroundSize: 'cover', backgroundPosition: 'center' }}
       title={name}
     >
@@ -67,12 +67,6 @@ function FlagSimple({ code, name, px }) {
     </span>
   );
 }
-
-// Subtle embossed/3D bevel — a light highlight on the top-left edge and a
-// soft shadow on the bottom-right, layered as an inset box-shadow overlay so
-// it never touches (and can't distort) whatever shape/rounding the flag
-// underneath already has.
-const EMBOSS_SHADOW = 'inset 0 1px 1px rgba(255,255,255,.4), inset 0 -2px 3px rgba(0,0,0,.5), inset 1px 0 1px rgba(255,255,255,.15), inset -1px 0 2px rgba(0,0,0,.35)';
 
 export default function TeamFlag({ logo, name, className = 'w-12 h-12', animate = false, size, rounded = 'md' }) {
   const px = getPx(className, size);
@@ -105,7 +99,7 @@ export default function TeamFlag({ logo, name, className = 'w-12 h-12', animate 
       <img
         src={logo}
         alt={name}
-        className={`${r} object-contain flex-shrink-0 shadow-sm ${className}`}
+        className={`${r} object-contain flex-shrink-0 ${className}`}
       />
     );
   } else if (animate) {
@@ -115,7 +109,7 @@ export default function TeamFlag({ logo, name, className = 'w-12 h-12', animate 
     // Simple flag (no animation) — most admin/modal usages
     content = (
       <span
-        className={`fi fi-${logo} fis ${r} flex-shrink-0 shadow-sm ${className}`}
+        className={`fi fi-${logo} fis ${r} flex-shrink-0 ${className}`}
         title={name}
         style={{ display: 'inline-block', width: px, height: px, fontSize: px, backgroundSize: 'cover', backgroundPosition: 'center', minWidth: px }}
       />
@@ -125,7 +119,6 @@ export default function TeamFlag({ logo, name, className = 'w-12 h-12', animate 
   return (
     <span className="relative inline-block flex-shrink-0" style={{ width: px, height: px, minWidth: px }}>
       {content}
-      <span className={`absolute inset-0 ${r} pointer-events-none`} style={{ boxShadow: EMBOSS_SHADOW }} />
     </span>
   );
 }
