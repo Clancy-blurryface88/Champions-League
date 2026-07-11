@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, TrendingUp, TrendingDown, Minus, WifiOff } from "lucide-react";
+import { Clock, TrendingUp, TrendingDown, Minus, WifiOff, Lock } from "lucide-react";
 import { ShineBorder } from "@/components/magicui/shine-border";
 import ScoreCounter from "@/components/ScoreCounter";
 import TeamFlag from "@/components/TeamFlag";
@@ -58,6 +58,133 @@ const RANK_BG     = r => r === 1 ? 'linear-gradient(135deg,rgba(250,204,21,.22),
                        : r === 2 ? 'linear-gradient(135deg,rgba(209,213,219,.18),rgba(156,163,175,.18))'
                        : r === 3 ? 'linear-gradient(135deg,rgba(245,158,11,.20),rgba(217,119,6,.20))'
                        : 'rgba(30,41,59,.60)';
+const MEDAL = { 1: '🥇', 2: '🥈', 3: '🥉' };
+
+// ── Fetch live match(es) + compute live-adjusted rows ─────────────────────
+// Shared by (a) the very first load, to decide whether to play the spotlight
+// reveal, and (b) every later 30s poll, which just smooth-reorders.
+async function fetchAndBuildLive(data, officialRankMap, getName) {
+  const now2 = new Date();
+  const localDate = now2.toLocaleDateString('sv-SE');
+  const prevLocalDate = new Date(now2 - 864e5).toLocaleDateString('sv-SE');
+  const res = await fetch(`/api/football?competition=WC&filter=LIVE&dateFrom=${prevLocalDate}&dateTo=${localDate}`);
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error);
+  const liveMatches = json.matches || [];
+  if (liveMatches.length === 0) return { built: null, liveInfoArr: null };
+
+  const unfinished = data.matches.filter(m => !m.is_finished);
+  const liveDbMatches = [];
+  for (const lm of liveMatches) {
+    const f = findDbMatch(lm, unfinished);
+    if (f) liveDbMatches.push({ dbMatch: f, apiMatch: lm });
+  }
+  if (liveDbMatches.length === 0) return { built: null, liveInfoArr: null };
+
+  const confirmedMap = {};
+  data.userStats.forEach(s => { confirmedMap[s.user_id] = s.total_points || 0; });
+
+  const liveBonusMap = {};
+  for (const { dbMatch, apiMatch } of liveDbMatches) {
+    const homeScore = apiMatch.score?.fullTime?.home ?? apiMatch.score?.halfTime?.home ?? 0;
+    const awayScore = apiMatch.score?.fullTime?.away ?? apiMatch.score?.halfTime?.away ?? 0;
+    const liveMatch = { ...dbMatch, actual_score_a: homeScore, actual_score_b: awayScore };
+
+    const matchPreds = data.predictions.filter(p => p.match_id === dbMatch.id);
+    const latestMap  = {};
+    matchPreds.forEach(p => {
+      if (!latestMap[p.user_id] || new Date(p.created_at) > new Date(latestMap[p.user_id].created_at))
+        latestMap[p.user_id] = p;
+    });
+    for (const [userId, pred] of Object.entries(latestMap)) {
+      const b  = calculateScore(pred, liveMatch);
+      const pA = pred.predicted_score_a, pB = pred.predicted_score_b;
+      const pDir = pA > pB ? 'home' : pA < pB ? 'away' : 'draw';
+      const aDir = homeScore > awayScore ? 'home' : homeScore < awayScore ? 'away' : 'draw';
+      const isExact = pA === homeScore && pB === awayScore;
+      const isHit   = pDir === aDir;
+      if (!liveBonusMap[userId]) liveBonusMap[userId] = { liveBonus: 0, matchPredictions: [] };
+      liveBonusMap[userId].liveBonus += b.totalPoints;
+      liveBonusMap[userId].matchPredictions.push({
+        predicted: `${pA}-${pB}`,
+        homeLogo: dbMatch.team_a_logo ?? null, home: dbMatch.team_a,
+        awayLogo: dbMatch.team_b_logo ?? null, away: dbMatch.team_b,
+        isExact, isHit,
+      });
+    }
+  }
+
+  const allUserIds = new Set([...Object.keys(liveBonusMap), ...data.userStats.map(s => s.user_id)]);
+  const built = [];
+  for (const userId of allUserIds) {
+    const confirmed        = confirmedMap[userId] || 0;
+    const liveBonus        = liveBonusMap[userId]?.liveBonus        || 0;
+    const matchPredictions = liveBonusMap[userId]?.matchPredictions || [];
+    built.push({ userId, name: getName(userId), confirmed: parseFloat(confirmed.toFixed(2)), liveBonus: parseFloat(liveBonus.toFixed(2)), total: parseFloat((confirmed + liveBonus).toFixed(2)), matchPredictions });
+  }
+  built.sort((a, b) => b.total - a.total);
+  built.forEach((r, i) => { r.liveRank = i + 1; });
+  built.forEach(r => { r.officialRank = officialRankMap[r.userId] ?? r.liveRank; });
+
+  const liveInfoArr = liveDbMatches.map(({ dbMatch, apiMatch }) => ({
+    home: dbMatch.team_a, away: dbMatch.team_b,
+    homeLogo: dbMatch.team_a_logo ?? null, awayLogo: dbMatch.team_b_logo ?? null,
+    score: `${apiMatch.score?.fullTime?.home ?? apiMatch.score?.halfTime?.home ?? 0}–${apiMatch.score?.fullTime?.away ?? apiMatch.score?.halfTime?.away ?? 0}`,
+    minute: apiMatch.minute ?? null,
+  }));
+
+  return { built, liveInfoArr };
+}
+
+// ── Locked placeholder for ranks 1-3 while the spotlight suspense builds ──
+function LockedSlot({ rank }) {
+  return (
+    <div className="relative mb-1 rounded-lg overflow-hidden border border-dashed border-slate-700/60 flex items-center gap-2 px-3"
+      style={{ background: 'rgba(15,23,42,.5)', height: 46 }}>
+      <Lock className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
+      <div className="flex-1 h-2 rounded-full bg-slate-700/40 animate-pulse" style={{ maxWidth: 90 }} />
+      <span className="text-slate-700 text-[10px] font-bold">#{rank}</span>
+    </div>
+  );
+}
+
+// ── Big centered reveal card for ranks 3 → 2 → 1, "זום מבעד" transition ───
+// Shares layoutId with the real RankCard of the same user, so once the
+// sequence ends it visually shrinks back into its row in the list below.
+function SpotlightRankCard({ row }) {
+  const rank = row.liveRank;
+  return (
+    <AnimatePresence mode="popLayout">
+      <motion.div key={row.userId} layout layoutId={`lb-${row.userId}`}
+        initial={{ scale: 0.5, opacity: 0, filter: 'blur(10px)' }}
+        animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
+        exit={{ scale: 1.6, opacity: 0, filter: 'blur(10px)' }}
+        transition={{ duration: 0.5, ease: 'easeInOut' }}
+        className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 20 }}>
+        <div style={{ width: 220, borderRadius: 14, overflow: 'hidden', border: `3px solid ${RANK_BORDER(rank)}`, background: RANK_BG(rank), boxShadow: `0 0 40px ${RANK_BORDER(rank)}55, 0 10px 30px rgba(0,0,0,.6)`, position: 'relative' }}>
+          <ShineBorder
+            borderRadius={14}
+            borderWidth={1.5}
+            duration={rank === 1 ? 6 : rank === 2 ? 7 : 8}
+            shineColor={
+              rank === 1 ? ['#FFD700','#fff','#F5C518'] :
+              rank === 2 ? ['#C0C0C0','#fff','#94a3b8'] :
+              ['#CD7F32','#fff','#D97706']
+            }
+          />
+          <div className="flex flex-col items-center gap-2 px-6 py-6">
+            <span className="text-4xl leading-none">{MEDAL[rank]}</span>
+            <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: RANK_COLOR(rank) }}>מקום {rank}</span>
+            <p className="text-white text-lg font-black">{row.name}</p>
+            <span className="text-3xl font-black tabular-nums" style={{ color: RANK_COLOR(rank) }}>
+              <ScoreCounter value={row.total} duration={1.1} showDecimals={true} />
+            </span>
+          </div>
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
 
 function DeltaIcon({ delta }) {
   return (
@@ -144,18 +271,57 @@ export default function LiveLeaderboard() {
   const [liveInfo, setLiveInfo]           = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [lastUpdate, setLastUpdate]       = useState(null);
+  // reveal phase: 'steady' = normal list (default / no live match / after the
+  // reveal finishes). Only set to one of the intro stages once, the very
+  // first time we discover a live match already in progress on page load.
+  const [phase, setPhase]                 = useState('steady');
   const hasShownInitial  = useRef(false);
   const officialRankMap  = useRef({}); // userId → officialRank, set once from Phase 1
   const dbRef            = useRef(null);
+  const cancelledRef     = useRef(false);
+
+  useEffect(() => () => { cancelledRef.current = true; }, []);
 
   const getName = useCallback(uid => {
     const profiles = dbRef.current?.profiles || [];
     return profiles.find(p => p.user_id === uid)?.display_name || uid?.slice(0, 6) || '?';
   }, []);
 
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+
+  // Plays: live chip alone → ranks 9..4 build in → 3/2/1 spotlighted one by
+  // one with the zoom-through effect → collapses back into the normal list,
+  // which now shows the rank deltas against the live result.
+  const runReveal = useCallback(async (builtRows, liveInfoArr) => {
+    setStatus('done');
+    setLiveInfo(liveInfoArr);
+    setPhase('match');
+    await wait(1500); if (cancelledRef.current) return;
+
+    setPhase('build');
+    setIsInitialLoad(true);
+    setRows(builtRows);
+    const bottomCount = builtRows.filter(r => r.liveRank > 3).length;
+    const cascadeMs = Math.pow(Math.max(bottomCount - 1, 0), 1.4) * 130 + 900;
+    await wait(cascadeMs); if (cancelledRef.current) return;
+
+    const rank3 = builtRows.find(r => r.liveRank === 3);
+    const rank2 = builtRows.find(r => r.liveRank === 2);
+    const rank1 = builtRows.find(r => r.liveRank === 1);
+
+    if (rank3) { setPhase('spot3'); await wait(2300); if (cancelledRef.current) return; }
+    if (rank2) { setPhase('spot2'); await wait(2300); if (cancelledRef.current) return; }
+    if (rank1) { setPhase('spot1'); await wait(2800); if (cancelledRef.current) return; }
+
+    setPhase('collapsing');
+    await wait(900); if (cancelledRef.current) return;
+
+    setPhase('steady');
+    setIsInitialLoad(false);
+  }, []);
+
   const load = useCallback(async () => {
     try {
-      // ── Phase 1: load Supabase once, show official scores with reveal animation ──
       if (!dbRef.current) {
         const [matches, profiles, userStats, predictions] = await Promise.all([
           Match.list(), PublicProfile.list(), UserStats.list(), Prediction.list(),
@@ -165,6 +331,8 @@ export default function LiveLeaderboard() {
       const data = dbRef.current;
 
       if (!hasShownInitial.current) {
+        hasShownInitial.current = true;
+
         const official = data.userStats.map(s => ({
           userId: s.user_id,
           name: getName(s.user_id),
@@ -178,95 +346,37 @@ export default function LiveLeaderboard() {
           r.officialRank = i + 1;
           officialRankMap.current[r.userId] = i + 1;
         });
-        hasShownInitial.current = true;
-        setIsInitialLoad(true);   // reveal animation
-        setRows(official);
-        setStatus('done');
-        // wait for reveal animation to complete before live update
-        const revealWait = Math.pow(Math.max(official.length - 1, 0), 1.4) * 0.13 + 1.2;
-        await new Promise(resolve => setTimeout(resolve, revealWait * 1000));
-      }
 
-      // ── Phase 2: fetch live API and smoothly reorder ──────────────────────────
-      const now2 = new Date();
-      const localDate = now2.toLocaleDateString('sv-SE');
-      const prevLocalDate = new Date(now2 - 864e5).toLocaleDateString('sv-SE');
-      const res  = await fetch(`/api/football?competition=WC&filter=LIVE&dateFrom=${prevLocalDate}&dateTo=${localDate}`);
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error);
-      const liveMatches = json.matches || [];
-      setLastUpdate(new Date());
+        const live = await fetchAndBuildLive(data, officialRankMap.current, getName);
 
-      if (liveMatches.length === 0) { setLiveInfo(null); return; }
-
-      // Collect ALL live DB matches (not just the first one)
-      const unfinished = data.matches.filter(m => !m.is_finished);
-      const liveDbMatches = [];
-      for (const lm of liveMatches) {
-        const f = findDbMatch(lm, unfinished);
-        if (f) liveDbMatches.push({ dbMatch: f, apiMatch: lm });
-      }
-      if (liveDbMatches.length === 0) return;
-
-      const confirmedMap = {};
-      data.userStats.forEach(s => { confirmedMap[s.user_id] = s.total_points || 0; });
-
-      // Sum live bonus across ALL concurrent live matches per user
-      const liveBonusMap = {};
-      for (const { dbMatch, apiMatch } of liveDbMatches) {
-        const homeScore = apiMatch.score?.fullTime?.home ?? apiMatch.score?.halfTime?.home ?? 0;
-        const awayScore = apiMatch.score?.fullTime?.away ?? apiMatch.score?.halfTime?.away ?? 0;
-        const liveMatch = { ...dbMatch, actual_score_a: homeScore, actual_score_b: awayScore };
-
-        const matchPreds = data.predictions.filter(p => p.match_id === dbMatch.id);
-        const latestMap  = {};
-        matchPreds.forEach(p => {
-          if (!latestMap[p.user_id] || new Date(p.created_at) > new Date(latestMap[p.user_id].created_at))
-            latestMap[p.user_id] = p;
-        });
-        for (const [userId, pred] of Object.entries(latestMap)) {
-          const b  = calculateScore(pred, liveMatch);
-          const pA = pred.predicted_score_a, pB = pred.predicted_score_b;
-          const pDir = pA > pB ? 'home' : pA < pB ? 'away' : 'draw';
-          const aDir = homeScore > awayScore ? 'home' : homeScore < awayScore ? 'away' : 'draw';
-          const isExact = pA === homeScore && pB === awayScore;
-          const isHit   = pDir === aDir;
-          if (!liveBonusMap[userId]) liveBonusMap[userId] = { liveBonus: 0, matchPredictions: [] };
-          liveBonusMap[userId].liveBonus += b.totalPoints;
-          liveBonusMap[userId].matchPredictions.push({
-            predicted: `${pA}-${pB}`,
-            homeLogo: dbMatch.team_a_logo ?? null, home: dbMatch.team_a,
-            awayLogo: dbMatch.team_b_logo ?? null, away: dbMatch.team_b,
-            isExact, isHit,
-          });
+        if (live.built && live.built.length > 0) {
+          // a match is already live on first load — play the spotlight reveal
+          await runReveal(live.built, live.liveInfoArr);
+        } else {
+          // no live match yet — same simple cascade as before
+          setIsInitialLoad(true);
+          setRows(official);
+          setStatus('done');
+          const revealWait = Math.pow(Math.max(official.length - 1, 0), 1.4) * 0.13 + 1.2;
+          await wait(revealWait * 1000);
         }
+        setLastUpdate(new Date());
+        return;
       }
 
-      const allUserIds = new Set([...Object.keys(liveBonusMap), ...data.userStats.map(s => s.user_id)]);
-      const built = [];
-      for (const userId of allUserIds) {
-        const confirmed        = confirmedMap[userId] || 0;
-        const liveBonus        = liveBonusMap[userId]?.liveBonus        || 0;
-        const matchPredictions = liveBonusMap[userId]?.matchPredictions || [];
-        built.push({ userId, name: getName(userId), confirmed: parseFloat(confirmed.toFixed(2)), liveBonus: parseFloat(liveBonus.toFixed(2)), total: parseFloat((confirmed + liveBonus).toFixed(2)), matchPredictions });
-      }
-      built.sort((a, b) => b.total - a.total);
-      built.forEach((r, i) => { r.liveRank = i + 1; });
-      built.forEach(r => { r.officialRank = officialRankMap.current[r.userId] ?? r.liveRank; });
+      // ── every later poll: fetch live API and smoothly reorder, no reveal ──
+      const live = await fetchAndBuildLive(data, officialRankMap.current, getName);
+      setLastUpdate(new Date());
+      if (!live.built) { setLiveInfo(null); return; }
 
-      setIsInitialLoad(false);  // smooth reorder only, no re-reveal
-      setRows(built);
-      setLiveInfo(liveDbMatches.map(({ dbMatch, apiMatch }) => ({
-        home: dbMatch.team_a, away: dbMatch.team_b,
-        homeLogo: dbMatch.team_a_logo ?? null, awayLogo: dbMatch.team_b_logo ?? null,
-        score: `${apiMatch.score?.fullTime?.home ?? apiMatch.score?.halfTime?.home ?? 0}–${apiMatch.score?.fullTime?.away ?? apiMatch.score?.halfTime?.away ?? 0}`,
-        minute: apiMatch.minute ?? null,
-      })));
+      setIsInitialLoad(false);
+      setRows(live.built);
+      setLiveInfo(live.liveInfoArr);
     } catch (e) {
       console.error('[LiveLeaderboard]', e);
       if (!hasShownInitial.current) setStatus('error');
     }
-  }, [getName]);
+  }, [getName, runReveal]);
 
   useEffect(() => {
     load();
@@ -309,13 +419,27 @@ export default function LiveLeaderboard() {
         ))}
       </AnimatePresence>
 
-      <div style={{ maxWidth: 262, margin: '0 auto' }}>
-        <AnimatePresence>
-          {rows.map((row, idx) => (
-            <RankCard key={row.userId} row={row} index={idx} total={rows.length} isInitial={isInitialLoad} />
-          ))}
-        </AnimatePresence>
-      </div>
+      {phase !== 'match' && (
+        <div style={{ maxWidth: 262, margin: '0 auto', position: 'relative' }}>
+          <AnimatePresence>
+            {rows.map((row, idx) => {
+              const isTop3 = row.liveRank <= 3;
+              const top3Revealed = phase === 'collapsing' || phase === 'steady';
+              if (isTop3 && !top3Revealed) {
+                return <LockedSlot key={row.userId} rank={row.liveRank} />;
+              }
+              return (
+                <RankCard key={row.userId} row={row} index={idx} total={rows.length}
+                  isInitial={isTop3 ? false : isInitialLoad} />
+              );
+            })}
+          </AnimatePresence>
+
+          {(phase === 'spot3' || phase === 'spot2' || phase === 'spot1') && (
+            <SpotlightRankCard row={rows.find(r => r.liveRank === (phase === 'spot3' ? 3 : phase === 'spot2' ? 2 : 1))} />
+          )}
+        </div>
+      )}
 
       {lastUpdate && (
         <p className="text-center text-slate-700 text-[10px] mt-3 flex items-center justify-center gap-1">
