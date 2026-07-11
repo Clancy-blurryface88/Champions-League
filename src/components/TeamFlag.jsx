@@ -118,7 +118,7 @@ export default function TeamFlag({ logo, name, className = 'w-12 h-12', animate 
   }
 
   return (
-    <span className="relative inline-block flex-shrink-0" style={{ width: px, height: px, minWidth: px }}>
+    <span className="relative inline-block flex-shrink-0" style={{ width: px, height: px, minWidth: px, lineHeight: 0 }}>
       {content}
     </span>
   );
