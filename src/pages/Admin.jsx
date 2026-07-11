@@ -18,6 +18,7 @@ import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminGroupOverride from "../components/admin/AdminGroupOverride";
 import AdminNextMatchAnimationDemo from "../components/admin/AdminNextMatchAnimationDemo";
+import AdminLeaderboardRevealDemo from "../components/admin/AdminLeaderboardRevealDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -78,6 +79,7 @@ export default function Admin() {
       case 'reset':      return <AdminReset />;
       case 'group-override': return <AdminGroupOverride />;
       case 'next-match-anim': return <AdminNextMatchAnimationDemo />;
+      case 'leaderboard-reveal': return <AdminLeaderboardRevealDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -94,6 +96,7 @@ export default function Admin() {
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'group-override',   label: '🔀 סידור בתים',          icon: BarChart3 },
     { id: 'next-match-anim', label: '🔄 8 סגנונות מעבר - המשחק הבא', icon: Sparkles },
+    { id: 'leaderboard-reveal', label: '🏆 חשיפת דירוג - זום מבעד', icon: Trophy },
   ];
 
   return (
