@@ -68,13 +68,21 @@ function FlagSimple({ code, name, px }) {
   );
 }
 
+// Subtle embossed/3D bevel — a light highlight on the top-left edge and a
+// soft shadow on the bottom-right, layered as an inset box-shadow overlay so
+// it never touches (and can't distort) whatever shape/rounding the flag
+// underneath already has.
+const EMBOSS_SHADOW = 'inset 0 1px 1px rgba(255,255,255,.4), inset 0 -2px 3px rgba(0,0,0,.5), inset 1px 0 1px rgba(255,255,255,.15), inset -1px 0 2px rgba(0,0,0,.35)';
+
 export default function TeamFlag({ logo, name, className = 'w-12 h-12', animate = false, size, rounded = 'md' }) {
   const px = getPx(className, size);
   const r = `rounded-${rounded}`;
 
+  let content;
+
   // Fallback: no logo
   if (!logo) {
-    return (
+    content = (
       <div
         className={`${r} flex items-center justify-center bg-slate-700 text-slate-300 font-bold flex-shrink-0 ${className}`}
         style={{ fontSize: Math.max(px * 0.35, 8) }}
@@ -82,42 +90,42 @@ export default function TeamFlag({ logo, name, className = 'w-12 h-12', animate 
         {name?.slice(0, 2).toUpperCase()}
       </div>
     );
-  }
-
-  // URL → use PixelImage (with animation) or plain img
-  if (isUrl(logo)) {
-    if (animate) {
-      return (
-        <PixelImage
-          src={logo}
-          customGrid={{ rows: 4, cols: 4 }}
-          grayscaleAnimation
-          animate={animate}
-          className={`${r} ${className}`}
-          imageClassName="object-contain"
-        />
-      );
-    }
-    return (
+  } else if (isUrl(logo)) {
+    // URL → use PixelImage (with animation) or plain img
+    content = animate ? (
+      <PixelImage
+        src={logo}
+        customGrid={{ rows: 4, cols: 4 }}
+        grayscaleAnimation
+        animate={animate}
+        className={`${r} ${className}`}
+        imageClassName="object-contain"
+      />
+    ) : (
       <img
         src={logo}
         alt={name}
         className={`${r} object-contain flex-shrink-0 shadow-sm ${className}`}
       />
     );
+  } else if (animate) {
+    // ISO2 flag code, animated
+    content = <FlagWithPixels code={logo} name={name} px={px} animate={animate} r={r} />;
+  } else {
+    // Simple flag (no animation) — most admin/modal usages
+    content = (
+      <span
+        className={`fi fi-${logo} fis ${r} flex-shrink-0 shadow-sm ${className}`}
+        title={name}
+        style={{ display: 'inline-block', width: px, height: px, fontSize: px, backgroundSize: 'cover', backgroundPosition: 'center', minWidth: px }}
+      />
+    );
   }
 
-  // ISO2 flag code
-  if (animate) {
-    return <FlagWithPixels code={logo} name={name} px={px} animate={animate} r={r} />;
-  }
-
-  // Simple flag (no animation) — most admin/modal usages
   return (
-    <span
-      className={`fi fi-${logo} fis ${r} flex-shrink-0 shadow-sm ${className}`}
-      title={name}
-      style={{ display: 'inline-block', width: px, height: px, fontSize: px, backgroundSize: 'cover', backgroundPosition: 'center', minWidth: px }}
-    />
+    <span className="relative inline-block flex-shrink-0" style={{ width: px, height: px, minWidth: px }}>
+      {content}
+      <span className={`absolute inset-0 ${r} pointer-events-none`} style={{ boxShadow: EMBOSS_SHADOW }} />
+    </span>
   );
 }
