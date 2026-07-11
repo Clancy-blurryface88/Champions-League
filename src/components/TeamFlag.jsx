@@ -100,6 +100,7 @@ export default function TeamFlag({ logo, name, className = 'w-12 h-12', animate 
         src={logo}
         alt={name}
         className={`${r} object-contain flex-shrink-0 ${className}`}
+        style={{ width: px, height: px, minWidth: px, display: 'block' }}
       />
     );
   } else if (animate) {
