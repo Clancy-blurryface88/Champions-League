@@ -599,7 +599,7 @@ export default function Layout({ children, currentPageName }) {
   // ~2.5s per card), then auto-dismiss — this overlay blocks the rest of the
   // UI while open, same as it always has, so it always ends on its own
   // rather than looping forever with no way to close it.
-  const NEXT_MATCH_CARD_MS = 3500;
+  const NEXT_MATCH_CARD_MS = 4000; // 3.5s settled + 0.5s transition
   useEffect(() => {
     if (!showNextMatchIntro) return;
     setNextMatchIndex(0);
