@@ -595,11 +595,13 @@ export default function Layout({ children, currentPageName }) {
     }
   }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading]);
 
-  // Cycle through every known upcoming match once (zoom-through transition,
-  // ~2.5s per card), then auto-dismiss — this overlay blocks the rest of the
-  // UI while open, same as it always has, so it always ends on its own
-  // rather than looping forever with no way to close it.
-  const NEXT_MATCH_CARD_MS = 4000; // 3.5s settled + 0.5s transition
+  // Cycle through every known upcoming match once (zoom-through transition),
+  // then auto-dismiss — this overlay blocks the rest of the UI while open,
+  // same as it always has, so it always ends on its own rather than looping
+  // forever with no way to close it. The first card gets extra settled time
+  // since it's the very first thing the user reads.
+  const NEXT_MATCH_CARD_MS = 4000;       // 3.5s settled + 0.5s transition
+  const NEXT_MATCH_FIRST_CARD_MS = 4500; // 4s settled + 0.5s transition
   useEffect(() => {
     if (!showNextMatchIntro) return;
     setNextMatchIndex(0);
@@ -607,17 +609,22 @@ export default function Layout({ children, currentPageName }) {
       const t = setTimeout(() => setShowNextMatchIntro(false), 8000);
       return () => clearTimeout(t);
     }
-    const iv = setInterval(() => {
-      setNextMatchIndex((i) => {
+    let cancelled = false;
+    let timer;
+    const advance = (i) => {
+      const delay = i === 0 ? NEXT_MATCH_FIRST_CARD_MS : NEXT_MATCH_CARD_MS;
+      timer = setTimeout(() => {
+        if (cancelled) return;
         if (i + 1 >= upcomingMatches.length) {
-          clearInterval(iv);
-          setTimeout(() => setShowNextMatchIntro(false), NEXT_MATCH_CARD_MS);
-          return i;
+          setShowNextMatchIntro(false);
+          return;
         }
-        return i + 1;
-      });
-    }, NEXT_MATCH_CARD_MS);
-    return () => clearInterval(iv);
+        setNextMatchIndex(i + 1);
+        advance(i + 1);
+      }, delay);
+    };
+    advance(0);
+    return () => { cancelled = true; clearTimeout(timer); };
   }, [showNextMatchIntro, upcomingMatches.length]);
 
   // Fetch the user's own prediction for whichever match is currently shown
