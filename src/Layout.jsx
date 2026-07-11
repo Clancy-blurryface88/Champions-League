@@ -296,6 +296,8 @@ export default function Layout({ children, currentPageName }) {
   const [livePredictionLoading, setLivePredictionLoading] = useState(false);
   const [liveCheckDone, setLiveCheckDone] = useState(false);
   const [nextMatch, setNextMatch] = useState(null);
+  const [upcomingMatches, setUpcomingMatches] = useState([]);
+  const [nextMatchIndex, setNextMatchIndex] = useState(0);
   const [nextMatchChecked, setNextMatchChecked] = useState(false);
   const [showNextMatchIntro, setShowNextMatchIntro] = useState(false);
   const [nextMatchPrediction, setNextMatchPrediction] = useState(null);
@@ -593,22 +595,42 @@ export default function Layout({ children, currentPageName }) {
     }
   }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading]);
 
-  // Auto-dismiss the next-match intro after a generous viewing window.
+  // Cycle through every known upcoming match once (zoom-through transition,
+  // ~2.5s per card), then auto-dismiss — this overlay blocks the rest of the
+  // UI while open, same as it always has, so it always ends on its own
+  // rather than looping forever with no way to close it.
+  const NEXT_MATCH_CARD_MS = 2500;
   useEffect(() => {
     if (!showNextMatchIntro) return;
-    const t = setTimeout(() => setShowNextMatchIntro(false), 8000);
-    return () => clearTimeout(t);
-  }, [showNextMatchIntro]);
+    setNextMatchIndex(0);
+    if (upcomingMatches.length <= 1) {
+      const t = setTimeout(() => setShowNextMatchIntro(false), 8000);
+      return () => clearTimeout(t);
+    }
+    const iv = setInterval(() => {
+      setNextMatchIndex((i) => {
+        if (i + 1 >= upcomingMatches.length) {
+          clearInterval(iv);
+          setTimeout(() => setShowNextMatchIntro(false), NEXT_MATCH_CARD_MS);
+          return i;
+        }
+        return i + 1;
+      });
+    }, NEXT_MATCH_CARD_MS);
+    return () => clearInterval(iv);
+  }, [showNextMatchIntro, upcomingMatches.length]);
 
-  // Fetch the user's own prediction for the next match (already our DB match — no name matching needed)
+  // Fetch the user's own prediction for whichever match is currently shown
+  // in the cycle (already our DB match — no name matching needed).
   useEffect(() => {
-    if (!nextMatch?.id || !user?.id) { setNextMatchPrediction(null); return; }
+    const current = upcomingMatches[nextMatchIndex];
+    if (!current?.id || !user?.id) { setNextMatchPrediction(null); return; }
     let cancelled = false;
-    Prediction.filter({ match_id: nextMatch.id, user_id: user.id })
-      .then((preds) => { if (!cancelled && preds.length > 0) setNextMatchPrediction(preds[0]); })
+    Prediction.filter({ match_id: current.id, user_id: user.id })
+      .then((preds) => { if (!cancelled) setNextMatchPrediction(preds.length > 0 ? preds[0] : null); })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, [nextMatch?.id, user?.id]);
+  }, [upcomingMatches, nextMatchIndex, user?.id]);
 
   // Fetch user prediction for the live match
   useEffect(() => {
@@ -688,6 +710,7 @@ export default function Layout({ children, currentPageName }) {
         .filter(m => !m.is_finished && new Date(m.match_date) > now)
         .sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
       setNextMatch(upcoming[0] || null);
+      setUpcomingMatches(upcoming);
     }).catch(() => {}).finally(() => setNextMatchChecked(true));
   }, []);
 
@@ -1336,9 +1359,12 @@ export default function Layout({ children, currentPageName }) {
           )}
         </AnimatePresence>
 
-        {/* Next Match Intro Overlay — shown once per session when there's no live match */}
+        {/* Next Match Intro Overlay — shown once per session when there's no live
+            match; cycles (zoom-through) through every known upcoming match. */}
         <AnimatePresence>
-          {showNextMatchIntro && nextMatch && (
+          {showNextMatchIntro && (upcomingMatches[nextMatchIndex] || nextMatch) && (() => {
+            const currentMatch = upcomingMatches[nextMatchIndex] || nextMatch;
+            return (
             <>
               <motion.div
                 key="next-match-intro-bg"
@@ -1354,7 +1380,7 @@ export default function Layout({ children, currentPageName }) {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  className="rounded-2xl"
+                  className="rounded-2xl overflow-hidden"
                   style={{
                     background: 'rgba(8,18,32,0.95)',
                     border: '1px solid rgba(245,197,24,0.4)',
@@ -1363,47 +1389,63 @@ export default function Layout({ children, currentPageName }) {
                   }}
                   transition={{ type: 'spring', stiffness: 180, damping: 26 }}
                 >
-                  <div className="px-10 py-8 flex flex-col items-center gap-5">
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(245,197,24,0.12)', border: '1px solid rgba(245,197,24,0.35)' }}>
-                      <span className="text-amber-400 text-xs font-bold tracking-widest uppercase">המשחק הבא</span>
-                    </div>
-
-                    <div className="flex items-center gap-6" dir="ltr">
-                      <div className="flex flex-col items-center gap-1.5 w-20">
-                        <TeamFlag logo={nextMatch.team_a_logo} name={nextMatch.team_a} className="w-14 h-14" animate={false} />
-                        <span className="text-slate-400 text-[11px] text-center">{nextMatch.team_a}</span>
+                  <AnimatePresence mode="popLayout">
+                    <motion.div
+                      key={nextMatchIndex}
+                      initial={{ opacity: 0, scale: 0.5, filter: 'blur(8px)' }}
+                      animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                      exit={{ opacity: 0, scale: 1.6, filter: 'blur(8px)' }}
+                      transition={{ duration: 0.5, ease: 'easeInOut' }}
+                      className="px-10 py-8 flex flex-col items-center gap-5"
+                    >
+                      <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(245,197,24,0.12)', border: '1px solid rgba(245,197,24,0.35)' }}>
+                        <span className="text-amber-400 text-xs font-bold tracking-widest uppercase">המשחק הבא</span>
                       </div>
-                      <span className="text-slate-500 font-bold text-sm">VS</span>
-                      <div className="flex flex-col items-center gap-1.5 w-20">
-                        <TeamFlag logo={nextMatch.team_b_logo} name={nextMatch.team_b} className="w-14 h-14" animate={false} />
-                        <span className="text-slate-400 text-[11px] text-center">{nextMatch.team_b}</span>
+
+                      <div className="flex items-center gap-6" dir="ltr">
+                        <div className="flex flex-col items-center gap-1.5 w-20">
+                          <TeamFlag logo={currentMatch.team_a_logo} name={currentMatch.team_a} className="w-14 h-14" animate={false} />
+                          <span className="text-slate-400 text-[11px] text-center">{currentMatch.team_a}</span>
+                        </div>
+                        <span className="text-slate-500 font-bold text-sm">VS</span>
+                        <div className="flex flex-col items-center gap-1.5 w-20">
+                          <TeamFlag logo={currentMatch.team_b_logo} name={currentMatch.team_b} className="w-14 h-14" animate={false} />
+                          <span className="text-slate-400 text-[11px] text-center">{currentMatch.team_b}</span>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-slate-400 text-[11px] tracking-wide">
-                        {new Date(nextMatch.match_date).toLocaleDateString('he-IL', { weekday: 'long', day: '2-digit', month: '2-digit' })}
-                      </span>
-                      <span className="text-white text-xl font-black" dir="ltr">
-                        {new Date(nextMatch.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-
-                    <MatchCountdown target={nextMatch.match_date} />
-
-                    {nextMatchPrediction && (
-                      <div className="flex flex-col items-center gap-1 mt-1">
-                        <span className="text-slate-400 text-xs">הניחוש שלי</span>
-                        <span className="text-amber-400 text-sm font-bold">
-                          ({nextMatchPrediction.predicted_score_a} - {nextMatchPrediction.predicted_score_b})
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className="text-slate-400 text-[11px] tracking-wide">
+                          {new Date(currentMatch.match_date).toLocaleDateString('he-IL', { weekday: 'long', day: '2-digit', month: '2-digit' })}
+                        </span>
+                        <span className="text-white text-xl font-black" dir="ltr">
+                          {new Date(currentMatch.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
-                    )}
-                  </div>
+
+                      <MatchCountdown target={currentMatch.match_date} />
+
+                      {nextMatchPrediction && (
+                        <div className="flex flex-col items-center gap-1 mt-1">
+                          <span className="text-slate-400 text-xs">הניחוש שלי</span>
+                          <span className="text-amber-400 text-sm font-bold">
+                            ({nextMatchPrediction.predicted_score_a} - {nextMatchPrediction.predicted_score_b})
+                          </span>
+                        </div>
+                      )}
+
+                      {upcomingMatches.length > 1 && (
+                        <span className="text-slate-600 text-[10px] tracking-wide" dir="ltr">
+                          {nextMatchIndex + 1} / {upcomingMatches.length}
+                        </span>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
                 </motion.div>
               </div>
             </>
-          )}
+            );
+          })()}
         </AnimatePresence>
 
         <MatchTickerBar onClick={() => setShowDateSheet(true)} />
