@@ -19,6 +19,7 @@ import AdminReset from "../components/admin/AdminReset";
 import AdminGroupOverride from "../components/admin/AdminGroupOverride";
 import AdminFlagDesignGallery from "../components/admin/AdminFlagDesignGallery";
 import AdminFlagDesignGallery2 from "../components/admin/AdminFlagDesignGallery2";
+import AdminFlagDesignGallery3 from "../components/admin/AdminFlagDesignGallery3";
 
 import { LoaderBar } from "../components/ui/LoaderBar";
 
@@ -81,6 +82,7 @@ export default function Admin() {
       case 'group-override': return <AdminGroupOverride />;
       case 'flag-designs': return <AdminFlagDesignGallery />;
       case 'flag-designs-2': return <AdminFlagDesignGallery2 />;
+      case 'flag-designs-3': return <AdminFlagDesignGallery3 />;
       default: return <AdminRounds />;
     }
   };
@@ -98,6 +100,7 @@ export default function Admin() {
     { id: 'group-override',   label: '🔀 סידור בתים',          icon: BarChart3 },
     { id: 'flag-designs', label: '🚩 50 עיצובי דגלים', icon: Sparkles },
     { id: 'flag-designs-2', label: '🚩🔥 30 עוד יותר - דגלים', icon: Sparkles },
+    { id: 'flag-designs-3', label: '🚩💎 30 אפקטי זכוכית', icon: Sparkles },
   ];
 
   return (
