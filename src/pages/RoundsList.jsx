@@ -11,12 +11,16 @@ import ParticleBackground from "../components/ParticleBackground";
 import { LoaderBar } from "../components/ui/LoaderBar";
 import { RoundsAnimatedList } from "../components/magicui/RoundsAnimatedList";
 import { AnimatedStartButton } from "../components/AnimatedStartButton";
+import SemifinalIntroVideo from "../components/SemifinalIntroVideo";
+
+const SEMIFINAL_INTRO_SEEN_KEY = 'wc2026_semifinal_intro_seen';
 
 export default function RoundsList() {
   const [rounds, setRounds] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pendingRound, setPendingRound] = useState(null);
   const navigate = useNavigate();
 
   // Simple data load function
@@ -63,8 +67,26 @@ export default function RoundsList() {
     loadData();
   }, []);
 
-  const handleRoundClick = (round) => {
+  const goToRound = (round) => {
     navigate(createPageUrl(`Predictions?round_id=${round.id}`));
+  };
+
+  const handleRoundClick = (round) => {
+    const isSemifinal = round.name?.trim().toLowerCase() === 'semi final';
+    const alreadySeenIntro = localStorage.getItem(SEMIFINAL_INTRO_SEEN_KEY) === 'true';
+
+    if (isSemifinal && !alreadySeenIntro) {
+      localStorage.setItem(SEMIFINAL_INTRO_SEEN_KEY, 'true');
+      setPendingRound(round);
+      return;
+    }
+
+    goToRound(round);
+  };
+
+  const handleIntroFinish = () => {
+    if (pendingRound) goToRound(pendingRound);
+    setPendingRound(null);
   };
 
   // Show error state
@@ -162,6 +184,8 @@ export default function RoundsList() {
           </div>
         </div>
       </div>
+
+      {pendingRound && <SemifinalIntroVideo onFinish={handleIntroFinish} />}
     </div>);
 
 }
