@@ -9,7 +9,6 @@ import { Prediction } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Eye, Check, X } from "lucide-react";
-import { getDisplayScore } from "@/utils/matchDisplayScore";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -770,14 +769,9 @@ export default function PredictionsResults() {
                             initial={{ opacity: 0, scale: 0.7 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.25, type: "spring", stiffness: 300, damping: 20 }}>
-                            {(() => {
-                              const { a, b, penalties } = getDisplayScore(finishedMatches[currentMatchIndex] || {});
-                              return (
-                                <span className="text-white font-bold text-sm">
-                                  {a} - {b}{penalties && <span className="opacity-70"> ({penalties} פנ')</span>}
-                                </span>
-                              );
-                            })()}
+                            <span className="text-white font-bold text-sm">
+                              {finishedMatches[currentMatchIndex]?.actual_score_a} - {finishedMatches[currentMatchIndex]?.actual_score_b}
+                            </span>
                           </motion.div>
 
                           {/* קבוצה ב — נכנסת מימין */}

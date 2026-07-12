@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Upload, Sparkles, Eye, Trash2, Download } from "lucide-react";
+import { Loader2, Upload, Sparkles, Eye, Trash2 } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
 import { supabase } from "@/api/supabase";
 
@@ -18,14 +18,6 @@ const LogoSelectItem = React.forwardRef(({ children, logoUrl, ...props }, ref) =
   </SelectItem>
 ));
 
-// Loose team-name matching against football-data.org's naming (handles
-// shortName vs full name differences, e.g. "England" vs "England").
-function teamsMatchLoosely(a, b) {
-  const norm = (s = '') => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const na = norm(a), nb = norm(b);
-  return !!na && !!nb && (na === nb || na.includes(nb) || nb.includes(na));
-}
-
 export default function MatchFormDialog({ open, onOpenChange, match, rounds, logos, onSave }) {
   const [formData, setFormData] = useState({});
   const [saving, setSaving] = useState(false);
@@ -33,47 +25,7 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
   const [analyzeError, setAnalyzeError] = useState('');
   const [oddsTable, setOddsTable] = useState(null);
   const [showOddsPopup, setShowOddsPopup] = useState(false);
-  const [fetchingDisplayScore, setFetchingDisplayScore] = useState(false);
-  const [fetchDisplayScoreError, setFetchDisplayScoreError] = useState('');
   const imageInputRef = useRef();
-
-  const handleFetchDisplayScore = async () => {
-    if (!formData.team_a || !formData.team_b || !formData.match_date) return;
-    setFetchingDisplayScore(true);
-    setFetchDisplayScoreError('');
-    try {
-      const dateStr = new Date(formData.match_date).toLocaleDateString('sv-SE');
-      const res = await fetch(`/api/football?competition=WC&filter=FINISHED&date=${dateStr}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'שגיאה בשליפת הנתונים מה-API');
-
-      const apiMatch = (data.matches || []).find(m => {
-        const h = m.homeTeam?.name || '', hs = m.homeTeam?.shortName || '';
-        const a = m.awayTeam?.name || '', as = m.awayTeam?.shortName || '';
-        return (teamsMatchLoosely(h, formData.team_a) || teamsMatchLoosely(hs, formData.team_a))
-            && (teamsMatchLoosely(a, formData.team_b) || teamsMatchLoosely(as, formData.team_b));
-      });
-      if (!apiMatch) throw new Error('לא נמצא משחק תואם ב-API לתאריך ולקבוצות האלה');
-
-      const ft = apiMatch.score?.fullTime || {};
-      const et = apiMatch.score?.extraTime || {};
-      const pens = apiMatch.score?.penalties || {};
-      const wentToPenalties = pens.home !== null && pens.home !== undefined;
-
-      setFormData(prev => ({
-        ...prev,
-        display_score_a: et.home ?? ft.home ?? null,
-        display_score_b: et.away ?? ft.away ?? null,
-        went_to_penalties: wentToPenalties,
-        penalty_score_a: wentToPenalties ? pens.home : null,
-        penalty_score_b: wentToPenalties ? pens.away : null,
-      }));
-    } catch (err) {
-      setFetchDisplayScoreError(err.message);
-    } finally {
-      setFetchingDisplayScore(false);
-    }
-  };
 
   const handleAnalyzeImage = async (file) => {
     if (!file) return;
@@ -140,8 +92,6 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
       round_id: '', team_a: '', team_b: '', team_a_logo: '', team_b_logo: '',
       match_date: '', order: 1, is_finished: false, actual_score_a: null, actual_score_b: null, league: '',
       previous_match_score_a: '', previous_match_score_b: '',
-      display_score_a: null, display_score_b: null,
-      went_to_penalties: false, penalty_score_a: null, penalty_score_b: null,
       home_win_points: 0, away_win_points: 0, draw_points: 0, btts_yes_points: 0, btts_no_points: 0,
       exact_score_points: 0, goals_0_2_points: 0, goals_3_4_points: 0, goals_5_plus_points: 0,
     };
@@ -198,11 +148,6 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
         actual_score_b: toNum(formData.actual_score_b),
         previous_match_score_a: toNum(formData.previous_match_score_a),
         previous_match_score_b: toNum(formData.previous_match_score_b),
-        display_score_a: toNum(formData.display_score_a),
-        display_score_b: toNum(formData.display_score_b),
-        went_to_penalties: !!formData.went_to_penalties,
-        penalty_score_a: toNum(formData.penalty_score_a),
-        penalty_score_b: toNum(formData.penalty_score_b),
         order: toNum(formData.order),
         home_win_points: toFloat(formData.home_win_points),
         away_win_points: toFloat(formData.away_win_points),
@@ -315,46 +260,6 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
                   <Input id="previous_match_score_b" type="number" value={formData.previous_match_score_b !== undefined && formData.previous_match_score_b !== null ? formData.previous_match_score_b : ''} onChange={handleChange} className="bg-slate-700 border-slate-600" placeholder="e.g. 0" />
                 </div>
               </div>
-            </div>
-
-            <div className="pt-4 border-t border-slate-600 mt-2">
-              <div className="flex items-center justify-between mb-2">
-                <Label className="text-slate-300">Display Score (info only — doesn't affect scoring)</Label>
-                <Button type="button" size="sm" variant="outline"
-                  className="h-7 text-xs border-blue-500 text-blue-400 hover:bg-blue-500/10 px-2 gap-1"
-                  onClick={handleFetchDisplayScore}
-                  disabled={fetchingDisplayScore || !formData.team_a || !formData.team_b || !formData.match_date}>
-                  {fetchingDisplayScore ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
-                  משוך תוצאה מלאה מה-API
-                </Button>
-              </div>
-              {fetchDisplayScoreError && <p className="text-red-400 text-xs mb-2">{fetchDisplayScoreError}</p>}
-              <div className="flex gap-4 items-end">
-                <div className="flex-1">
-                  <Label htmlFor="display_score_a" className="text-xs text-slate-400">Full Result — Team A</Label>
-                  <Input id="display_score_a" type="number" value={formData.display_score_a !== undefined && formData.display_score_a !== null ? formData.display_score_a : ''} onChange={handleChange} className="bg-slate-700 border-slate-600" placeholder="e.g. 2" />
-                </div>
-                <div className="flex-1">
-                  <Label htmlFor="display_score_b" className="text-xs text-slate-400">Full Result — Team B</Label>
-                  <Input id="display_score_b" type="number" value={formData.display_score_b !== undefined && formData.display_score_b !== null ? formData.display_score_b : ''} onChange={handleChange} className="bg-slate-700 border-slate-600" placeholder="e.g. 1" />
-                </div>
-                <div className="flex items-center gap-2 pb-2">
-                  <Switch id="went_to_penalties" checked={!!formData.went_to_penalties} onCheckedChange={(checked) => setFormData(p => ({ ...p, went_to_penalties: checked }))} />
-                  <Label htmlFor="went_to_penalties" className="text-xs text-slate-400">Penalties</Label>
-                </div>
-              </div>
-              {formData.went_to_penalties && (
-                <div className="flex gap-4 mt-2">
-                  <div className="flex-1">
-                    <Label htmlFor="penalty_score_a" className="text-xs text-slate-400">Penalties — Team A</Label>
-                    <Input id="penalty_score_a" type="number" value={formData.penalty_score_a !== undefined && formData.penalty_score_a !== null ? formData.penalty_score_a : ''} onChange={handleChange} className="bg-slate-700 border-slate-600" placeholder="e.g. 4" />
-                  </div>
-                  <div className="flex-1">
-                    <Label htmlFor="penalty_score_b" className="text-xs text-slate-400">Penalties — Team B</Label>
-                    <Input id="penalty_score_b" type="number" value={formData.penalty_score_b !== undefined && formData.penalty_score_b !== null ? formData.penalty_score_b : ''} onChange={handleChange} className="bg-slate-700 border-slate-600" placeholder="e.g. 3" />
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Match } from "@/api/entities";
 import TeamFlag from "@/components/TeamFlag";
-import { getDisplayScore } from "@/utils/matchDisplayScore";
 
 function localDateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
@@ -43,15 +42,12 @@ export default function MatchTickerBar({ onClick }) {
 
   const MatchItem = ({ match, i }) => {
     const time = new Date(match.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
-    const { a, b, penalties } = getDisplayScore(match);
     return (
       <div key={`${match.id}-${i}`} className="flex items-center gap-1.5 flex-shrink-0" dir="ltr">
         <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-4 h-4" />
         <span className="text-white text-xs font-medium">{match.team_a}</span>
         {match.is_finished ? (
-          <span className="text-amber-400 text-xs font-bold mx-0.5">
-            {a ?? '-'} - {b ?? '-'}{penalties && <span className="opacity-70"> ({penalties} פנ')</span>}
-          </span>
+          <span className="text-amber-400 text-xs font-bold mx-0.5">{match.actual_score_a ?? '-'} - {match.actual_score_b ?? '-'}</span>
         ) : (
           <span className="text-slate-400 text-xs mx-0.5">{time}</span>
         )}
