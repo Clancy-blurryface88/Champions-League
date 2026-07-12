@@ -13,7 +13,10 @@ import { RoundsAnimatedList } from "../components/magicui/RoundsAnimatedList";
 import { AnimatedStartButton } from "../components/AnimatedStartButton";
 import SemifinalIntroVideo from "../components/SemifinalIntroVideo";
 
-const SEMIFINAL_INTRO_SEEN_KEY = 'wc2026_semifinal_intro_seen';
+// _v2 — bumped so anyone whose browser got stuck with the flag set from the
+// earlier buggy version (which marked it "seen" before the video even played)
+// automatically gets a fresh start with no manual cache-clearing needed.
+const SEMIFINAL_INTRO_SEEN_KEY = 'wc2026_semifinal_intro_seen_v2';
 
 export default function RoundsList() {
   const [rounds, setRounds] = useState([]);
@@ -72,7 +75,7 @@ export default function RoundsList() {
   };
 
   const handleRoundClick = (round) => {
-    const isSemifinal = round.name?.trim().toLowerCase() === 'semi final';
+    const isSemifinal = round.name?.trim().toLowerCase().includes('semi final');
     const alreadySeenIntro = localStorage.getItem(SEMIFINAL_INTRO_SEEN_KEY) === 'true';
 
     if (isSemifinal && !alreadySeenIntro) {
