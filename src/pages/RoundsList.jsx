@@ -76,7 +76,6 @@ export default function RoundsList() {
     const alreadySeenIntro = localStorage.getItem(SEMIFINAL_INTRO_SEEN_KEY) === 'true';
 
     if (isSemifinal && !alreadySeenIntro) {
-      localStorage.setItem(SEMIFINAL_INTRO_SEEN_KEY, 'true');
       setPendingRound(round);
       return;
     }
@@ -85,6 +84,9 @@ export default function RoundsList() {
   };
 
   const handleIntroFinish = () => {
+    // Only mark it seen once we know the intro actually ran (finished, was
+    // skipped, or failed to load) — not just because we attempted to show it.
+    localStorage.setItem(SEMIFINAL_INTRO_SEEN_KEY, 'true');
     if (pendingRound) goToRound(pendingRound);
     setPendingRound(null);
   };
