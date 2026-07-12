@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, RotateCcw, Lock } from "lucide-react";
+import { Play, Pause, RotateCcw } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
 
 // ── Mock data — 4 fictional semifinalists + their road to get here ──────
@@ -55,7 +55,6 @@ const SF_MATCHES = [
 
 const NODE_STEP = 750; // ms between each path-node revealing (slow enough to actually read)
 const teamRoadDuration = team => 900 + team.path.length * NODE_STEP;
-const matchOf = teamIdx => Math.floor(teamIdx / 2); // which SF match a team belongs to
 
 // Interleaved sequence: intro -> match 1 -> its 2 teams' roads -> match 2 -> its 2 teams' roads
 const PHASES = [
@@ -72,49 +71,6 @@ const PHASES = [
           : p.key.startsWith('match-') ? 3200
           : teamRoadDuration(TEAMS[parseInt(p.key.split('-')[1], 10)]),
 }));
-
-const matchPhaseIdx = m => PHASES.findIndex(p => p.key === `match-${m}`);
-const teamPhaseIdx  = t => PHASES.findIndex(p => p.key === `team-${t}`);
-
-// ── Top strip — locked until a team's match is revealed, highlighted while
-// its road is being told, settled once done ─────────────────────────────
-function SemifinalistStrip({ phaseIdx }) {
-  return (
-    <div className="flex items-center justify-center gap-3 mb-5">
-      {TEAMS.map((t, i) => {
-        const revealedAt = matchPhaseIdx(matchOf(i));
-        const ownPhaseIdx = teamPhaseIdx(i);
-        const state = phaseIdx < revealedAt ? 'locked'
-                    : phaseIdx === ownPhaseIdx ? 'active'
-                    : phaseIdx > ownPhaseIdx ? 'done'
-                    : 'known';
-        return (
-          <div key={t.id} className="flex flex-col items-center gap-1" style={{ width: 52 }}>
-            {state === 'locked' ? (
-              <div className="w-8 h-8 rounded-full border border-dashed border-slate-700 flex items-center justify-center flex-shrink-0">
-                <Lock className="w-3 h-3 text-slate-600" />
-              </div>
-            ) : (
-              <motion.div
-                initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: state === 'active' ? 1.08 : 1, opacity: state === 'known' ? 0.5 : 1 }}
-                transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-                style={{
-                  borderRadius: '9999px',
-                  boxShadow: state === 'active' ? '0 0 12px rgba(245,197,24,.6)' : 'none',
-                  border: state === 'active' ? '2px solid #f5c518' : '2px solid transparent',
-                }}>
-                <TeamFlag logo={t.flag} name={t.name} className="w-8 h-8" rounded="full" />
-              </motion.div>
-            )}
-            <span className={`text-[9px] font-semibold ${state === 'active' ? 'text-amber-400' : state === 'done' ? 'text-slate-300' : 'text-slate-600'}`}>
-              {state === 'locked' ? '?' : t.name}
-            </span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 // ── One team's road: flag intro + cascading match-node timeline ─────────
 function TeamRoad({ team }) {
@@ -266,8 +222,6 @@ export default function AdminSemifinalRevealDemo() {
         <div className="h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
 
         <div className="px-5 py-6" style={{ minHeight: 480 }}>
-          {phase !== 'intro' && <SemifinalistStrip phaseIdx={idx} />}
-
           <AnimatePresence mode="wait">
             {phase === 'intro' && (
               <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
