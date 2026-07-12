@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, RotateCcw } from "lucide-react";
+import { Play, Pause, RotateCcw, Lock } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
-import { ShineBorder } from "@/components/magicui/shine-border";
 
 // ── Mock data — 4 fictional semifinalists + their road to get here ──────
 const TEAMS = [
@@ -48,40 +47,67 @@ const TEAMS = [
   },
 ];
 
-const SF_PAIRS = [[TEAMS[0], TEAMS[1]], [TEAMS[2], TEAMS[3]]];
-
-const NODE_STEP = 750; // ms between each path-node revealing (slow enough to actually read)
-
-const PHASES = [
-  { key: 'intro',   label: 'פתיחה',                     duration: 1800 },
-  { key: 'bracket', label: 'חצי הגמר',                  duration: 6000 },
-  { key: 'team-0',  label: `הדרך: ${TEAMS[0].name}`, duration: 900 + TEAMS[0].path.length * NODE_STEP },
-  { key: 'team-1',  label: `הדרך: ${TEAMS[1].name}`, duration: 900 + TEAMS[1].path.length * NODE_STEP },
-  { key: 'team-2',  label: `הדרך: ${TEAMS[2].name}`, duration: 900 + TEAMS[2].path.length * NODE_STEP },
-  { key: 'team-3',  label: `הדרך: ${TEAMS[3].name}`, duration: 900 + TEAMS[3].path.length * NODE_STEP },
+// Semifinal matchups, ordered by date (earliest first)
+const SF_MATCHES = [
+  { pair: [TEAMS[0], TEAMS[1]], date: '09.07' },
+  { pair: [TEAMS[2], TEAMS[3]], date: '10.07' },
 ];
 
-// ── Top strip — the 4 semifinalists (already known from the bracket),
-// with the one whose road is currently being told highlighted ──────────
-function SemifinalistStrip({ currentTeamIdx }) {
+const NODE_STEP = 750; // ms between each path-node revealing (slow enough to actually read)
+const teamRoadDuration = team => 900 + team.path.length * NODE_STEP;
+const matchOf = teamIdx => Math.floor(teamIdx / 2); // which SF match a team belongs to
+
+// Interleaved sequence: intro -> match 1 -> its 2 teams' roads -> match 2 -> its 2 teams' roads
+const PHASES = [
+  { key: 'intro',    label: 'פתיחה' },
+  { key: 'match-0',  label: `משחק 1 (${SF_MATCHES[0].date})` },
+  { key: 'team-0',   label: `הדרך: ${TEAMS[0].name}` },
+  { key: 'team-1',   label: `הדרך: ${TEAMS[1].name}` },
+  { key: 'match-1',  label: `משחק 2 (${SF_MATCHES[1].date})` },
+  { key: 'team-2',   label: `הדרך: ${TEAMS[2].name}` },
+  { key: 'team-3',   label: `הדרך: ${TEAMS[3].name}` },
+].map(p => ({
+  ...p,
+  duration: p.key === 'intro' ? 1800
+          : p.key.startsWith('match-') ? 3200
+          : teamRoadDuration(TEAMS[parseInt(p.key.split('-')[1], 10)]),
+}));
+
+const matchPhaseIdx = m => PHASES.findIndex(p => p.key === `match-${m}`);
+const teamPhaseIdx  = t => PHASES.findIndex(p => p.key === `team-${t}`);
+
+// ── Top strip — locked until a team's match is revealed, highlighted while
+// its road is being told, settled once done ─────────────────────────────
+function SemifinalistStrip({ phaseIdx }) {
   return (
     <div className="flex items-center justify-center gap-3 mb-5">
       {TEAMS.map((t, i) => {
-        const state = i < currentTeamIdx ? 'done' : i === currentTeamIdx ? 'active' : 'upcoming';
+        const revealedAt = matchPhaseIdx(matchOf(i));
+        const ownPhaseIdx = teamPhaseIdx(i);
+        const state = phaseIdx < revealedAt ? 'locked'
+                    : phaseIdx === ownPhaseIdx ? 'active'
+                    : phaseIdx > ownPhaseIdx ? 'done'
+                    : 'known';
         return (
           <div key={t.id} className="flex flex-col items-center gap-1" style={{ width: 52 }}>
-            <motion.div
-              animate={{ opacity: state === 'upcoming' ? 0.35 : 1, scale: state === 'active' ? 1.08 : 1 }}
-              transition={{ duration: 0.4 }}
-              style={{
-                borderRadius: '9999px',
-                boxShadow: state === 'active' ? '0 0 12px rgba(245,197,24,.6)' : 'none',
-                border: state === 'active' ? '2px solid #f5c518' : '2px solid transparent',
-              }}>
-              <TeamFlag logo={t.flag} name={t.name} className="w-8 h-8" rounded="full" />
-            </motion.div>
+            {state === 'locked' ? (
+              <div className="w-8 h-8 rounded-full border border-dashed border-slate-700 flex items-center justify-center flex-shrink-0">
+                <Lock className="w-3 h-3 text-slate-600" />
+              </div>
+            ) : (
+              <motion.div
+                initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: state === 'active' ? 1.08 : 1, opacity: state === 'known' ? 0.5 : 1 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+                style={{
+                  borderRadius: '9999px',
+                  boxShadow: state === 'active' ? '0 0 12px rgba(245,197,24,.6)' : 'none',
+                  border: state === 'active' ? '2px solid #f5c518' : '2px solid transparent',
+                }}>
+                <TeamFlag logo={t.flag} name={t.name} className="w-8 h-8" rounded="full" />
+              </motion.div>
+            )}
             <span className={`text-[9px] font-semibold ${state === 'active' ? 'text-amber-400' : state === 'done' ? 'text-slate-300' : 'text-slate-600'}`}>
-              {t.name}
+              {state === 'locked' ? '?' : t.name}
             </span>
           </div>
         );
@@ -136,35 +162,57 @@ function TeamRoad({ team }) {
   );
 }
 
-// ── Final bracket — the 2 semifinal matchups ─────────────────────────────
-function BracketReveal() {
+// ── Single semifinal match reveal — dramatic slam-in flags + VS burst ───
+function MatchReveal({ match, index }) {
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
-      className="flex flex-col items-center gap-4">
-      <div className="flex items-center gap-2">
-        <span className="text-2xl">⚡</span>
-        <h3 className="text-white text-xl font-black">חצי גמר</h3>
-        <span className="text-2xl">⚡</span>
-      </div>
-      {SF_PAIRS.map((pair, i) => (
-        <motion.div key={i}
-          initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 + i * 0.25, duration: 0.4 }}
-          className="rounded-2xl overflow-hidden relative" style={{ width: 260 }}>
-          <ShineBorder borderRadius={16} borderWidth={1.5} duration={7} shineColor={['#FFD700', '#fff', '#F5C518']} />
-          <div className="flex items-center justify-between px-5 py-4" style={{ background: 'rgba(245,197,24,.06)', border: '1px solid rgba(245,197,24,.3)' }}>
-            <div className="flex flex-col items-center gap-1.5 flex-1">
-              <TeamFlag logo={pair[0].flag} name={pair[0].name} className="w-10 h-10" rounded="full" />
-              <span className="text-white text-xs font-bold">{pair[0].name}</span>
-            </div>
-            <span className="text-slate-500 font-black text-sm px-2">VS</span>
-            <div className="flex flex-col items-center gap-1.5 flex-1">
-              <TeamFlag logo={pair[1].flag} name={pair[1].name} className="w-10 h-10" rounded="full" />
-              <span className="text-white text-xs font-bold">{pair[1].name}</span>
-            </div>
+    <motion.div key={`match-${index}`}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}
+      className="flex flex-col items-center gap-6">
+
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
+        className="flex flex-col items-center gap-1">
+        <span className="text-amber-400 text-[10px] font-bold tracking-widest uppercase">חצי גמר {index + 1}</span>
+        <span className="text-slate-500 text-[10px]">{match.date}</span>
+      </motion.div>
+
+      <div className="relative flex items-center justify-center gap-5" style={{ minHeight: 110, width: 280 }}>
+        {/* team A — slams in from the right */}
+        <motion.div
+          initial={{ x: 140, opacity: 0, scale: 0.5, rotate: 10 }}
+          animate={{ x: 0, opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 240, damping: 15, delay: 0.35 }}
+          className="flex flex-col items-center gap-2 flex-1">
+          <div style={{ borderRadius: '9999px', border: '3px solid #f5c518', boxShadow: '0 0 26px rgba(245,197,24,.45)' }}>
+            <TeamFlag logo={match.pair[0].flag} name={match.pair[0].name} className="w-16 h-16" rounded="full" />
           </div>
+          <span className="text-white font-black text-xs">{match.pair[0].name}</span>
         </motion.div>
-      ))}
+
+        {/* VS burst */}
+        <motion.div
+          initial={{ scale: 0, opacity: 0, rotate: -20 }}
+          animate={{ scale: 1, opacity: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 320, damping: 11, delay: 0.95 }}
+          className="text-2xl font-black flex-shrink-0" style={{ color: '#f5c518', textShadow: '0 0 18px rgba(245,197,24,.7)' }}>
+          VS
+        </motion.div>
+
+        {/* team B — slams in from the left */}
+        <motion.div
+          initial={{ x: -140, opacity: 0, scale: 0.5, rotate: -10 }}
+          animate={{ x: 0, opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 240, damping: 15, delay: 0.55 }}
+          className="flex flex-col items-center gap-2 flex-1">
+          <div style={{ borderRadius: '9999px', border: '3px solid #f5c518', boxShadow: '0 0 26px rgba(245,197,24,.45)' }}>
+            <TeamFlag logo={match.pair[1].flag} name={match.pair[1].name} className="w-16 h-16" rounded="full" />
+          </div>
+          <span className="text-white font-black text-xs">{match.pair[1].name}</span>
+        </motion.div>
+      </div>
+
+      <motion.div initial={{ opacity: 0, scaleX: 0 }} animate={{ opacity: 1, scaleX: 1 }}
+        transition={{ delay: 1.3, duration: 0.5 }}
+        className="h-px w-48 bg-gradient-to-r from-transparent via-amber-400/70 to-transparent" />
     </motion.div>
   );
 }
@@ -199,17 +247,17 @@ export default function AdminSemifinalRevealDemo() {
   }, [idx, playing]);
 
   const phase = PHASES[idx].key;
-  const currentTeamIdx = phase.startsWith('team-') ? parseInt(phase.split('-')[1], 10)
-                       : phase === 'bracket' ? TEAMS.length : -1;
+  const teamIdx = phase.startsWith('team-') ? parseInt(phase.split('-')[1], 10) : null;
+  const matchIdx = phase.startsWith('match-') ? parseInt(phase.split('-')[1], 10) : null;
 
   return (
     <div dir="rtl" className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-white mb-1">🏆 הדרך לחצי הגמר — דמו חד-פעמי</h2>
         <p className="text-slate-400 text-sm max-w-2xl">
-          רעיון #1 מתוך האפשרויות שהצענו: מסך פתיחה ← קודם שני הזיווגים של חצי הגמר ← ואז לכל אחת מ-4 הנבחרות
-          מוצגת "הדרך" שלה (משחקי הבתים, שמינית ורבע הגמר) כציר זמן שנבנה קו אחריו בקצב איטי יותר. אפשר ללחוץ
-          על כל שלב למטה כדי לקפוץ אליו ישירות. הכל כאן נתוני דמו בלבד.
+          עכשיו לפי סדר המשחקים בפועל: קודם המשחק הראשון לפי התאריך (עם כניסה דרמטית של שני הדגלים
+          ו"VS" מתפוצץ), ואז הדרך של כל אחת משתי הנבחרות שבו ← ואז המשחק השני, וכך גם שתי הנבחרות שלו.
+          אפשר ללחוץ על כל שלב למטה כדי לקפוץ אליו ישירות. הכל כאן נתוני דמו בלבד.
         </p>
       </div>
 
@@ -218,7 +266,7 @@ export default function AdminSemifinalRevealDemo() {
         <div className="h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
 
         <div className="px-5 py-6" style={{ minHeight: 480 }}>
-          {phase !== 'intro' && phase !== 'bracket' && <SemifinalistStrip currentTeamIdx={currentTeamIdx} />}
+          {phase !== 'intro' && <SemifinalistStrip phaseIdx={idx} />}
 
           <AnimatePresence mode="wait">
             {phase === 'intro' && (
@@ -230,9 +278,9 @@ export default function AdminSemifinalRevealDemo() {
               </motion.div>
             )}
 
-            {phase.startsWith('team-') && <TeamRoad key={phase} team={TEAMS[currentTeamIdx]} />}
+            {teamIdx !== null && <TeamRoad key={phase} team={TEAMS[teamIdx]} />}
 
-            {phase === 'bracket' && <BracketReveal key="bracket" />}
+            {matchIdx !== null && <MatchReveal key={phase} match={SF_MATCHES[matchIdx]} index={matchIdx} />}
           </AnimatePresence>
         </div>
 
