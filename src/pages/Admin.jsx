@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, Sparkles } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
@@ -17,9 +17,6 @@ import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminGroupOverride from "../components/admin/AdminGroupOverride";
-import AdminNextMatchAnimationDemo from "../components/admin/AdminNextMatchAnimationDemo";
-import AdminLeaderboardRevealDemo from "../components/admin/AdminLeaderboardRevealDemo";
-import AdminSemifinalRevealDemo from "../components/admin/AdminSemifinalRevealDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -79,9 +76,6 @@ export default function Admin() {
       case 'import': return <AdminImportMatches />;
       case 'reset':      return <AdminReset />;
       case 'group-override': return <AdminGroupOverride />;
-      case 'next-match-anim': return <AdminNextMatchAnimationDemo />;
-      case 'leaderboard-reveal': return <AdminLeaderboardRevealDemo />;
-      case 'semifinal-reveal': return <AdminSemifinalRevealDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -97,9 +91,6 @@ export default function Admin() {
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'group-override',   label: '🔀 סידור בתים',          icon: BarChart3 },
-    { id: 'next-match-anim', label: '🔄 8 סגנונות מעבר - המשחק הבא', icon: Sparkles },
-    { id: 'leaderboard-reveal', label: '🏆 חשיפת דירוג - זום מבעד', icon: Trophy },
-    { id: 'semifinal-reveal', label: '⚡ הדרך לחצי הגמר', icon: Sparkles },
   ];
 
   return (
