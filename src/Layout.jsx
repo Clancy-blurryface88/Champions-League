@@ -581,9 +581,13 @@ export default function Layout({ children, currentPageName }) {
   // Show one intro overlay after the app's own loader has finished — live
   // match takes priority; otherwise the next upcoming match, if any. Waiting
   // for both checks to resolve avoids flashing the wrong one while the live
-  // check is still in flight.
+  // check is still in flight. Also waits for the welcome/intro-video
+  // onboarding flow to finish first — otherwise this fires (and burns its
+  // one-time session flag) underneath/behind those modals, so it never
+  // actually gets seen once they close.
   useEffect(() => {
     if (authLoading || !liveCheckDone || !nextMatchChecked) return;
+    if (showWelcomeModal || showIntroVideoModal) return;
     if (hasLiveMatch && livePredictionLoading) return; // wait so the card appears complete, prediction included
     if (sessionStorage.getItem('match_intro_shown')) return;
     sessionStorage.setItem('match_intro_shown', '1');
@@ -592,7 +596,7 @@ export default function Layout({ children, currentPageName }) {
     } else if (nextMatch) {
       setShowNextMatchIntro(true);
     }
-  }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading]);
+  }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading, showWelcomeModal, showIntroVideoModal]);
 
   // Cycle through every known upcoming match once (zoom-through transition),
   // then auto-dismiss — this overlay blocks the rest of the UI while open,
