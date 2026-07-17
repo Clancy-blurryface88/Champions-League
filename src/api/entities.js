@@ -76,7 +76,6 @@ export const User = {
       // ניקוי localStorage כדי לאפס את זרימת האונבורדינג
       try {
         localStorage.removeItem('welcome_completed_' + authUser.id);
-        localStorage.removeItem('intro_seen_' + authUser.id);
       } catch {}
 
       const { data: newProfile, error: insertError } = await supabase

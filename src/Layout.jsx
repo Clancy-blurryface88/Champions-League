@@ -451,8 +451,7 @@ export default function Layout({ children, currentPageName }) {
         // פלואו אונבורדינג: WelcomeModal → סרטון → דשבורד
         if (currentUser) {
           const hasCompletedWelcome = localStorage.getItem('welcome_completed_' + currentUser.id) === 'true';
-          const hasSeenVideo = userWithStats.has_seen_intro_video ||
-            localStorage.getItem('intro_seen_' + currentUser.id) === 'true';
+          const hasSeenVideo = !!userWithStats.has_seen_intro_video;
           if (!hasCompletedWelcome) {
             setShowWelcomeModal(true);
           } else if (!hasSeenVideo) {
@@ -848,8 +847,7 @@ export default function Layout({ children, currentPageName }) {
     try { localStorage.setItem('welcome_completed_' + (user?.id ?? ''), 'true'); } catch {}
     setShowWelcomeModal(false);
 
-    const hasSeenVideo = user?.has_seen_intro_video ||
-      localStorage.getItem('intro_seen_' + user?.id) === 'true';
+    const hasSeenVideo = !!user?.has_seen_intro_video;
     if (!hasSeenVideo) {
       setShowIntroVideoModal(true);
     } else {
@@ -860,8 +858,6 @@ export default function Layout({ children, currentPageName }) {
   // לוגיקה חדשה: נקראת לאחר שהסרטון הסתיים או דולג
   const handleIntroVideoCompleted = async () => {
     setShowIntroVideoModal(false);
-    // שמור תמיד ב-localStorage כגיבוי
-    try { localStorage.setItem('intro_seen_' + (user?.id || 'guest'), 'true'); } catch {}
     try {
       await User.updateMyUserData({ has_seen_intro_video: true });
       setUser((prev) => ({ ...prev, has_seen_intro_video: true }));
