@@ -6,6 +6,9 @@ import { createPageUrl } from "@/utils";
 import { ShineBorder } from "@/components/magicui/shine-border";
 
 const RoundCard = ({ round, onClick }) => {
+  const roundNameLower = round.name?.trim().toLowerCase() || "";
+  const isFinal = roundNameLower.includes("final") && !roundNameLower.includes("semi") && !roundNameLower.includes("quarter");
+
   return (
     <>
     <style>{`
@@ -20,6 +23,18 @@ const RoundCard = ({ round, onClick }) => {
         -webkit-text-fill-color: transparent;
         background-clip: text;
         animation: shimmer-text 3s linear infinite;
+      }
+      @keyframes final-twinkle {
+        0%, 100% { opacity: .15; transform: scale(.6); }
+        50% { opacity: 1; transform: scale(1.25); }
+      }
+      @keyframes final-ring {
+        0% { transform: scale(0.6); opacity: .8; }
+        100% { transform: scale(2); opacity: 0; }
+      }
+      @keyframes final-glow-breathe {
+        0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35), 0 0 6px 0px rgba(245,197,24,0.35); }
+        50% { box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35), 0 0 22px 4px rgba(245,197,24,0.75); }
       }
     `}</style>
     <div
@@ -36,17 +51,43 @@ const RoundCard = ({ round, onClick }) => {
           border: '1px solid rgba(245,197,24,0.28)',
           boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35)',
           transition: 'border-color 0.2s',
+          animation: isFinal ? 'final-glow-breathe 2.2s ease-in-out infinite' : undefined,
         }}
       >
         <div className="absolute inset-0 rounded-2xl overflow-hidden">
           <ShineBorder shineColor={["#f5c518", "#ffffff", "#f5c518"]} borderRadius={16} borderWidth={1} />
         </div>
 
-        <div className="flex-shrink-0">
+        {isFinal && (
+          <>
+            {[...Array(10)].map((_, i) => (
+              <span
+                key={`spark-${i}`}
+                className="absolute rounded-full bg-amber-200 z-10"
+                style={{
+                  width: 2,
+                  height: 2,
+                  top: `${10 + (i * 9) % 80}%`,
+                  left: `${5 + (i * 15) % 90}%`,
+                  animation: `final-twinkle ${1.4 + (i % 4) * 0.3}s ease-in-out ${(i % 5) * 0.2}s infinite`,
+                }}
+              />
+            ))}
+            {[["30%", "15%"], ["65%", "80%"]].map(([top, left], i) => (
+              <span
+                key={`ring-${i}`}
+                className="absolute rounded-full z-10"
+                style={{ top, left, width: 4, height: 4, border: "2px solid #f5c518", animation: `final-ring 2s ease-out ${i * 0.8}s infinite` }}
+              />
+            ))}
+          </>
+        )}
+
+        <div className="flex-shrink-0 relative z-20">
           <img src="/trophy-marquee.png" alt="WC2026" className="h-9 w-auto object-contain" />
         </div>
 
-        <div className="text-center">
+        <div className="text-center relative z-20">
           <h3
             className="shimmer-text font-semibold text-base tracking-wide"
             style={{ fontFamily: "'Outfit', sans-serif" }}
