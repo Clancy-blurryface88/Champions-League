@@ -17,10 +17,13 @@ export default function MatchTickerBar({ onClick }) {
   const [matches, setMatches] = useState([]);
   const [dateLabel, setDateLabel] = useState('');
 
+  const [isUpcoming, setIsUpcoming] = useState(false);
+
   useEffect(() => {
     const load = () => {
       Match.list().then(all => {
-        const todayKey = localDateKey(new Date());
+        const now = new Date();
+        const todayKey = localDateKey(now);
         const todays = all
           .filter(m => localDateKey(new Date(m.match_date)) === todayKey)
           .sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
@@ -28,6 +31,23 @@ export default function MatchTickerBar({ onClick }) {
         if (todays.length > 0) {
           setMatches(todays);
           setDateLabel(formatDate(todays[0].match_date));
+          setIsUpcoming(false);
+          return;
+        }
+
+        // No games today — fall back to the next upcoming match day
+        const future = all
+          .filter(m => new Date(m.match_date) > now)
+          .sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
+
+        if (future.length > 0) {
+          const nextKey = localDateKey(new Date(future[0].match_date));
+          const nextDay = future.filter(m => localDateKey(new Date(m.match_date)) === nextKey);
+          setMatches(nextDay);
+          setDateLabel(formatDate(nextDay[0].match_date));
+          setIsUpcoming(true);
+        } else {
+          setMatches([]);
         }
       }).catch(() => {});
     };
@@ -87,7 +107,12 @@ export default function MatchTickerBar({ onClick }) {
           appearance: 'none',
         }}
       >
-        <span style={{ color: '#fbbf24', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>{dateLabel}</span>
+        <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.1 }}>
+          {isUpcoming && (
+            <span style={{ color: '#94a3b8', fontSize: 8, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>בקרוב</span>
+          )}
+          <span style={{ color: '#fbbf24', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>{dateLabel}</span>
+        </span>
       </button>
 
       {/* Single match — centered, no animation */}
