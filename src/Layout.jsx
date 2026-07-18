@@ -1386,6 +1386,7 @@ export default function Layout({ children, currentPageName }) {
                       <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(245,197,24,0.12)', border: '1px solid rgba(245,197,24,0.35)' }}>
                         <span className="text-amber-400 text-xs font-bold tracking-widest uppercase">{nextMatchIndex === 0 ? 'המשחק הקרוב' : 'המשחק הבא'}</span>
                       </div>
+                      <span className="text-white text-sm font-bold tracking-wide -mt-2">{nextMatchIndex === 0 ? 'מקום 3-4' : 'הגמר הגדול'}</span>
 
                       <div className="flex items-center gap-6" dir="ltr">
                         <div className="flex flex-col items-center gap-1.5 w-20">
