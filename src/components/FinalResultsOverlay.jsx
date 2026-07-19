@@ -181,25 +181,27 @@ export default function FinalResultsOverlay({ onClose }) {
                       // Reverse order — last place settles first, 4th place climbs in last
                       const delay = (rest.length - 1 - i) * REST_REVEAL_DELAY;
                       return (
-                        <motion.div
-                          key={entry.rank}
-                          initial={{ opacity: 0, y: 16 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay, duration: 0.45, ease: "easeOut" }}
-                          className={`flex items-center justify-between text-sm px-3 py-2 rounded-xl ${
-                            entry.isCurrentUser
-                              ? "bg-blue-600/20 border border-blue-400/30"
-                              : "bg-slate-700/40 border border-white/5"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <span className="w-6 h-6 rounded-full bg-slate-600 flex items-center justify-center text-xs font-bold text-white/70">
-                              {entry.rank}
-                            </span>
-                            <span className="text-white font-medium">{entry.displayName}</span>
-                          </div>
-                          <span className="text-green-400 font-bold tabular-nums">{entry.totalPoints.toFixed(2)}</span>
-                        </motion.div>
+                        <div key={entry.rank} style={{ perspective: 700 }}>
+                          <motion.div
+                            initial={{ opacity: 0, rotateX: -90 }}
+                            animate={{ opacity: 1, rotateX: 0 }}
+                            transition={{ delay, duration: 0.5, ease: "easeOut" }}
+                            style={{ transformOrigin: "bottom center" }}
+                            className={`flex items-center justify-between text-sm px-3 py-2 rounded-xl ${
+                              entry.isCurrentUser
+                                ? "bg-blue-600/20 border border-blue-400/30"
+                                : "bg-slate-700/40 border border-white/5"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-6 h-6 rounded-full bg-slate-600 flex items-center justify-center text-xs font-bold text-white/70">
+                                {entry.rank}
+                              </span>
+                              <span className="text-white font-medium">{entry.displayName}</span>
+                            </div>
+                            <span className="text-green-400 font-bold tabular-nums">{entry.totalPoints.toFixed(2)}</span>
+                          </motion.div>
+                        </div>
                       );
                     })}
                   </div>
