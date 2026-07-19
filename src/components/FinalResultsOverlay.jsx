@@ -155,7 +155,7 @@ export default function FinalResultsOverlay({ onClose }) {
             <div className="text-center mb-1">
               <img src="/world-cup-trophy.png" alt="World Cup" className="h-14 w-auto mx-auto object-contain" />
             </div>
-            <h2 className="text-center text-2xl font-black text-amber-400 mb-1">הטורניר הסתיים!</h2>
+            <h2 className="text-center text-2xl font-black text-amber-400 mb-1">הטורניר הסתיים</h2>
             <p className="text-center text-slate-400 text-sm mb-5">התוצאות הסופיות</p>
 
             {loading ? (
