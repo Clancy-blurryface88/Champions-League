@@ -26,6 +26,7 @@ import { OdometerDigit } from "./components/OdometerScore";
 import MatchCountdown from "./components/MatchCountdown";
 import TeamFlag from "./components/TeamFlag";
 import LiveLeaderboard from "./components/LiveLeaderboard";
+import FinalResultsOverlay from "./components/FinalResultsOverlay";
 
 // Measures a ref'd element's rendered box size, updating on resize (the live
 // card's width is responsive — min(370px, 92vw) — so the ring's actual
@@ -301,6 +302,8 @@ export default function Layout({ children, currentPageName }) {
   const [nextMatchChecked, setNextMatchChecked] = useState(false);
   const [showNextMatchIntro, setShowNextMatchIntro] = useState(false);
   const [nextMatchPrediction, setNextMatchPrediction] = useState(null);
+  const [tournamentEnded, setTournamentEnded] = useState(false);
+  const [showFinalResults, setShowFinalResults] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showYearlySummary, setShowYearlySummary] = useState(false); // NEW: State for YearlySummaryPanel
   const [showPushBanner, setShowPushBanner] = useState(false);
@@ -591,12 +594,14 @@ export default function Layout({ children, currentPageName }) {
     if (hasLiveMatch && livePredictionLoading) return; // wait so the card appears complete, prediction included
     if (sessionStorage.getItem('match_intro_shown')) return;
     sessionStorage.setItem('match_intro_shown', '1');
-    if (hasLiveMatch) {
+    if (tournamentEnded) {
+      setShowFinalResults(true);
+    } else if (hasLiveMatch) {
       setShowLiveIntro(true);
     } else if (nextMatch) {
       setShowNextMatchIntro(true);
     }
-  }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading, showWelcomeModal, showIntroVideoModal]);
+  }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading, showWelcomeModal, showIntroVideoModal, tournamentEnded]);
 
   // Cycle through every known upcoming match once (zoom-through transition),
   // then auto-dismiss — this overlay blocks the rest of the UI while open,
@@ -721,6 +726,7 @@ export default function Layout({ children, currentPageName }) {
         .sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
       setNextMatch(upcoming[0] || null);
       setUpcomingMatches(upcoming);
+      setTournamentEnded(all.length > 0 && all.every(m => m.is_finished));
     }).catch(() => {}).finally(() => setNextMatchChecked(true));
   }, []);
 
@@ -1430,6 +1436,14 @@ export default function Layout({ children, currentPageName }) {
             </>
             );
           })()}
+        </AnimatePresence>
+
+        {/* Final Results Overlay — shown once per session once every match in
+            the tournament is finished, in place of the live/next-match intro. */}
+        <AnimatePresence>
+          {showFinalResults && (
+            <FinalResultsOverlay onClose={() => setShowFinalResults(false)} />
+          )}
         </AnimatePresence>
 
         <MatchTickerBar onClick={() => setShowDateSheet(true)} />
