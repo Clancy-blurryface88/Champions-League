@@ -45,16 +45,15 @@ function PodiumStand({ entry, position, baseDelay }) {
 
   if (!entry) return <div className="flex-1" />;
 
-  const podiumDelay = baseDelay + (position === 1 ? 0.55 : position === 2 ? 0.25 : 0.05);
+  const podiumDelay = baseDelay + (position === 1 ? 1.7 : position === 2 ? 0.9 : 0.2);
 
   return (
     <motion.div
       className="flex-1 flex flex-col items-center gap-1.5"
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: podiumDelay, duration: 0.55, ease: [0.23, 1, 0.32, 1] }}
+      transition={{ delay: podiumDelay, duration: 0.9, ease: [0.23, 1, 0.32, 1] }}
     >
-      {position === 1 && <span className="text-2xl -mb-1">👑</span>}
       <span
         className="font-semibold text-center truncate"
         style={{ color: rankColor, fontSize: 13, maxWidth: 84, lineHeight: 1.3 }}
@@ -62,7 +61,7 @@ function PodiumStand({ entry, position, baseDelay }) {
         {entry.displayName}
       </span>
       <span className="font-bold" style={{ color: rankColor, opacity: 0.85, fontSize: 13 }}>
-        <ScoreCounter value={entry.totalPoints} duration={1.4} delay={podiumDelay + 0.2} showDecimals />
+        <ScoreCounter value={entry.totalPoints} duration={2} delay={podiumDelay + 0.3} showDecimals />
       </span>
       <div
         className="w-full relative overflow-hidden"
@@ -149,7 +148,7 @@ export default function FinalResultsOverlay({ onClose }) {
 
           <div className="overflow-y-auto px-6 pt-8 pb-6">
             <div className="text-center mb-1">
-              <span className="text-3xl">🏆</span>
+              <img src="/world-cup-trophy.png" alt="World Cup" className="h-14 w-auto mx-auto object-contain" />
             </div>
             <h2 className="text-center text-2xl font-black text-amber-400 mb-1">הטורניר הסתיים!</h2>
             <p className="text-center text-slate-400 text-sm mb-5">התוצאות הסופיות</p>
