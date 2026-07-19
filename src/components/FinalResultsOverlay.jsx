@@ -107,7 +107,12 @@ export default function FinalResultsOverlay({ onClose }) {
   }, []);
 
   const top3 = [1, 2, 3].map((r) => participants.find((e) => e.rank === r));
-  const rest = participants.filter((e) => e.rank > 3);
+  const rest = participants.filter((e) => e.rank > 3).sort((a, b) => a.rank - b.rank);
+
+  // The list below the podium climbs into view first (last place up to 4th),
+  // and only once it's fully settled does the podium itself start revealing.
+  const REST_REVEAL_DELAY = 0.45;
+  const podiumBaseDelay = rest.length * REST_REVEAL_DELAY + 0.4;
 
   return (
     <>
@@ -164,32 +169,39 @@ export default function FinalResultsOverlay({ onClose }) {
             ) : (
               <>
                 <div className="flex items-end justify-center gap-2 px-2 pb-1">
-                  <PodiumStand entry={top3[1]} position={2} baseDelay={0.2} />
-                  <PodiumStand entry={top3[0]} position={1} baseDelay={0.2} />
-                  <PodiumStand entry={top3[2]} position={3} baseDelay={0.2} />
+                  <PodiumStand entry={top3[1]} position={2} baseDelay={podiumBaseDelay} />
+                  <PodiumStand entry={top3[0]} position={1} baseDelay={podiumBaseDelay} />
+                  <PodiumStand entry={top3[2]} position={3} baseDelay={podiumBaseDelay} />
                 </div>
                 <div className="h-2 bg-gradient-to-r from-transparent via-white/10 to-transparent rounded-full mx-4 mb-4" />
 
                 {rest.length > 0 && (
                   <div className="space-y-1.5">
-                    {rest.map((entry) => (
-                      <div
-                        key={entry.rank}
-                        className={`flex items-center justify-between text-sm px-3 py-2 rounded-xl ${
-                          entry.isCurrentUser
-                            ? "bg-blue-600/20 border border-blue-400/30"
-                            : "bg-slate-700/40 border border-white/5"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span className="w-6 h-6 rounded-full bg-slate-600 flex items-center justify-center text-xs font-bold text-white/70">
-                            {entry.rank}
-                          </span>
-                          <span className="text-white font-medium">{entry.displayName}</span>
-                        </div>
-                        <span className="text-green-400 font-bold tabular-nums">{entry.totalPoints.toFixed(2)}</span>
-                      </div>
-                    ))}
+                    {rest.map((entry, i) => {
+                      // Reverse order — last place settles first, 4th place climbs in last
+                      const delay = (rest.length - 1 - i) * REST_REVEAL_DELAY;
+                      return (
+                        <motion.div
+                          key={entry.rank}
+                          initial={{ opacity: 0, y: 16 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay, duration: 0.45, ease: "easeOut" }}
+                          className={`flex items-center justify-between text-sm px-3 py-2 rounded-xl ${
+                            entry.isCurrentUser
+                              ? "bg-blue-600/20 border border-blue-400/30"
+                              : "bg-slate-700/40 border border-white/5"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className="w-6 h-6 rounded-full bg-slate-600 flex items-center justify-center text-xs font-bold text-white/70">
+                              {entry.rank}
+                            </span>
+                            <span className="text-white font-medium">{entry.displayName}</span>
+                          </div>
+                          <span className="text-green-400 font-bold tabular-nums">{entry.totalPoints.toFixed(2)}</span>
+                        </motion.div>
+                      );
+                    })}
                   </div>
                 )}
               </>
