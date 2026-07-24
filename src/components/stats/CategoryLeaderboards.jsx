@@ -144,7 +144,7 @@ export default function CategoryLeaderboards() {
     if (!rank) return "text-white";
     if (rank === 1) return "text-yellow-400"; // Gold
     if (rank === 2) return "text-gray-300";   // Silver
-    if (rank === 3) return "text-amber-600";  // Bronze
+    if (rank === 3) return "text-sky-600";  // Bronze
     return "text-green-300";                  // Others (Light Green)
   };
 

@@ -1,23 +1,23 @@
 {
-  "name": "World Cup 2026",
-  "short_name": "WC2026",
-  "description": "ניחושי מונדיאל 2026",
+  "name": "ליגת האלופות 2026",
+  "short_name": "CL2026",
+  "description": "ניחושי ליגת האלופות 2026",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#05050f",
-  "theme_color": "#4169E1",
+  "background_color": "#050b1f",
+  "theme_color": "#0d2a6e",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/app-icon.png",
+      "src": "/cl-emblem.svg",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/app-icon.png",
+      "src": "/cl-emblem.svg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any"
     }
   ]

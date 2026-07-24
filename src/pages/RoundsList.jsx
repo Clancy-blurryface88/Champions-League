@@ -11,19 +11,12 @@ import ParticleBackground from "../components/ParticleBackground";
 import { LoaderBar } from "../components/ui/LoaderBar";
 import { RoundsAnimatedList } from "../components/magicui/RoundsAnimatedList";
 import { AnimatedStartButton } from "../components/AnimatedStartButton";
-import SemifinalIntroVideo from "../components/SemifinalIntroVideo";
-
-// _v2 — bumped so anyone whose browser got stuck with the flag set from the
-// earlier buggy version (which marked it "seen" before the video even played)
-// automatically gets a fresh start with no manual cache-clearing needed.
-const SEMIFINAL_INTRO_SEEN_KEY = 'wc2026_semifinal_intro_seen_v2';
 
 export default function RoundsList() {
   const [rounds, setRounds] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [pendingRound, setPendingRound] = useState(null);
   const navigate = useNavigate();
 
   // Simple data load function
@@ -75,23 +68,7 @@ export default function RoundsList() {
   };
 
   const handleRoundClick = (round) => {
-    const isSemifinal = round.name?.trim().toLowerCase().includes('semi final');
-    const alreadySeenIntro = localStorage.getItem(SEMIFINAL_INTRO_SEEN_KEY) === 'true';
-
-    if (isSemifinal && !alreadySeenIntro) {
-      setPendingRound(round);
-      return;
-    }
-
     goToRound(round);
-  };
-
-  const handleIntroFinish = () => {
-    // Only mark it seen once we know the intro actually ran (finished, was
-    // skipped, or failed to load) — not just because we attempted to show it.
-    localStorage.setItem(SEMIFINAL_INTRO_SEEN_KEY, 'true');
-    if (pendingRound) goToRound(pendingRound);
-    setPendingRound(null);
   };
 
   // Show error state
@@ -189,8 +166,6 @@ export default function RoundsList() {
           </div>
         </div>
       </div>
-
-      {pendingRound && <SemifinalIntroVideo onFinish={handleIntroFinish} />}
     </div>);
 
 }

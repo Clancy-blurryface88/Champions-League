@@ -31,7 +31,7 @@ function SlotDigit({ target, delay = 0 }) {
 
   return (
     <motion.span
-      animate={{ color: settled ? '#f5c518' : '#475569' }}
+      animate={{ color: settled ? '#38bdf8' : '#475569' }}
       transition={{ duration: 0.2 }}
       className="font-black text-2xl tabular-nums leading-none"
     >
@@ -118,11 +118,11 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
           background: 'rgba(5, 10, 25, 0.72)',
           backdropFilter: 'blur(40px) saturate(1.8)',
           WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
-          boxShadow: '0 0 0 1px rgba(245,197,24,0.18), 0 32px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.07)',
+          boxShadow: '0 0 0 1px rgba(56, 189, 248,0.18), 0 32px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.07)',
         }}
       >
         {/* Top gradient line */}
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-amber-400/70 to-transparent flex-shrink-0" />
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-sky-400/70 to-transparent flex-shrink-0" />
 
         {/* Back button */}
         <div className="px-5 pt-4 pb-0 flex-shrink-0">
@@ -141,9 +141,9 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
 
         {/* Divider */}
         <div className="flex items-center gap-3 px-5 py-2 flex-shrink-0">
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-400/50" />
-          <span className="text-amber-400/70 text-[10px] uppercase tracking-[0.2em] font-semibold">ניחושים</span>
-          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-400/50" />
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-sky-400/50" />
+          <span className="text-sky-400/70 text-[10px] uppercase tracking-[0.2em] font-semibold">ניחושים</span>
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-sky-400/50" />
         </div>
 
         {/* Predictions */}
@@ -152,7 +152,7 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
             <div className="flex justify-center py-10"><OrbitSpinner size={36} /></div>
           ) : !isLocked ? (
             <div className="flex flex-col items-center justify-center py-10 gap-3 text-center">
-              <Lock className="w-7 h-7 text-amber-400/30" />
+              <Lock className="w-7 h-7 text-sky-400/30" />
               <p className="text-white/40 text-sm">הניחושים ייחשפו לאחר נעילת המשחק</p>
               <p className="text-white/20 text-xs" dir="rtl">15 דקות לפני תחילת המשחק</p>
             </div>
@@ -204,7 +204,7 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
         </div>
 
         {/* Bottom line */}
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-amber-400/30 to-transparent flex-shrink-0" />
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-sky-400/30 to-transparent flex-shrink-0" />
       </DialogContent>
     </Dialog>
   );

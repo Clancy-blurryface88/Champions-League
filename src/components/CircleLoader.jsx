@@ -1,6 +1,6 @@
 export default function CircleLoader({ size = 50 }) {
   const orbes = 5;
-  const gold = '#f5c518';
+  const gold = '#38bdf8';
 
   return (
     <>

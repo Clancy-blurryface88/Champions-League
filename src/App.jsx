@@ -19,36 +19,8 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
 
-const IntroVideo = ({ appReady, onDone }) => {
-  const [loop, setLoop] = React.useState(true);
-  React.useEffect(() => { if (appReady) setLoop(false); }, [appReady]);
-  return (
-    <div className="fixed inset-0 z-[9999] bg-black overflow-hidden">
-      <video
-        src="/wc2026-bumper.mp4"
-        autoPlay muted playsInline
-        loop={loop}
-        onEnded={onDone}
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-      {!appReady && (
-        <div className="absolute inset-0 flex items-end justify-center pb-10">
-          <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-        </div>
-      )}
-    </div>
-  );
-};
-
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
-  const [introDone, setIntroDone] = React.useState(false);
-
-  const isLoading = isLoadingPublicSettings || isLoadingAuth;
-
-  if (!introDone) {
-    return <IntroVideo appReady={!isLoading} onDone={() => setIntroDone(true)} />;
-  }
+  const { authError, navigateToLogin } = useAuth();
 
   // Handle authentication errors
   if (authError) {

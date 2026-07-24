@@ -242,10 +242,10 @@ export default function RankingHistoryTable() {
 
                                             {rankingData.rounds.map(round => {
                                                 const rank = rankingData.ranks[round.id]?.[userProfile.user_id];
-                                                const glowColor = rank===1?'rgba(250,204,21,0.6)':rank===2?'rgba(192,192,192,0.5)':rank===3?'rgba(205,127,50,0.5)':rank<=10?'rgba(96,165,250,0.4)':'rgba(100,116,139,0.3)';
-                                                const borderColor = rank===1?'#FFD700':rank===2?'#C0C0C0':rank===3?'#CD7F32':rank<=10?'#60a5fa':'#475569';
-                                                const textColor = rank===1?'#FFD700':rank===2?'#C0C0C0':rank===3?'#CD7F32':rank<=10?'#93c5fd':'#94a3b8';
-                                                const bg = rank===1?'rgba(250,204,21,0.12)':rank===2?'rgba(192,192,192,0.1)':rank===3?'rgba(205,127,50,0.1)':rank<=10?'rgba(96,165,250,0.07)':'rgba(71,85,105,0.3)';
+                                                const glowColor = rank===1?'rgba(125,211,252,0.6)':rank===2?'rgba(192,192,192,0.5)':rank===3?'rgba(205,127,50,0.5)':rank<=10?'rgba(96,165,250,0.4)':'rgba(100,116,139,0.3)';
+                                                const borderColor = rank===1?'#7dd3fc':rank===2?'#C0C0C0':rank===3?'#CD7F32':rank<=10?'#60a5fa':'#475569';
+                                                const textColor = rank===1?'#7dd3fc':rank===2?'#C0C0C0':rank===3?'#CD7F32':rank<=10?'#93c5fd':'#94a3b8';
+                                                const bg = rank===1?'rgba(125,211,252,0.12)':rank===2?'rgba(192,192,192,0.1)':rank===3?'rgba(205,127,50,0.1)':rank<=10?'rgba(96,165,250,0.07)':'rgba(71,85,105,0.3)';
 
                                                 return (
                                                     <TableCell key={round.id} className="text-center p-2">

@@ -98,11 +98,11 @@ function MatchCard({ match, index }) {
 }
 
 // ── Rank card ───────────────────────────────────────────────────────────────
-const RANK_COLOR  = r => r === 1 ? '#FFD700' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : 'rgba(255,255,255,.45)';
-const RANK_BORDER = r => r === 1 ? '#FFD700' : r === 2 ? '#D1D5DB' : r === 3 ? '#D97706' : '#475569';
-const RANK_BG     = r => r === 1 ? 'linear-gradient(135deg,rgba(250,204,21,.22),rgba(245,158,11,.22))'
+const RANK_COLOR  = r => r === 1 ? '#7dd3fc' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : 'rgba(255,255,255,.45)';
+const RANK_BORDER = r => r === 1 ? '#7dd3fc' : r === 2 ? '#D1D5DB' : r === 3 ? '#D97706' : '#475569';
+const RANK_BG     = r => r === 1 ? 'linear-gradient(135deg,rgba(125,211,252,.22),rgba(56,189,248,.22))'
                        : r === 2 ? 'linear-gradient(135deg,rgba(209,213,219,.18),rgba(156,163,175,.18))'
-                       : r === 3 ? 'linear-gradient(135deg,rgba(245,158,11,.20),rgba(217,119,6,.20))'
+                       : r === 3 ? 'linear-gradient(135deg,rgba(56,189,248,.20),rgba(217,119,6,.20))'
                        : 'rgba(30,41,59,.60)';
 const MEDAL = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
@@ -156,7 +156,7 @@ function RankCard({ row, index, total, shockwave, isInitial }) {
         <motion.div className="absolute inset-0 rounded-lg pointer-events-none"
           initial={{ opacity: 0 }} animate={{ opacity: [0, .2, 0] }}
           transition={{ duration: .55, delay: shockDelay }}
-          style={{ background: 'rgba(250,204,21,.22)', zIndex: 5 }} />
+          style={{ background: 'rgba(125,211,252,.22)', zIndex: 5 }} />
       )}
 
       {/* parallelogram card */}
@@ -372,7 +372,7 @@ function LiveLBTab() {
   if (status === 'loading' && rows.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-3">
-        <div className="w-8 h-8 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-sky-400/30 border-t-sky-400 rounded-full animate-spin" />
         <span className="text-slate-500 text-xs">טוען נתונים...</span>
       </div>
     );
@@ -382,7 +382,7 @@ function LiveLBTab() {
       <div className="text-center py-16">
         <WifiOff className="w-10 h-10 text-red-400/40 mx-auto mb-3" />
         <p className="text-red-400 text-sm mb-3">שגיאה בטעינת נתונים</p>
-        <button onClick={load} className="text-amber-400 text-xs underline">נסה שוב</button>
+        <button onClick={load} className="text-sky-400 text-xs underline">נסה שוב</button>
       </div>
     );
   }
@@ -531,7 +531,7 @@ function MatchListTab({ filter }) {
   if (loading && !matches.length) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-3">
-        <div className="w-8 h-8 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-sky-400/30 border-t-sky-400 rounded-full animate-spin" />
         <span className="text-slate-500 text-xs">טוען...</span>
       </div>
     );
@@ -541,7 +541,7 @@ function MatchListTab({ filter }) {
       <div className="text-center py-16">
         <WifiOff className="w-10 h-10 text-red-400/40 mx-auto mb-3" />
         <p className="text-red-400 text-sm mb-3">{error}</p>
-        <button onClick={load} className="text-amber-400 text-xs underline">נסה שוב</button>
+        <button onClick={load} className="text-sky-400 text-xs underline">נסה שוב</button>
       </div>
     );
   }
@@ -592,15 +592,15 @@ export default function AdminLivePanelDemo() {
       <div className="max-w-sm mx-auto rounded-2xl overflow-hidden"
         style={{ background: 'rgba(5,10,20,0.97)', border: '1px solid rgba(255,255,255,.1)', boxShadow: '-20px 0 60px rgba(0,0,0,.5)' }}>
 
-        <div className="h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
+        <div className="h-px bg-gradient-to-r from-transparent via-sky-400/60 to-transparent" />
 
         <div className="px-5 pt-5 pb-3">
           <div className="flex items-center gap-2.5 mb-4">
             <div>
               <p className="text-white font-bold text-[15px] leading-tight">Live Results</p>
               <p className="text-[10px] font-bold tracking-[.2em] uppercase"
-                style={{ background: 'linear-gradient(90deg,#f5c518,#fff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                FIFA World Cup 2026
+                style={{ background: 'linear-gradient(90deg,#38bdf8,#fff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                UEFA Champions League 2026
               </p>
             </div>
           </div>
@@ -612,7 +612,7 @@ export default function AdminLivePanelDemo() {
                 style={{ color: active === t.key ? '#000' : 'rgba(255,255,255,.4)' }}>
                 {active === t.key && (
                   <motion.div layoutId="demo-tab-pill" className="absolute inset-0 rounded-lg"
-                    style={{ background: t.key === 'LB' ? 'linear-gradient(135deg,#8b5cf6,#6366f1)' : 'linear-gradient(135deg,#f5c518,#fde68a)' }}
+                    style={{ background: t.key === 'LB' ? 'linear-gradient(135deg,#8b5cf6,#6366f1)' : 'linear-gradient(135deg,#38bdf8,#7dd3fc)' }}
                     transition={{ type: 'spring', bounce: .2, duration: .5 }} />
                 )}
                 <span className="relative z-10">{t.emoji} {t.label}</span>
@@ -631,7 +631,7 @@ export default function AdminLivePanelDemo() {
           </AnimatePresence>
         </div>
 
-        <div className="h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent" />
+        <div className="h-px bg-gradient-to-r from-transparent via-sky-400/30 to-transparent" />
       </div>
 
       <style>{`

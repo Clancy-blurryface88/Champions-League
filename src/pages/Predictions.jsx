@@ -783,10 +783,10 @@ export default function Predictions() {
                   className="relative flex-shrink-0 flex flex-col items-center gap-1 pt-2 pb-2.5 px-3 rounded-2xl transition-all duration-250"
                   style={{
                     background: isActive
-                      ? 'linear-gradient(135deg,#f5c518,#fde68a)'
+                      ? 'linear-gradient(135deg,#38bdf8,#7dd3fc)'
                       : 'rgba(255,255,255,0.05)',
                     border: isActive
-                      ? '1px solid rgba(245,197,24,0.6)'
+                      ? '1px solid rgba(56, 189, 248,0.6)'
                       : '1px solid rgba(255,255,255,0.08)',
                     minWidth: 56,
                   }}
@@ -841,7 +841,7 @@ export default function Predictions() {
                   style={{ scrollMarginTop: '195px' }}
                 >
                   {/* Gradient line top */}
-                  <div className="h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent mb-3" />
+                  <div className="h-px bg-gradient-to-r from-transparent via-sky-400/30 to-transparent mb-3" />
 
                   <div className="flex items-center px-1 mb-3">
                     {/* Left line */}
@@ -852,19 +852,19 @@ export default function Predictions() {
                       className="mx-3 flex items-center gap-3 px-4 py-2 rounded-2xl"
                       style={{
                         background: isToday
-                          ? 'linear-gradient(135deg,rgba(245,197,24,0.15),rgba(245,197,24,0.05))'
+                          ? 'linear-gradient(135deg,rgba(56, 189, 248,0.15),rgba(56, 189, 248,0.05))'
                           : isPast
                             ? 'rgba(255,255,255,0.03)'
                             : 'rgba(255,255,255,0.06)',
                         border: isToday
-                          ? '1px solid rgba(245,197,24,0.35)'
+                          ? '1px solid rgba(56, 189, 248,0.35)'
                           : '1px solid rgba(255,255,255,0.1)',
                       }}
                     >
                       {/* Date text */}
                       <div className="flex flex-col items-center gap-0.5">
                         {isToday ? (
-                          <span className="text-xs font-bold text-amber-400 whitespace-nowrap">היום</span>
+                          <span className="text-xs font-bold text-sky-400 whitespace-nowrap">היום</span>
                         ) : (
                           <div className="flex items-baseline gap-1.5">
                             <span className={`text-xs font-bold whitespace-nowrap ${isPast ? 'text-slate-500' : 'text-white'}`}>
@@ -1222,7 +1222,7 @@ export default function Predictions() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.25 }}
                 className="w-full max-w-sm rounded-2xl overflow-hidden"
-                style={{ background: 'rgba(245,197,24,0.05)', border: '1px solid rgba(245,197,24,0.35)' }}
+                style={{ background: 'rgba(56, 189, 248,0.05)', border: '1px solid rgba(56, 189, 248,0.35)' }}
               >
                 <div className="relative h-10 flex items-center px-4">
                   <motion.div
@@ -1230,9 +1230,9 @@ export default function Predictions() {
                     initial={false}
                     animate={{ scaleX: pct / 100 }}
                     transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-                    style={{ background: 'linear-gradient(90deg, rgba(245,197,24,0.25) 0%, rgba(245,197,24,0.45) 100%)', transformOrigin: 'left' }}
+                    style={{ background: 'linear-gradient(90deg, rgba(56, 189, 248,0.25) 0%, rgba(56, 189, 248,0.45) 100%)', transformOrigin: 'left' }}
                   />
-                  <span className="relative z-10 w-full text-center text-sm font-semibold text-amber-400/90">
+                  <span className="relative z-10 w-full text-center text-sm font-semibold text-sky-400/90">
                     {filled} / {total} ניחושים
                   </span>
                 </div>

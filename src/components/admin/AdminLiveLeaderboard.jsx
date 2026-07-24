@@ -139,11 +139,11 @@ function buildLeaderboard(dbMatch, homeScore, awayScore, predictions, userStats,
 
 // ── Card view components ──────────────────────────────────────────────────────
 
-const RANK_COLOR  = r => r === 1 ? '#FFD700' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : 'rgba(255,255,255,.45)';
-const RANK_BORDER = r => r === 1 ? '#FFD700' : r === 2 ? '#D1D5DB' : r === 3 ? '#D97706' : '#475569';
-const RANK_BG     = r => r === 1 ? 'linear-gradient(135deg,rgba(250,204,21,.22),rgba(245,158,11,.22))'
+const RANK_COLOR  = r => r === 1 ? '#7dd3fc' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : 'rgba(255,255,255,.45)';
+const RANK_BORDER = r => r === 1 ? '#7dd3fc' : r === 2 ? '#D1D5DB' : r === 3 ? '#D97706' : '#475569';
+const RANK_BG     = r => r === 1 ? 'linear-gradient(135deg,rgba(125,211,252,.22),rgba(56,189,248,.22))'
                        : r === 2 ? 'linear-gradient(135deg,rgba(209,213,219,.18),rgba(156,163,175,.18))'
-                       : r === 3 ? 'linear-gradient(135deg,rgba(245,158,11,.20),rgba(217,119,6,.20))'
+                       : r === 3 ? 'linear-gradient(135deg,rgba(56,189,248,.20),rgba(217,119,6,.20))'
                        : 'rgba(30,41,59,.60)';
 
 function DeltaIcon({ delta }) {
@@ -371,8 +371,8 @@ export default function AdminLiveLeaderboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-            <Zap className="w-5 h-5 text-amber-400" />
+          <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center">
+            <Zap className="w-5 h-5 text-sky-400" />
           </div>
           <div>
             <h2 className="text-white font-bold text-lg">Live Leaderboard</h2>
@@ -395,9 +395,9 @@ export default function AdminLiveLeaderboard() {
       </div>
 
       {/* Warning */}
-      <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/8 border border-amber-500/20">
-        <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-        <p className="text-amber-300/80 text-xs">
+      <div className="flex items-start gap-2.5 p-3 rounded-xl bg-sky-500/8 border border-sky-500/20">
+        <AlertTriangle className="w-4 h-4 text-sky-400 mt-0.5 flex-shrink-0" />
+        <p className="text-sky-300/80 text-xs">
           כלי בדיקה בלבד — לא נכתב לסופאבייס ולא משפיע על הטבלה הרשמית, ניחושים, תוצאות, או כל חלק אחר באפליקציה.
         </p>
       </div>
@@ -421,7 +421,7 @@ export default function AdminLiveLeaderboard() {
       {/* API match found but no DB match */}
       {liveState && !dbMatch && apiMatches?.length > 0 && (
         <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700 space-y-3">
-          <p className="text-amber-400 text-sm font-medium">נמצאו משחקים חיים ב-API אך לא הצלחתי להתאים אותם למשחקים ב-DB:</p>
+          <p className="text-sky-400 text-sm font-medium">נמצאו משחקים חיים ב-API אך לא הצלחתי להתאים אותם למשחקים ב-DB:</p>
           {apiMatches.map(m => (
             <div key={m.id} className="flex items-center justify-between text-sm text-slate-300 bg-slate-700/50 rounded-lg px-4 py-2.5">
               <span>{m.homeTeam?.name}</span>
@@ -476,17 +476,17 @@ export default function AdminLiveLeaderboard() {
 
           {/* View toggle */}
           <div className="flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-amber-400" />
+            <Trophy className="w-4 h-4 text-sky-400" />
             <span className="text-white font-semibold text-sm flex-1">
               {dbMatch.team_a} {homeScore}–{awayScore} {dbMatch.team_b}
             </span>
             <div className="flex rounded-lg overflow-hidden border border-slate-700">
               <button onClick={() => setViewMode('cards')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${viewMode === 'cards' ? 'bg-amber-500/20 text-amber-400' : 'text-slate-500 hover:text-slate-300'}`}>
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${viewMode === 'cards' ? 'bg-sky-500/20 text-sky-400' : 'text-slate-500 hover:text-slate-300'}`}>
                 <Layers className="w-3.5 h-3.5" /> קלפים
               </button>
               <button onClick={() => setViewMode('table')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors border-l border-slate-700 ${viewMode === 'table' ? 'bg-amber-500/20 text-amber-400' : 'text-slate-500 hover:text-slate-300'}`}>
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors border-l border-slate-700 ${viewMode === 'table' ? 'bg-sky-500/20 text-sky-400' : 'text-slate-500 hover:text-slate-300'}`}>
                 <LayoutList className="w-3.5 h-3.5" /> טבלה
               </button>
             </div>
@@ -523,7 +523,7 @@ export default function AdminLiveLeaderboard() {
                     <th className="px-4 py-2.5 text-center">ניחוש</th>
                     <th className="px-4 py-2.5 text-right">נק' רשמי</th>
                     <th className="px-4 py-2.5 text-right">+לייב</th>
-                    <th className="px-4 py-2.5 text-right font-bold text-amber-400">סה"כ</th>
+                    <th className="px-4 py-2.5 text-right font-bold text-sky-400">סה"כ</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -532,7 +532,7 @@ export default function AdminLiveLeaderboard() {
                     const b = row.breakdown;
                     return (
                       <React.Fragment key={row.userId}>
-                        <tr className={`border-b border-slate-700/20 ${rank <= 3 ? 'bg-amber-500/4' : ''}`}>
+                        <tr className={`border-b border-slate-700/20 ${rank <= 3 ? 'bg-sky-500/4' : ''}`}>
                           <td className="px-4 py-2.5 text-center">
                             <span className="text-base leading-none">{MEDAL[rank] || rank}</span>
                           </td>
@@ -547,7 +547,7 @@ export default function AdminLiveLeaderboard() {
                           <td className="px-4 py-2.5 text-right font-bold text-white">{row.total}</td>
                         </tr>
                         {b && b.totalPoints > 0 && (
-                          <tr className={`border-b border-slate-700/40 ${rank <= 3 ? 'bg-amber-500/4' : ''}`}>
+                          <tr className={`border-b border-slate-700/40 ${rank <= 3 ? 'bg-sky-500/4' : ''}`}>
                             <td />
                             <td colSpan={5} className="px-4 pb-2">
                               <div className="flex gap-3 text-[10px] text-slate-500">
@@ -641,8 +641,8 @@ export default function AdminLiveLeaderboard() {
                 {/* Golden scenario */}
                 <div className="rounded-xl border p-4" style={{ background: 'rgba(251,191,36,0.06)', borderColor: 'rgba(251,191,36,0.20)' }}>
                   <div className="flex items-center gap-2 mb-3">
-                    <Star className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                    <span className="text-amber-300 font-semibold text-sm">תרחיש זהב</span>
+                    <Star className="w-4 h-4 text-sky-400 flex-shrink-0" />
+                    <span className="text-sky-300 font-semibold text-sm">תרחיש זהב</span>
                   </div>
                   {!insights.myPred ? (
                     <p className="text-slate-500 text-xs">אין לך ניחוש למשחק הזה</p>
@@ -652,7 +652,7 @@ export default function AdminLiveLeaderboard() {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-slate-400 text-xs">ניחוש שלך</span>
-                        <span className="text-amber-300 font-bold text-sm font-mono">
+                        <span className="text-sky-300 font-bold text-sm font-mono">
                           {insights.myPred.predicted_score_a}–{insights.myPred.predicted_score_b}
                         </span>
                       </div>
@@ -663,7 +663,7 @@ export default function AdminLiveLeaderboard() {
                       <div className="flex items-center justify-between">
                         <span className="text-slate-400 text-xs">מיקום בתרחיש זהב</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-amber-400 font-black text-base">מקום {insights.myGoldenRow.liveRank}</span>
+                          <span className="text-sky-400 font-black text-base">מקום {insights.myGoldenRow.liveRank}</span>
                           {insights.myGoldenRow.liveRank < insights.myRank && (
                             <span className="text-emerald-400 text-xs font-semibold">
                               ↑{insights.myRank - insights.myGoldenRow.liveRank} מיקומים

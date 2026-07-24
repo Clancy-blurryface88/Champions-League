@@ -14,7 +14,6 @@ import {
 import LeaderboardPanel from "./components/LeaderboardPanel";
 import WelcomeModal from "./components/WelcomeModal";
 import ExactHitsPanel from "./components/ExactHitsPanel";
-import IntroVideoModal from "./components/IntroVideoModal";
 // This import is kept as per outline
 import { createPageUrl } from "@/utils";
 import { LoaderBar } from "./components/ui/LoaderBar";
@@ -201,7 +200,7 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
             left: ringSize.width / 2 + marker.x,
             top: ringSize.height / 2 + marker.y,
             transform: 'translate(-50%, -50%)',
-            background: '#FFD700', color: '#000', fontWeight: 900, fontSize: 11,
+            background: '#7dd3fc', color: '#000', fontWeight: 900, fontSize: 11,
             borderRadius: 999, padding: '2px 7px', whiteSpace: 'nowrap',
             boxShadow: '0 2px 8px rgba(0,0,0,0.5), 0 0 0 2px #030d1a',
             zIndex: 5,
@@ -260,7 +259,7 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
                   {liveUserPrediction && (
                     <div className="flex flex-col items-center gap-1 mt-2">
                       <span className="text-slate-400 text-xs">הניחוש שלי</span>
-                      <span className="text-amber-400 text-sm font-bold" dir="ltr">
+                      <span className="text-sky-400 text-sm font-bold" dir="ltr">
                         ({liveUserPrediction.predicted_score_a} - {liveUserPrediction.predicted_score_b})
                       </span>
                     </div>
@@ -281,7 +280,6 @@ export default function Layout({ children, currentPageName }) {
   const [user, setUser] = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
-  const [showIntroVideoModal, setShowIntroVideoModal] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
@@ -442,23 +440,17 @@ export default function Layout({ children, currentPageName }) {
             userWithStats.total_predictions_count = 0;
           }
 
-          // CRITICAL: בדיקת has_seen_intro_video מישות User (לא UserStats)
-          userWithStats.has_seen_intro_video = currentUser.has_seen_intro_video || false;
-          console.log("🎬 Layout checkAuth - has_seen_intro_video:", userWithStats.has_seen_intro_video);
         } else {
           userWithStats = null;
         }
 
         setUser(userWithStats);
 
-        // פלואו אונבורדינג: WelcomeModal → סרטון → דשבורד
+        // פלואו אונבורדינג: WelcomeModal → דשבורד
         if (currentUser) {
           const hasCompletedWelcome = localStorage.getItem('welcome_completed_' + currentUser.id) === 'true';
-          const hasSeenVideo = !!userWithStats.has_seen_intro_video;
           if (!hasCompletedWelcome) {
             setShowWelcomeModal(true);
-          } else if (!hasSeenVideo) {
-            setShowIntroVideoModal(true);
           }
         }
 
@@ -475,7 +467,6 @@ export default function Layout({ children, currentPageName }) {
               display_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
               avatar_url: session.user.user_metadata?.avatar_url,
               is_admin: false,
-              has_seen_intro_video: false,
             });
           } else {
             setUser(null);
@@ -590,7 +581,7 @@ export default function Layout({ children, currentPageName }) {
   // actually gets seen once they close.
   useEffect(() => {
     if (authLoading || !liveCheckDone || !nextMatchChecked) return;
-    if (showWelcomeModal || showIntroVideoModal) return;
+    if (showWelcomeModal) return;
     if (hasLiveMatch && livePredictionLoading) return; // wait so the card appears complete, prediction included
     if (sessionStorage.getItem('match_intro_shown')) return;
     sessionStorage.setItem('match_intro_shown', '1');
@@ -601,7 +592,7 @@ export default function Layout({ children, currentPageName }) {
     } else if (nextMatch) {
       setShowNextMatchIntro(true);
     }
-  }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading, showWelcomeModal, showIntroVideoModal, tournamentEnded]);
+  }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading, showWelcomeModal, tournamentEnded]);
 
   // Cycle through every known upcoming match once (zoom-through transition),
   // then auto-dismiss — this overlay blocks the rest of the UI while open,
@@ -856,24 +847,6 @@ export default function Layout({ children, currentPageName }) {
     setUser((prev) => ({ ...prev, display_name: displayName }));
     try { localStorage.setItem('welcome_completed_' + (user?.id ?? ''), 'true'); } catch {}
     setShowWelcomeModal(false);
-
-    const hasSeenVideo = !!user?.has_seen_intro_video;
-    if (!hasSeenVideo) {
-      setShowIntroVideoModal(true);
-    } else {
-      navigate(createPageUrl("Dashboard"));
-    }
-  };
-
-  // לוגיקה חדשה: נקראת לאחר שהסרטון הסתיים או דולג
-  const handleIntroVideoCompleted = async () => {
-    setShowIntroVideoModal(false);
-    try {
-      await User.updateMyUserData({ has_seen_intro_video: true });
-      setUser((prev) => ({ ...prev, has_seen_intro_video: true }));
-    } catch (error) {
-      console.error("❌ Failed to update intro video status:", error);
-    }
     navigate(createPageUrl("Dashboard"));
   };
 
@@ -981,7 +954,7 @@ export default function Layout({ children, currentPageName }) {
                 className="relative w-11 h-11 rounded-full flex items-center justify-center shadow-2xl"
                 style={{
                   background: 'linear-gradient(145deg, #1a3a2a 0%, #0d2018 100%)',
-                  border: '1.5px solid rgba(245,197,24,0.5)',
+                  border: '1.5px solid rgba(56, 189, 248,0.5)',
                   boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
                 }}
               >
@@ -989,7 +962,7 @@ export default function Layout({ children, currentPageName }) {
                 <motion.span
                   animate={{ scale: [1, 1.15, 1] }}
                   transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                  className="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 rounded-full bg-amber-400 text-black text-[9px] font-bold flex items-center justify-center shadow-md"
+                  className="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 rounded-full bg-sky-400 text-black text-[9px] font-bold flex items-center justify-center shadow-md"
                 >
                   {todayMatchCount}
                 </motion.span>
@@ -1165,7 +1138,7 @@ export default function Layout({ children, currentPageName }) {
                     className="flex items-center gap-2.5 rounded-full px-3 py-1.5 transition-all duration-200"
                     style={{
                       background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(8,20,50,0.55) 100%)',
-                      border: '1px solid rgba(245,197,24,0.35)',
+                      border: '1px solid rgba(56, 189, 248,0.35)',
                       backdropFilter: 'blur(28px) saturate(1.6)',
                       WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
                       boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), 0 4px 20px rgba(0,0,0,0.5)',
@@ -1175,10 +1148,10 @@ export default function Layout({ children, currentPageName }) {
                       src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/8e94debbc_ssmvtnogc7ue0jufjd03h6mj89.png"
                       alt="User Profile"
                       className="w-7 h-7 rounded-full object-cover flex-shrink-0"
-                      style={{ boxShadow: '0 0 0 2px #f5c518' }}
+                      style={{ boxShadow: '0 0 0 2px #38bdf8' }}
                     />
                     <span
-                      className="text-amber-400 text-sm font-semibold"
+                      className="text-sky-400 text-sm font-semibold"
                       style={{ fontFamily: "'Outfit', sans-serif" }}
                     >
                       {user.display_name || user.full_name}
@@ -1188,7 +1161,7 @@ export default function Layout({ children, currentPageName }) {
               </DropdownMenuTrigger>
               <DropdownMenuContent
               className="shadow-2xl rounded-2xl min-w-[180px]"
-              style={{ background: 'rgba(8,22,45,0.96)', border: '1px solid rgba(245,197,24,0.25)', backdropFilter: 'blur(20px)' }}>
+              style={{ background: 'rgba(8,22,45,0.96)', border: '1px solid rgba(56, 189, 248,0.25)', backdropFilter: 'blur(20px)' }}>
 
                 <motion.div
                 variants={dropdownVariants}
@@ -1206,7 +1179,7 @@ export default function Layout({ children, currentPageName }) {
 
                       <DropdownMenuItem
                     onClick={() => navigate(createPageUrl("Admin"))}
-                    className="cursor-pointer text-white hover:text-amber-300 hover:bg-slate-700/60 focus:bg-slate-700/60 focus:text-amber-300 rounded-md px-3 py-2 flex items-center gap-3 transition-all duration-300 font-medium">
+                    className="cursor-pointer text-white hover:text-sky-300 hover:bg-slate-700/60 focus:bg-slate-700/60 focus:text-sky-300 rounded-md px-3 py-2 flex items-center gap-3 transition-all duration-300 font-medium">
 
                         <Settings className="w-4 h-4" />
                         <span>Admin Panel</span>
@@ -1374,9 +1347,9 @@ export default function Layout({ children, currentPageName }) {
                   className="rounded-2xl overflow-hidden"
                   style={{
                     background: 'rgba(8,18,32,0.95)',
-                    border: '1px solid rgba(245,197,24,0.4)',
+                    border: '1px solid rgba(56, 189, 248,0.4)',
                     backdropFilter: 'blur(28px)',
-                    boxShadow: '0 0 60px rgba(245,197,24,0.15), 0 20px 60px rgba(0,0,0,0.7)',
+                    boxShadow: '0 0 60px rgba(56, 189, 248,0.15), 0 20px 60px rgba(0,0,0,0.7)',
                   }}
                   transition={{ type: 'spring', stiffness: 180, damping: 26 }}
                 >
@@ -1389,8 +1362,8 @@ export default function Layout({ children, currentPageName }) {
                       transition={{ duration: 0.5, ease: 'easeInOut' }}
                       className="px-10 py-8 flex flex-col items-center gap-5"
                     >
-                      <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(245,197,24,0.12)', border: '1px solid rgba(245,197,24,0.35)' }}>
-                        <span className="text-amber-400 text-xs font-bold tracking-widest uppercase">{nextMatchIndex === 0 ? 'המשחק הקרוב' : 'המשחק הבא'}</span>
+                      <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(56, 189, 248,0.12)', border: '1px solid rgba(56, 189, 248,0.35)' }}>
+                        <span className="text-sky-400 text-xs font-bold tracking-widest uppercase">{nextMatchIndex === 0 ? 'המשחק הקרוב' : 'המשחק הבא'}</span>
                       </div>
                       <div className="flex items-center gap-6" dir="ltr">
                         <div className="flex flex-col items-center gap-1.5 w-20">
@@ -1418,7 +1391,7 @@ export default function Layout({ children, currentPageName }) {
                       {nextMatchPrediction && (
                         <div className="flex flex-col items-center gap-1 mt-1">
                           <span className="text-slate-400 text-xs">הניחוש שלי</span>
-                          <span className="text-amber-400 text-sm font-bold">
+                          <span className="text-sky-400 text-sm font-bold">
                             ({nextMatchPrediction.predicted_score_a} - {nextMatchPrediction.predicted_score_b})
                           </span>
                         </div>
@@ -1457,10 +1430,6 @@ export default function Layout({ children, currentPageName }) {
           onSave={handleProfileSaved}
           userEmail={user?.email}
           currentUser={user} />
-
-        <IntroVideoModal
-          isOpen={showIntroVideoModal}
-          onVideoCompleted={handleIntroVideoCompleted} />
 
         <AnimatePresence>
           {showLeaderboard &&

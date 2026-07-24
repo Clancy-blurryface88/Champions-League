@@ -397,7 +397,7 @@ export default function RoundInsightsTicker({ user }) {
         }] : []),
         ...(topExactUser && topExactUser.count > 0 ? [{
           id: 13,
-          text: <><span className="text-white">מלך הפגיעות במחזור:</span> <span className="text-amber-400 font-bold">{topExactUser.name}</span> <span className="text-slate-400 text-[13px]">({topExactUser.count} פגיעות מדויקות)</span></>,
+          text: <><span className="text-white">מלך הפגיעות במחזור:</span> <span className="text-sky-400 font-bold">{topExactUser.name}</span> <span className="text-slate-400 text-[13px]">({topExactUser.count} פגיעות מדויקות)</span></>,
           icon: <span className="text-[16px] leading-none">🥇</span>
         }] : []),
 

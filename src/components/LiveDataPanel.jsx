@@ -104,7 +104,7 @@ function MatchCard({ match, index }) {
                       ? 'linear-gradient(135deg, #34d399, #fff)'
                       : isFinished
                         ? 'linear-gradient(135deg, #94a3b8, #fff)'
-                        : 'linear-gradient(135deg, #fbbf24, #fff)',
+                        : 'linear-gradient(135deg, #38bdf8, #fff)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
@@ -120,7 +120,7 @@ function MatchCard({ match, index }) {
                       ? 'linear-gradient(135deg, #34d399, #fff)'
                       : isFinished
                         ? 'linear-gradient(135deg, #94a3b8, #fff)'
-                        : 'linear-gradient(135deg, #fbbf24, #fff)',
+                        : 'linear-gradient(135deg, #38bdf8, #fff)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
@@ -256,23 +256,23 @@ export default function LiveDataPanel({ onClose }) {
         }}
       >
         {/* Gold top border */}
-        <div className="h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent flex-shrink-0" />
+        <div className="h-px bg-gradient-to-r from-transparent via-sky-400/60 to-transparent flex-shrink-0" />
 
         {/* Header */}
         <div className="px-5 pt-5 pb-4 flex-shrink-0">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
               <div className="relative">
-                <img src="/wc-trophy.png" alt="trophy" className="w-7 h-7 object-contain"
+                <img src="/cl-emblem.svg" alt="trophy" className="w-7 h-7 object-contain"
                   onError={e => { e.target.style.display='none'; }} />
               </div>
               <div>
                 <p className="text-white font-bold text-[15px] leading-tight tracking-wide">Live Results</p>
                 <p
                   className="text-[10px] font-bold tracking-[0.2em] uppercase"
-                  style={{ background: 'linear-gradient(90deg, #f5c518, #fff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
+                  style={{ background: 'linear-gradient(90deg, #38bdf8, #fff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
                 >
-                  FIFA World Cup 2026
+                  UEFA Champions League 2026
                 </p>
               </div>
             </div>
@@ -307,7 +307,7 @@ export default function LiveDataPanel({ onClose }) {
                   <motion.div
                     layoutId="filter-pill"
                     className="absolute inset-0 rounded-lg"
-                    style={{ background: 'linear-gradient(135deg, #f5c518, #fde68a)' }}
+                    style={{ background: 'linear-gradient(135deg, #38bdf8, #7dd3fc)' }}
                     transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
                   />
                 )}
@@ -360,7 +360,7 @@ export default function LiveDataPanel({ onClose }) {
               >
                 <WifiOff className="w-10 h-10 text-red-400/40 mx-auto mb-3" />
                 <p className="text-red-400 text-sm mb-3">{error}</p>
-                <button onClick={load} className="text-amber-400 text-xs underline hover:text-amber-300">נסה שוב</button>
+                <button onClick={load} className="text-sky-400 text-xs underline hover:text-sky-300">נסה שוב</button>
               </motion.div>
             ) : matches.length === 0 ? (
               <motion.div
@@ -384,7 +384,7 @@ export default function LiveDataPanel({ onClose }) {
         </div>
 
         {/* Bottom gold line */}
-        <div className="h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent flex-shrink-0" />
+        <div className="h-px bg-gradient-to-r from-transparent via-sky-400/30 to-transparent flex-shrink-0" />
       </motion.div>
     </>
   );

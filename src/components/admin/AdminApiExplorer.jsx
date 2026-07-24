@@ -68,7 +68,7 @@ function StandingsView() {
                       <th className="text-center px-2 py-2">תי'</th>
                       <th className="text-center px-2 py-2">הפ'</th>
                       <th className="text-center px-2 py-2">שע'</th>
-                      <th className="text-center px-2 py-2 text-amber-400">נק'</th>
+                      <th className="text-center px-2 py-2 text-sky-400">נק'</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -88,7 +88,7 @@ function StandingsView() {
                         <td className="text-center px-2 py-2 text-slate-400">{row.draw}</td>
                         <td className="text-center px-2 py-2 text-red-400">{row.lost}</td>
                         <td className="text-center px-2 py-2 text-slate-400">{row.goalsFor}:{row.goalsAgainst}</td>
-                        <td className="text-center px-2 py-2 font-bold text-amber-400">{row.points}</td>
+                        <td className="text-center px-2 py-2 font-bold text-sky-400">{row.points}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -127,7 +127,7 @@ function ScorersView() {
           </div>
           <div className="flex gap-4 text-xs flex-shrink-0">
             <div className="text-center">
-              <p className="font-bold text-amber-400 text-base">{s.goals ?? '—'}</p>
+              <p className="font-bold text-sky-400 text-base">{s.goals ?? '—'}</p>
               <p className="text-slate-600">שערים</p>
             </div>
             <div className="text-center">
@@ -236,11 +236,11 @@ function MatchView() {
           onChange={e => setMatchId(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && fetch_()}
           placeholder="לדוגמה: 508966"
-          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder:text-slate-600 focus:outline-none focus:border-amber-400/50"
+          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder:text-slate-600 focus:outline-none focus:border-sky-400/50"
         />
         <button
           onClick={fetch_}
-          className="px-4 py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-amber-300 text-sm font-medium transition-colors"
+          className="px-4 py-2 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 border border-sky-500/30 text-sky-300 text-sm font-medium transition-colors"
         >
           טען
         </button>
@@ -296,7 +296,7 @@ function MatchView() {
 function Spinner() {
   return (
     <div className="flex items-center justify-center py-16 gap-3">
-      <Loader2 className="w-6 h-6 text-amber-400 animate-spin" />
+      <Loader2 className="w-6 h-6 text-sky-400 animate-spin" />
       <span className="text-slate-500 text-sm">טוען...</span>
     </div>
   );
@@ -340,7 +340,7 @@ export default function AdminApiExplorer() {
               onClick={() => setTab(t.key)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all border ${
                 tab === t.key
-                  ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+                  ? 'bg-sky-500/20 border-sky-500/40 text-sky-300'
                   : 'bg-white/4 border-white/8 text-slate-400 hover:text-white hover:bg-white/8'
               }`}
             >

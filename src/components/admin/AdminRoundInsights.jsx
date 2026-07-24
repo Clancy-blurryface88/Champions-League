@@ -9,10 +9,10 @@ import {
 
 const pct = (n, d) => d === 0 ? 0 : Math.round((n / d) * 100);
 const avg = arr => arr.length === 0 ? 0 : arr.reduce((a, b) => a + b, 0) / arr.length;
-const RANK_COLOR = r => r === 1 ? '#FFD700' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : '#94a3b8';
+const RANK_COLOR = r => r === 1 ? '#7dd3fc' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : '#94a3b8';
 const matchOutcome = (a, b) => a > b ? 'h' : a < b ? 'a' : 'd';
 
-function StatCard({ label, value, sub, color = '#f5c518', icon: Icon }) {
+function StatCard({ label, value, sub, color = '#38bdf8', icon: Icon }) {
   return (
     <div className="rounded-2xl p-4 flex flex-col gap-1.5"
       style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -27,9 +27,9 @@ function StatCard({ label, value, sub, color = '#f5c518', icon: Icon }) {
 function SectionTitle({ children }) {
   return (
     <div className="flex items-center gap-3 mb-3">
-      <div className="flex-1 h-px bg-gradient-to-r from-amber-400/30 to-transparent" />
-      <span className="text-amber-400/80 text-[11px] font-bold tracking-widest uppercase whitespace-nowrap">{children}</span>
-      <div className="flex-1 h-px bg-gradient-to-l from-amber-400/30 to-transparent" />
+      <div className="flex-1 h-px bg-gradient-to-r from-sky-400/30 to-transparent" />
+      <span className="text-sky-400/80 text-[11px] font-bold tracking-widest uppercase whitespace-nowrap">{children}</span>
+      <div className="flex-1 h-px bg-gradient-to-l from-sky-400/30 to-transparent" />
     </div>
   );
 }
@@ -239,8 +239,8 @@ export default function AdminRoundInsights() {
     <div className="space-y-6">
       {/* Header + round selector */}
       <div className="flex items-center gap-3 flex-wrap">
-        <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
-          <BarChart3 className="w-5 h-5 text-amber-400" />
+        <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center flex-shrink-0">
+          <BarChart3 className="w-5 h-5 text-sky-400" />
         </div>
         <div className="flex-1 min-w-0">
           <h2 className="text-white font-bold text-lg">תובנות מחזור</h2>
@@ -251,7 +251,7 @@ export default function AdminRoundInsights() {
             <select
               value={selectedRound || ''}
               onChange={e => setSelectedRound(e.target.value)}
-              className="appearance-none bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-4 py-2 pr-8 outline-none focus:border-amber-500/50 cursor-pointer">
+              className="appearance-none bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-4 py-2 pr-8 outline-none focus:border-sky-500/50 cursor-pointer">
               {rounds.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
             </select>
             <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -261,7 +261,7 @@ export default function AdminRoundInsights() {
 
       {loading && (
         <div className="flex items-center justify-center py-20 gap-3 text-slate-400">
-          <div className="w-5 h-5 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+          <div className="w-5 h-5 border-2 border-sky-400/30 border-t-sky-400 rounded-full animate-spin" />
           <span className="text-sm">מנתח נתונים...</span>
         </div>
       )}
@@ -276,7 +276,7 @@ export default function AdminRoundInsights() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <StatCard label="משתתפים" value={data.allParticipants} icon={Users} color="#60a5fa" />
               <StatCard label="ממוצע נקודות" value={data.avgPts} sub="לשחקן" icon={TrendingUp} color="#34d399" />
-              <StatCard label="פגיעות מדויקות" value={data.totalExacts} sub={`מתוך ${data.totalPreds} ניחושים`} icon={Target} color="#fbbf24" />
+              <StatCard label="פגיעות מדויקות" value={data.totalExacts} sub={`מתוך ${data.totalPreds} ניחושים`} icon={Target} color="#38bdf8" />
               <StatCard label="כיוונים נכונים" value={data.totalOutcomes} sub={`${pct(data.totalOutcomes, data.totalPreds)}% הצלחה`} icon={Zap} color="#a78bfa" />
             </div>
           </div>
@@ -290,8 +290,8 @@ export default function AdminRoundInsights() {
                 icon={Trophy} title="מוביל המחזור:"
                 name={data.topScorer?.name}
                 detail={`${data.topScorer?.pts} נקודות — ${data.topScorer?.exact} פגיעות מדויקות, ${data.topScorer?.outcome} כיוונים`}
-                bg="rgba(250,204,21,0.08)" border="rgba(250,204,21,0.25)"
-                iconColor="#fbbf24" titleColor="#fde68a"
+                bg="rgba(56,189,248,0.08)" border="rgba(56,189,248,0.25)"
+                iconColor="#38bdf8" titleColor="#7dd3fc"
               />
 
               <InsightCard

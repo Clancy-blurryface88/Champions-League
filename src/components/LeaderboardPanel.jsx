@@ -139,23 +139,23 @@ export default function LeaderboardPanel({ onClose, user }) {
   }, [participants]);
 
   const getRankColor = (position) => {
-    if (position === 1) return '#FFD700';
+    if (position === 1) return '#7dd3fc';
     if (position === 2) return '#C0C0C0';
     if (position === 3) return '#CD7F32';
     return 'rgba(255,255,255,0.5)';
   };
 
   const getRankBorder = (position, isCurrentUser) => {
-    if (position === 1) return '#FFD700';
+    if (position === 1) return '#7dd3fc';
     if (position === 2) return '#D1D5DB';
     if (position === 3) return '#D97706';
     return isCurrentUser ? '#60A5FA' : '#475569';
   };
 
   const getRankBg = (position) => {
-    if (position === 1) return 'linear-gradient(135deg,rgba(250,204,21,0.22),rgba(245,158,11,0.22))';
+    if (position === 1) return 'linear-gradient(135deg,rgba(125,211,252,0.22),rgba(56,189,248,0.22))';
     if (position === 2) return 'linear-gradient(135deg,rgba(209,213,219,0.18),rgba(156,163,175,0.18))';
-    if (position === 3) return 'linear-gradient(135deg,rgba(245,158,11,0.20),rgba(217,119,6,0.20))';
+    if (position === 3) return 'linear-gradient(135deg,rgba(56,189,248,0.20),rgba(217,119,6,0.20))';
     return 'rgba(30,41,59,0.60)';
   };
 
@@ -245,7 +245,7 @@ export default function LeaderboardPanel({ onClose, user }) {
                               animate={{ opacity: [0, 0.2, 0] }}
                               transition={{ duration: 0.60, delay: shockDelay, ease: 'easeOut' }}
                               className="absolute inset-0 rounded-2xl pointer-events-none"
-                              style={{ background: 'rgba(250,204,21,0.22)', zIndex: 5 }}
+                              style={{ background: 'rgba(125,211,252,0.22)', zIndex: 5 }}
                             />
                           )}
 
@@ -270,7 +270,7 @@ export default function LeaderboardPanel({ onClose, user }) {
                             borderWidth={1}
                             duration={position === 1 ? 6 : position === 2 ? 7 : position === 3 ? 8 : 12}
                             shineColor={
-                              position === 1 ? ['#FFD700','#fff','#F5C518'] :
+                              position === 1 ? ['#7dd3fc','#fff','#38bdf8'] :
                               position === 2 ? ['#C0C0C0','#fff','#94a3b8'] :
                               position === 3 ? ['#CD7F32','#fff','#D97706'] :
                               ['#475569','#64748b','#475569']

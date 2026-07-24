@@ -37,10 +37,10 @@ async function loadFinalLeaderboard(currentUserId) {
 }
 
 function PodiumStand({ entry, position, baseDelay }) {
-  const rankColor = position === 1 ? "#FFD700" : position === 2 ? "#C0C0C0" : "#CD7F32";
-  const rankBg = position === 1 ? "rgba(250,204,21,0.12)" : position === 2 ? "rgba(209,213,219,0.09)" : "rgba(217,119,6,0.12)";
-  const rankBorder = position === 1 ? "rgba(250,204,21,0.35)" : position === 2 ? "rgba(209,213,219,0.25)" : "rgba(217,119,6,0.3)";
-  const rankGlow = position === 1 ? "rgba(250,204,21,0.4)" : position === 2 ? "rgba(209,213,219,0.2)" : "rgba(217,119,6,0.32)";
+  const rankColor = position === 1 ? "#7dd3fc" : position === 2 ? "#C0C0C0" : "#CD7F32";
+  const rankBg = position === 1 ? "rgba(125,211,252,0.12)" : position === 2 ? "rgba(209,213,219,0.09)" : "rgba(217,119,6,0.12)";
+  const rankBorder = position === 1 ? "rgba(125,211,252,0.35)" : position === 2 ? "rgba(209,213,219,0.25)" : "rgba(217,119,6,0.3)";
+  const rankGlow = position === 1 ? "rgba(125,211,252,0.4)" : position === 2 ? "rgba(209,213,219,0.2)" : "rgba(217,119,6,0.32)";
   const heights = { 1: 76, 2: 52, 3: 38 };
 
   if (!entry) return <div className="flex-1" />;
@@ -138,9 +138,9 @@ export default function FinalResultsOverlay({ onClose }) {
           className="relative w-full max-w-md rounded-3xl overflow-hidden flex flex-col"
           style={{
             background: "rgba(8,18,32,0.97)",
-            border: "1px solid rgba(245,197,24,0.4)",
+            border: "1px solid rgba(56, 189, 248,0.4)",
             backdropFilter: "blur(28px)",
-            boxShadow: "0 0 60px rgba(245,197,24,0.15), 0 20px 60px rgba(0,0,0,0.7)",
+            boxShadow: "0 0 60px rgba(56, 189, 248,0.15), 0 20px 60px rgba(0,0,0,0.7)",
             maxHeight: "85vh",
           }}
         >
@@ -153,9 +153,9 @@ export default function FinalResultsOverlay({ onClose }) {
 
           <div className="overflow-y-auto px-6 pt-8 pb-6">
             <div className="text-center mb-1">
-              <img src="/world-cup-trophy.png" alt="World Cup" className="h-14 w-auto mx-auto object-contain" />
+              <img src="/cl-emblem.svg" alt="Champions League" className="h-14 w-auto mx-auto object-contain" />
             </div>
-            <h2 className="text-center text-2xl font-black text-amber-400 mb-1">הטורניר הסתיים</h2>
+            <h2 className="text-center text-2xl font-black text-sky-400 mb-1">הטורניר הסתיים</h2>
             <p className="text-center text-slate-400 text-sm mb-5">התוצאות הסופיות</p>
 
             {loading ? (

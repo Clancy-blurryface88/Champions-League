@@ -103,7 +103,7 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                 style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
               >
                 <motion.img
-                  src="/trophy.png"
+                  src="/cl-emblem.svg"
                   alt="Trophy"
                   className="w-14 h-auto mx-auto mb-6"
                   initial={{ opacity: 0, scale: 0.75, y: 6 }}
@@ -111,7 +111,7 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                   transition={{ delay: 0.22, type: "spring", stiffness: 280, damping: 22 }}
                 />
                 <h2 className="text-white text-[18px] font-semibold tracking-tight">
-                  World Cup 2026
+                  ליגת האלופות 2026
                 </h2>
                 <p className="text-white/35 text-[12px] mt-1.5">
                   שמך בטורניר

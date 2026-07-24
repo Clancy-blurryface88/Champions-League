@@ -17,7 +17,7 @@ const RoundCard = ({ round, onClick }) => {
         100% { background-position: 200% 50%; }
       }
       .shimmer-text {
-        background: linear-gradient(90deg, #f5c518, #ffffff, #f5c518, #ffffff, #f5c518);
+        background: linear-gradient(90deg, #38bdf8, #ffffff, #38bdf8, #ffffff, #38bdf8);
         background-size: 300% 100%;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -33,8 +33,8 @@ const RoundCard = ({ round, onClick }) => {
         100% { transform: scale(2); opacity: 0; }
       }
       @keyframes final-glow-breathe {
-        0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35), 0 0 6px 0px rgba(245,197,24,0.35); }
-        50% { box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35), 0 0 22px 4px rgba(245,197,24,0.75); }
+        0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35), 0 0 6px 0px rgba(56, 189, 248,0.35); }
+        50% { box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35), 0 0 22px 4px rgba(56, 189, 248,0.75); }
       }
     `}</style>
     <div
@@ -42,20 +42,20 @@ const RoundCard = ({ round, onClick }) => {
       onClick={() => onClick(round)}
     >
       {/* Glow halo */}
-      <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-amber-400/60 via-white/20 to-amber-400/60 blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-sky-400/60 via-white/20 to-sky-400/60 blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
       <figure
         className="relative h-16 w-60 rounded-2xl flex items-center justify-center gap-4"
         style={{
           background: 'linear-gradient(135deg, rgba(8,22,42,0.55) 0%, rgba(3,10,20,0.45) 100%)',
-          border: '1px solid rgba(245,197,24,0.28)',
+          border: '1px solid rgba(56, 189, 248,0.28)',
           boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35)',
           transition: 'border-color 0.2s',
           animation: isFinal ? 'final-glow-breathe 2.2s ease-in-out infinite' : undefined,
         }}
       >
         <div className="absolute inset-0 rounded-2xl overflow-hidden">
-          <ShineBorder shineColor={["#f5c518", "#ffffff", "#f5c518"]} borderRadius={16} borderWidth={1} />
+          <ShineBorder shineColor={["#38bdf8", "#ffffff", "#38bdf8"]} borderRadius={16} borderWidth={1} />
         </div>
 
         {isFinal && (
@@ -63,7 +63,7 @@ const RoundCard = ({ round, onClick }) => {
             {[...Array(10)].map((_, i) => (
               <span
                 key={`spark-${i}`}
-                className="absolute rounded-full bg-amber-200 z-10"
+                className="absolute rounded-full bg-sky-200 z-10"
                 style={{
                   width: 2,
                   height: 2,
@@ -77,14 +77,14 @@ const RoundCard = ({ round, onClick }) => {
               <span
                 key={`ring-${i}`}
                 className="absolute rounded-full z-10"
-                style={{ top, left, width: 4, height: 4, border: "2px solid #f5c518", animation: `final-ring 2s ease-out ${i * 0.8}s infinite` }}
+                style={{ top, left, width: 4, height: 4, border: "2px solid #38bdf8", animation: `final-ring 2s ease-out ${i * 0.8}s infinite` }}
               />
             ))}
           </>
         )}
 
         <div className="flex-shrink-0 relative z-20">
-          <img src="/trophy-marquee.png" alt="WC2026" className="h-9 w-auto object-contain" />
+          <img src="/cl-emblem.svg" alt="CL2026" className="h-9 w-auto object-contain" />
         </div>
 
         <div className="text-center relative z-20">

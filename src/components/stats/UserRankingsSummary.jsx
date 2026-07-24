@@ -13,7 +13,7 @@ import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 // ─── Rank color helpers ───────────────────────────────────────────
 function getRankColor(rank) {
-  if (rank === 1) return '#f5c518';
+  if (rank === 1) return '#38bdf8';
   if (rank === 2) return '#94a3b8';
   if (rank === 3) return '#c2843a';
   if (rank <= 5) return '#3b82f6';
@@ -60,7 +60,7 @@ function RankTrajectoryChart({ rankSeries, totalParticipants }) {
     >
       <defs>
         <linearGradient id="traj-line" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#f5c518" />
+          <stop offset="0%" stopColor="#38bdf8" />
           <stop offset="50%" stopColor="#a78bfa" />
           <stop offset="100%" stopColor="#34d399" />
         </linearGradient>
@@ -314,7 +314,7 @@ export default function UserRankingsSummary() {
       <Card className="overflow-hidden" style={{ background: 'rgba(255,255,255,0.10)', backdropFilter: 'blur(40px) saturate(180%)', WebkitBackdropFilter: 'blur(40px) saturate(180%)', border: '1px solid rgba(255,255,255,0.22)', boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)' }}>
         <CardHeader className="text-center pb-4 border-b border-slate-700/50">
           <CardTitle className="text-white flex items-center justify-center gap-2">
-            <FlexibleIcon src="/wc-trophy.png" alt="סיכום מיקומים" size="medium" />
+            <FlexibleIcon src="/cl-emblem.svg" alt="סיכום מיקומים" size="medium" />
             סיכום מיקומים למשתתף
           </CardTitle>
         </CardHeader>
@@ -352,7 +352,7 @@ export default function UserRankingsSummary() {
                   let cls = "bg-slate-700/50 border-slate-600 text-slate-300";
                   if (rank === 1) cls = "bg-yellow-500/20 border-yellow-500/50 text-yellow-400";
                   else if (rank === 2) cls = "bg-slate-300/20 border-slate-400/50 text-slate-300";
-                  else if (rank === 3) cls = "bg-amber-600/20 border-amber-600/50 text-amber-500";
+                  else if (rank === 3) cls = "bg-sky-600/20 border-sky-600/50 text-sky-500";
                   else if (rank <= 10) cls = "bg-blue-500/10 border-blue-500/30 text-blue-300";
 
                   return (

@@ -1,5 +1,5 @@
 export default function OrbitSpinner({ size = 36 }) {
-  const gold = '#f5c518';
+  const gold = '#38bdf8';
   const orbeSize = Math.max(4, Math.round(size * 0.2));
 
   return (

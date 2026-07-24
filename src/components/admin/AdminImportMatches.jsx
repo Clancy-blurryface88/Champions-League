@@ -245,7 +245,7 @@ export default function AdminImportMatches() {
       <CardHeader>
         <CardTitle className="text-white flex items-center gap-2">
           <Download className="w-5 h-5 text-blue-400" />
-          ייבוא משחקי מונדיאל 2026
+          ייבוא משחקי ליגת האלופות 2026
         </CardTitle>
         <p className="text-slate-400 text-sm">
           יצירת 3 מחזורים ו-72 משחקים עם דגלי הנבחרות — מחזורי שלב הבתים

@@ -107,7 +107,7 @@ export default function Dashboard() {
         <AppBackground />
         <div className="relative z-[1] flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-white mb-4">ברוך הבא ל-World Cup 2026</h1>
+            <h1 className="text-2xl font-bold text-white mb-4">ברוך הבא לליגת האלופות 2026</h1>
             <Button onClick={() => User.loginWithRedirect(window.location.href)} className="bg-blue-600 hover:bg-blue-700">
               התחבר כדי להמשיך
             </Button>

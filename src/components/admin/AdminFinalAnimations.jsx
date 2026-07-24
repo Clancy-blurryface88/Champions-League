@@ -11,7 +11,7 @@ const SharedStyles = () => (
     @keyframes fa-confetti-fall { 0% { transform: translateY(-16px) rotate(0deg); opacity: 0; } 12% { opacity: 1; } 100% { transform: translateY(90px) rotate(380deg); opacity: 0; } }
     @keyframes fa-twinkle { 0%, 100% { opacity: .15; transform: scale(.6); } 50% { opacity: 1; transform: scale(1.25); } }
     @keyframes fa-ring { 0% { transform: scale(0.6); opacity: .8; } 100% { transform: scale(2); opacity: 0; } }
-    @keyframes fa-glow-breathe { 0%, 100% { box-shadow: 0 0 6px 0px rgba(245,197,24,0.35), inset 0 1px 0 rgba(255,255,255,0.12); } 50% { box-shadow: 0 0 22px 4px rgba(245,197,24,0.75), inset 0 1px 0 rgba(255,255,255,0.12); } }
+    @keyframes fa-glow-breathe { 0%, 100% { box-shadow: 0 0 6px 0px rgba(56, 189, 248,0.35), inset 0 1px 0 rgba(255,255,255,0.12); } 50% { box-shadow: 0 0 22px 4px rgba(56, 189, 248,0.75), inset 0 1px 0 rgba(255,255,255,0.12); } }
     @keyframes fa-spin { to { transform: rotate(360deg); } }
     @keyframes fa-spin-rev { to { transform: rotate(-360deg); } }
     @keyframes fa-bokeh-float { 0% { transform: translateY(0) translateX(0); opacity: 0; } 15% { opacity: .8; } 100% { transform: translateY(-70px) translateX(6px); opacity: 0; } }
@@ -34,7 +34,7 @@ function Frame({ n, title, tag, children }) {
   return (
     <div className="rounded-2xl border border-slate-700/60 bg-slate-800/40 p-4">
       <div className="flex items-center justify-between mb-3 px-1">
-        <span className="text-xs font-semibold text-amber-400/90 tracking-wide">#{String(n).padStart(2, "0")}</span>
+        <span className="text-xs font-semibold text-sky-400/90 tracking-wide">#{String(n).padStart(2, "0")}</span>
         <div className="text-right">
           <p className="text-sm font-semibold text-white">{title}</p>
           <p className="text-[11px] text-slate-500">{tag}</p>
@@ -54,14 +54,14 @@ function BaseCard({ children, cardStyle, textClass = "" }) {
     <div className="relative h-16 w-60 rounded-2xl flex items-center justify-center gap-4 overflow-visible"
       style={{
         background: "linear-gradient(135deg, rgba(8,22,42,0.55) 0%, rgba(3,10,20,0.45) 100%)",
-        border: "1px solid rgba(245,197,24,0.28)",
+        border: "1px solid rgba(56, 189, 248,0.28)",
         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35)",
         ...cardStyle,
       }}
     >
       {children}
       <div className="flex-shrink-0 relative z-10">
-        <img src="/trophy-marquee.png" className="h-9 w-auto object-contain" />
+        <img src="/cl-emblem.svg" className="h-9 w-auto object-contain" />
       </div>
       <div className="text-center relative z-10">
         <h3 className={`fa-font-out font-semibold text-base tracking-wide ${textClass}`} style={{ color: textClass ? undefined : "#fff" }}>גמר</h3>
@@ -73,7 +73,7 @@ function BaseCard({ children, cardStyle, textClass = "" }) {
 const ShimmerText = () => (
   <h3
     className="fa-font-out font-semibold text-base tracking-wide relative z-10"
-    style={{ backgroundImage: "linear-gradient(90deg,#f5c518,#fff,#f5c518,#fff,#f5c518)", backgroundSize: "300% 100%", WebkitBackgroundClip: "text", color: "transparent", animation: "fa-shimmer-text 3s linear infinite" }}
+    style={{ backgroundImage: "linear-gradient(90deg,#38bdf8,#fff,#38bdf8,#fff,#38bdf8)", backgroundSize: "300% 100%", WebkitBackgroundClip: "text", color: "transparent", animation: "fa-shimmer-text 3s linear infinite" }}
   >
     גמר
   </h3>
@@ -81,8 +81,8 @@ const ShimmerText = () => (
 
 /* 1 — Baseline reference, current production animation */
 const A1_ShimmerBaseline = () => (
-  <div className="relative h-16 w-60 rounded-2xl flex items-center justify-center gap-4" style={{ background: "linear-gradient(135deg, rgba(8,22,42,0.55) 0%, rgba(3,10,20,0.45) 100%)", border: "1px solid rgba(245,197,24,0.28)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35)" }}>
-    <img src="/trophy-marquee.png" className="h-9 w-auto object-contain" />
+  <div className="relative h-16 w-60 rounded-2xl flex items-center justify-center gap-4" style={{ background: "linear-gradient(135deg, rgba(8,22,42,0.55) 0%, rgba(3,10,20,0.45) 100%)", border: "1px solid rgba(56, 189, 248,0.28)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35)" }}>
+    <img src="/cl-emblem.svg" className="h-9 w-auto object-contain" />
     <ShimmerText />
   </div>
 );
@@ -91,7 +91,7 @@ const A1_ShimmerBaseline = () => (
 const A2_ConfettiFall = () => (
   <BaseCard>
     {[...Array(14)].map((_, i) => (
-      <span key={i} className="absolute top-0 rounded-sm z-20" style={{ width: 4, height: 6, left: `${(i * 7.2) % 100}%`, background: i % 3 === 0 ? "#f5c518" : i % 3 === 1 ? "#fff" : "#e0413a", animation: `fa-confetti-fall ${1.6 + (i % 5) * 0.25}s ease-in ${(i % 6) * 0.2}s infinite` }} />
+      <span key={i} className="absolute top-0 rounded-sm z-20" style={{ width: 4, height: 6, left: `${(i * 7.2) % 100}%`, background: i % 3 === 0 ? "#38bdf8" : i % 3 === 1 ? "#fff" : "#e0413a", animation: `fa-confetti-fall ${1.6 + (i % 5) * 0.25}s ease-in ${(i % 6) * 0.2}s infinite` }} />
     ))}
   </BaseCard>
 );
@@ -100,7 +100,7 @@ const A2_ConfettiFall = () => (
 const A3_GlitterSparkle = () => (
   <BaseCard>
     {[...Array(16)].map((_, i) => (
-      <span key={i} className="absolute rounded-full bg-amber-200 z-20" style={{ width: 2, height: 2, top: `${10 + (i * 11) % 80}%`, left: `${5 + (i * 17) % 90}%`, animation: `fa-twinkle ${1.4 + (i % 4) * 0.35}s ease-in-out ${(i % 5) * 0.2}s infinite` }} />
+      <span key={i} className="absolute rounded-full bg-sky-200 z-20" style={{ width: 2, height: 2, top: `${10 + (i * 11) % 80}%`, left: `${5 + (i * 17) % 90}%`, animation: `fa-twinkle ${1.4 + (i % 4) * 0.35}s ease-in-out ${(i % 5) * 0.2}s infinite` }} />
     ))}
   </BaseCard>
 );
@@ -116,7 +116,7 @@ const A4_PulsingGlow = () => (
 const A5_FireworkBurst = () => (
   <BaseCard>
     {[["30%", "20%"], ["70%", "70%"], ["50%", "45%"]].map(([top, left], i) => (
-      <span key={i} className="absolute rounded-full z-20" style={{ top, left, width: 4, height: 4, border: "2px solid #f5c518", animation: `fa-ring 1.8s ease-out ${i * 0.6}s infinite` }} />
+      <span key={i} className="absolute rounded-full z-20" style={{ top, left, width: 4, height: 4, border: "2px solid #38bdf8", animation: `fa-ring 1.8s ease-out ${i * 0.6}s infinite` }} />
     ))}
   </BaseCard>
 );
@@ -125,24 +125,24 @@ const A5_FireworkBurst = () => (
 const A6_FloatingBokeh = () => (
   <BaseCard>
     {[...Array(8)].map((_, i) => (
-      <span key={i} className="absolute rounded-full z-20" style={{ bottom: 4, left: `${8 + i * 11}%`, width: 6 + (i % 3) * 3, height: 6 + (i % 3) * 3, background: "radial-gradient(circle, rgba(245,197,24,0.9), transparent 70%)", filter: "blur(1px)", animation: `fa-bokeh-float ${2.4 + (i % 4) * 0.4}s ease-in ${i * 0.3}s infinite` }} />
+      <span key={i} className="absolute rounded-full z-20" style={{ bottom: 4, left: `${8 + i * 11}%`, width: 6 + (i % 3) * 3, height: 6 + (i % 3) * 3, background: "radial-gradient(circle, rgba(56, 189, 248,0.9), transparent 70%)", filter: "blur(1px)", animation: `fa-bokeh-float ${2.4 + (i % 4) * 0.4}s ease-in ${i * 0.3}s infinite` }} />
     ))}
   </BaseCard>
 );
 
 /* 7 — Trophy bounce */
 const A7_TrophyBounce = () => (
-  <div className="relative h-16 w-60 rounded-2xl flex items-center justify-center gap-4" style={{ background: "linear-gradient(135deg, rgba(8,22,42,0.55), rgba(3,10,20,0.45))", border: "1px solid rgba(245,197,24,0.28)" }}>
-    <img src="/trophy-marquee.png" className="h-9 w-auto object-contain" style={{ animation: "fa-bounce 1.6s ease-in-out infinite" }} />
+  <div className="relative h-16 w-60 rounded-2xl flex items-center justify-center gap-4" style={{ background: "linear-gradient(135deg, rgba(8,22,42,0.55), rgba(3,10,20,0.45))", border: "1px solid rgba(56, 189, 248,0.28)" }}>
+    <img src="/cl-emblem.svg" className="h-9 w-auto object-contain" style={{ animation: "fa-bounce 1.6s ease-in-out infinite" }} />
     <ShimmerText />
   </div>
 );
 
 /* 8 — Border light chase */
 const A8_BorderChase = () => (
-  <div className="relative h-16 w-60 rounded-2xl p-[2px] overflow-hidden" style={{ backgroundImage: "linear-gradient(90deg,#f5c518 0%,transparent 15%,transparent 85%,#f5c518 100%)", backgroundSize: "250% 100%", animation: "fa-border-chase 2.4s linear infinite" }}>
+  <div className="relative h-16 w-60 rounded-2xl p-[2px] overflow-hidden" style={{ backgroundImage: "linear-gradient(90deg,#38bdf8 0%,transparent 15%,transparent 85%,#38bdf8 100%)", backgroundSize: "250% 100%", animation: "fa-border-chase 2.4s linear infinite" }}>
     <div className="relative h-full w-full rounded-2xl flex items-center justify-center gap-4" style={{ background: "linear-gradient(135deg, rgba(8,22,42,0.9), rgba(3,10,20,0.9))" }}>
-      <img src="/trophy-marquee.png" className="h-9 w-auto object-contain" />
+      <img src="/cl-emblem.svg" className="h-9 w-auto object-contain" />
       <ShimmerText />
     </div>
   </div>
@@ -151,7 +151,7 @@ const A8_BorderChase = () => (
 /* 9 — Rotating starburst rays */
 const A9_RotatingRays = () => (
   <BaseCard>
-    <div className="absolute inset-0 z-0" style={{ background: "conic-gradient(from 0deg, transparent 0deg, rgba(245,197,24,0.25) 8deg, transparent 20deg, transparent 90deg, rgba(245,197,24,0.25) 98deg, transparent 110deg, transparent 180deg, rgba(245,197,24,0.25) 188deg, transparent 200deg, transparent 270deg, rgba(245,197,24,0.25) 278deg, transparent 290deg)", animation: "fa-spin 5s linear infinite" }} />
+    <div className="absolute inset-0 z-0" style={{ background: "conic-gradient(from 0deg, transparent 0deg, rgba(56, 189, 248,0.25) 8deg, transparent 20deg, transparent 90deg, rgba(56, 189, 248,0.25) 98deg, transparent 110deg, transparent 180deg, rgba(56, 189, 248,0.25) 188deg, transparent 200deg, transparent 270deg, rgba(56, 189, 248,0.25) 278deg, transparent 290deg)", animation: "fa-spin 5s linear infinite" }} />
   </BaseCard>
 );
 
@@ -159,10 +159,10 @@ const A9_RotatingRays = () => (
 const A10_ConfettiCannon = () => (
   <BaseCard>
     {[...Array(10)].map((_, i) => (
-      <span key={`l${i}`} className="absolute rounded-sm z-20" style={{ width: 4, height: 6, bottom: 6, left: 0, background: i % 2 ? "#f5c518" : "#fff", animation: `fa-confetti-fall ${1.4 + (i % 4) * 0.2}s ease-out ${i * 0.15}s infinite`, transformOrigin: "bottom left" }} />
+      <span key={`l${i}`} className="absolute rounded-sm z-20" style={{ width: 4, height: 6, bottom: 6, left: 0, background: i % 2 ? "#38bdf8" : "#fff", animation: `fa-confetti-fall ${1.4 + (i % 4) * 0.2}s ease-out ${i * 0.15}s infinite`, transformOrigin: "bottom left" }} />
     ))}
     {[...Array(10)].map((_, i) => (
-      <span key={`r${i}`} className="absolute rounded-sm z-20" style={{ width: 4, height: 6, bottom: 6, right: 0, background: i % 2 ? "#f5c518" : "#fff", animation: `fa-confetti-fall ${1.4 + (i % 4) * 0.2}s ease-out ${i * 0.15}s infinite`, transformOrigin: "bottom right" }} />
+      <span key={`r${i}`} className="absolute rounded-sm z-20" style={{ width: 4, height: 6, bottom: 6, right: 0, background: i % 2 ? "#38bdf8" : "#fff", animation: `fa-confetti-fall ${1.4 + (i % 4) * 0.2}s ease-out ${i * 0.15}s infinite`, transformOrigin: "bottom right" }} />
     ))}
   </BaseCard>
 );
@@ -171,7 +171,7 @@ const A10_ConfettiCannon = () => (
 const A11_GlitterSnow = () => (
   <BaseCard>
     {[...Array(20)].map((_, i) => (
-      <span key={i} className="absolute rounded-full bg-amber-300/80 z-20" style={{ width: 1.5, height: 1.5, top: -4, left: `${(i * 5) % 100}%`, animation: `fa-confetti-fall ${3 + (i % 6) * 0.5}s linear ${(i % 8) * 0.4}s infinite` }} />
+      <span key={i} className="absolute rounded-full bg-sky-300/80 z-20" style={{ width: 1.5, height: 1.5, top: -4, left: `${(i * 5) % 100}%`, animation: `fa-confetti-fall ${3 + (i % 6) * 0.5}s linear ${(i % 8) * 0.4}s infinite` }} />
     ))}
   </BaseCard>
 );
@@ -179,8 +179,8 @@ const A11_GlitterSnow = () => (
 /* 12 — Ripple pulse rings from center */
 const A12_RipplePulse = () => (
   <BaseCard>
-    <span className="absolute rounded-2xl border border-amber-400/60 z-0" style={{ inset: 0, animation: "fa-ripple 2s ease-out infinite" }} />
-    <span className="absolute rounded-2xl border border-amber-400/40 z-0" style={{ inset: 0, animation: "fa-ripple 2s ease-out 1s infinite" }} />
+    <span className="absolute rounded-2xl border border-sky-400/60 z-0" style={{ inset: 0, animation: "fa-ripple 2s ease-out infinite" }} />
+    <span className="absolute rounded-2xl border border-sky-400/40 z-0" style={{ inset: 0, animation: "fa-ripple 2s ease-out 1s infinite" }} />
   </BaseCard>
 );
 
@@ -196,8 +196,8 @@ const A13_Fireflies = () => (
 /* 14 — Fluttering ribbons at the edges */
 const A14_RibbonFlutter = () => (
   <BaseCard>
-    <span className="absolute z-20" style={{ top: -6, left: 8, width: 10, height: 26, background: "linear-gradient(#f5c518,#8a6a1e)", transformOrigin: "top center", animation: "fa-ribbon-wave 2.2s ease-in-out infinite" }} />
-    <span className="absolute z-20" style={{ top: -6, right: 8, width: 10, height: 26, background: "linear-gradient(#f5c518,#8a6a1e)", transformOrigin: "top center", animation: "fa-ribbon-wave 2.2s ease-in-out 0.4s infinite" }} />
+    <span className="absolute z-20" style={{ top: -6, left: 8, width: 10, height: 26, background: "linear-gradient(#38bdf8,#8a6a1e)", transformOrigin: "top center", animation: "fa-ribbon-wave 2.2s ease-in-out infinite" }} />
+    <span className="absolute z-20" style={{ top: -6, right: 8, width: 10, height: 26, background: "linear-gradient(#38bdf8,#8a6a1e)", transformOrigin: "top center", animation: "fa-ribbon-wave 2.2s ease-in-out 0.4s infinite" }} />
   </BaseCard>
 );
 
@@ -210,8 +210,8 @@ const A15_TadaBump = () => (
 
 /* 16 — Neon border pulse */
 const A16_NeonBorderPulse = () => (
-  <div className="relative h-16 w-60 rounded-2xl flex items-center justify-center gap-4" style={{ background: "#050505", border: "2px solid #f5c518", animation: "fa-glow-breathe 1.8s ease-in-out infinite" }}>
-    <img src="/trophy-marquee.png" className="h-9 w-auto object-contain" />
+  <div className="relative h-16 w-60 rounded-2xl flex items-center justify-center gap-4" style={{ background: "#050505", border: "2px solid #38bdf8", animation: "fa-glow-breathe 1.8s ease-in-out infinite" }}>
+    <img src="/cl-emblem.svg" className="h-9 w-auto object-contain" />
     <ShimmerText />
   </div>
 );
@@ -220,7 +220,7 @@ const A16_NeonBorderPulse = () => (
 const A17_SparkOrbit = () => (
   <div className="relative h-16 w-60">
     <div className="absolute -inset-1 z-0" style={{ animation: "fa-spark-orbit 3s linear infinite" }}>
-      <span className="absolute rounded-full bg-white" style={{ width: 5, height: 5, top: 0, left: "50%", boxShadow: "0 0 8px 3px rgba(245,197,24,0.9)" }} />
+      <span className="absolute rounded-full bg-white" style={{ width: 5, height: 5, top: 0, left: "50%", boxShadow: "0 0 8px 3px rgba(56, 189, 248,0.9)" }} />
     </div>
     <BaseCard />
   </div>
@@ -229,7 +229,7 @@ const A17_SparkOrbit = () => (
 /* 18 — Drifting gold dust shimmer overlay (texture) */
 const A18_GoldDustDrift = () => (
   <BaseCard>
-    <div className="absolute inset-0 z-10 opacity-40" style={{ backgroundImage: "radial-gradient(rgba(245,197,24,0.9) 1px, transparent 1.5px)", backgroundSize: "18px 18px", animation: "fa-dust-drift 6s linear infinite" }} />
+    <div className="absolute inset-0 z-10 opacity-40" style={{ backgroundImage: "radial-gradient(rgba(56, 189, 248,0.9) 1px, transparent 1.5px)", backgroundSize: "18px 18px", animation: "fa-dust-drift 6s linear infinite" }} />
   </BaseCard>
 );
 
@@ -246,7 +246,7 @@ const A19_SpotlightSweep = () => (
 const A20_RisingBubbles = () => (
   <BaseCard>
     {[...Array(9)].map((_, i) => (
-      <span key={i} className="absolute rounded-full z-20 border border-amber-300/70" style={{ bottom: 4, left: `${10 + i * 9}%`, width: 5 + (i % 3) * 2, height: 5 + (i % 3) * 2, animation: `fa-bubble-rise ${2.2 + (i % 4) * 0.35}s ease-in ${i * 0.25}s infinite` }} />
+      <span key={i} className="absolute rounded-full z-20 border border-sky-300/70" style={{ bottom: 4, left: `${10 + i * 9}%`, width: 5 + (i % 3) * 2, height: 5 + (i % 3) * 2, animation: `fa-bubble-rise ${2.2 + (i % 4) * 0.35}s ease-in ${i * 0.25}s infinite` }} />
     ))}
   </BaseCard>
 );
@@ -254,7 +254,7 @@ const A20_RisingBubbles = () => (
 /* 21 — Flickering neon text glow (stadium-lights feel) */
 const A21_TextFlicker = () => (
   <BaseCard>
-    <h3 className="fa-font-out font-semibold text-base tracking-wide relative z-10" style={{ color: "#fff", textShadow: "0 0 10px rgba(245,197,24,0.9), 0 0 20px rgba(245,197,24,0.5)", animation: "fa-flicker 3.5s infinite" }}>גמר</h3>
+    <h3 className="fa-font-out font-semibold text-base tracking-wide relative z-10" style={{ color: "#fff", textShadow: "0 0 10px rgba(56, 189, 248,0.9), 0 0 20px rgba(56, 189, 248,0.5)", animation: "fa-flicker 3.5s infinite" }}>גמר</h3>
   </BaseCard>
 );
 
@@ -279,7 +279,7 @@ const A24_CornerBursts = () => (
   <BaseCard>
     {[["4px", "4px"], ["4px", "auto"], ["auto", "4px"], ["auto", "auto"]].map(([top, left], corner) => (
       [...Array(4)].map((_, i) => (
-        <span key={`${corner}-${i}`} className="absolute rounded-sm z-20" style={{ width: 3, height: 5, top: top === "4px" ? 4 : undefined, bottom: top === "auto" ? 4 : undefined, left: left === "4px" ? 4 : undefined, right: left === "auto" ? 4 : undefined, background: i % 2 ? "#f5c518" : "#fff", animation: `fa-confetti-fall ${1.5 + i * 0.2}s ease-out ${corner * 0.3 + i * 0.1}s infinite` }} />
+        <span key={`${corner}-${i}`} className="absolute rounded-sm z-20" style={{ width: 3, height: 5, top: top === "4px" ? 4 : undefined, bottom: top === "auto" ? 4 : undefined, left: left === "4px" ? 4 : undefined, right: left === "auto" ? 4 : undefined, background: i % 2 ? "#38bdf8" : "#fff", animation: `fa-confetti-fall ${1.5 + i * 0.2}s ease-out ${corner * 0.3 + i * 0.1}s infinite` }} />
       ))
     ))}
   </BaseCard>
@@ -290,10 +290,10 @@ const A25_GrandFinaleCombo = () => (
   <div className="rounded-2xl" style={{ animation: "fa-glow-breathe 2.2s ease-in-out infinite" }}>
     <BaseCard>
       {[...Array(10)].map((_, i) => (
-        <span key={`s${i}`} className="absolute rounded-full bg-amber-200 z-20" style={{ width: 2, height: 2, top: `${10 + (i * 9) % 80}%`, left: `${5 + (i * 15) % 90}%`, animation: `fa-twinkle ${1.4 + (i % 4) * 0.3}s ease-in-out ${(i % 5) * 0.2}s infinite` }} />
+        <span key={`s${i}`} className="absolute rounded-full bg-sky-200 z-20" style={{ width: 2, height: 2, top: `${10 + (i * 9) % 80}%`, left: `${5 + (i * 15) % 90}%`, animation: `fa-twinkle ${1.4 + (i % 4) * 0.3}s ease-in-out ${(i % 5) * 0.2}s infinite` }} />
       ))}
       {[["30%", "15%"], ["65%", "75%"]].map(([top, left], i) => (
-        <span key={`r${i}`} className="absolute rounded-full z-20" style={{ top, left, width: 4, height: 4, border: "2px solid #f5c518", animation: `fa-ring 2s ease-out ${i * 0.8}s infinite` }} />
+        <span key={`r${i}`} className="absolute rounded-full z-20" style={{ top, left, width: 4, height: 4, border: "2px solid #38bdf8", animation: `fa-ring 2s ease-out ${i * 0.8}s infinite` }} />
       ))}
       <ShimmerText />
     </BaseCard>

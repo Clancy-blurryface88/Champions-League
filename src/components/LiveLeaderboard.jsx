@@ -52,11 +52,11 @@ function findDbMatch(apiMatch, dbMatches) {
   return dbMatches.find(m => (teamsMatch(h, m.team_a) || teamsMatch(hS, m.team_a)) && (teamsMatch(a, m.team_b) || teamsMatch(aS, m.team_b))) || null;
 }
 
-const RANK_COLOR  = r => r === 1 ? '#FFD700' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : 'rgba(255,255,255,.45)';
-const RANK_BORDER = r => r === 1 ? '#FFD700' : r === 2 ? '#D1D5DB' : r === 3 ? '#D97706' : '#475569';
-const RANK_BG     = r => r === 1 ? 'linear-gradient(135deg,rgba(250,204,21,.22),rgba(245,158,11,.22))'
+const RANK_COLOR  = r => r === 1 ? '#7dd3fc' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : 'rgba(255,255,255,.45)';
+const RANK_BORDER = r => r === 1 ? '#7dd3fc' : r === 2 ? '#D1D5DB' : r === 3 ? '#D97706' : '#475569';
+const RANK_BG     = r => r === 1 ? 'linear-gradient(135deg,rgba(125,211,252,.22),rgba(56,189,248,.22))'
                        : r === 2 ? 'linear-gradient(135deg,rgba(209,213,219,.18),rgba(156,163,175,.18))'
-                       : r === 3 ? 'linear-gradient(135deg,rgba(245,158,11,.20),rgba(217,119,6,.20))'
+                       : r === 3 ? 'linear-gradient(135deg,rgba(56,189,248,.20),rgba(217,119,6,.20))'
                        : 'rgba(30,41,59,.60)';
 
 function DeltaIcon({ delta }) {
@@ -91,7 +91,7 @@ function RankCard({ row, index, total, isInitial }) {
           borderWidth={1}
           duration={row.liveRank === 1 ? 6 : row.liveRank === 2 ? 7 : row.liveRank === 3 ? 8 : 12}
           shineColor={
-            row.liveRank === 1 ? ['#FFD700','#fff','#F5C518'] :
+            row.liveRank === 1 ? ['#7dd3fc','#fff','#38bdf8'] :
             row.liveRank === 2 ? ['#C0C0C0','#fff','#94a3b8'] :
             row.liveRank === 3 ? ['#CD7F32','#fff','#D97706'] :
             ['#475569','#64748b','#475569']
@@ -276,7 +276,7 @@ export default function LiveLeaderboard() {
 
   if (status === 'loading') return (
     <div className="flex flex-col items-center justify-center py-20 gap-3">
-      <div className="w-8 h-8 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-sky-400/30 border-t-sky-400 rounded-full animate-spin" />
       <span className="text-slate-500 text-xs">טוען טבלה...</span>
     </div>
   );

@@ -67,7 +67,7 @@ export default function MatchTickerBar({ onClick }) {
         <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-4 h-4" />
         <span className="text-white text-xs font-medium">{match.team_a}</span>
         {match.is_finished ? (
-          <span className="text-amber-400 text-xs font-bold mx-0.5">{match.actual_score_a ?? '-'} - {match.actual_score_b ?? '-'}</span>
+          <span className="text-sky-400 text-xs font-bold mx-0.5">{match.actual_score_a ?? '-'} - {match.actual_score_b ?? '-'}</span>
         ) : (
           <span className="text-slate-400 text-xs mx-0.5">{time}</span>
         )}
@@ -81,7 +81,7 @@ export default function MatchTickerBar({ onClick }) {
     <div
       dir="rtl"
       className="fixed top-0 left-0 right-0 z-50 flex items-center"
-      style={{ height: '36px', background: 'rgba(3,13,26,0.97)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(245,197,24,0.22)', boxShadow: '0 1px 20px rgba(245,197,24,0.06)' }}
+      style={{ height: '36px', background: 'rgba(3,13,26,0.97)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(56, 189, 248,0.22)', boxShadow: '0 1px 20px rgba(56, 189, 248,0.06)' }}
     >
       {/* Date button */}
       <button
@@ -98,7 +98,7 @@ export default function MatchTickerBar({ onClick }) {
           cursor: 'pointer',
           background: 'none',
           border: 'none',
-          borderLeft: '1px solid rgba(245,197,24,0.3)',
+          borderLeft: '1px solid rgba(56, 189, 248,0.3)',
           position: 'relative',
           zIndex: 1,
           touchAction: 'manipulation',
@@ -111,7 +111,7 @@ export default function MatchTickerBar({ onClick }) {
           {isUpcoming && (
             <span style={{ color: '#94a3b8', fontSize: 8, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>בקרוב</span>
           )}
-          <span style={{ color: '#fbbf24', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>{dateLabel}</span>
+          <span style={{ color: '#38bdf8', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>{dateLabel}</span>
         </span>
       </button>
 

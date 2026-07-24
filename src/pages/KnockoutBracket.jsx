@@ -616,7 +616,7 @@ export default function KnockoutBracket() {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-white font-black text-xl">🏆 בראקט מונדיאל 2026</h1>
+            <h1 className="text-white font-black text-xl">🏆 בראקט ליגת האלופות 2026</h1>
             <p className="text-slate-400 text-xs">מחושב לפי מצב הטבלאות הנוכחי · ~ = תחזית</p>
           </div>
           <div className="flex items-center gap-2">
@@ -705,15 +705,15 @@ export default function KnockoutBracket() {
               <div style={{ position:'relative' }}>
                 <div style={{ position:'absolute', top:-78, left:0, right:0, textAlign:'center', pointerEvents:'none' }}>
                   <img
-                    src="/world-cup-trophy.png"
-                    alt="World Cup Trophy"
-                    style={{ width:56, height:72, objectFit:'contain', display:'inline-block', filter:'drop-shadow(0 0 12px rgba(245,197,24,0.7)) drop-shadow(0 0 4px rgba(245,197,24,0.4))' }}
+                    src="/cl-emblem.svg"
+                    alt="Champions League Trophy"
+                    style={{ width:56, height:72, objectFit:'contain', display:'inline-block', filter:'drop-shadow(0 0 12px rgba(56, 189, 248,0.7)) drop-shadow(0 0 4px rgba(56, 189, 248,0.4))' }}
                   />
                 </div>
-              <div style={{ height:CH, background:'rgba(245,197,24,0.08)', border:'1px solid rgba(245,197,24,0.3)', borderRadius:8, overflow:'hidden', display:'flex', flexDirection:'column', justifyContent:'center' }}>
-                <div style={{ textAlign:'center', fontSize:9, color:'#f5c518', fontWeight:700, letterSpacing:2, paddingTop:2 }}>FINAL</div>
+              <div style={{ height:CH, background:'rgba(56, 189, 248,0.08)', border:'1px solid rgba(56, 189, 248,0.3)', borderRadius:8, overflow:'hidden', display:'flex', flexDirection:'column', justifyContent:'center' }}>
+                <div style={{ textAlign:'center', fontSize:9, color:'#38bdf8', fontWeight:700, letterSpacing:2, paddingTop:2 }}>FINAL</div>
                 <TeamRow team={resolved.final.homeTeam} score={resolved.final.homeScore} won={resolved.final.isFinished && resolved.final.homeScore > resolved.final.awayScore} isFinished={resolved.final.isFinished} />
-                <div style={{ height:1, background:'rgba(245,197,24,0.2)', margin:'0 6px' }} />
+                <div style={{ height:1, background:'rgba(56, 189, 248,0.2)', margin:'0 6px' }} />
                 <TeamRow team={resolved.final.awayTeam} score={resolved.final.awayScore} won={resolved.final.isFinished && resolved.final.awayScore > resolved.final.homeScore} isFinished={resolved.final.isFinished} />
               </div>
               <MatchDateLabel matchDate={resolved.final.matchDate} />

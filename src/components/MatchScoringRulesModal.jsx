@@ -78,9 +78,9 @@ const CARD_THEMES = {
   blue:        { text: "text-blue-400",    bg: "bg-blue-500/8" },
   rose:        { text: "text-rose-400",    bg: "bg-rose-500/8" },
   sky:         { text: "text-sky-400",     bg: "bg-sky-500/8" },
-  amber:       { text: "text-amber-400",   bg: "bg-amber-500/8" },
+  amber:       { text: "text-sky-400",   bg: "bg-sky-500/8" },
   muted:       { text: "text-slate-300",   bg: "bg-white/2" },
-  gold:        { text: "text-amber-400",   bg: "bg-amber-500/8" },
+  gold:        { text: "text-sky-400",   bg: "bg-sky-500/8" },
   'blue-grad': { text: "text-blue-400",    bg: "bg-blue-500/8" },
 };
 
@@ -94,7 +94,7 @@ function SegmentedGroup({ items, delay = 60 }) {
         borderRadius={12}
         borderWidth={1.5}
         duration={12}
-        shineColor={["#f5c518", "#ffffff", "#fbbf24", "#ffffff"]}
+        shineColor={["#38bdf8", "#ffffff", "#38bdf8", "#ffffff"]}
       />
       {items.map((item, i) => {
         const t = CARD_THEMES[item.theme || "muted"];
@@ -106,7 +106,7 @@ function SegmentedGroup({ items, delay = 60 }) {
                 className={`text-2xl font-bold tabular-nums leading-none ${
                   item.theme === 'rose'    ? 'bg-gradient-to-br from-rose-400 to-red-600 bg-clip-text text-transparent' :
                   item.theme === 'emerald' ? 'bg-gradient-to-br from-green-400 to-emerald-500 bg-clip-text text-transparent' :
-                  'bg-gradient-to-br from-amber-400 to-white bg-clip-text text-transparent'
+                  'bg-gradient-to-br from-sky-400 to-white bg-clip-text text-transparent'
                 }`}
               >
                 {item.pts}
@@ -114,7 +114,7 @@ function SegmentedGroup({ items, delay = 60 }) {
               <span className={`text-[11px] font-medium text-center leading-tight px-1 mt-0.5 ${
                   item.theme === 'rose'    ? 'bg-gradient-to-br from-rose-400 to-red-600 bg-clip-text text-transparent' :
                   item.theme === 'emerald' ? 'bg-gradient-to-br from-green-400 to-emerald-500 bg-clip-text text-transparent' :
-                  'bg-gradient-to-br from-amber-400 to-white bg-clip-text text-transparent'
+                  'bg-gradient-to-br from-sky-400 to-white bg-clip-text text-transparent'
               }`}>{item.label}</span>
             </div>
           </React.Fragment>
@@ -209,7 +209,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
               <span className="text-[10px] text-slate-300 leading-none">(בית)</span>
             </div>
             <span className="text-sm font-black tracking-widest mx-3 pb-5 bg-clip-text text-transparent"
-              style={{ backgroundImage: 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)' }}>VS</span>
+              style={{ backgroundImage: 'linear-gradient(180deg, #38bdf8 0%, #1e40af 100%)' }}>VS</span>
             <div className="flex flex-col items-center gap-1.5 flex-1">
               <div style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.3))' }}>
                 <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" />
@@ -229,7 +229,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
 
           {/* ── סימולטור ניחוש ── */}
           <div className="rounded-2xl border border-yellow-500/25 overflow-hidden"
-            style={{ background: 'linear-gradient(145deg, rgba(245,197,24,0.07) 0%, rgba(10,20,50,0.6) 100%)' }}>
+            style={{ background: 'linear-gradient(145deg, rgba(56, 189, 248,0.07) 0%, rgba(10,20,50,0.6) 100%)' }}>
 
             <div className="px-4 pt-3 pb-1 text-center">
               <span className="text-[10px] uppercase tracking-[0.14em] font-semibold text-yellow-400/80">סימולטור — כמה שווה הניחוש שלך</span>
@@ -270,7 +270,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
                     ))}
                   </div>
                   <div className="mx-4 mb-3 rounded-xl flex items-center justify-center px-4 py-2.5"
-                    style={{ background: 'rgba(245,197,24,0.12)', border: '1px solid rgba(245,197,24,0.3)' }}>
+                    style={{ background: 'rgba(56, 189, 248,0.12)', border: '1px solid rgba(56, 189, 248,0.3)' }}>
                     <motion.span
                       key={sim.total}
                       initial={{ scale: 0.8, opacity: 0 }}
@@ -290,7 +290,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
 
           {/* כיוון משחק */}
           <div className="space-y-3">
-            <SectionLabel title="כיוון משחק" icon={Trophy} color="text-amber-400" />
+            <SectionLabel title="כיוון משחק" icon={Trophy} color="text-sky-400" />
             <SegmentedGroup delay={60} items={[
               { label: "ניצחון ביתי", pts: match.home_win_points || 0, theme: "gold" },
               { label: "תיקו",        pts: match.draw_points || 0,      theme: "gold" },
@@ -302,7 +302,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
 
           {/* שתי קבוצות כובשות */}
           <div className="space-y-3">
-            <SectionLabel title="שתי קבוצות כובשות" icon={Zap} color="text-amber-400" />
+            <SectionLabel title="שתי קבוצות כובשות" icon={Zap} color="text-sky-400" />
             <SegmentedGroup delay={80} items={[
               { label: "כן", pts: match.btts_yes_points || 0, theme: "emerald" },
               { label: "לא", pts: match.btts_no_points  || 0, theme: "rose"    },
@@ -313,7 +313,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
 
           {/* טווח שערים */}
           <div className="space-y-3">
-            <SectionLabel title="טווח שערים" icon={Goal} color="text-amber-400" />
+            <SectionLabel title="טווח שערים" icon={Goal} color="text-sky-400" />
             <SegmentedGroup delay={100} items={[
               { label: "0–2 שערים", pts: match.goals_0_2_points    || 0, theme: "blue-grad" },
               { label: "3–4 שערים", pts: match.goals_3_4_points    || 0, theme: "blue-grad" },
@@ -329,7 +329,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
                 className="space-y-3 animate-in fade-in"
                 style={{ animationDuration: "200ms", animationFillMode: "both", animationDelay: "140ms" }}
               >
-                <SectionLabel title="פגיעה מדויקת" icon={Target} color="text-amber-400/80" />
+                <SectionLabel title="פגיעה מדויקת" icon={Target} color="text-sky-400/80" />
 
                 <div className="grid grid-cols-3 gap-2">
                   {oddsColumns.map(({ label, filter, sort }) => (
@@ -337,8 +337,8 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
                       <div className="text-center text-xs font-bold text-white/55 uppercase tracking-widest mb-1.5">{label}</div>
                       <div className="space-y-1">
                         {Object.entries(match.score_odds).filter(filter).sort(sort).map(([score, pts]) => (
-                          <div key={score} className="flex justify-between items-center rounded-lg bg-amber-500/6 border border-amber-500/15 px-2 py-1.5">
-                            <span className="text-amber-400 font-bold text-xs tabular-nums">{pts}</span>
+                          <div key={score} className="flex justify-between items-center rounded-lg bg-sky-500/6 border border-sky-500/15 px-2 py-1.5">
+                            <span className="text-sky-400 font-bold text-xs tabular-nums">{pts}</span>
                             <span className="text-white/70 text-xs font-mono">{score}</span>
                           </div>
                         ))}
@@ -348,8 +348,8 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
                 </div>
 
                 {'other' in match.score_odds && (
-                  <div className="flex justify-between items-center rounded-lg bg-amber-500/6 border border-amber-500/15 px-3 py-2.5">
-                    <span className="text-amber-400 font-bold text-sm tabular-nums">{match.score_odds['other']}</span>
+                  <div className="flex justify-between items-center rounded-lg bg-sky-500/6 border border-sky-500/15 px-3 py-2.5">
+                    <span className="text-sky-400 font-bold text-sm tabular-nums">{match.score_odds['other']}</span>
                     <span className="text-white/70 text-xs">כל תוצאה אחרת</span>
                   </div>
                 )}

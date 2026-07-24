@@ -188,7 +188,7 @@ export default function RoundSummaryTable() {
 
       {/* gradient top bar */}
       <div className="h-1 w-full"
-        style={{ background: 'linear-gradient(90deg, #f5c518 0%, #fde68a 40%, #34d399 100%)' }} />
+        style={{ background: 'linear-gradient(90deg, #38bdf8 0%, #7dd3fc 40%, #34d399 100%)' }} />
 
       {/* header */}
       <div className="px-5 pt-5 pb-4 flex items-center justify-between gap-3 flex-wrap"
@@ -196,12 +196,12 @@ export default function RoundSummaryTable() {
 
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg,rgba(245,197,24,0.18),rgba(253,230,138,0.08))', border: '1px solid rgba(245,197,24,0.25)' }}>
+            style={{ background: 'linear-gradient(135deg,rgba(56, 189, 248,0.18),rgba(253,230,138,0.08))', border: '1px solid rgba(56, 189, 248,0.25)' }}>
             <span className="text-lg">📋</span>
           </div>
           <div>
             <h3 className="font-bold text-white text-base leading-tight">פירוט מלא למחזור</h3>
-            {selectedName && <p className="text-[11px] text-amber-400/60 mt-0.5">{selectedName}</p>}
+            {selectedName && <p className="text-[11px] text-sky-400/60 mt-0.5">{selectedName}</p>}
           </div>
         </div>
 
@@ -230,7 +230,7 @@ export default function RoundSummaryTable() {
             <motion.div key="load"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="flex items-center justify-center py-14 gap-2.5 text-slate-400 text-sm">
-              <div className="w-4 h-4 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-sky-400/30 border-t-sky-400 rounded-full animate-spin" />
               מנתח נתונים...
             </motion.div>
           ) : rows.length === 0 ? (

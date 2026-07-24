@@ -140,7 +140,7 @@ export default function RacingBarChart() {
 
         {/* Round label */}
         <div className="text-center mb-5 h-6">
-          <span className="text-amber-400 font-bold text-sm tracking-wide">
+          <span className="text-sky-400 font-bold text-sm tracking-wide">
             {currentLabel}
           </span>
         </div>
@@ -188,7 +188,7 @@ export default function RacingBarChart() {
                 width: i === frameIndex ? '16px' : '8px',
                 height: '8px',
                 borderRadius: '9999px',
-                backgroundColor: i === frameIndex ? '#f59e0b' : '#475569',
+                backgroundColor: i === frameIndex ? '#38bdf8' : '#475569',
                 border: 'none',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
@@ -211,7 +211,7 @@ export default function RacingBarChart() {
             onClick={handlePlay}
             style={{
               padding: '8px 24px', borderRadius: '8px',
-              background: '#f59e0b', border: 'none', cursor: 'pointer',
+              background: '#38bdf8', border: 'none', cursor: 'pointer',
               color: 'black', fontWeight: 'bold', fontSize: '14px',
               display: 'flex', alignItems: 'center', gap: '6px',
             }}

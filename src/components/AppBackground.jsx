@@ -41,7 +41,7 @@ export default function AppBackground() {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(245,197,24,${p.opacity})`;
+        ctx.fillStyle = `rgba(56, 189, 248,${p.opacity})`;
         ctx.fill();
       });
 
@@ -67,7 +67,7 @@ export default function AppBackground() {
           width: 'min(90vw, 700px)',
           height: 'min(90vw, 700px)',
           borderRadius: '50%',
-          border: '1px solid rgba(245,197,24,0.06)',
+          border: '1px solid rgba(56, 189, 248,0.06)',
           pointerEvents: 'none',
         }}
       />
@@ -79,7 +79,7 @@ export default function AppBackground() {
           width: 'min(55vw, 420px)',
           height: 'min(55vw, 420px)',
           borderRadius: '50%',
-          border: '1px solid rgba(245,197,24,0.04)',
+          border: '1px solid rgba(56, 189, 248,0.04)',
           pointerEvents: 'none',
         }}
       />
@@ -92,7 +92,7 @@ export default function AppBackground() {
           transform: 'translateX(-50%)',
           width: '120vw',
           height: '70vh',
-          background: 'radial-gradient(ellipse at 50% 0%, rgba(245,197,24,0.09) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248,0.09) 0%, transparent 70%)',
           pointerEvents: 'none',
         }}
       />

@@ -38,7 +38,7 @@ const OverallLeaderboardCard = ({ summaryData, leaderboardRefId, setLeaderboardR
   return (
     <div className="flex flex-col items-center justify-center h-full text-center p-4 w-full">
       <h2 className="text-3xl font-black mb-2 tracking-tight mt-8"
-        style={{ background:'linear-gradient(135deg,#fde68a,#fbbf24,#f59e0b)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
+        style={{ background:'linear-gradient(135deg,#7dd3fc,#38bdf8,#1e40af)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
         הטבלה הכללית
       </h2>
       <p className="text-slate-400 text-sm mb-6">לחץ על משתתף ובדוק את פער הנקודות</p>
@@ -426,7 +426,7 @@ export default function YearlySummaryPanel({ onClose, user }) {
   const Card1_Intro = () => (
     <div className="flex flex-col items-center justify-center h-full text-center px-8 select-none">
       <motion.p initial={{ opacity:0, y:-12 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.1 }}
-        className="text-xs uppercase tracking-[0.3em] text-white/30 font-semibold mb-8">World Cup 2026</motion.p>
+        className="text-xs uppercase tracking-[0.3em] text-white/30 font-semibold mb-8">ליגת האלופות 2026</motion.p>
 
       <motion.div initial={{ scale:0.7, opacity:0 }} animate={{ scale:1, opacity:1 }} transition={{ delay:0.15, type:'spring', stiffness:200 }}
         className="relative mb-8">
@@ -439,7 +439,7 @@ export default function YearlySummaryPanel({ onClose, user }) {
       <motion.h1 initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.25 }}
         className="text-5xl font-black mb-2"
         style={{ background:'linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.6) 100%)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
-        World Cup Reel
+        Champions Reel
       </motion.h1>
 
       <motion.p initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.35 }}
@@ -448,7 +448,7 @@ export default function YearlySummaryPanel({ onClose, user }) {
       <motion.div initial={{ opacity:0, scale:0.8 }} animate={{ opacity:1, scale:1 }} transition={{ delay:0.45, type:'spring' }}
         className="rounded-2xl px-10 py-5" style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', backdropFilter:'blur(20px)' }}>
         <p className="text-white/40 text-xs uppercase tracking-widest mb-1">המיקום שלך</p>
-        <p className="text-6xl font-black" style={{ background:'linear-gradient(135deg,#fbbf24,#f59e0b)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
+        <p className="text-6xl font-black" style={{ background:'linear-gradient(135deg,#38bdf8,#1e40af)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
           #{summaryData.myOverallRank}
         </p>
       </motion.div>
@@ -471,7 +471,7 @@ export default function YearlySummaryPanel({ onClose, user }) {
 
       <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.35 }}>
         <div className="text-[5.5rem] font-black leading-none"
-          style={{ background:'linear-gradient(135deg,#fde68a,#fbbf24,#f59e0b)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', filter:'drop-shadow(0 0 30px rgba(251,191,36,0.4))' }}>
+          style={{ background:'linear-gradient(135deg,#7dd3fc,#38bdf8,#1e40af)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', filter:'drop-shadow(0 0 30px rgba(56,189,248,0.4))' }}>
           {summaryData.totalPoints}
         </div>
         <p className="text-white/40 text-sm mt-2 tracking-widest uppercase">נקודות</p>
@@ -818,9 +818,9 @@ export default function YearlySummaryPanel({ onClose, user }) {
 
   // Per-page color themes for dynamic background
   const PAGE_COLORS = [
-    '#3b82f6', '#fbbf24', '#06b6d4', '#ef4444',
+    '#3b82f6', '#38bdf8', '#06b6d4', '#ef4444',
     '#ef4444', '#ef4444', '#a855f7', '#f97316',
-    '#22c55e', '#fbbf24', '#60a5fa', '#fb923c',
+    '#22c55e', '#38bdf8', '#60a5fa', '#fb923c',
     '#f59e0b', '#3b82f6', '#facc15',
   ];
   const accent = PAGE_COLORS[page] || '#3b82f6';

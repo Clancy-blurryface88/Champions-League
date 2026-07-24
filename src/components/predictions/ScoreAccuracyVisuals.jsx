@@ -15,7 +15,7 @@ export default function ScoreAccuracyVisuals({ earnedPoints, maxPoints = 20, cla
   // Color logic based on percentage
   const getColorClass = (pct) => {
     if (pct >= 100) return "text-green-500 stroke-green-500";
-    if (pct >= 60) return "text-amber-500 stroke-amber-500";
+    if (pct >= 60) return "text-sky-500 stroke-sky-500";
     return "text-blue-500 stroke-blue-500";
   };
 

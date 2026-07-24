@@ -81,7 +81,7 @@ function MatchCard({ match }) {
           </>
         ) : (
           <>
-            <div className="flex items-center gap-1.5 text-amber-400">
+            <div className="flex items-center gap-1.5 text-sky-400">
               <Clock className="w-3.5 h-3.5" />
               <span className="text-sm font-semibold tabular-nums">{formatTime(match.match_date)}</span>
             </div>
@@ -191,14 +191,14 @@ export default function MatchesByDateSheet({ isOpen, onClose }) {
                     onClick={() => setSelectedDate(dateStr)}
                     className={`flex-shrink-0 flex flex-col items-center gap-0.5 px-3.5 py-2.5 rounded-xl border transition-all duration-200 ${
                       isActive
-                        ? "bg-amber-500/15 border-amber-400/40 text-amber-400"
+                        ? "bg-sky-500/15 border-sky-400/40 text-sky-400"
                         : "bg-white/4 border-white/8 text-white/50 hover:text-white/80 hover:bg-white/8"
                     }`}
                   >
                     <span className="text-xs font-bold leading-none">{label}</span>
-                    <span className={`text-[10px] leading-none mt-0.5 ${isActive ? "text-amber-400/70" : "text-white/30"}`}>{sub}</span>
+                    <span className={`text-[10px] leading-none mt-0.5 ${isActive ? "text-sky-400/70" : "text-white/30"}`}>{sub}</span>
                     <div className="flex items-center gap-0.5 mt-1">
-                      <span className={`text-[9px] font-semibold ${isActive ? "text-amber-400/80" : "text-white/25"}`}>
+                      <span className={`text-[9px] font-semibold ${isActive ? "text-sky-400/80" : "text-white/25"}`}>
                         {finishedCount}/{dayMatches.length}
                       </span>
                     </div>
