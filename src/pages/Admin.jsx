@@ -18,6 +18,7 @@ import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminGroupOverride from "../components/admin/AdminGroupOverride";
 import AdminFinalAnimations from "../components/admin/AdminFinalAnimations";
+import AdminColorThemes from "../components/admin/AdminColorThemes";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -78,6 +79,7 @@ export default function Admin() {
       case 'reset':      return <AdminReset />;
       case 'group-override': return <AdminGroupOverride />;
       case 'final-animations': return <AdminFinalAnimations />;
+      case 'color-themes': return <AdminColorThemes />;
       default: return <AdminRounds />;
     }
   };
@@ -94,6 +96,7 @@ export default function Admin() {
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'group-override',   label: '🔀 סידור בתים',          icon: BarChart3 },
     { id: 'final-animations', label: '🎉 אנימציות לגמר (דמו)', icon: PartyPopper },
+    { id: 'color-themes', label: '🎨 פלטת כחולים (דמו)', icon: Image },
   ];
 
   return (
