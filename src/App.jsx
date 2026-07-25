@@ -33,7 +33,18 @@ const IntroVideo = ({ appReady, onDone }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-black overflow-hidden">
+    <div className="fixed inset-0 z-[9999] bg-[#030d1a] overflow-hidden">
+      {/* Blurred, scaled-up copy fills the whole screen behind the crisp video —
+          the source clip is 16:9, so on a tall phone screen object-cover alone
+          would crop most of its width away; this avoids both that and plain
+          black letterbox bars. */}
+      <video
+        src="/champions/intro.mp4"
+        autoPlay muted playsInline loop
+        onLoadedMetadata={(e) => seekToStart(e.currentTarget)}
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ filter: 'blur(40px) brightness(0.55)', transform: 'scale(1.15)' }}
+      />
       <video
         ref={videoRef}
         src="/champions/intro.mp4"
@@ -50,7 +61,7 @@ const IntroVideo = ({ appReady, onDone }) => {
             seekToStart(video);
           }
         }}
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-contain"
       />
       {!appReady && (
         <div className="absolute inset-0 flex items-end justify-center pb-10">
