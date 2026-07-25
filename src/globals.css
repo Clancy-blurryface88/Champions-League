@@ -167,23 +167,3 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.23,1,0.32,1) both; }
-
-/* ── Thin comet-light border (right-to-left) ─────────────────── */
-@property --tca {
-  syntax: '<angle>';
-  initial-value: 360deg;
-  inherits: false;
-}
-@keyframes tca-spin {
-  to { --tca: 0deg; }
-}
-.comet-border {
-  border-radius: 9999px;
-  padding: 2px;
-  background-image:
-    linear-gradient(#030d1a, #030d1a),
-    conic-gradient(from var(--tca), transparent 0deg, transparent 250deg, rgba(124,173,238,0.6) 300deg, rgba(9,122,220,1) 335deg, rgba(124,173,238,0.6) 350deg, transparent 360deg);
-  background-origin: padding-box, border-box;
-  background-clip: padding-box, border-box;
-  animation: tca-spin 4s linear infinite;
-}
