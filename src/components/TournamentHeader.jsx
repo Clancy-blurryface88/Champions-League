@@ -30,7 +30,7 @@ export default function TournamentHeader() {
         <img
           src="/champions/ch-trophy.png"
           alt="Champions League Trophy"
-          className="w-[208px] md:w-[256px] h-auto object-contain"
+          className="w-[176px] md:w-[216px] h-auto object-contain"
         />
       </motion.div>
 
