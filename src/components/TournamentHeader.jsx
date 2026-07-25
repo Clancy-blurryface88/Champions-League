@@ -9,7 +9,7 @@ export default function TournamentHeader() {
       <motion.img
         src="/champions/ch-logo.png"
         alt="UEFA Champions League"
-        className="w-[220px] md:w-[280px] h-auto object-contain"
+        className="w-[320px] md:w-[420px] h-auto object-contain"
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
@@ -30,7 +30,7 @@ export default function TournamentHeader() {
         <img
           src="/champions/ch-trophy.png"
           alt="Champions League Trophy"
-          className="w-[180px] md:w-[220px] h-auto object-contain"
+          className="w-[260px] md:w-[320px] h-auto object-contain"
         />
       </motion.div>
 
