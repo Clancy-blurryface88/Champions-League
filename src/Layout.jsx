@@ -200,7 +200,7 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
             left: ringSize.width / 2 + marker.x,
             top: ringSize.height / 2 + marker.y,
             transform: 'translate(-50%, -50%)',
-            background: '#7dd3fc', color: '#000', fontWeight: 900, fontSize: 11,
+            background: '#7cadee', color: '#000', fontWeight: 900, fontSize: 11,
             borderRadius: 999, padding: '2px 7px', whiteSpace: 'nowrap',
             boxShadow: '0 2px 8px rgba(0,0,0,0.5), 0 0 0 2px #030d1a',
             zIndex: 5,
@@ -973,7 +973,7 @@ export default function Layout({ children, currentPageName }) {
                 className="relative w-11 h-11 rounded-full flex items-center justify-center shadow-2xl"
                 style={{
                   background: 'linear-gradient(145deg, #1a3a2a 0%, #0d2018 100%)',
-                  border: '1.5px solid rgba(56, 189, 248,0.5)',
+                  border: '1.5px solid rgba(9, 122, 220,0.5)',
                   boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
                 }}
               >
@@ -1157,7 +1157,7 @@ export default function Layout({ children, currentPageName }) {
                     className="flex items-center gap-2.5 rounded-full px-3 py-1.5 transition-all duration-200"
                     style={{
                       background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(8,20,50,0.55) 100%)',
-                      border: '1px solid rgba(56, 189, 248,0.35)',
+                      border: '1px solid rgba(9, 122, 220,0.35)',
                       backdropFilter: 'blur(28px) saturate(1.6)',
                       WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
                       boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), 0 4px 20px rgba(0,0,0,0.5)',
@@ -1167,7 +1167,7 @@ export default function Layout({ children, currentPageName }) {
                       src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/8e94debbc_ssmvtnogc7ue0jufjd03h6mj89.png"
                       alt="User Profile"
                       className="w-7 h-7 rounded-full object-cover flex-shrink-0"
-                      style={{ boxShadow: '0 0 0 2px #38bdf8' }}
+                      style={{ boxShadow: '0 0 0 2px #097adc' }}
                     />
                     <span
                       className="text-sky-400 text-sm font-semibold"
@@ -1180,7 +1180,7 @@ export default function Layout({ children, currentPageName }) {
               </DropdownMenuTrigger>
               <DropdownMenuContent
               className="shadow-2xl rounded-2xl min-w-[180px]"
-              style={{ background: 'rgba(8,22,45,0.96)', border: '1px solid rgba(56, 189, 248,0.25)', backdropFilter: 'blur(20px)' }}>
+              style={{ background: 'rgba(8,22,45,0.96)', border: '1px solid rgba(9, 122, 220,0.25)', backdropFilter: 'blur(20px)' }}>
 
                 <motion.div
                 variants={dropdownVariants}
@@ -1366,9 +1366,9 @@ export default function Layout({ children, currentPageName }) {
                   className="rounded-2xl overflow-hidden"
                   style={{
                     background: 'rgba(8,18,32,0.95)',
-                    border: '1px solid rgba(56, 189, 248,0.4)',
+                    border: '1px solid rgba(9, 122, 220,0.4)',
                     backdropFilter: 'blur(28px)',
-                    boxShadow: '0 0 60px rgba(56, 189, 248,0.15), 0 20px 60px rgba(0,0,0,0.7)',
+                    boxShadow: '0 0 60px rgba(9, 122, 220,0.15), 0 20px 60px rgba(0,0,0,0.7)',
                   }}
                   transition={{ type: 'spring', stiffness: 180, damping: 26 }}
                 >
@@ -1381,7 +1381,7 @@ export default function Layout({ children, currentPageName }) {
                       transition={{ duration: 0.5, ease: 'easeInOut' }}
                       className="px-10 py-8 flex flex-col items-center gap-5"
                     >
-                      <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(56, 189, 248,0.12)', border: '1px solid rgba(56, 189, 248,0.35)' }}>
+                      <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(9, 122, 220,0.12)', border: '1px solid rgba(9, 122, 220,0.35)' }}>
                         <span className="text-sky-400 text-xs font-bold tracking-widest uppercase">{nextMatchIndex === 0 ? 'המשחק הקרוב' : 'המשחק הבא'}</span>
                       </div>
                       <div className="flex items-center gap-6" dir="ltr">

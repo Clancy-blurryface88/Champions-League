@@ -85,20 +85,20 @@ export default function PlayerStatsModal({ isOpen, onClose, selectedPlayer: init
                                             position: 'relative',
                                             overflow: 'hidden',
                                             background: isSelected
-                                                ? 'linear-gradient(90deg, rgba(56, 189, 248,0.16) 0%, rgba(255,255,255,0.05) 40%)'
-                                                : 'linear-gradient(90deg, rgba(56, 189, 248,0.08) 0%, rgba(255,255,255,0.02) 40%)',
+                                                ? 'linear-gradient(90deg, rgba(9, 122, 220,0.16) 0%, rgba(255,255,255,0.05) 40%)'
+                                                : 'linear-gradient(90deg, rgba(9, 122, 220,0.08) 0%, rgba(255,255,255,0.02) 40%)',
                                             border: '1px solid rgba(255,255,255,0.07)',
-                                            borderLeft: `3px solid ${p.position === 1 ? '#7dd3fc' : p.position === 2 ? '#D1D5DB' : p.position === 3 ? '#D97706' : isSelected ? '#60A5FA' : '#475569'}`,
+                                            borderLeft: `3px solid ${p.position === 1 ? '#7cadee' : p.position === 2 ? '#D1D5DB' : p.position === 3 ? '#D97706' : isSelected ? '#60A5FA' : '#475569'}`,
                                             backdropFilter: 'blur(8px)',
                                             WebkitBackdropFilter: 'blur(8px)',
-                                            boxShadow: isSelected ? '0 0 12px rgba(56, 189, 248,0.1)' : 'none',
+                                            boxShadow: isSelected ? '0 0 12px rgba(9, 122, 220,0.1)' : 'none',
                                         }}
                                     >
                                         {/* Ghost position number — כמו בטבלה הרגילה */}
                                         <span style={{
                                             position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
                                             fontSize: 44, fontWeight: 900, lineHeight: 1,
-                                            color: p.position === 1 ? '#7dd3fc' : p.position === 2 ? '#C0C0C0' : p.position === 3 ? '#CD7F32' : 'rgba(255,255,255,0.5)',
+                                            color: p.position === 1 ? '#7cadee' : p.position === 2 ? '#C0C0C0' : p.position === 3 ? '#CD7F32' : 'rgba(255,255,255,0.5)',
                                             opacity: 0.18, userSelect: 'none', pointerEvents: 'none',
                                         }}>
                                             {p.position}

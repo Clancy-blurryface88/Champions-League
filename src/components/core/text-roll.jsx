@@ -45,13 +45,13 @@ export function TextRoll({
                       'blur(1px) brightness(2)',
                       'blur(0px) brightness(1)',
                     ],
-                    color: ['#ffffff', '#38bdf8', '#38bdf8', '#ffffff'],
+                    color: ['#ffffff', '#097adc', '#097adc', '#ffffff'],
                     scale: [1, 1.15, 1.15, 1],
                     textShadow: [
-                      '0 0 0px rgba(56, 189, 248,0)',
-                      '0 0 24px rgba(56, 189, 248,1), 0 0 48px rgba(56, 189, 248,0.5)',
-                      '0 0 24px rgba(56, 189, 248,1), 0 0 48px rgba(56, 189, 248,0.5)',
-                      '0 0 0px rgba(56, 189, 248,0)',
+                      '0 0 0px rgba(9, 122, 220,0)',
+                      '0 0 24px rgba(9, 122, 220,1), 0 0 48px rgba(9, 122, 220,0.5)',
+                      '0 0 24px rgba(9, 122, 220,1), 0 0 48px rgba(9, 122, 220,0.5)',
+                      '0 0 0px rgba(9, 122, 220,0)',
                     ],
                   }
                 : variants.exit.animate

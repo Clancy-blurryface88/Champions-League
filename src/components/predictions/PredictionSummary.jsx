@@ -60,8 +60,8 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
         className="w-full max-w-md rounded-t-3xl sm:rounded-3xl flex flex-col"
         style={{
           background: 'linear-gradient(160deg, rgba(8,18,38,0.99) 0%, rgba(4,10,22,0.99) 100%)',
-          border: '1px solid rgba(56, 189, 248,0.18)',
-          boxShadow: '0 -8px 60px rgba(56, 189, 248,0.10), 0 0 0 1px rgba(255,255,255,0.04)',
+          border: '1px solid rgba(9, 122, 220,0.18)',
+          boxShadow: '0 -8px 60px rgba(9, 122, 220,0.10), 0 0 0 1px rgba(255,255,255,0.04)',
           // 'clip' visually clips the border-radius without creating a scroll container,
           // avoiding the framer-motion transform + overflow:hidden compositing bug
           // that causes inner overflow-y:auto content to disappear on scroll.
@@ -84,7 +84,7 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
             <h2
               className="text-lg font-bold leading-tight"
               style={{
-                background: 'linear-gradient(90deg, #38bdf8, #7dd3fc)',
+                background: 'linear-gradient(90deg, #097adc, #7cadee)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
@@ -121,7 +121,7 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                     borderRadius: 0,
                     background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.02) 50%)',
                     border: '1px solid rgba(255,255,255,0.09)',
-                    borderLeft: '4px solid #38bdf8',
+                    borderLeft: '4px solid #097adc',
                     transform: 'skewX(-6deg)',
                     overflow: 'hidden',
                     backdropFilter: 'blur(8px)',
@@ -147,15 +147,15 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                       <div
                         className="w-full flex items-center justify-center px-2 py-1 rounded-xl"
                         style={{
-                          background: 'rgba(56, 189, 248,0.11)',
-                          border: '1px solid rgba(56, 189, 248,0.32)',
-                          boxShadow: '0 0 12px rgba(56, 189, 248,0.10)',
+                          background: 'rgba(9, 122, 220,0.11)',
+                          border: '1px solid rgba(9, 122, 220,0.32)',
+                          boxShadow: '0 0 12px rgba(9, 122, 220,0.10)',
                         }}
                       >
                         <span
                           className="font-black text-sm tabular-nums"
                           style={{
-                            background: 'linear-gradient(90deg, #38bdf8, #7dd3fc)',
+                            background: 'linear-gradient(90deg, #097adc, #7cadee)',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text',

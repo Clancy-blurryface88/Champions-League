@@ -9,10 +9,10 @@ import {
 
 const pct = (n, d) => d === 0 ? 0 : Math.round((n / d) * 100);
 const avg = arr => arr.length === 0 ? 0 : arr.reduce((a, b) => a + b, 0) / arr.length;
-const RANK_COLOR = r => r === 1 ? '#7dd3fc' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : '#94a3b8';
+const RANK_COLOR = r => r === 1 ? '#7cadee' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : '#94a3b8';
 const matchOutcome = (a, b) => a > b ? 'h' : a < b ? 'a' : 'd';
 
-function StatCard({ label, value, sub, color = '#38bdf8', icon: Icon }) {
+function StatCard({ label, value, sub, color = '#097adc', icon: Icon }) {
   return (
     <div className="rounded-2xl p-4 flex flex-col gap-1.5"
       style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -276,7 +276,7 @@ export default function AdminRoundInsights() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <StatCard label="משתתפים" value={data.allParticipants} icon={Users} color="#60a5fa" />
               <StatCard label="ממוצע נקודות" value={data.avgPts} sub="לשחקן" icon={TrendingUp} color="#34d399" />
-              <StatCard label="פגיעות מדויקות" value={data.totalExacts} sub={`מתוך ${data.totalPreds} ניחושים`} icon={Target} color="#38bdf8" />
+              <StatCard label="פגיעות מדויקות" value={data.totalExacts} sub={`מתוך ${data.totalPreds} ניחושים`} icon={Target} color="#097adc" />
               <StatCard label="כיוונים נכונים" value={data.totalOutcomes} sub={`${pct(data.totalOutcomes, data.totalPreds)}% הצלחה`} icon={Zap} color="#a78bfa" />
             </div>
           </div>
@@ -290,8 +290,8 @@ export default function AdminRoundInsights() {
                 icon={Trophy} title="מוביל המחזור:"
                 name={data.topScorer?.name}
                 detail={`${data.topScorer?.pts} נקודות — ${data.topScorer?.exact} פגיעות מדויקות, ${data.topScorer?.outcome} כיוונים`}
-                bg="rgba(56,189,248,0.08)" border="rgba(56,189,248,0.25)"
-                iconColor="#38bdf8" titleColor="#7dd3fc"
+                bg="rgba(9, 122, 220,0.08)" border="rgba(9, 122, 220,0.25)"
+                iconColor="#097adc" titleColor="#7cadee"
               />
 
               <InsightCard

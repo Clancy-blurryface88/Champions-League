@@ -31,7 +31,7 @@ function SlotDigit({ target, delay = 0 }) {
 
   return (
     <motion.span
-      animate={{ color: settled ? '#38bdf8' : '#475569' }}
+      animate={{ color: settled ? '#097adc' : '#475569' }}
       transition={{ duration: 0.2 }}
       className="font-black text-2xl tabular-nums leading-none"
     >
@@ -118,7 +118,7 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
           background: 'rgba(5, 10, 25, 0.72)',
           backdropFilter: 'blur(40px) saturate(1.8)',
           WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
-          boxShadow: '0 0 0 1px rgba(56, 189, 248,0.18), 0 32px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.07)',
+          boxShadow: '0 0 0 1px rgba(9, 122, 220,0.18), 0 32px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.07)',
         }}
       >
         {/* Top gradient line */}

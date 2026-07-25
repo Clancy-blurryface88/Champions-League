@@ -290,7 +290,7 @@ export default function MyStats() {
         pieData.push({ name: 'כיוון נכון', value: parseFloat(breakdown.correctOutcome.toFixed(2)), color: '#0ea5e9' });
       }
       if (breakdown.btts > 0) {
-        pieData.push({ name: 'שתי קבוצות כובשות', value: parseFloat(breakdown.btts.toFixed(2)), color: '#38bdf8' });
+        pieData.push({ name: 'שתי קבוצות כובשות', value: parseFloat(breakdown.btts.toFixed(2)), color: '#097adc' });
       }
       if (breakdown.goalsRange > 0) {
         pieData.push({ name: 'טווח שערים', value: parseFloat(breakdown.goalsRange.toFixed(2)), color: '#f87171' });
@@ -797,7 +797,7 @@ export default function MyStats() {
                 value={tab.id}
                 className="flex-1 relative z-10 data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:data-[state=active]:bg-transparent rounded-lg"
                 style={{
-                  color: activeTab === tab.id ? '#000' : '#38bdf8',
+                  color: activeTab === tab.id ? '#000' : '#097adc',
                   borderRight: index < arr.length - 1 ? '1px solid rgba(255,255,255,0.14)' : 'none',
                 }}
               >
@@ -806,8 +806,8 @@ export default function MyStats() {
                     layoutId="active-tab-indicator"
                     className="absolute inset-0 rounded-lg -z-10"
                     style={{
-                      background: 'linear-gradient(135deg, #38bdf8 0%, #7dd3fc 60%, #fff 100%)',
-                      boxShadow: '0 2px 12px rgba(56, 189, 248,0.35)',
+                      background: 'linear-gradient(135deg, #097adc 0%, #7cadee 60%, #fff 100%)',
+                      boxShadow: '0 2px 12px rgba(9, 122, 220,0.35)',
                       opacity: 0.82,
                     }}
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
@@ -1020,9 +1020,9 @@ export default function MyStats() {
                         style={{
                           color: activeChartTab === tab.id ? '#000' : 'rgba(255,255,255,0.55)',
                           background: activeChartTab === tab.id
-                            ? 'linear-gradient(135deg, #38bdf8 0%, #7dd3fc 60%, #fff 100%)'
+                            ? 'linear-gradient(135deg, #097adc 0%, #7cadee 60%, #fff 100%)'
                             : 'transparent',
-                          boxShadow: activeChartTab === tab.id ? '0 2px 10px rgba(56, 189, 248,0.30)' : 'none',
+                          boxShadow: activeChartTab === tab.id ? '0 2px 10px rgba(9, 122, 220,0.30)' : 'none',
                           borderRight: index < arr.length - 1 ? '1px solid rgba(255,255,255,0.10)' : 'none',
                         }}
                       >
@@ -1083,7 +1083,7 @@ export default function MyStats() {
                       const d = payload[0].payload;
                       return (
                         <div style={{ background: 'rgba(15,20,35,0.95)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 12px' }}>
-                          <p style={{ color: '#38bdf8', fontWeight: 700, fontSize: 12 }}>{d.round}</p>
+                          <p style={{ color: '#097adc', fontWeight: 700, fontSize: 12 }}>{d.round}</p>
                           <p style={{ color: '#fff', fontSize: 12 }}>סה״כ מצטבר: <strong>{d.cumulative}</strong></p>
                           <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11 }}>במחזור זה: +{d.roundPts}</p>
                         </div>
@@ -1095,7 +1095,7 @@ export default function MyStats() {
                           <LineChart data={cumulativeData} margin={{ top: 8, right: 8, bottom: 0, left: -20 }}>
                             <defs>
                               <linearGradient id="cumLineGrad" x1="0" y1="0" x2="1" y2="0">
-                                <stop offset="0%" stopColor="#38bdf8" />
+                                <stop offset="0%" stopColor="#097adc" />
                                 <stop offset="100%" stopColor="#22c55e" />
                               </linearGradient>
                             </defs>
@@ -1108,8 +1108,8 @@ export default function MyStats() {
                               dataKey="cumulative"
                               stroke="url(#cumLineGrad)"
                               strokeWidth={2.5}
-                              dot={{ fill: '#38bdf8', r: 4, strokeWidth: 0 }}
-                              activeDot={{ r: 6, fill: '#fff', stroke: '#38bdf8', strokeWidth: 2 }}
+                              dot={{ fill: '#097adc', r: 4, strokeWidth: 0 }}
+                              activeDot={{ r: 6, fill: '#fff', stroke: '#097adc', strokeWidth: 2 }}
                             />
                           </LineChart>
                         </ResponsiveContainer>
@@ -1157,9 +1157,9 @@ export default function MyStats() {
                         style={{
                           color: activeHitsTab === tab.id ? '#000' : 'rgba(255,255,255,0.55)',
                           background: activeHitsTab === tab.id
-                            ? 'linear-gradient(135deg, #38bdf8 0%, #7dd3fc 60%, #fff 100%)'
+                            ? 'linear-gradient(135deg, #097adc 0%, #7cadee 60%, #fff 100%)'
                             : 'transparent',
-                          boxShadow: activeHitsTab === tab.id ? '0 2px 10px rgba(56, 189, 248,0.30)' : 'none',
+                          boxShadow: activeHitsTab === tab.id ? '0 2px 10px rgba(9, 122, 220,0.30)' : 'none',
                           borderRight: index < arr.length - 1 ? '1px solid rgba(255,255,255,0.10)' : 'none',
                         }}
                       >

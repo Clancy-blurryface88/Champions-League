@@ -19,7 +19,7 @@
   border: 3px solid transparent;
   background-image:
     linear-gradient(#030d1a, #030d1a),
-    conic-gradient(from var(--ba), #022c22, #059669, #6ee7b7, #38bdf8, #7dd3fc, #38bdf8, #6ee7b7, #059669, #022c22);
+    conic-gradient(from var(--ba), #022c22, #059669, #6ee7b7, #097adc, #7cadee, #097adc, #6ee7b7, #059669, #022c22);
   background-origin: padding-box, border-box;
   background-clip: padding-box, border-box;
   animation: ba-spin 3s linear infinite;
@@ -27,15 +27,15 @@
 
 /* ── CL2026 Design Tokens ─────────────────────────────────── */
 :root {
-  --gold:        #38bdf8;
-  --gold-dim:    rgba(56,189,248,0.15);
-  --gold-glow:   rgba(56,189,248,0.35);
+  --gold:        #097adc;
+  --gold-dim:    rgba(9, 122, 220,0.15);
+  --gold-glow:   rgba(9, 122, 220,0.35);
   --teal:        #00c2a8;
   --red:         #e63946;
   --bg:          #030d1a;
   --surface:     rgba(8,22,45,0.82);
   --surface-hi:  rgba(14,30,58,0.90);
-  --border:      rgba(56,189,248,0.18);
+  --border:      rgba(9, 122, 220,0.18);
   --text:        #f1f5f9;
   --text-muted:  #64748b;
 
@@ -88,7 +88,7 @@ body {
 
 .wc-card-hi {
   background: var(--surface-hi);
-  border: 1px solid rgba(56,189,248,0.28);
+  border: 1px solid rgba(9, 122, 220,0.28);
   border-radius: 16px;
   backdrop-filter: blur(16px);
 }
@@ -150,7 +150,7 @@ body {
   to { --conic-angle: 360deg; }
 }
 .rotate-conic-border {
-  background: conic-gradient(from var(--conic-angle), #022c22, #065f46, #059669, #6ee7b7, #7dd3fc, #38bdf8, #7dd3fc, #6ee7b7, #022c22);
+  background: conic-gradient(from var(--conic-angle), #022c22, #065f46, #059669, #6ee7b7, #7cadee, #097adc, #7cadee, #6ee7b7, #022c22);
   animation: rotateConic 6s linear infinite;
 }
 

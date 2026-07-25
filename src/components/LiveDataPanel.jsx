@@ -104,7 +104,7 @@ function MatchCard({ match, index }) {
                       ? 'linear-gradient(135deg, #34d399, #fff)'
                       : isFinished
                         ? 'linear-gradient(135deg, #94a3b8, #fff)'
-                        : 'linear-gradient(135deg, #38bdf8, #fff)',
+                        : 'linear-gradient(135deg, #097adc, #fff)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
@@ -120,7 +120,7 @@ function MatchCard({ match, index }) {
                       ? 'linear-gradient(135deg, #34d399, #fff)'
                       : isFinished
                         ? 'linear-gradient(135deg, #94a3b8, #fff)'
-                        : 'linear-gradient(135deg, #38bdf8, #fff)',
+                        : 'linear-gradient(135deg, #097adc, #fff)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
@@ -270,7 +270,7 @@ export default function LiveDataPanel({ onClose }) {
                 <p className="text-white font-bold text-[15px] leading-tight tracking-wide">Live Results</p>
                 <p
                   className="text-[10px] font-bold tracking-[0.2em] uppercase"
-                  style={{ background: 'linear-gradient(90deg, #38bdf8, #fff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
+                  style={{ background: 'linear-gradient(90deg, #097adc, #fff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
                 >
                   UEFA Champions League 2026
                 </p>
@@ -307,7 +307,7 @@ export default function LiveDataPanel({ onClose }) {
                   <motion.div
                     layoutId="filter-pill"
                     className="absolute inset-0 rounded-lg"
-                    style={{ background: 'linear-gradient(135deg, #38bdf8, #7dd3fc)' }}
+                    style={{ background: 'linear-gradient(135deg, #097adc, #7cadee)' }}
                     transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
                   />
                 )}

@@ -13,7 +13,7 @@ import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 // ─── Rank color helpers ───────────────────────────────────────────
 function getRankColor(rank) {
-  if (rank === 1) return '#38bdf8';
+  if (rank === 1) return '#097adc';
   if (rank === 2) return '#94a3b8';
   if (rank === 3) return '#c2843a';
   if (rank <= 5) return '#3b82f6';
@@ -60,7 +60,7 @@ function RankTrajectoryChart({ rankSeries, totalParticipants }) {
     >
       <defs>
         <linearGradient id="traj-line" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#38bdf8" />
+          <stop offset="0%" stopColor="#097adc" />
           <stop offset="50%" stopColor="#a78bfa" />
           <stop offset="100%" stopColor="#34d399" />
         </linearGradient>

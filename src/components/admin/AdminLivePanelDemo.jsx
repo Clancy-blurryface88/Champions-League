@@ -98,11 +98,11 @@ function MatchCard({ match, index }) {
 }
 
 // ── Rank card ───────────────────────────────────────────────────────────────
-const RANK_COLOR  = r => r === 1 ? '#7dd3fc' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : 'rgba(255,255,255,.45)';
-const RANK_BORDER = r => r === 1 ? '#7dd3fc' : r === 2 ? '#D1D5DB' : r === 3 ? '#D97706' : '#475569';
-const RANK_BG     = r => r === 1 ? 'linear-gradient(135deg,rgba(125,211,252,.22),rgba(56,189,248,.22))'
+const RANK_COLOR  = r => r === 1 ? '#7cadee' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : 'rgba(255,255,255,.45)';
+const RANK_BORDER = r => r === 1 ? '#7cadee' : r === 2 ? '#D1D5DB' : r === 3 ? '#D97706' : '#475569';
+const RANK_BG     = r => r === 1 ? 'linear-gradient(135deg,rgba(124, 173, 238,.22),rgba(9, 122, 220,.22))'
                        : r === 2 ? 'linear-gradient(135deg,rgba(209,213,219,.18),rgba(156,163,175,.18))'
-                       : r === 3 ? 'linear-gradient(135deg,rgba(56,189,248,.20),rgba(217,119,6,.20))'
+                       : r === 3 ? 'linear-gradient(135deg,rgba(9, 122, 220,.20),rgba(217,119,6,.20))'
                        : 'rgba(30,41,59,.60)';
 const MEDAL = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
@@ -156,7 +156,7 @@ function RankCard({ row, index, total, shockwave, isInitial }) {
         <motion.div className="absolute inset-0 rounded-lg pointer-events-none"
           initial={{ opacity: 0 }} animate={{ opacity: [0, .2, 0] }}
           transition={{ duration: .55, delay: shockDelay }}
-          style={{ background: 'rgba(125,211,252,.22)', zIndex: 5 }} />
+          style={{ background: 'rgba(124, 173, 238,.22)', zIndex: 5 }} />
       )}
 
       {/* parallelogram card */}
@@ -599,7 +599,7 @@ export default function AdminLivePanelDemo() {
             <div>
               <p className="text-white font-bold text-[15px] leading-tight">Live Results</p>
               <p className="text-[10px] font-bold tracking-[.2em] uppercase"
-                style={{ background: 'linear-gradient(90deg,#38bdf8,#fff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                style={{ background: 'linear-gradient(90deg,#097adc,#fff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
                 UEFA Champions League 2026
               </p>
             </div>
@@ -612,7 +612,7 @@ export default function AdminLivePanelDemo() {
                 style={{ color: active === t.key ? '#000' : 'rgba(255,255,255,.4)' }}>
                 {active === t.key && (
                   <motion.div layoutId="demo-tab-pill" className="absolute inset-0 rounded-lg"
-                    style={{ background: t.key === 'LB' ? 'linear-gradient(135deg,#8b5cf6,#6366f1)' : 'linear-gradient(135deg,#38bdf8,#7dd3fc)' }}
+                    style={{ background: t.key === 'LB' ? 'linear-gradient(135deg,#8b5cf6,#6366f1)' : 'linear-gradient(135deg,#097adc,#7cadee)' }}
                     transition={{ type: 'spring', bounce: .2, duration: .5 }} />
                 )}
                 <span className="relative z-10">{t.emoji} {t.label}</span>

@@ -52,11 +52,11 @@ function findDbMatch(apiMatch, dbMatches) {
   return dbMatches.find(m => (teamsMatch(h, m.team_a) || teamsMatch(hS, m.team_a)) && (teamsMatch(a, m.team_b) || teamsMatch(aS, m.team_b))) || null;
 }
 
-const RANK_COLOR  = r => r === 1 ? '#7dd3fc' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : 'rgba(255,255,255,.45)';
-const RANK_BORDER = r => r === 1 ? '#7dd3fc' : r === 2 ? '#D1D5DB' : r === 3 ? '#D97706' : '#475569';
-const RANK_BG     = r => r === 1 ? 'linear-gradient(135deg,rgba(125,211,252,.22),rgba(56,189,248,.22))'
+const RANK_COLOR  = r => r === 1 ? '#7cadee' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : 'rgba(255,255,255,.45)';
+const RANK_BORDER = r => r === 1 ? '#7cadee' : r === 2 ? '#D1D5DB' : r === 3 ? '#D97706' : '#475569';
+const RANK_BG     = r => r === 1 ? 'linear-gradient(135deg,rgba(124, 173, 238,.22),rgba(9, 122, 220,.22))'
                        : r === 2 ? 'linear-gradient(135deg,rgba(209,213,219,.18),rgba(156,163,175,.18))'
-                       : r === 3 ? 'linear-gradient(135deg,rgba(56,189,248,.20),rgba(217,119,6,.20))'
+                       : r === 3 ? 'linear-gradient(135deg,rgba(9, 122, 220,.20),rgba(217,119,6,.20))'
                        : 'rgba(30,41,59,.60)';
 
 function DeltaIcon({ delta }) {
@@ -91,7 +91,7 @@ function RankCard({ row, index, total, isInitial }) {
           borderWidth={1}
           duration={row.liveRank === 1 ? 6 : row.liveRank === 2 ? 7 : row.liveRank === 3 ? 8 : 12}
           shineColor={
-            row.liveRank === 1 ? ['#7dd3fc','#fff','#38bdf8'] :
+            row.liveRank === 1 ? ['#7cadee','#fff','#097adc'] :
             row.liveRank === 2 ? ['#C0C0C0','#fff','#94a3b8'] :
             row.liveRank === 3 ? ['#CD7F32','#fff','#D97706'] :
             ['#475569','#64748b','#475569']
@@ -118,7 +118,7 @@ function RankCard({ row, index, total, isInitial }) {
                   <div key={i} className="flex items-center gap-0.5 flex-shrink-0">
                     <TeamFlag logo={mp.homeLogo} name={mp.home} size={9} className="flex-shrink-0" rounded="sm" />
                     <span className="text-[11px] font-mono font-bold tabular-nums leading-none"
-                      style={{ color: '#7dd3fc' }}>
+                      style={{ color: '#7cadee' }}>
                       {mp.predicted}
                     </span>
                     <TeamFlag logo={mp.awayLogo} name={mp.away} size={9} className="flex-shrink-0" rounded="sm" />

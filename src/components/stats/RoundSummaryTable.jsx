@@ -188,7 +188,7 @@ export default function RoundSummaryTable() {
 
       {/* gradient top bar */}
       <div className="h-1 w-full"
-        style={{ background: 'linear-gradient(90deg, #38bdf8 0%, #7dd3fc 40%, #34d399 100%)' }} />
+        style={{ background: 'linear-gradient(90deg, #097adc 0%, #7cadee 40%, #34d399 100%)' }} />
 
       {/* header */}
       <div className="px-5 pt-5 pb-4 flex items-center justify-between gap-3 flex-wrap"
@@ -196,7 +196,7 @@ export default function RoundSummaryTable() {
 
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg,rgba(56, 189, 248,0.18),rgba(253,230,138,0.08))', border: '1px solid rgba(56, 189, 248,0.25)' }}>
+            style={{ background: 'linear-gradient(135deg,rgba(9, 122, 220,0.18),rgba(253,230,138,0.08))', border: '1px solid rgba(9, 122, 220,0.25)' }}>
             <span className="text-lg">📋</span>
           </div>
           <div>

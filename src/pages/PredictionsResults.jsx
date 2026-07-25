@@ -34,7 +34,7 @@ import { calculateMatchMaxPotentialPoints } from "../components/utils/calculateM
 
 const OUTCOME_COLORS = {
   exact:   { hex: '#34d399', text: 'text-emerald-400', border: 'border-emerald-500/30', divider: 'bg-emerald-400/40' },
-  correct: { hex: '#38bdf8', text: 'text-sky-400',   border: 'border-sky-500/30',   divider: 'bg-sky-400/40'   },
+  correct: { hex: '#097adc', text: 'text-sky-400',   border: 'border-sky-500/30',   divider: 'bg-sky-400/40'   },
   wrong:   { hex: '#f87171', text: 'text-red-400',     border: 'border-red-500/25',     divider: 'bg-red-400/40'     },
   default: { hex: '#34d399', text: 'text-emerald-400', border: 'border-emerald-500/30', divider: 'bg-emerald-400/40' },
 };
@@ -258,7 +258,7 @@ function FlipBoardPicker({ rounds, value, onChange }) {
             exit={{ rotateX: 90, opacity: 0 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}
             className="px-8 py-2.5 rounded-xl border border-sky-400/30 min-w-[180px] text-center"
-            style={{ perspective: 600, background: 'rgba(56, 189, 248,0.08)' }}>
+            style={{ perspective: 600, background: 'rgba(9, 122, 220,0.08)' }}>
             <span className="text-sky-400 font-bold text-base tracking-wide">{current?.name}</span>
           </motion.div>
         </AnimatePresence>
@@ -308,7 +308,7 @@ function IosRoundPicker({ rounds, value, onChange }) {
       <div className="absolute inset-x-0 bottom-0 z-10 pointer-events-none"
         style={{ height: ITEM_H, background: 'linear-gradient(to top, rgba(8,15,35,0.95), transparent)' }} />
       <div className="absolute inset-x-2 z-10 pointer-events-none rounded-lg"
-        style={{ top: ITEM_H, height: ITEM_H, background: 'rgba(56, 189, 248,0.08)', border: '1px solid rgba(56, 189, 248,0.28)' }} />
+        style={{ top: ITEM_H, height: ITEM_H, background: 'rgba(9, 122, 220,0.08)', border: '1px solid rgba(9, 122, 220,0.28)' }} />
       <div
         ref={ref}
         onScroll={handleScroll}
@@ -688,7 +688,7 @@ export default function PredictionsResults() {
                     className="relative flex p-1 mb-2 rounded-2xl"
                     style={{
                       background: 'transparent',
-                      border: '1px solid rgba(56, 189, 248,0.45)',
+                      border: '1px solid rgba(9, 122, 220,0.45)',
                     }}
                   >
                     {[
@@ -703,7 +703,7 @@ export default function PredictionsResults() {
                           onClick={() => setViewMode(tab.key)}
                           className="relative flex-1 flex items-center justify-center py-1.5 px-1 rounded-xl transition-colors z-10"
                           style={{
-                            color: active ? '#000' : '#38bdf8',
+                            color: active ? '#000' : '#097adc',
                             borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.14)' : 'none',
                           }}
                         >
@@ -712,8 +712,8 @@ export default function PredictionsResults() {
                               layoutId="tab-pill"
                               className="absolute inset-0 rounded-xl"
                               style={{
-                                background: 'linear-gradient(135deg, #38bdf8 0%, #7dd3fc 60%, #fff 100%)',
-                                boxShadow: '0 2px 12px rgba(56, 189, 248,0.35)',
+                                background: 'linear-gradient(135deg, #097adc 0%, #7cadee 60%, #fff 100%)',
+                                boxShadow: '0 2px 12px rgba(9, 122, 220,0.35)',
                                 opacity: 0.82,
                               }}
                               transition={{ type: 'spring', bounce: 0.2, duration: 0.45 }}
@@ -737,9 +737,9 @@ export default function PredictionsResults() {
                           <div className="relative w-11 h-11 flex items-center justify-center flex-shrink-0">
                             <svg width="44" height="44" className="absolute top-0 left-0 pointer-events-none" style={{ transform: 'rotate(-90deg)' }}>
                               <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
-                              <circle cx={c} cy={c} r={r} fill="none" stroke="#38bdf8" strokeWidth={stroke}
+                              <circle cx={c} cy={c} r={r} fill="none" stroke="#097adc" strokeWidth={stroke}
                                 strokeDasharray={`${circ * pct} ${circ}`} strokeLinecap="round"
-                                style={{ filter: 'drop-shadow(0 0 4px rgba(56, 189, 248,0.5))', transition: 'stroke-dasharray 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
+                                style={{ filter: 'drop-shadow(0 0 4px rgba(9, 122, 220,0.5))', transition: 'stroke-dasharray 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
                             </svg>
                             <button onClick={nextMatch} disabled={finishedMatches.length <= 1}
                               className="relative w-8 h-8 flex items-center justify-center disabled:opacity-30 rounded-full z-10 transition-transform hover:scale-105 active:scale-95"
@@ -793,9 +793,9 @@ export default function PredictionsResults() {
                             <div className="absolute top-0 left-0 pointer-events-none" style={{ transform: 'scaleX(-1)', width: 44, height: 44 }}>
                               <svg width="44" height="44" style={{ transform: 'rotate(-90deg)' }}>
                                 <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
-                                <circle cx={c} cy={c} r={r} fill="none" stroke="#38bdf8" strokeWidth={stroke}
+                                <circle cx={c} cy={c} r={r} fill="none" stroke="#097adc" strokeWidth={stroke}
                                   strokeDasharray={`${circ * pct} ${circ}`} strokeLinecap="round"
-                                  style={{ filter: 'drop-shadow(0 0 4px rgba(56, 189, 248,0.5))', transition: 'stroke-dasharray 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
+                                  style={{ filter: 'drop-shadow(0 0 4px rgba(9, 122, 220,0.5))', transition: 'stroke-dasharray 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
                               </svg>
                             </div>
                             <button onClick={prevMatch} disabled={finishedMatches.length <= 1}
@@ -882,10 +882,10 @@ export default function PredictionsResults() {
 }
 
 function PodiumStand({ entry, position, isCurrentUser, baseDelay = 0 }) {
-  const rankColor  = position === 1 ? '#38bdf8' : position === 2 ? '#94a3b8' : '#b45309';
-  const rankBg     = position === 1 ? 'rgba(56,189,248,0.1)'   : position === 2 ? 'rgba(148,163,184,0.07)' : 'rgba(180,83,9,0.1)';
-  const rankBorder = position === 1 ? 'rgba(56,189,248,0.3)'   : position === 2 ? 'rgba(148,163,184,0.2)'  : 'rgba(180,83,9,0.25)';
-  const rankGlow   = position === 1 ? 'rgba(56,189,248,0.35)'  : position === 2 ? 'rgba(148,163,184,0.18)' : 'rgba(180,83,9,0.28)';
+  const rankColor  = position === 1 ? '#097adc' : position === 2 ? '#94a3b8' : '#b45309';
+  const rankBg     = position === 1 ? 'rgba(9, 122, 220,0.1)'   : position === 2 ? 'rgba(148,163,184,0.07)' : 'rgba(180,83,9,0.1)';
+  const rankBorder = position === 1 ? 'rgba(9, 122, 220,0.3)'   : position === 2 ? 'rgba(148,163,184,0.2)'  : 'rgba(180,83,9,0.25)';
+  const rankGlow   = position === 1 ? 'rgba(9, 122, 220,0.35)'  : position === 2 ? 'rgba(148,163,184,0.18)' : 'rgba(180,83,9,0.28)';
   const heights    = { 1: 56, 2: 38, 3: 28 };
 
   if (!entry) return <div className="flex-1" />;
@@ -1248,7 +1248,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                   animate={{ opacity: 0, scale: 2.2 }}
                   transition={{ duration: 0.9, ease: 'easeOut' }}
                   className="absolute inset-0 rounded-lg pointer-events-none"
-                  style={{ border: '2px solid rgba(56,189,248,0.7)', zIndex: 10 }}
+                  style={{ border: '2px solid rgba(9, 122, 220,0.7)', zIndex: 10 }}
                 />
                 <motion.div
                   key="ring2"
@@ -1256,7 +1256,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                   animate={{ opacity: 0, scale: 1.8 }}
                   transition={{ duration: 0.7, delay: 0.15, ease: 'easeOut' }}
                   className="absolute inset-0 rounded-lg pointer-events-none"
-                  style={{ border: '2px solid rgba(56,189,248,0.4)', zIndex: 10 }}
+                  style={{ border: '2px solid rgba(9, 122, 220,0.4)', zIndex: 10 }}
                 />
               </>
             )}
@@ -1269,7 +1269,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                 animate={{ opacity: [0, 0.18, 0] }}
                 transition={{ duration: 0.5, delay: shockDelay, ease: 'easeOut' }}
                 className="absolute inset-0 pointer-events-none rounded-lg"
-                style={{ background: 'rgba(56,189,248,0.25)', zIndex: 5 }}
+                style={{ background: 'rgba(9, 122, 220,0.25)', zIndex: 5 }}
               />
             )}
 

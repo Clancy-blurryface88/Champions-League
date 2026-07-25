@@ -20,9 +20,9 @@ export default function TournamentHeader() {
         className="relative"
         animate={{
           filter: [
-            'drop-shadow(0 0 18px rgba(56, 189, 248,0.25))',
-            'drop-shadow(0 0 52px rgba(56, 189, 248,0.80))',
-            'drop-shadow(0 0 18px rgba(56, 189, 248,0.25))',
+            'drop-shadow(0 0 18px rgba(9, 122, 220,0.25))',
+            'drop-shadow(0 0 52px rgba(9, 122, 220,0.80))',
+            'drop-shadow(0 0 18px rgba(9, 122, 220,0.25))',
           ],
         }}
         transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}

@@ -94,7 +94,7 @@ function SegmentedGroup({ items, delay = 60 }) {
         borderRadius={12}
         borderWidth={1.5}
         duration={12}
-        shineColor={["#38bdf8", "#ffffff", "#38bdf8", "#ffffff"]}
+        shineColor={["#097adc", "#ffffff", "#097adc", "#ffffff"]}
       />
       {items.map((item, i) => {
         const t = CARD_THEMES[item.theme || "muted"];
@@ -209,7 +209,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
               <span className="text-[10px] text-slate-300 leading-none">(בית)</span>
             </div>
             <span className="text-sm font-black tracking-widest mx-3 pb-5 bg-clip-text text-transparent"
-              style={{ backgroundImage: 'linear-gradient(180deg, #38bdf8 0%, #1e40af 100%)' }}>VS</span>
+              style={{ backgroundImage: 'linear-gradient(180deg, #097adc 0%, #1e40af 100%)' }}>VS</span>
             <div className="flex flex-col items-center gap-1.5 flex-1">
               <div style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.3))' }}>
                 <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" />
@@ -229,7 +229,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
 
           {/* ── סימולטור ניחוש ── */}
           <div className="rounded-2xl border border-yellow-500/25 overflow-hidden"
-            style={{ background: 'linear-gradient(145deg, rgba(56, 189, 248,0.07) 0%, rgba(10,20,50,0.6) 100%)' }}>
+            style={{ background: 'linear-gradient(145deg, rgba(9, 122, 220,0.07) 0%, rgba(10,20,50,0.6) 100%)' }}>
 
             <div className="px-4 pt-3 pb-1 text-center">
               <span className="text-[10px] uppercase tracking-[0.14em] font-semibold text-yellow-400/80">סימולטור — כמה שווה הניחוש שלך</span>
@@ -270,7 +270,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
                     ))}
                   </div>
                   <div className="mx-4 mb-3 rounded-xl flex items-center justify-center px-4 py-2.5"
-                    style={{ background: 'rgba(56, 189, 248,0.12)', border: '1px solid rgba(56, 189, 248,0.3)' }}>
+                    style={{ background: 'rgba(9, 122, 220,0.12)', border: '1px solid rgba(9, 122, 220,0.3)' }}>
                     <motion.span
                       key={sim.total}
                       initial={{ scale: 0.8, opacity: 0 }}

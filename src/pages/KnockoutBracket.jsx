@@ -707,13 +707,13 @@ export default function KnockoutBracket() {
                   <img
                     src="/champions/ch-trophy.png"
                     alt="Champions League Trophy"
-                    style={{ width:56, height:72, objectFit:'contain', display:'inline-block', filter:'drop-shadow(0 0 12px rgba(56, 189, 248,0.7)) drop-shadow(0 0 4px rgba(56, 189, 248,0.4))' }}
+                    style={{ width:56, height:72, objectFit:'contain', display:'inline-block', filter:'drop-shadow(0 0 12px rgba(9, 122, 220,0.7)) drop-shadow(0 0 4px rgba(9, 122, 220,0.4))' }}
                   />
                 </div>
-              <div style={{ height:CH, background:'rgba(56, 189, 248,0.08)', border:'1px solid rgba(56, 189, 248,0.3)', borderRadius:8, overflow:'hidden', display:'flex', flexDirection:'column', justifyContent:'center' }}>
-                <div style={{ textAlign:'center', fontSize:9, color:'#38bdf8', fontWeight:700, letterSpacing:2, paddingTop:2 }}>FINAL</div>
+              <div style={{ height:CH, background:'rgba(9, 122, 220,0.08)', border:'1px solid rgba(9, 122, 220,0.3)', borderRadius:8, overflow:'hidden', display:'flex', flexDirection:'column', justifyContent:'center' }}>
+                <div style={{ textAlign:'center', fontSize:9, color:'#097adc', fontWeight:700, letterSpacing:2, paddingTop:2 }}>FINAL</div>
                 <TeamRow team={resolved.final.homeTeam} score={resolved.final.homeScore} won={resolved.final.isFinished && resolved.final.homeScore > resolved.final.awayScore} isFinished={resolved.final.isFinished} />
-                <div style={{ height:1, background:'rgba(56, 189, 248,0.2)', margin:'0 6px' }} />
+                <div style={{ height:1, background:'rgba(9, 122, 220,0.2)', margin:'0 6px' }} />
                 <TeamRow team={resolved.final.awayTeam} score={resolved.final.awayScore} won={resolved.final.isFinished && resolved.final.awayScore > resolved.final.homeScore} isFinished={resolved.final.isFinished} />
               </div>
               <MatchDateLabel matchDate={resolved.final.matchDate} />

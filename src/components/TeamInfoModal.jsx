@@ -1110,7 +1110,7 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
                                 {stat.bestMain}
                               </span>
                               {stat.bestYear && (
-                                <span style={{ fontSize: "0.72rem", color: "#7dd3fccc", fontWeight: 600 }}>{stat.bestYear}</span>
+                                <span style={{ fontSize: "0.72rem", color: "#7cadeecc", fontWeight: 600 }}>{stat.bestYear}</span>
                               )}
                             </div>
                           ) : (

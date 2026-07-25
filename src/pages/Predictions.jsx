@@ -783,10 +783,10 @@ export default function Predictions() {
                   className="relative flex-shrink-0 flex flex-col items-center gap-1 pt-2 pb-2.5 px-3 rounded-2xl transition-all duration-250"
                   style={{
                     background: isActive
-                      ? 'linear-gradient(135deg,#38bdf8,#7dd3fc)'
+                      ? 'linear-gradient(135deg,#097adc,#7cadee)'
                       : 'rgba(255,255,255,0.05)',
                     border: isActive
-                      ? '1px solid rgba(56, 189, 248,0.6)'
+                      ? '1px solid rgba(9, 122, 220,0.6)'
                       : '1px solid rgba(255,255,255,0.08)',
                     minWidth: 56,
                   }}
@@ -852,12 +852,12 @@ export default function Predictions() {
                       className="mx-3 flex items-center gap-3 px-4 py-2 rounded-2xl"
                       style={{
                         background: isToday
-                          ? 'linear-gradient(135deg,rgba(56, 189, 248,0.15),rgba(56, 189, 248,0.05))'
+                          ? 'linear-gradient(135deg,rgba(9, 122, 220,0.15),rgba(9, 122, 220,0.05))'
                           : isPast
                             ? 'rgba(255,255,255,0.03)'
                             : 'rgba(255,255,255,0.06)',
                         border: isToday
-                          ? '1px solid rgba(56, 189, 248,0.35)'
+                          ? '1px solid rgba(9, 122, 220,0.35)'
                           : '1px solid rgba(255,255,255,0.1)',
                       }}
                     >
@@ -1222,7 +1222,7 @@ export default function Predictions() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.25 }}
                 className="w-full max-w-sm rounded-2xl overflow-hidden"
-                style={{ background: 'rgba(56, 189, 248,0.05)', border: '1px solid rgba(56, 189, 248,0.35)' }}
+                style={{ background: 'rgba(9, 122, 220,0.05)', border: '1px solid rgba(9, 122, 220,0.35)' }}
               >
                 <div className="relative h-10 flex items-center px-4">
                   <motion.div
@@ -1230,7 +1230,7 @@ export default function Predictions() {
                     initial={false}
                     animate={{ scaleX: pct / 100 }}
                     transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-                    style={{ background: 'linear-gradient(90deg, rgba(56, 189, 248,0.25) 0%, rgba(56, 189, 248,0.45) 100%)', transformOrigin: 'left' }}
+                    style={{ background: 'linear-gradient(90deg, rgba(9, 122, 220,0.25) 0%, rgba(9, 122, 220,0.45) 100%)', transformOrigin: 'left' }}
                   />
                   <span className="relative z-10 w-full text-center text-sm font-semibold text-sky-400/90">
                     {filled} / {total} ניחושים

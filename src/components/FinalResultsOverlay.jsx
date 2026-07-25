@@ -37,10 +37,10 @@ async function loadFinalLeaderboard(currentUserId) {
 }
 
 function PodiumStand({ entry, position, baseDelay }) {
-  const rankColor = position === 1 ? "#7dd3fc" : position === 2 ? "#C0C0C0" : "#CD7F32";
-  const rankBg = position === 1 ? "rgba(125,211,252,0.12)" : position === 2 ? "rgba(209,213,219,0.09)" : "rgba(217,119,6,0.12)";
-  const rankBorder = position === 1 ? "rgba(125,211,252,0.35)" : position === 2 ? "rgba(209,213,219,0.25)" : "rgba(217,119,6,0.3)";
-  const rankGlow = position === 1 ? "rgba(125,211,252,0.4)" : position === 2 ? "rgba(209,213,219,0.2)" : "rgba(217,119,6,0.32)";
+  const rankColor = position === 1 ? "#7cadee" : position === 2 ? "#C0C0C0" : "#CD7F32";
+  const rankBg = position === 1 ? "rgba(124, 173, 238,0.12)" : position === 2 ? "rgba(209,213,219,0.09)" : "rgba(217,119,6,0.12)";
+  const rankBorder = position === 1 ? "rgba(124, 173, 238,0.35)" : position === 2 ? "rgba(209,213,219,0.25)" : "rgba(217,119,6,0.3)";
+  const rankGlow = position === 1 ? "rgba(124, 173, 238,0.4)" : position === 2 ? "rgba(209,213,219,0.2)" : "rgba(217,119,6,0.32)";
   const heights = { 1: 76, 2: 52, 3: 38 };
 
   if (!entry) return <div className="flex-1" />;
@@ -138,9 +138,9 @@ export default function FinalResultsOverlay({ onClose }) {
           className="relative w-full max-w-md rounded-3xl overflow-hidden flex flex-col"
           style={{
             background: "rgba(8,18,32,0.97)",
-            border: "1px solid rgba(56, 189, 248,0.4)",
+            border: "1px solid rgba(9, 122, 220,0.4)",
             backdropFilter: "blur(28px)",
-            boxShadow: "0 0 60px rgba(56, 189, 248,0.15), 0 20px 60px rgba(0,0,0,0.7)",
+            boxShadow: "0 0 60px rgba(9, 122, 220,0.15), 0 20px 60px rgba(0,0,0,0.7)",
             maxHeight: "85vh",
           }}
         >
