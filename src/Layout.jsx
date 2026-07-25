@@ -916,6 +916,25 @@ export default function Layout({ children, currentPageName }) {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}>
 
+        {/* Champions League starball backdrop — sits behind every page */}
+        <div
+          className="fixed inset-0 pointer-events-none"
+          style={{
+            zIndex: 0,
+            backgroundImage: 'url(/champions/background.jpeg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            opacity: 0.35,
+          }}
+        />
+        <div
+          className="fixed inset-0 pointer-events-none"
+          style={{
+            zIndex: 0,
+            background: 'linear-gradient(180deg, rgba(3,13,26,0.55) 0%, rgba(3,13,26,0.85) 55%, #030d1a 100%)',
+          }}
+        />
+
 {/* Glass navbar strip — not on Dashboard */}
         {!location.pathname.includes('Dashboard') && location.pathname !== '/' && (
           <div

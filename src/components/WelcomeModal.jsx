@@ -103,7 +103,7 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                 style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
               >
                 <motion.img
-                  src="/cl-emblem.svg"
+                  src="/champions/ch-trophy.png"
                   alt="Trophy"
                   className="w-14 h-auto mx-auto mb-6"
                   initial={{ opacity: 0, scale: 0.75, y: 6 }}

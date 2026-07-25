@@ -61,7 +61,7 @@ function BaseCard({ children, cardStyle, textClass = "" }) {
     >
       {children}
       <div className="flex-shrink-0 relative z-10">
-        <img src="/cl-emblem.svg" className="h-9 w-auto object-contain" />
+        <img src="/champions/ch-trophy.png" className="h-9 w-auto object-contain" />
       </div>
       <div className="text-center relative z-10">
         <h3 className={`fa-font-out font-semibold text-base tracking-wide ${textClass}`} style={{ color: textClass ? undefined : "#fff" }}>גמר</h3>
@@ -82,7 +82,7 @@ const ShimmerText = () => (
 /* 1 — Baseline reference, current production animation */
 const A1_ShimmerBaseline = () => (
   <div className="relative h-16 w-60 rounded-2xl flex items-center justify-center gap-4" style={{ background: "linear-gradient(135deg, rgba(8,22,42,0.55) 0%, rgba(3,10,20,0.45) 100%)", border: "1px solid rgba(56, 189, 248,0.28)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35)" }}>
-    <img src="/cl-emblem.svg" className="h-9 w-auto object-contain" />
+    <img src="/champions/ch-trophy.png" className="h-9 w-auto object-contain" />
     <ShimmerText />
   </div>
 );
@@ -133,7 +133,7 @@ const A6_FloatingBokeh = () => (
 /* 7 — Trophy bounce */
 const A7_TrophyBounce = () => (
   <div className="relative h-16 w-60 rounded-2xl flex items-center justify-center gap-4" style={{ background: "linear-gradient(135deg, rgba(8,22,42,0.55), rgba(3,10,20,0.45))", border: "1px solid rgba(56, 189, 248,0.28)" }}>
-    <img src="/cl-emblem.svg" className="h-9 w-auto object-contain" style={{ animation: "fa-bounce 1.6s ease-in-out infinite" }} />
+    <img src="/champions/ch-trophy.png" className="h-9 w-auto object-contain" style={{ animation: "fa-bounce 1.6s ease-in-out infinite" }} />
     <ShimmerText />
   </div>
 );
@@ -142,7 +142,7 @@ const A7_TrophyBounce = () => (
 const A8_BorderChase = () => (
   <div className="relative h-16 w-60 rounded-2xl p-[2px] overflow-hidden" style={{ backgroundImage: "linear-gradient(90deg,#38bdf8 0%,transparent 15%,transparent 85%,#38bdf8 100%)", backgroundSize: "250% 100%", animation: "fa-border-chase 2.4s linear infinite" }}>
     <div className="relative h-full w-full rounded-2xl flex items-center justify-center gap-4" style={{ background: "linear-gradient(135deg, rgba(8,22,42,0.9), rgba(3,10,20,0.9))" }}>
-      <img src="/cl-emblem.svg" className="h-9 w-auto object-contain" />
+      <img src="/champions/ch-trophy.png" className="h-9 w-auto object-contain" />
       <ShimmerText />
     </div>
   </div>
@@ -211,7 +211,7 @@ const A15_TadaBump = () => (
 /* 16 — Neon border pulse */
 const A16_NeonBorderPulse = () => (
   <div className="relative h-16 w-60 rounded-2xl flex items-center justify-center gap-4" style={{ background: "#050505", border: "2px solid #38bdf8", animation: "fa-glow-breathe 1.8s ease-in-out infinite" }}>
-    <img src="/cl-emblem.svg" className="h-9 w-auto object-contain" />
+    <img src="/champions/ch-trophy.png" className="h-9 w-auto object-contain" />
     <ShimmerText />
   </div>
 );

@@ -314,7 +314,7 @@ export default function UserRankingsSummary() {
       <Card className="overflow-hidden" style={{ background: 'rgba(255,255,255,0.10)', backdropFilter: 'blur(40px) saturate(180%)', WebkitBackdropFilter: 'blur(40px) saturate(180%)', border: '1px solid rgba(255,255,255,0.22)', boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)' }}>
         <CardHeader className="text-center pb-4 border-b border-slate-700/50">
           <CardTitle className="text-white flex items-center justify-center gap-2">
-            <FlexibleIcon src="/cl-emblem.svg" alt="סיכום מיקומים" size="medium" />
+            <FlexibleIcon src="/champions/ch-trophy.png" alt="סיכום מיקומים" size="medium" />
             סיכום מיקומים למשתתף
           </CardTitle>
         </CardHeader>

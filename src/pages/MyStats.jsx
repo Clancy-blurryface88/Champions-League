@@ -918,7 +918,7 @@ export default function MyStats() {
 
                 <div className="relative px-6 pt-6 pb-2 text-center">
                   <div className="flex items-center justify-center gap-2">
-                    <FlexibleIcon src="/cl-emblem.svg" alt="גביע" size="large" />
+                    <FlexibleIcon src="/champions/ch-trophy.png" alt="גביע" size="large" />
                     <h3 className="font-bold text-lg" style={{ color: '#E8E8E8' }}>המשחק הכי טוב שלך</h3>
                   </div>
                 </div>

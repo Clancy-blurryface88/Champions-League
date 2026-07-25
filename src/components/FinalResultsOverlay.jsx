@@ -153,7 +153,7 @@ export default function FinalResultsOverlay({ onClose }) {
 
           <div className="overflow-y-auto px-6 pt-8 pb-6">
             <div className="text-center mb-1">
-              <img src="/cl-emblem.svg" alt="Champions League" className="h-14 w-auto mx-auto object-contain" />
+              <img src="/champions/ch-trophy.png" alt="Champions League" className="h-14 w-auto mx-auto object-contain" />
             </div>
             <h2 className="text-center text-2xl font-black text-sky-400 mb-1">הטורניר הסתיים</h2>
             <p className="text-center text-slate-400 text-sm mb-5">התוצאות הסופיות</p>

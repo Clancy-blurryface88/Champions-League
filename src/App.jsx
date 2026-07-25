@@ -19,8 +19,57 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
 
+// Plays only the 2s–6s segment of the source clip, looping that segment while
+// the app is still loading, then letting it finish once appReady flips true.
+const INTRO_START = 2;
+const INTRO_END = 6;
+
+const IntroVideo = ({ appReady, onDone }) => {
+  const videoRef = React.useRef(null);
+  const doneRef = React.useRef(false);
+
+  const seekToStart = (video) => {
+    try { video.currentTime = INTRO_START; } catch {}
+  };
+
+  return (
+    <div className="fixed inset-0 z-[9999] bg-black overflow-hidden">
+      <video
+        ref={videoRef}
+        src="/champions/intro.mp4"
+        autoPlay muted playsInline
+        onLoadedMetadata={(e) => seekToStart(e.currentTarget)}
+        onTimeUpdate={(e) => {
+          const video = e.currentTarget;
+          if (video.currentTime < INTRO_END) return;
+          if (appReady && !doneRef.current) {
+            doneRef.current = true;
+            video.pause();
+            onDone();
+          } else {
+            seekToStart(video);
+          }
+        }}
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      {!appReady && (
+        <div className="absolute inset-0 flex items-end justify-center pb-10">
+          <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        </div>
+      )}
+    </div>
+  );
+};
+
 const AuthenticatedApp = () => {
-  const { authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const [introDone, setIntroDone] = React.useState(false);
+
+  const isLoading = isLoadingPublicSettings || isLoadingAuth;
+
+  if (!introDone) {
+    return <IntroVideo appReady={!isLoading} onDone={() => setIntroDone(true)} />;
+  }
 
   // Handle authentication errors
   if (authError) {
