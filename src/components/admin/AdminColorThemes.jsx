@@ -5,11 +5,11 @@ import React, { useMemo, useState } from "react";
 // borders/shadows), all generated procedurally so every option stays
 // internally consistent rather than hand-picked one by one.
 const MOODS = [
-  { name: "אלקטרי / ניאון", hueRange: [195, 205], satRange: [90, 100], lightRange: [50, 66] },
-  { name: "נייבי עמוק / פלדה", hueRange: [212, 222], satRange: [35, 55], lightRange: [16, 30] },
-  { name: "קרח / פסטל", hueRange: [200, 210], satRange: [45, 65], lightRange: [72, 86] },
-  { name: "רויאל / קובלט", hueRange: [222, 232], satRange: [70, 90], lightRange: [42, 56] },
-  { name: "כחול-סגלגל", hueRange: [238, 252], satRange: [55, 80], lightRange: [40, 58] },
+  { name: "טורקיז-כחול", hueRange: [182, 196], satRange: [65, 90], lightRange: [45, 62] },
+  { name: "אינדיגו כהה", hueRange: [250, 264], satRange: [55, 78], lightRange: [24, 38] },
+  { name: "מתכתי / כרום", hueRange: [208, 218], satRange: [12, 28], lightRange: [55, 74] },
+  { name: "כחול חצות", hueRange: [230, 244], satRange: [45, 65], lightRange: [12, 22] },
+  { name: "כחול אצטדיון", hueRange: [204, 214], satRange: [85, 100], lightRange: [40, 52] },
 ];
 
 function hsl(h, s, l) { return `hsl(${h}, ${s}%, ${l}%)`; }
@@ -111,7 +111,7 @@ export default function AdminColorThemes() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-white text-xl font-bold mb-1">🎨 פלטת כחולים — דמו (50 אפשרויות)</h2>
+        <h2 className="text-white text-xl font-bold mb-1">🎨 פלטת כחולים — דמו (50 אפשרויות, סבב 2)</h2>
         <p className="text-slate-400 text-sm">
           לחץ על קלף כדי לסמן אותו, ואז תגיד לי את המספר (#1–#50) שתרצה להחיל בפועל על העיצוב.
         </p>
