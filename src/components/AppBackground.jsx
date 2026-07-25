@@ -56,7 +56,7 @@ export default function AppBackground() {
   }, []);
 
   return (
-    <div className="fixed inset-0 overflow-hidden" style={{ background: '#030d1a', zIndex: 0 }}>
+    <div className="fixed inset-0 overflow-hidden" style={{ zIndex: 0 }}>
 
 {/* Central pitch circle */}
       <div
