@@ -15,7 +15,7 @@ export default function TournamentHeader() {
         transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
       />
 
-      {/* Trophy — with a comet-glow ring orbiting around it, right-to-left */}
+      {/* Trophy */}
       <motion.div
         className="relative"
         animate={{
@@ -27,14 +27,11 @@ export default function TournamentHeader() {
         }}
         transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
       >
-        {/* Thin comet-light ring around the trophy, right-to-left */}
-        <div className="comet-border inline-block">
-          <img
-            src="/champions/ch-trophy.png"
-            alt="Champions League Trophy"
-            className="block w-[176px] md:w-[216px] h-auto object-contain"
-          />
-        </div>
+        <img
+          src="/champions/ch-trophy.png"
+          alt="Champions League Trophy"
+          className="w-[176px] md:w-[216px] h-auto object-contain"
+        />
       </motion.div>
 
       {/* Title */}
