@@ -27,30 +27,14 @@ export default function TournamentHeader() {
         }}
         transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
       >
-        {/* Glow masked to the trophy's own silhouette — traces its actual
-            contour as it rotates, instead of a generic circle around it */}
-        <motion.div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            WebkitMaskImage: 'url(/champions/ch-trophy.png)',
-            maskImage: 'url(/champions/ch-trophy.png)',
-            WebkitMaskSize: 'contain',
-            maskSize: 'contain',
-            WebkitMaskRepeat: 'no-repeat',
-            maskRepeat: 'no-repeat',
-            WebkitMaskPosition: 'center',
-            maskPosition: 'center',
-            background: 'conic-gradient(from 0deg, transparent 0deg, transparent 250deg, rgba(124,173,238,0.6) 300deg, rgba(9,122,220,1) 335deg, rgba(124,173,238,0.6) 350deg, transparent 360deg)',
-            filter: 'blur(6px) brightness(1.7)',
-          }}
-          animate={{ rotate: [0, -360] }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-        />
-        <img
-          src="/champions/ch-trophy.png"
-          alt="Champions League Trophy"
-          className="relative w-[176px] md:w-[216px] h-auto object-contain"
-        />
+        {/* Thin comet-light ring around the trophy, right-to-left */}
+        <div className="comet-border inline-block">
+          <img
+            src="/champions/ch-trophy.png"
+            alt="Champions League Trophy"
+            className="block w-[176px] md:w-[216px] h-auto object-contain"
+          />
+        </div>
       </motion.div>
 
       {/* Title */}
