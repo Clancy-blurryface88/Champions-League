@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 export default function TournamentHeader() {
   return (
-    <div className="relative flex flex-col items-center gap-3 w-full select-none -mt-14 md:-mt-16">
+    <div className="relative flex flex-col items-center gap-3 w-full select-none -mt-24 md:-mt-28">
 
       {/* Logo */}
       <motion.img
