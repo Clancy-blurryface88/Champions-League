@@ -1170,7 +1170,7 @@ export default function Layout({ children, currentPageName }) {
                       style={{ boxShadow: '0 0 0 2px #097adc' }}
                     />
                     <span
-                      className="text-sky-400 text-sm font-semibold"
+                      className="text-white text-sm font-semibold"
                       style={{ fontFamily: "'Outfit', sans-serif" }}
                     >
                       {user.display_name || user.full_name}
