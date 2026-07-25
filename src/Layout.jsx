@@ -924,14 +924,14 @@ export default function Layout({ children, currentPageName }) {
             backgroundImage: 'url(/champions/background.jpeg)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            opacity: 1,
+            opacity: 0.85,
           }}
         />
         <div
           className="fixed inset-0 pointer-events-none"
           style={{
             zIndex: 0,
-            background: 'linear-gradient(180deg, rgba(3,13,26,0.1) 0%, rgba(3,13,26,0.35) 55%, rgba(3,13,26,0.75) 100%)',
+            background: 'linear-gradient(180deg, rgba(3,13,26,0.25) 0%, rgba(3,13,26,0.5) 55%, rgba(3,13,26,0.85) 100%)',
           }}
         />
 
