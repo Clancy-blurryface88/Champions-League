@@ -42,14 +42,14 @@ export default function TournamentHeader() {
         transition={{ delay: 0.2, duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
       >
         <div className="flex items-center gap-3">
-          <div className="h-px w-16 bg-gradient-to-r from-transparent to-sky-400/70" />
+          <div className="h-px w-16 bg-gradient-to-r from-transparent to-white/70" />
           <span
-            className="text-sky-400 text-xl font-bold tracking-[0.25em]"
+            className="text-white text-xl font-bold tracking-[0.25em]"
             style={{ fontFamily: "'Syne', sans-serif" }}
           >
-            2026
+            2026-2027
           </span>
-          <div className="h-px w-16 bg-gradient-to-l from-transparent to-sky-400/70" />
+          <div className="h-px w-16 bg-gradient-to-l from-transparent to-white/70" />
         </div>
       </motion.div>
     </div>
