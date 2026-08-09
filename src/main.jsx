@@ -7,8 +7,7 @@ import { GlobalLoaderProvider } from '@/contexts/LoadingContext'
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 window.OneSignalDeferred.push(async function(OneSignal) {
   await OneSignal.init({
-    appId: '70be1517-f7b7-40e1-b265-5a023f015bc9',
-    safari_web_id: 'web.onesignal.auto.2358eea7-3e97-4fb7-b492-b25c712616ac',
+    appId: '9c8b733e-9d73-41bb-b092-ae462aa5cdb1',
     notifyButton: { enable: false },
     defaultIcon: '/champions/app-icon.jpg',
   });
