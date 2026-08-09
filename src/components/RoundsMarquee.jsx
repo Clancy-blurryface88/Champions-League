@@ -12,18 +12,6 @@ const RoundCard = ({ round, onClick }) => {
   return (
     <>
     <style>{`
-      @keyframes shimmer-text {
-        0% { background-position: 0% 50%; }
-        100% { background-position: 200% 50%; }
-      }
-      .shimmer-text {
-        background: linear-gradient(90deg, #097adc, #ffffff, #097adc, #ffffff, #097adc);
-        background-size: 300% 100%;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        animation: shimmer-text 3s linear infinite;
-      }
       @keyframes final-twinkle {
         0%, 100% { opacity: .15; transform: scale(.6); }
         50% { opacity: 1; transform: scale(1.25); }
@@ -89,7 +77,7 @@ const RoundCard = ({ round, onClick }) => {
 
         <div className="text-center relative z-20">
           <h3
-            className="shimmer-text font-semibold text-base tracking-wide"
+            className="text-white font-semibold text-base tracking-wide"
             style={{ fontFamily: "'Outfit', sans-serif" }}
           >
             {round.name}
