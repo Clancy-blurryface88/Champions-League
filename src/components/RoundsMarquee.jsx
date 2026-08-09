@@ -84,12 +84,7 @@ const RoundCard = ({ round, onClick }) => {
         )}
 
         <div className="flex-shrink-0 relative z-20">
-          <img
-            src="/champions/trophy-marquee.png"
-            alt="CL2026"
-            className="h-9 w-auto object-contain"
-            style={{ mixBlendMode: 'screen' }}
-          />
+          <img src="/champions/trophy-marquee.png" alt="CL2026" className="h-9 w-auto object-contain" />
         </div>
 
         <div className="text-center relative z-20">
