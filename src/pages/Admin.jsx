@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, Clock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
@@ -17,6 +17,7 @@ import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminLeagueOverride from "../components/admin/AdminLeagueOverride";
+import AdminCountdownDemo from "../components/admin/AdminCountdownDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -76,6 +77,7 @@ export default function Admin() {
       case 'import': return <AdminImportMatches />;
       case 'reset':      return <AdminReset />;
       case 'league-override': return <AdminLeagueOverride />;
+      case 'countdown-demo': return <AdminCountdownDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -91,6 +93,7 @@ export default function Admin() {
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'league-override',   label: '🔀 סידור טבלה',          icon: BarChart3 },
+    { id: 'countdown-demo',   label: 'דמו ספירה לאחור',          icon: Clock },
   ];
 
   return (
