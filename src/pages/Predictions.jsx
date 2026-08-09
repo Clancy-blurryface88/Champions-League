@@ -909,28 +909,28 @@ export default function Predictions() {
                           <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.80)' }}>{timeInfo.text}</span>
                         </div> :
 
-                        <div dir="rtl" className="relative overflow-hidden flex rounded-2xl" style={{
-                          background: 'rgba(255,255,255,0.06)',
-                          backdropFilter: 'blur(40px) saturate(180%)',
-                          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-                          border: '1px solid rgba(255,255,255,0.18)',
-                          boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.35)',
-                        }}>
-                          {/* gloss */}
-                          <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.14) 0%, transparent 100%)', borderRadius: '16px 16px 0 0' }} />
+                        <div dir="rtl" className="flex gap-1.5">
                           {[
                             { val: timeInfo.seconds, label: "שניות" },
                             { val: timeInfo.minutes, label: "דקות" },
                             { val: timeInfo.hours,   label: "שעות"  },
                             { val: timeInfo.days,    label: "ימים"  },
-                          ].map((item, i) => (
-                            <React.Fragment key={item.label}>
-                              <div className="relative flex flex-col items-center px-3 py-2">
-                                <span className="font-extrabold leading-none mb-0.5" style={{ fontSize: "1.05rem", color: 'rgba(255,255,255,0.92)' }}>{item.val}</span>
-                                <span className="text-[9px] font-semibold" style={{ color: 'rgba(255,255,255,0.45)' }}>{item.label}</span>
+                          ].map((item) => (
+                            <div key={item.label} className="flex flex-col items-center gap-1">
+                              <div
+                                className="relative w-9 h-11 rounded-md flex items-center justify-center overflow-hidden"
+                                style={{ background: '#111827', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3)' }}
+                              >
+                                <div className="absolute inset-x-0 top-1/2 h-px" style={{ background: 'rgba(0,0,0,0.6)' }} />
+                                <span
+                                  className="font-bold leading-none"
+                                  style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '1rem', color: 'rgba(255,255,255,0.95)' }}
+                                >
+                                  {String(item.val).padStart(2, '0')}
+                                </span>
                               </div>
-                              {i < 3 && <div className="self-center" style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.12)' }} />}
-                            </React.Fragment>
+                              <span className="text-[9px] font-semibold" style={{ color: 'rgba(255,255,255,0.45)' }}>{item.label}</span>
+                            </div>
                           ))}
                         </div>
                       }
