@@ -888,7 +888,7 @@ export default function Predictions() {
                   style={{
                     background: isLocked
                       ? 'rgba(10,18,35,0.45)'
-                      : 'radial-gradient(ellipse at 15% 20%, rgba(30,136,229,0.45) 0%, transparent 55%), radial-gradient(ellipse at 80% 10%, rgba(168,85,247,0.35) 0%, transparent 45%), rgba(5,10,18,0.75)',
+                      : 'radial-gradient(ellipse at 15% 20%, rgba(30,136,229,0.45) 0%, transparent 55%), radial-gradient(ellipse at 80% 10%, rgba(16,185,129,0.35) 0%, transparent 45%), rgba(5,10,18,0.75)',
                   }}
                 >
                   {/* Noise texture overlay */}
