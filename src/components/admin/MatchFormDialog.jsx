@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Loader2, Upload, Sparkles, Eye, Trash2 } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
 import { supabase } from "@/api/supabase";
+import { STAGES, STAGE_LABELS } from "@/config/tournament";
 
 const LogoSelectItem = React.forwardRef(({ children, logoUrl, ...props }, ref) => (
   <SelectItem ref={ref} {...props}>
@@ -90,7 +91,7 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
   useEffect(() => {
     const initialData = {
       round_id: '', team_a: '', team_b: '', team_a_logo: '', team_b_logo: '',
-      match_date: '', order: 1, is_finished: false, actual_score_a: null, actual_score_b: null, league: '',
+      match_date: '', order: 1, is_finished: false, actual_score_a: null, actual_score_b: null, stage: STAGES.LEAGUE_PHASE,
       previous_match_score_a: '', previous_match_score_b: '',
       home_win_points: 0, away_win_points: 0, draw_points: 0, btts_yes_points: 0, btts_no_points: 0,
       exact_score_points: 0, goals_0_2_points: 0, goals_3_4_points: 0, goals_5_plus_points: 0,
@@ -236,8 +237,17 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
               {formData.team_b_logo && <TeamFlag logo={formData.team_b_logo} name={formData.team_b} className="w-16 h-16" animate={false} />}
             </div>
             <div>
-              <Label htmlFor="league">League</Label>
-              <Input id="league" value={formData.league || ''} onChange={handleChange} className="bg-slate-700 border-slate-600" />
+              <Label htmlFor="stage">Stage</Label>
+              <Select value={formData.stage || STAGES.LEAGUE_PHASE} onValueChange={(value) => setFormData(p => ({ ...p, stage: value }))}>
+                <SelectTrigger className="bg-slate-700 border-slate-600">
+                  <SelectValue placeholder="Select stage" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 text-white border-slate-600">
+                  {Object.values(STAGES).map(s => (
+                    <SelectItem key={s} value={s}>{STAGE_LABELS[s]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="actual_score_a">Actual Score Team A (Home)</Label>

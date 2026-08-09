@@ -4,6 +4,7 @@ import { X, RefreshCw, Wifi, WifiOff, Clock } from "lucide-react";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import TeamFlag from "@/components/TeamFlag";
 import LiveLeaderboard from "@/components/LiveLeaderboard";
+import { TOURNAMENT_CODE } from "@/config/tournament";
 
 const FILTERS = [
   { key: 'LIVE',     label: 'חי',       emoji: '🔴' },
@@ -206,7 +207,7 @@ export default function LiveDataPanel({ onClose }) {
       const localDate = now.toLocaleDateString('sv-SE');
       // Include previous local day so UTC+3 early-morning matches (e.g. 01:00 IL = 22:00 UTC prev day) are fetched
       const prevLocalDate = new Date(now - 864e5).toLocaleDateString('sv-SE');
-      const res = await fetch(`/api/football?competition=WC&filter=${filter}&dateFrom=${prevLocalDate}&dateTo=${localDate}`);
+      const res = await fetch(`/api/football?competition=${TOURNAMENT_CODE}&filter=${filter}&dateFrom=${prevLocalDate}&dateTo=${localDate}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'שגיאה');
       let matches = json.matches || [];

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Loader2, Trophy, Users, BarChart3, Zap, ChevronDown, ChevronUp } from "lucide-react";
+import { TOURNAMENT_CODE } from "@/config/tournament";
 
 const TABS = [
   { key: 'standings', label: 'טבלת קבוצות', icon: BarChart3 },
@@ -30,7 +31,7 @@ function useFetch(url) {
 
 // ── Standings ─────────────────────────────────────────────────────────────────
 function StandingsView() {
-  const { data, loading, error } = useFetch('/api/football?type=standings&competition=WC');
+  const { data, loading, error } = useFetch(`/api/football?type=standings&competition=${TOURNAMENT_CODE}`);
   const [openGroup, setOpenGroup] = useState(null);
 
   if (loading) return <Spinner />;
@@ -104,7 +105,7 @@ function StandingsView() {
 
 // ── Scorers ───────────────────────────────────────────────────────────────────
 function ScorersView() {
-  const { data, loading, error } = useFetch('/api/football?type=scorers&competition=WC&limit=20');
+  const { data, loading, error } = useFetch(`/api/football?type=scorers&competition=${TOURNAMENT_CODE}&limit=20`);
 
   if (loading) return <Spinner />;
   if (error) return <ErrorBox msg={error} />;
@@ -147,7 +148,7 @@ function ScorersView() {
 
 // ── Teams ─────────────────────────────────────────────────────────────────────
 function TeamsView() {
-  const { data, loading, error } = useFetch('/api/football?type=teams&competition=WC');
+  const { data, loading, error } = useFetch(`/api/football?type=teams&competition=${TOURNAMENT_CODE}`);
   const [openTeam, setOpenTeam] = useState(null);
 
   if (loading) return <Spinner />;

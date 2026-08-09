@@ -7,6 +7,7 @@ import { PublicProfile } from "@/api/entities";
 import { User } from "@/api/entities";
 import { RefreshCw, Zap, Trophy, AlertTriangle, Wifi, WifiOff, Clock, TrendingUp, TrendingDown, Minus, LayoutList, Layers, Swords, Shield, Star } from "lucide-react";
 import ScoreCounter from "@/components/ScoreCounter";
+import { TOURNAMENT_CODE } from "@/config/tournament";
 
 // Identical to AdminScoring — no changes to original file
 function calculateScore(prediction, match) {
@@ -268,7 +269,7 @@ export default function AdminLiveLeaderboard() {
 
     try {
       const localDate = new Date().toLocaleDateString('sv-SE');
-      const res  = await fetch(`/api/football?competition=WC&filter=LIVE&date=${localDate}`);
+      const res  = await fetch(`/api/football?competition=${TOURNAMENT_CODE}&filter=LIVE&date=${localDate}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'שגיאה');
 

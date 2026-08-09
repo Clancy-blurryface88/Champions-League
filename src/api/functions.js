@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { TOURNAMENT_CODE } from '@/config/tournament';
 
 // ============================================
 // UPLOAD FILE — העלאת קובץ ל-Supabase Storage
@@ -76,8 +77,8 @@ const notImplemented = (name) => async () => {
   return { error: 'פונקציה זו תהיה זמינה בקרוב' };
 };
 
-export const fetchLiveMatchData = async ({ competition = 'CL', status = 'LIVE' } = {}) => {
-  const response = await fetch(`/api/football?competition=${competition}&status=${status}`);
+export const fetchLiveMatchData = async ({ competition = TOURNAMENT_CODE, filter = 'LIVE' } = {}) => {
+  const response = await fetch(`/api/football?competition=${competition}&filter=${filter}`);
   if (!response.ok) throw new Error('Failed to fetch live data');
   return response.json();
 };

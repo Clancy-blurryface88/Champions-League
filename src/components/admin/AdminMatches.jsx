@@ -12,7 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import MatchFormDialog from "./MatchFormDialog";
 import { LoaderBar } from "../ui/LoaderBar";
-import { loadAllOverrides, saveGroupOverrides, saveBestThirdOrder } from "@/utils/groupOverride";
+import { loadLeagueTableOverride, saveLeagueTableOverride } from "@/utils/standingsOverride";
+import { STAGES } from "@/config/tournament";
 
 export default function AdminMatches() {
   const [matches, setMatches] = useState([]);
@@ -76,22 +77,13 @@ export default function AdminMatches() {
         savedMatch = await Match.create(formData);
       }
 
-      // Auto-clear overrides when a group match finishes so standings always
-      // reflect actual results — admin can re-override manually if needed
-      const league = formData.league || '';
-      if (formData.is_finished && /^Group [A-L]$/.test(league)) {
-        const groupLetter = league.replace('Group ', '').trim();
-        const { groupOverrides, bestThirdOrder, settingId } = await loadAllOverrides();
-        const saves = [];
-        if (groupOverrides[groupLetter]) {
-          const updated = { ...groupOverrides };
-          delete updated[groupLetter];
-          saves.push(saveGroupOverrides(updated, settingId));
+      // Auto-clear the league table override when a league-phase match finishes so
+      // standings always reflect actual results — admin can re-override manually if needed
+      if (formData.is_finished && formData.stage === STAGES.LEAGUE_PHASE) {
+        const { override, settingId } = await loadLeagueTableOverride();
+        if (override.length) {
+          await saveLeagueTableOverride([], settingId);
         }
-        if (bestThirdOrder) {
-          saves.push(saveBestThirdOrder(null, settingId));
-        }
-        if (saves.length) await Promise.all(saves);
       }
 
       setIsDialogOpen(false);

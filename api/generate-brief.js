@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { STAGES, STAGE_LABELS } from '../src/config/tournament.js';
 
-const SYSTEM_PROMPT = `אתה אנליסט כדורגל ישראלי שכותב סיכומי טרום משחק לגביע העולם 2026.
+const SYSTEM_PROMPT = `אתה אנליסט כדורגל ישראלי שכותב סיכומי טרום משחק לליגת האלופות 2026.
 הסגנון: סוחף, דעתני, שיחתי — כמו ניתוח בין חברים שמבינים כדורגל, לא כתבה עיתונאית.
 
 כללים מחייבים:
@@ -16,24 +17,24 @@ const SYSTEM_PROMPT = `אתה אנליסט כדורגל ישראלי שכותב 
 🌍 רקע ואווירה
 [פסקה אחת — מה עומד על הכף, למה המשחק הזה מיוחד]
 
-⚔️ על הנבחרות
-[פסקה אחת — סגנון, חוזקות, חולשות של כל נבחרת]
+⚔️ על הקבוצות
+[פסקה אחת — סגנון, חוזקות, חולשות של כל קבוצה]
 
 📊 ראש בראש
 [פסקה אחת — היסטוריית העימותים ביניהן. אם לא נפגשו — ציין זאת ומה המשמעות]
 
 🎯 תחזית
-[שם נבחרת הבית]: X% | תיקו: X% | [שם נבחרת האורחים]: X%
-תוצאה משוערת: X:X לטובת [שם הנבחרת המנצחת]
+[שם קבוצת הבית]: X% | תיקו: X% | [שם קבוצת האורחים]: X%
+תוצאה משוערת: X:X לטובת [שם הקבוצה המנצחת]
 המלצה: [משפט אחד חד וברור]
 
 דוגמה לפורמט תקין (אל תעתיק — רק השתמש במבנה):
-ברזיל: 58% | תיקו: 22% | גרמניה: 20%
-תוצאה משוערת: 2:1 לטובת ברזיל
-המלצה: ברזיל בבית — אין סיבה לחפש הפתעות.
+ריאל מדריד: 58% | תיקו: 22% | באיירן מינכן: 20%
+תוצאה משוערת: 2:1 לטובת ריאל מדריד
+המלצה: ריאל מדריד בבית — אין סיבה לחפש הפתעות.
 
 אם תיקו: "תוצאה משוערת: 1:1 תיקו"
-חשוב: אין להשתמש במילים "בית" או "חוץ" — תמיד שמות הנבחרות בפועל.`;
+חשוב: אין להשתמש במילים "בית" או "חוץ" — תמיד שמות הקבוצות בפועל.`;
 
 function buildPrompt(match) {
   const loc = match.location ? ` | ${match.location}` : '';
@@ -45,7 +46,8 @@ function buildPrompt(match) {
       hour: '2-digit', minute: '2-digit', timeZone: 'UTC',
     }) + ' UTC';
   } catch {}
-  return `כתוב סיכום טרום משחק עבור:\n\n${match.team_a} נגד ${match.team_b} | ${match.league || 'שלב הבתים'} | ${dateLabel}${loc}\n\nהשתמש בידע שלך על שתי הנבחרות לפי המבנה שתואר.`;
+  const stageLabel = STAGE_LABELS[match.stage] || STAGE_LABELS[STAGES.LEAGUE_PHASE];
+  return `כתוב סיכום טרום משחק עבור:\n\n${match.team_a} נגד ${match.team_b} | ${stageLabel} | ${dateLabel}${loc}\n\nהשתמש בידע שלך על שתי הקבוצות לפי המבנה שתואר.`;
 }
 
 export default async function handler(req, res) {
@@ -76,7 +78,7 @@ export default async function handler(req, res) {
   // שולפים את פרטי המשחק
   const { data: match, error: matchErr } = await supabase
     .from('matches')
-    .select('id, team_a, team_b, match_date, league, location')
+    .select('id, team_a, team_b, match_date, stage, location')
     .eq('id', match_id)
     .single();
 

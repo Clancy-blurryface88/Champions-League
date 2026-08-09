@@ -17,6 +17,7 @@ const scoreVariants = {
   visible:  { opacity: 1, scale: 1,  transition: { delay: 0.2, type: 'spring', stiffness: 300, damping: 20 } },
 };
 import { Match } from "@/api/entities";
+import { STAGE_LABELS } from "@/config/tournament";
 
 export default function PredictionSummary({ predictions, roundId, onConfirm, onCancel, saving }) {
   const [matches, setMatches] = useState([]);
@@ -164,8 +165,8 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                           {prediction.predicted_score_a} – {prediction.predicted_score_b}
                         </span>
                       </div>
-                      {match.league && (
-                        <span className="text-[9px] text-sky-400/45 font-medium mt-0.5 tracking-wide">{match.league}</span>
+                      {match.stage && (
+                        <span className="text-[9px] text-sky-400/45 font-medium mt-0.5 tracking-wide">{STAGE_LABELS[match.stage] || match.stage}</span>
                       )}
                     </motion.div>
 

@@ -18,6 +18,7 @@ import ExactHitsPanel from "./components/ExactHitsPanel";
 import { createPageUrl } from "@/utils";
 import { LoaderBar } from "./components/ui/LoaderBar";
 import AppBackground from "./components/AppBackground";
+import { TOURNAMENT_CODE } from "@/config/tournament";
 import LiveDataPanel from "./components/LiveDataPanel"; // Added: Import LiveDataPanel
 import MatchTickerBar from "./components/MatchTickerBar";
 import YearlySummaryPanel from "./components/YearlySummaryPanel"; // NEW: YearlySummaryPanel
@@ -549,7 +550,7 @@ export default function Layout({ children, currentPageName }) {
         const now = new Date();
         const localDate = now.toLocaleDateString('sv-SE');
         const prevLocalDate = new Date(now - 864e5).toLocaleDateString('sv-SE');
-        const res = await fetch(`/api/football?competition=WC&filter=LIVE&dateFrom=${prevLocalDate}&dateTo=${localDate}`);
+        const res = await fetch(`/api/football?competition=${TOURNAMENT_CODE}&filter=LIVE&dateFrom=${prevLocalDate}&dateTo=${localDate}`);
         const json = await res.json();
         const live = (json.matches || []).filter(m => m.status === 'IN_PLAY' || m.status === 'PAUSED');
         // Flip prediction-loading on in the same batch as hasLiveMatch, so the

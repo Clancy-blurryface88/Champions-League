@@ -16,7 +16,7 @@ import AdminScoring from "../components/admin/AdminScoring";
 import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
-import AdminGroupOverride from "../components/admin/AdminGroupOverride";
+import AdminLeagueOverride from "../components/admin/AdminLeagueOverride";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -75,7 +75,7 @@ export default function Admin() {
       case 'scoring': return <AdminScoring onUpdateComplete={() => {}} />;
       case 'import': return <AdminImportMatches />;
       case 'reset':      return <AdminReset />;
-      case 'group-override': return <AdminGroupOverride />;
+      case 'league-override': return <AdminLeagueOverride />;
       default: return <AdminRounds />;
     }
   };
@@ -90,7 +90,7 @@ export default function Admin() {
     { id: 'scoring', label: 'Calculate Scores', icon: Calculator },
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
-    { id: 'group-override',   label: '🔀 סידור בתים',          icon: BarChart3 },
+    { id: 'league-override',   label: '🔀 סידור טבלה',          icon: BarChart3 },
   ];
 
   return (

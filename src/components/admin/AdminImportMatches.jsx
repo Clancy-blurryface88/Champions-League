@@ -6,87 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download, CheckCircle, AlertCircle, Loader2, Trash2 } from 'lucide-react';
 import { getFlagCode, TEAM_FLAGS } from '@/utils/teamFlags';
+import { STAGES, LEAGUE_PHASE_MATCHDAYS } from '@/config/tournament';
 
-const MATCHES_JSON = [
-  { MatchNumber: 1, RoundNumber: 1, DateUtc: "2026-06-11 19:00:00Z", Location: "Mexico City Stadium", HomeTeam: "Mexico", AwayTeam: "South Africa", Group: "Group A" },
-  { MatchNumber: 2, RoundNumber: 1, DateUtc: "2026-06-12 02:00:00Z", Location: "Guadalajara Stadium", HomeTeam: "Korea Republic", AwayTeam: "Czechia", Group: "Group A" },
-  { MatchNumber: 3, RoundNumber: 1, DateUtc: "2026-06-12 19:00:00Z", Location: "Toronto Stadium", HomeTeam: "Canada", AwayTeam: "Bosnia-Herzegovina", Group: "Group B" },
-  { MatchNumber: 4, RoundNumber: 1, DateUtc: "2026-06-13 01:00:00Z", Location: "Los Angeles Stadium", HomeTeam: "USA", AwayTeam: "Paraguay", Group: "Group D" },
-  { MatchNumber: 8, RoundNumber: 1, DateUtc: "2026-06-13 19:00:00Z", Location: "San Francisco Bay Area Stadium", HomeTeam: "Qatar", AwayTeam: "Switzerland", Group: "Group B" },
-  { MatchNumber: 7, RoundNumber: 1, DateUtc: "2026-06-13 22:00:00Z", Location: "New York/New Jersey Stadium", HomeTeam: "Brazil", AwayTeam: "Morocco", Group: "Group C" },
-  { MatchNumber: 5, RoundNumber: 1, DateUtc: "2026-06-14 01:00:00Z", Location: "Boston Stadium", HomeTeam: "Haiti", AwayTeam: "Scotland", Group: "Group C" },
-  { MatchNumber: 6, RoundNumber: 1, DateUtc: "2026-06-14 04:00:00Z", Location: "BC Place Vancouver", HomeTeam: "Australia", AwayTeam: "Turkey", Group: "Group D" },
-  { MatchNumber: 10, RoundNumber: 1, DateUtc: "2026-06-14 17:00:00Z", Location: "Houston Stadium", HomeTeam: "Germany", AwayTeam: "Curaçao", Group: "Group E" },
-  { MatchNumber: 11, RoundNumber: 1, DateUtc: "2026-06-14 20:00:00Z", Location: "Dallas Stadium", HomeTeam: "Netherlands", AwayTeam: "Japan", Group: "Group F" },
-  { MatchNumber: 9, RoundNumber: 1, DateUtc: "2026-06-14 23:00:00Z", Location: "Philadelphia Stadium", HomeTeam: "Côte d'Ivoire", AwayTeam: "Ecuador", Group: "Group E" },
-  { MatchNumber: 12, RoundNumber: 1, DateUtc: "2026-06-15 02:00:00Z", Location: "Monterrey Stadium", HomeTeam: "Sweden", AwayTeam: "Tunisia", Group: "Group F" },
-  { MatchNumber: 14, RoundNumber: 1, DateUtc: "2026-06-15 16:00:00Z", Location: "Atlanta Stadium", HomeTeam: "Spain", AwayTeam: "Cabo Verde", Group: "Group H" },
-  { MatchNumber: 16, RoundNumber: 1, DateUtc: "2026-06-15 19:00:00Z", Location: "Seattle Stadium", HomeTeam: "Belgium", AwayTeam: "Egypt", Group: "Group G" },
-  { MatchNumber: 13, RoundNumber: 1, DateUtc: "2026-06-15 22:00:00Z", Location: "Miami Stadium", HomeTeam: "Saudi Arabia", AwayTeam: "Uruguay", Group: "Group H" },
-  { MatchNumber: 15, RoundNumber: 1, DateUtc: "2026-06-16 01:00:00Z", Location: "Los Angeles Stadium", HomeTeam: "IR Iran", AwayTeam: "New Zealand", Group: "Group G" },
-  { MatchNumber: 17, RoundNumber: 1, DateUtc: "2026-06-16 19:00:00Z", Location: "New York/New Jersey Stadium", HomeTeam: "France", AwayTeam: "Senegal", Group: "Group I" },
-  { MatchNumber: 18, RoundNumber: 1, DateUtc: "2026-06-16 22:00:00Z", Location: "Boston Stadium", HomeTeam: "Iraq", AwayTeam: "Norway", Group: "Group I" },
-  { MatchNumber: 19, RoundNumber: 1, DateUtc: "2026-06-17 01:00:00Z", Location: "Kansas City Stadium", HomeTeam: "Argentina", AwayTeam: "Algeria", Group: "Group J" },
-  { MatchNumber: 20, RoundNumber: 1, DateUtc: "2026-06-17 04:00:00Z", Location: "San Francisco Bay Area Stadium", HomeTeam: "Austria", AwayTeam: "Jordan", Group: "Group J" },
-  { MatchNumber: 23, RoundNumber: 1, DateUtc: "2026-06-17 17:00:00Z", Location: "Houston Stadium", HomeTeam: "Portugal", AwayTeam: "Congo DR", Group: "Group K" },
-  { MatchNumber: 22, RoundNumber: 1, DateUtc: "2026-06-17 20:00:00Z", Location: "Dallas Stadium", HomeTeam: "England", AwayTeam: "Croatia", Group: "Group L" },
-  { MatchNumber: 21, RoundNumber: 1, DateUtc: "2026-06-17 23:00:00Z", Location: "Toronto Stadium", HomeTeam: "Ghana", AwayTeam: "Panama", Group: "Group L" },
-  { MatchNumber: 24, RoundNumber: 1, DateUtc: "2026-06-18 02:00:00Z", Location: "Mexico City Stadium", HomeTeam: "Uzbekistan", AwayTeam: "Colombia", Group: "Group K" },
-  { MatchNumber: 25, RoundNumber: 2, DateUtc: "2026-06-18 16:00:00Z", Location: "Atlanta Stadium", HomeTeam: "Czechia", AwayTeam: "South Africa", Group: "Group A" },
-  { MatchNumber: 26, RoundNumber: 2, DateUtc: "2026-06-18 19:00:00Z", Location: "Los Angeles Stadium", HomeTeam: "Switzerland", AwayTeam: "Bosnia-Herzegovina", Group: "Group B" },
-  { MatchNumber: 27, RoundNumber: 2, DateUtc: "2026-06-18 22:00:00Z", Location: "BC Place Vancouver", HomeTeam: "Canada", AwayTeam: "Qatar", Group: "Group B" },
-  { MatchNumber: 28, RoundNumber: 2, DateUtc: "2026-06-19 01:00:00Z", Location: "Guadalajara Stadium", HomeTeam: "Mexico", AwayTeam: "Korea Republic", Group: "Group A" },
-  { MatchNumber: 32, RoundNumber: 2, DateUtc: "2026-06-19 19:00:00Z", Location: "Seattle Stadium", HomeTeam: "USA", AwayTeam: "Australia", Group: "Group D" },
-  { MatchNumber: 30, RoundNumber: 2, DateUtc: "2026-06-19 22:00:00Z", Location: "Boston Stadium", HomeTeam: "Scotland", AwayTeam: "Morocco", Group: "Group C" },
-  { MatchNumber: 29, RoundNumber: 2, DateUtc: "2026-06-20 01:00:00Z", Location: "Philadelphia Stadium", HomeTeam: "Brazil", AwayTeam: "Haiti", Group: "Group C" },
-  { MatchNumber: 31, RoundNumber: 2, DateUtc: "2026-06-20 04:00:00Z", Location: "San Francisco Bay Area Stadium", HomeTeam: "Turkey", AwayTeam: "Paraguay", Group: "Group D" },
-  { MatchNumber: 35, RoundNumber: 2, DateUtc: "2026-06-20 17:00:00Z", Location: "Houston Stadium", HomeTeam: "Netherlands", AwayTeam: "Sweden", Group: "Group F" },
-  { MatchNumber: 33, RoundNumber: 2, DateUtc: "2026-06-20 20:00:00Z", Location: "Toronto Stadium", HomeTeam: "Germany", AwayTeam: "Côte d'Ivoire", Group: "Group E" },
-  { MatchNumber: 34, RoundNumber: 2, DateUtc: "2026-06-21 00:00:00Z", Location: "Kansas City Stadium", HomeTeam: "Ecuador", AwayTeam: "Curaçao", Group: "Group E" },
-  { MatchNumber: 36, RoundNumber: 2, DateUtc: "2026-06-21 04:00:00Z", Location: "Monterrey Stadium", HomeTeam: "Tunisia", AwayTeam: "Japan", Group: "Group F" },
-  { MatchNumber: 38, RoundNumber: 2, DateUtc: "2026-06-21 16:00:00Z", Location: "Atlanta Stadium", HomeTeam: "Spain", AwayTeam: "Saudi Arabia", Group: "Group H" },
-  { MatchNumber: 39, RoundNumber: 2, DateUtc: "2026-06-21 19:00:00Z", Location: "Los Angeles Stadium", HomeTeam: "Belgium", AwayTeam: "IR Iran", Group: "Group G" },
-  { MatchNumber: 37, RoundNumber: 2, DateUtc: "2026-06-21 22:00:00Z", Location: "Miami Stadium", HomeTeam: "Uruguay", AwayTeam: "Cabo Verde", Group: "Group H" },
-  { MatchNumber: 40, RoundNumber: 2, DateUtc: "2026-06-22 01:00:00Z", Location: "BC Place Vancouver", HomeTeam: "New Zealand", AwayTeam: "Egypt", Group: "Group G" },
-  { MatchNumber: 43, RoundNumber: 2, DateUtc: "2026-06-22 17:00:00Z", Location: "Dallas Stadium", HomeTeam: "Argentina", AwayTeam: "Austria", Group: "Group J" },
-  { MatchNumber: 42, RoundNumber: 2, DateUtc: "2026-06-22 21:00:00Z", Location: "Philadelphia Stadium", HomeTeam: "France", AwayTeam: "Iraq", Group: "Group I" },
-  { MatchNumber: 41, RoundNumber: 2, DateUtc: "2026-06-23 00:00:00Z", Location: "New York/New Jersey Stadium", HomeTeam: "Norway", AwayTeam: "Senegal", Group: "Group I" },
-  { MatchNumber: 44, RoundNumber: 2, DateUtc: "2026-06-23 03:00:00Z", Location: "San Francisco Bay Area Stadium", HomeTeam: "Jordan", AwayTeam: "Algeria", Group: "Group J" },
-  { MatchNumber: 47, RoundNumber: 2, DateUtc: "2026-06-23 17:00:00Z", Location: "Houston Stadium", HomeTeam: "Portugal", AwayTeam: "Uzbekistan", Group: "Group K" },
-  { MatchNumber: 45, RoundNumber: 2, DateUtc: "2026-06-23 20:00:00Z", Location: "Boston Stadium", HomeTeam: "England", AwayTeam: "Ghana", Group: "Group L" },
-  { MatchNumber: 46, RoundNumber: 2, DateUtc: "2026-06-23 23:00:00Z", Location: "Toronto Stadium", HomeTeam: "Panama", AwayTeam: "Croatia", Group: "Group L" },
-  { MatchNumber: 48, RoundNumber: 2, DateUtc: "2026-06-24 02:00:00Z", Location: "Guadalajara Stadium", HomeTeam: "Colombia", AwayTeam: "Congo DR", Group: "Group K" },
-  { MatchNumber: 51, RoundNumber: 3, DateUtc: "2026-06-24 19:00:00Z", Location: "BC Place Vancouver", HomeTeam: "Switzerland", AwayTeam: "Canada", Group: "Group B" },
-  { MatchNumber: 52, RoundNumber: 3, DateUtc: "2026-06-24 19:00:00Z", Location: "Seattle Stadium", HomeTeam: "Bosnia-Herzegovina", AwayTeam: "Qatar", Group: "Group B" },
-  { MatchNumber: 49, RoundNumber: 3, DateUtc: "2026-06-24 22:00:00Z", Location: "Miami Stadium", HomeTeam: "Scotland", AwayTeam: "Brazil", Group: "Group C" },
-  { MatchNumber: 50, RoundNumber: 3, DateUtc: "2026-06-24 22:00:00Z", Location: "Atlanta Stadium", HomeTeam: "Morocco", AwayTeam: "Haiti", Group: "Group C" },
-  { MatchNumber: 53, RoundNumber: 3, DateUtc: "2026-06-25 01:00:00Z", Location: "Mexico City Stadium", HomeTeam: "Czechia", AwayTeam: "Mexico", Group: "Group A" },
-  { MatchNumber: 54, RoundNumber: 3, DateUtc: "2026-06-25 01:00:00Z", Location: "Monterrey Stadium", HomeTeam: "South Africa", AwayTeam: "Korea Republic", Group: "Group A" },
-  { MatchNumber: 55, RoundNumber: 3, DateUtc: "2026-06-25 20:00:00Z", Location: "Philadelphia Stadium", HomeTeam: "Curaçao", AwayTeam: "Côte d'Ivoire", Group: "Group E" },
-  { MatchNumber: 56, RoundNumber: 3, DateUtc: "2026-06-25 20:00:00Z", Location: "New York/New Jersey Stadium", HomeTeam: "Ecuador", AwayTeam: "Germany", Group: "Group E" },
-  { MatchNumber: 57, RoundNumber: 3, DateUtc: "2026-06-25 23:00:00Z", Location: "Dallas Stadium", HomeTeam: "Japan", AwayTeam: "Sweden", Group: "Group F" },
-  { MatchNumber: 58, RoundNumber: 3, DateUtc: "2026-06-25 23:00:00Z", Location: "Kansas City Stadium", HomeTeam: "Tunisia", AwayTeam: "Netherlands", Group: "Group F" },
-  { MatchNumber: 59, RoundNumber: 3, DateUtc: "2026-06-26 02:00:00Z", Location: "Los Angeles Stadium", HomeTeam: "Turkey", AwayTeam: "USA", Group: "Group D" },
-  { MatchNumber: 60, RoundNumber: 3, DateUtc: "2026-06-26 02:00:00Z", Location: "San Francisco Bay Area Stadium", HomeTeam: "Paraguay", AwayTeam: "Australia", Group: "Group D" },
-  { MatchNumber: 61, RoundNumber: 3, DateUtc: "2026-06-26 19:00:00Z", Location: "Boston Stadium", HomeTeam: "Norway", AwayTeam: "France", Group: "Group I" },
-  { MatchNumber: 62, RoundNumber: 3, DateUtc: "2026-06-26 19:00:00Z", Location: "Toronto Stadium", HomeTeam: "Senegal", AwayTeam: "Iraq", Group: "Group I" },
-  { MatchNumber: 65, RoundNumber: 3, DateUtc: "2026-06-27 00:00:00Z", Location: "Houston Stadium", HomeTeam: "Cabo Verde", AwayTeam: "Saudi Arabia", Group: "Group H" },
-  { MatchNumber: 66, RoundNumber: 3, DateUtc: "2026-06-27 00:00:00Z", Location: "Guadalajara Stadium", HomeTeam: "Uruguay", AwayTeam: "Spain", Group: "Group H" },
-  { MatchNumber: 63, RoundNumber: 3, DateUtc: "2026-06-27 03:00:00Z", Location: "Seattle Stadium", HomeTeam: "Egypt", AwayTeam: "IR Iran", Group: "Group G" },
-  { MatchNumber: 64, RoundNumber: 3, DateUtc: "2026-06-27 03:00:00Z", Location: "BC Place Vancouver", HomeTeam: "New Zealand", AwayTeam: "Belgium", Group: "Group G" },
-  { MatchNumber: 67, RoundNumber: 3, DateUtc: "2026-06-27 21:00:00Z", Location: "New York/New Jersey Stadium", HomeTeam: "Panama", AwayTeam: "England", Group: "Group L" },
-  { MatchNumber: 68, RoundNumber: 3, DateUtc: "2026-06-27 21:00:00Z", Location: "Philadelphia Stadium", HomeTeam: "Croatia", AwayTeam: "Ghana", Group: "Group L" },
-  { MatchNumber: 71, RoundNumber: 3, DateUtc: "2026-06-27 23:30:00Z", Location: "Miami Stadium", HomeTeam: "Colombia", AwayTeam: "Portugal", Group: "Group K" },
-  { MatchNumber: 72, RoundNumber: 3, DateUtc: "2026-06-27 23:30:00Z", Location: "Atlanta Stadium", HomeTeam: "Congo DR", AwayTeam: "Uzbekistan", Group: "Group K" },
-  { MatchNumber: 69, RoundNumber: 3, DateUtc: "2026-06-28 02:00:00Z", Location: "Kansas City Stadium", HomeTeam: "Algeria", AwayTeam: "Austria", Group: "Group J" },
-  { MatchNumber: 70, RoundNumber: 3, DateUtc: "2026-06-28 02:00:00Z", Location: "Dallas Stadium", HomeTeam: "Jordan", AwayTeam: "Argentina", Group: "Group J" },
-];
+// Real Champions League league-phase fixtures (36 teams × 8 matchdays) go here
+// once UEFA publishes the season draw/calendar. Do NOT fill this with invented
+// pairings — paste the actual fixture list in this shape:
+// { MatchNumber, RoundNumber (1-8, the matchday), DateUtc, Location, HomeTeam, AwayTeam }
+const MATCHES_JSON = [];
 
-const ROUND_NAMES = {
-  1: 'מחזור 1 - שלב הבתים',
-  2: 'מחזור 2 - שלב הבתים',
-  3: 'מחזור 3 - שלב הבתים',
-};
+const ROUND_NAMES = Object.fromEntries(
+  Array.from({ length: LEAGUE_PHASE_MATCHDAYS }, (_, i) => [i + 1, `מחזור ${i + 1} - שלב הליגה`])
+);
 
 export default function AdminImportMatches() {
   const [status, setStatus] = useState('idle'); // idle | running | done | error
@@ -98,7 +28,12 @@ export default function AdminImportMatches() {
   };
 
   const handleImport = async () => {
-    if (!window.confirm('ייבוא יצור 3 מחזורים ו-72 משחקים. להמשיך?')) return;
+    if (MATCHES_JSON.length === 0) {
+      addLog('MATCHES_JSON ריק — יש להדביק את פיקסצ׳רי שלב הליגה האמיתיים בקובץ לפני הייבוא.', 'error');
+      setStatus('error');
+      return;
+    }
+    if (!window.confirm(`ייבוא יצור ${LEAGUE_PHASE_MATCHDAYS} מחזורים ו-${MATCHES_JSON.length} משחקים. להמשיך?`)) return;
 
     setStatus('running');
     setLog([]);
@@ -168,7 +103,7 @@ export default function AdminImportMatches() {
           team_b_logo: awayFlag || '',
           match_date: new Date(m.DateUtc).toISOString(),
           order: m.MatchNumber,
-          league: m.Group,
+          stage: STAGES.LEAGUE_PHASE,
           location: m.Location,
           is_finished: false,
           actual_score_a: null,
@@ -248,15 +183,23 @@ export default function AdminImportMatches() {
           ייבוא משחקי ליגת האלופות 2026
         </CardTitle>
         <p className="text-slate-400 text-sm">
-          יצירת 3 מחזורים ו-72 משחקים עם דגלי הנבחרות — מחזורי שלב הבתים
+          יצירת {LEAGUE_PHASE_MATCHDAYS} מחזורים ({MATCHES_JSON.length} משחקים) עם דגלי הנבחרות — שלב הליגה
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
+        {MATCHES_JSON.length === 0 && (
+          <div className="flex items-start gap-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-yellow-300 text-sm">
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+            <span>
+              MATCHES_JSON ריק כרגע — יש להדביק את פיקסצ׳רי שלב הליגה האמיתיים (36 קבוצות × 8 מחזורים) בקובץ <code className="text-xs">AdminImportMatches.jsx</code> כשההגרלה הרשמית של העונה תתפרסם, בפורמט <code className="text-xs">{'{MatchNumber, RoundNumber, DateUtc, Location, HomeTeam, AwayTeam}'}</code> (RoundNumber = מחזור 1-8).
+            </span>
+          </div>
+        )}
         {(status === 'idle' || status === 'error' || status === 'done') && (
           <div className="flex flex-col gap-2">
-            <Button onClick={handleImport} className="bg-blue-600 hover:bg-blue-700 w-full">
+            <Button onClick={handleImport} disabled={MATCHES_JSON.length === 0} className="bg-blue-600 hover:bg-blue-700 w-full">
               <Download className="w-4 h-4 mr-2" />
-              ייבא (3 מחזורים, 72 משחקים — מדלג על קיימים)
+              ייבא ({LEAGUE_PHASE_MATCHDAYS} מחזורים, {MATCHES_JSON.length} משחקים — מדלג על קיימים)
             </Button>
             <Button onClick={handleCleanDuplicates} variant="outline" className="border-red-700 text-red-400 hover:bg-red-900/30 w-full">
               <Trash2 className="w-4 h-4 mr-2" />

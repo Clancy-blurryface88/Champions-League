@@ -1,6 +1,8 @@
 // Vercel Serverless Function — proxies football-data.org API
+import { TOURNAMENT_CODE } from '../src/config/tournament.js';
+
 export default async function handler(req, res) {
-  const { competition = 'WC', filter = 'LIVE', type } = req.query;
+  const { competition = TOURNAMENT_CODE, filter = 'LIVE', type } = req.query;
 
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.setHeader('Pragma', 'no-cache');

@@ -5,6 +5,7 @@ import { ShineBorder } from "@/components/magicui/shine-border";
 import ScoreCounter from "@/components/ScoreCounter";
 import TeamFlag from "@/components/TeamFlag";
 import { Match, Prediction, UserStats, PublicProfile } from "@/api/entities";
+import { TOURNAMENT_CODE } from "@/config/tournament";
 
 // ── Live leaderboard helpers ──────────────────────────────────────────────────
 
@@ -191,7 +192,7 @@ export default function LiveLeaderboard() {
       const now2 = new Date();
       const localDate = now2.toLocaleDateString('sv-SE');
       const prevLocalDate = new Date(now2 - 864e5).toLocaleDateString('sv-SE');
-      const res  = await fetch(`/api/football?competition=WC&filter=LIVE&dateFrom=${prevLocalDate}&dateTo=${localDate}`);
+      const res  = await fetch(`/api/football?competition=${TOURNAMENT_CODE}&filter=LIVE&dateFrom=${prevLocalDate}&dateTo=${localDate}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
       const liveMatches = json.matches || [];

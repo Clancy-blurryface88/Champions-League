@@ -27,10 +27,12 @@ import MatchOddsBar from "../components/predictions/MatchOddsBar";
 import MatchArenaSection from "../components/predictions/MatchArenaSection";
 import { RevealText } from "@/components/magicui/reveal-text";
 import TeamFlag from "@/components/TeamFlag";
-import GroupStandingsModal from "@/components/GroupStandingsModal";
+import LeagueTableModal from "@/components/LeagueTableModal";
 import TeamInfoModal from "@/components/TeamInfoModal";
 import { ShineBorder } from "@/components/magicui/shine-border";
-import { loadAllOverrides, applyOverride, applyBestThirdOrder } from '@/utils/groupOverride';
+import { loadLeagueTableOverride, applyOverride } from '@/utils/standingsOverride';
+import { calcStandings } from '@/utils/standings';
+import { STAGES, STAGE_LABELS, DIRECT_R16_CUTOFF, PLAYOFF_CUTOFF } from '@/config/tournament';
 
 // --- Slot-machine position badge (starts when element enters viewport) ---
 function SlotBadge({ value, color }) {
@@ -102,56 +104,17 @@ function SlotBadge({ value, color }) {
   );
 }
 
-// --- Standings helpers (module-level, no imports) ---
-const _ALL_GROUPS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
-const _toLetter = g => g?.replace?.('Group ', '').trim() || '';
-
-function _calcStandings(matches = []) {
-  const teams = {};
-  matches.forEach(m => {
-    const a = m.team_a, b = m.team_b;
-    if (!teams[a]) teams[a] = { name: a, Pts:0, W:0, D:0, L:0, GF:0, GA:0, GD:0 };
-    if (!teams[b]) teams[b] = { name: b, Pts:0, W:0, D:0, L:0, GF:0, GA:0, GD:0 };
-    if (!m.is_finished || m.actual_score_a == null || m.actual_score_b == null) return;
-    const gA = Number(m.actual_score_a), gB = Number(m.actual_score_b);
-    teams[a].GF += gA; teams[a].GA += gB; teams[a].GD += gA - gB;
-    teams[b].GF += gB; teams[b].GA += gA; teams[b].GD += gB - gA;
-    if (gA > gB)      { teams[a].W++; teams[a].Pts+=3; teams[b].L++; }
-    else if (gA < gB) { teams[b].W++; teams[b].Pts+=3; teams[a].L++; }
-    else              { teams[a].D++; teams[a].Pts++; teams[b].D++; teams[b].Pts++; }
-  });
-  return Object.values(teams).sort((a,b) =>
-    (b.Pts-a.Pts)||(b.GD-a.GD)||(b.GF-a.GF)||a.name.localeCompare(b.name)
-  );
-}
-
-function _computeTeamPositions(allMatches, groupOverrides = {}, bestThirdOrder = null) {
-  const grouped = {};
-  allMatches.forEach(m => {
-    if (!m.league) return;
-    const g = _toLetter(m.league);
-    if (!grouped[g]) grouped[g] = [];
-    grouped[g].push(m);
-  });
-  const standingsPerGroup = {};
-  _ALL_GROUPS.forEach(g => {
-    standingsPerGroup[g] = applyOverride(_calcStandings(grouped[g] || []), groupOverrides[g]);
-  });
-  const all3rd = _ALL_GROUPS
-    .map(g => { const s = standingsPerGroup[g]; return s.length >= 3 ? { ...s[2], group: g } : null; })
-    .filter(Boolean)
-    .sort((a,b) => (b.Pts-a.Pts)||(b.GD-a.GD)||(b.GF-a.GF)||a.name.localeCompare(b.name));
-  const sorted = bestThirdOrder ? applyBestThirdOrder(all3rd, bestThirdOrder) : all3rd;
-  const best8 = new Set(sorted.slice(0, 8).map(t => t.name));
+// --- Standings helper: single flat league table, no groups ---
+function _computeTeamPositions(allMatches, leagueTableOverride = []) {
+  const leaguePhaseMatches = allMatches.filter(m => m.stage === STAGES.LEAGUE_PHASE);
+  const standings = applyOverride(calcStandings(leaguePhaseMatches), leagueTableOverride);
   const positions = {};
-  _ALL_GROUPS.forEach(g => {
-    (standingsPerGroup[g] || []).forEach((team, idx) => {
-      const pos = idx + 1;
-      const color = pos <= 2 ? '#4ade80'
-                  : pos === 3 ? (best8.has(team.name) ? '#facc15' : '#f87171')
-                  : '#f87171';
-      positions[team.name] = { pos, color };
-    });
+  standings.forEach((team, idx) => {
+    const pos = idx + 1;
+    const color = pos <= DIRECT_R16_CUTOFF ? '#4ade80'
+                : pos <= PLAYOFF_CUTOFF ? '#facc15'
+                : '#f87171';
+    positions[team.name] = { pos, color };
   });
   return positions;
 }
@@ -173,7 +136,7 @@ export default function Predictions() {
   const [selectedMatchForRules, setSelectedMatchForRules] = useState(null);
   // NEW: Add state for predictions modal
   const [showPredictionsModal, setShowPredictionsModal] = useState(false);
-  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [showLeagueTable, setShowLeagueTable] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [selectedMatchForPredictions, setSelectedMatchForPredictions] = useState(null);
   const [briefs, setBriefs] = useState({});
@@ -234,13 +197,13 @@ export default function Predictions() {
   useEffect(() => {
     const loadMatchData = async () => {
       try {
-        const [allData, { groupOverrides, bestThirdOrder }] = await Promise.all([
+        const [allData, { override }] = await Promise.all([
           Match.list('match_date'),
-          loadAllOverrides(),
+          loadLeagueTableOverride(),
         ]);
         setAllMatchesForForm(allData.filter(m => m.is_finished && m.actual_score_a != null));
         arenaMatchesLoadedRef.current = true;
-        setTeamPositions(_computeTeamPositions(allData, groupOverrides, bestThirdOrder));
+        setTeamPositions(_computeTeamPositions(allData, override));
       } catch(e) { console.error(e); }
     };
     loadMatchData();
@@ -973,14 +936,14 @@ export default function Predictions() {
                       }
                     </div>
 
-                    {/* Group badge */}
-                    {match.league && (
+                    {/* Stage badge */}
+                    {match.stage && (
                       <div className="flex justify-center mb-4">
                         <button
-                          onClick={() => setSelectedGroup(match.league)}
+                          onClick={() => setShowLeagueTable(true)}
                           className="text-sm font-semibold text-yellow-400 bg-transparent border border-yellow-400/40 px-5 py-1 rounded-full hover:border-yellow-400/70 transition-colors cursor-pointer"
                         >
-                          {match.league}
+                          {STAGE_LABELS[match.stage] || match.stage}
                         </button>
                       </div>
                     )}
@@ -1269,10 +1232,8 @@ export default function Predictions() {
           onClose={handleClosePredictions}
           match={selectedMatchForPredictions} />
 
-        {selectedGroup && (
-          <GroupStandingsModal
-            group={selectedGroup}
-            onClose={() => setSelectedGroup(null)} />
+        {showLeagueTable && (
+          <LeagueTableModal onClose={() => setShowLeagueTable(false)} />
         )}
 
         {selectedTeam && (
