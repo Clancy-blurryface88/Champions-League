@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { useModalBackButton } from "@/hooks/useModalBackButton";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Clock, CheckCircle, Calendar, ChevronRight, ChevronLeft } from "lucide-react";
+import { X, Clock, CheckCircle, Calendar } from "lucide-react";
 import { Match } from "@/api/entities";
 import TeamFlag from "@/components/TeamFlag";
+import MatchCountRing from "@/components/MatchCountRing";
+import QuickJumpCalendar from "@/components/QuickJumpCalendar";
 
 function localDateKey(date) {
   const y = date.getFullYear();
@@ -47,82 +49,6 @@ function formatDayName(date) {
 function formatTime(dateStr) {
   const date = new Date(dateStr);
   return date.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
-}
-
-function MatchCountRing({ finished, total, active, size = 22 }) {
-  const pct = total ? finished / total : 0;
-  const r = (size - 4) / 2;
-  const c = 2 * Math.PI * r;
-  return (
-    <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <g transform={`translate(${size / 2},${size / 2}) rotate(-90)`}>
-          <circle r={r} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={2.5} />
-          <circle
-            r={r} fill="none" stroke="#4ade80" strokeWidth={2.5}
-            strokeDasharray={c} strokeDashoffset={c * (1 - pct)} strokeLinecap="round"
-            style={{ filter: "drop-shadow(0 0 3px rgba(74,222,128,0.75))" }}
-          />
-        </g>
-      </svg>
-      <span className={`absolute text-[8px] font-bold ${active ? "text-sky-400/90" : "text-white/40"}`}>
-        {finished}/{total}
-      </span>
-    </div>
-  );
-}
-
-const WEEKDAY_LABELS = ["א", "ב", "ג", "ד", "ה", "ו", "ש"];
-
-function QuickJumpCalendar({ calMonth, setCalMonth, markedDates, selected, onPick }) {
-  const y = calMonth.getFullYear(), m = calMonth.getMonth();
-  const first = new Date(y, m, 1);
-  const startPad = first.getDay();
-  const daysInMonth = new Date(y, m + 1, 0).getDate();
-  const cells = [...Array(startPad).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
-  const key = (day) => `${y}-${String(m + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-
-  return (
-    <div className="px-5 pb-3">
-      <div className="flex items-center justify-between mb-2">
-        <button onClick={() => setCalMonth(new Date(y, m - 1, 1))} className="w-7 h-7 flex items-center justify-center rounded-full text-white/50 hover:text-white hover:bg-white/8">
-          <ChevronRight className="w-4 h-4" />
-        </button>
-        <span className="text-white/70 text-xs font-bold">{calMonth.toLocaleDateString("he-IL", { month: "long", year: "numeric" })}</span>
-        <button onClick={() => setCalMonth(new Date(y, m + 1, 1))} className="w-7 h-7 flex items-center justify-center rounded-full text-white/50 hover:text-white hover:bg-white/8">
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-      </div>
-      <div className="grid grid-cols-7 gap-1">
-        {WEEKDAY_LABELS.map((d) => (
-          <div key={d} className="text-center text-[9px] text-white/25">{d}</div>
-        ))}
-        {cells.map((day, i) => {
-          if (!day) return <div key={i} />;
-          const dk = key(day);
-          const hasMatch = markedDates.has(dk);
-          const isSel = dk === selected;
-          return (
-            <button
-              key={i}
-              disabled={!hasMatch}
-              onClick={() => hasMatch && onPick(dk)}
-              className="relative aspect-square rounded-md flex items-center justify-center text-[10px]"
-              style={{
-                background: isSel ? "rgba(9,122,220,0.25)" : "transparent",
-                border: isSel ? "1px solid rgba(9,122,220,0.6)" : "1px solid transparent",
-                color: hasMatch ? "#fff" : "rgba(255,255,255,0.2)",
-                fontWeight: hasMatch ? 700 : 400,
-              }}
-            >
-              {day}
-              {hasMatch && !isSel && <span className="absolute bottom-0.5 w-1 h-1 rounded-full bg-emerald-400" />}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
 }
 
 function MatchCard({ match }) {

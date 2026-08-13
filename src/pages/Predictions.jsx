@@ -27,6 +27,8 @@ import MatchOddsBar from "../components/predictions/MatchOddsBar";
 import MatchArenaSection from "../components/predictions/MatchArenaSection";
 import { RevealText } from "@/components/magicui/reveal-text";
 import TeamFlag from "@/components/TeamFlag";
+import MatchCountRing from "@/components/MatchCountRing";
+import QuickJumpCalendar from "@/components/QuickJumpCalendar";
 import LeagueTableModal from "@/components/LeagueTableModal";
 import TeamInfoModal from "@/components/TeamInfoModal";
 import { ShineBorder } from "@/components/magicui/shine-border";
@@ -150,6 +152,8 @@ export default function Predictions() {
   const arenaMatchesLoadedRef = useRef(false);
   const [teamPositions, setTeamPositions] = useState({});
   const [activeDateKey, setActiveDateKey] = useState(null);
+  const [showDateCalendar, setShowDateCalendar] = useState(false);
+  const [calMonth, setCalMonth] = useState(new Date());
   const dateRefs = useRef({});
   const dateTabRefs = useRef({});
   const matchGridRefs = useRef({});
@@ -467,6 +471,7 @@ export default function Predictions() {
     // Set active date to today or first upcoming
     const firstOpen = sortedDateKeys.find(k => !moment(k).isBefore(today)) || sortedDateKeys[sortedDateKeys.length - 1];
     setActiveDateKey(firstOpen);
+    setCalMonth(new Date(firstOpen + "T00:00:00"));
   }, [sortedDateKeys.join(',')]);
 
   const toggleDate = (dateKey) => {
@@ -660,7 +665,32 @@ export default function Predictions() {
             <h1 className="text-3xl font-bold text-white mb-2">{currentRound?.name}</h1>
             <p className="text-slate-400">נחש את תוצאות המשחקים</p>
           </div>
+          {sortedDateKeys.length > 0 && (
+            <button
+              onClick={() => setShowDateCalendar(v => !v)}
+              className={`h-9 px-3 flex items-center gap-1.5 rounded-full border text-xs font-semibold transition-colors flex-shrink-0 ${
+                showDateCalendar
+                  ? "bg-sky-500/15 border-sky-400/40 text-sky-400"
+                  : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10"
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              קפיצה מהירה
+            </button>
+          )}
         </div>
+
+        {showDateCalendar && sortedDateKeys.length > 0 && (
+          <div className="mb-6 -mx-1 rounded-2xl overflow-hidden" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <QuickJumpCalendar
+              calMonth={calMonth}
+              setCalMonth={setCalMonth}
+              markedDates={new Set(sortedDateKeys)}
+              selected={activeDateKey}
+              onPick={(d) => { scrollToDate(d); setShowDateCalendar(false); }}
+            />
+          </div>
+        )}
 
         {error &&
         <div className="bg-red-900/50 border border-red-700 rounded-lg p-4 mb-6">
@@ -733,7 +763,9 @@ export default function Predictions() {
               const isActive = activeDateKey === dateKey;
               const isToday  = moment(dateKey).isSame(moment(), 'day');
               const isPast   = moment(dateKey).isBefore(moment().startOf('day'));
-              const count    = matchesByDate[dateKey]?.length || 0;
+              const dayMatches = matchesByDate[dateKey] || [];
+              const count    = dayMatches.length;
+              const finishedCount = dayMatches.filter(m => m.is_finished).length;
               const hasMissing = dateHasMissingPredictions(dateKey);
               const dayName  = isToday ? 'היום' : moment(dateKey).locale('he').format('ddd');
               const dayNum   = moment(dateKey).format('D');
@@ -768,9 +800,14 @@ export default function Predictions() {
                   <span className={`text-base font-black leading-none ${isActive ? 'text-black' : isPast ? 'text-slate-500' : 'text-white'}`}>
                     {dayNum}
                   </span>
-                  <span className={`flex items-center gap-0.5 text-[9px] font-bold leading-none ${isActive ? 'text-black/60' : isPast ? 'text-slate-600' : 'text-slate-400'}`}>
-                    <span>משחקים</span><span>{count}</span>
-                  </span>
+                  <MatchCountRing
+                    finished={finishedCount}
+                    total={count}
+                    active={isActive}
+                    size={20}
+                    activeClassName="text-black/70"
+                    inactiveClassName={isPast ? "text-slate-600" : "text-white/40"}
+                  />
                 </button>
               );
             })}
