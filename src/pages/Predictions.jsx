@@ -747,7 +747,7 @@ export default function Predictions() {
                   key={dateKey}
                   ref={el => dateTabRefs.current[dateKey] = el}
                   onClick={() => scrollToDate(dateKey)}
-                  className="relative flex-shrink-0 flex flex-col items-center gap-1 pt-2 pb-2.5 px-3 rounded-2xl transition-all duration-250"
+                  className="relative flex-shrink-0 flex flex-col items-center gap-1 pt-2 pb-2.5 px-4 rounded-2xl transition-all duration-250"
                   style={{
                     background: isActive
                       ? 'linear-gradient(135deg,#097adc,#7cadee)'
@@ -755,7 +755,7 @@ export default function Predictions() {
                     border: isActive
                       ? '1px solid rgba(9, 122, 220,0.6)'
                       : '1px solid rgba(255,255,255,0.08)',
-                    minWidth: 56,
+                    minWidth: 84,
                   }}
                 >
                   {/* Missing predictions indicator */}
