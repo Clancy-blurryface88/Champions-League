@@ -69,7 +69,16 @@ export default function MatchTickerBar({ onClick }) {
         {match.is_finished ? (
           <span className="text-sky-400 text-xs font-bold mx-0.5">{match.actual_score_a ?? '-'} - {match.actual_score_b ?? '-'}</span>
         ) : (
-          <span className="text-slate-400 text-xs mx-0.5">{time}</span>
+          <span
+            className="text-xs font-bold mx-0.5"
+            style={{
+              background: 'linear-gradient(90deg, #4ade80, #16a34a)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              color: 'transparent',
+              filter: 'drop-shadow(0 0 4px rgba(74,222,128,0.85))',
+            }}
+          >{time}</span>
         )}
         <span className="text-white text-xs font-medium">{match.team_b}</span>
         <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-4 h-4" />
@@ -109,9 +118,9 @@ export default function MatchTickerBar({ onClick }) {
       >
         <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.1 }}>
           {isUpcoming && (
-            <span style={{ color: '#94a3b8', fontSize: 8, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>בקרוב</span>
+            <span style={{ color: '#ffffff', fontSize: 8, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>בקרוב</span>
           )}
-          <span style={{ color: '#097adc', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>{dateLabel}</span>
+          <span style={{ color: '#ffffff', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>{dateLabel}</span>
         </span>
       </button>
 
