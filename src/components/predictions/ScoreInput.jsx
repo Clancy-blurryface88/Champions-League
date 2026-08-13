@@ -30,8 +30,15 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
   const handlePointerMove = (e) => {
     if (disabled || !dragState.current || e.buttons !== 1) return;
     const d = dragState.current;
-    d.acc += d.lastY - e.clientY;
+    const delta = d.lastY - e.clientY;
     d.lastY = e.clientY;
+    // Reset on a direction change instead of requiring the drag to first
+    // "unwind" whatever partial progress was banked toward the previous
+    // direction — otherwise reversing needs up to 2x STEP_PX to register.
+    if (delta !== 0 && d.acc !== 0 && Math.sign(delta) !== Math.sign(d.acc)) {
+      d.acc = 0;
+    }
+    d.acc += delta;
     while (Math.abs(d.acc) >= STEP_PX) {
       const dir = d.acc > 0 ? 1 : -1;
       d.acc -= dir * STEP_PX;
