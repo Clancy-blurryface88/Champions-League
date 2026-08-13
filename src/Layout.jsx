@@ -1364,23 +1364,22 @@ export default function Layout({ children, currentPageName }) {
                     <span className="text-yellow-400 text-xs font-bold tracking-widest uppercase">משחקי היום</span>
                     <div className="grid grid-cols-3 gap-2 w-full">
                       {upcomingMatches.map((m, i) => (
-                        <div key={m.id} style={{ overflow: 'hidden', borderRadius: 12 }}>
-                          <motion.div
-                            initial={{ clipPath: 'inset(0 100% 0 0)' }}
-                            animate={{ clipPath: 'inset(0 0% 0 0)' }}
-                            transition={{ delay: i * 0.35, duration: 0.7, ease: 'easeInOut' }}
-                            className="flex flex-col items-center justify-center gap-1.5 px-2 py-2.5"
-                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
-                          >
+                        <motion.div
+                          key={m.id}
+                          initial={{ opacity: 0, scale: 0.6, filter: 'blur(10px)' }}
+                          animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                          transition={{ delay: i * 0.1, type: 'spring', stiffness: 260, damping: 20 }}
+                          className="flex flex-col items-center justify-center gap-1.5 px-2 py-2.5 rounded-xl"
+                          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+                        >
                             <div className="flex items-center gap-1.5">
                               <TeamFlag logo={m.team_a_logo} name={m.team_a} className="w-7 h-7 flex-shrink-0" animate={false} />
                               <TeamFlag logo={m.team_b_logo} name={m.team_b} className="w-7 h-7 flex-shrink-0" animate={false} />
                             </div>
-                            <span className="text-slate-400 text-[10px] font-bold flex-shrink-0" dir="ltr">
-                              {new Date(m.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </motion.div>
-                        </div>
+                          <span className="text-slate-400 text-[10px] font-bold flex-shrink-0" dir="ltr">
+                            {new Date(m.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </motion.div>
                       ))}
                     </div>
 
