@@ -15,7 +15,7 @@ import { STAGES, LEAGUE_PHASE_MATCHDAYS } from '@/config/tournament';
 const MATCHES_JSON = [];
 
 const ROUND_NAMES = Object.fromEntries(
-  Array.from({ length: LEAGUE_PHASE_MATCHDAYS }, (_, i) => [i + 1, `מחזור ${i + 1} - League Phase`])
+  Array.from({ length: LEAGUE_PHASE_MATCHDAYS }, (_, i) => [i + 1, `League Phase - ${i + 1}`])
 );
 
 export default function AdminImportMatches() {
