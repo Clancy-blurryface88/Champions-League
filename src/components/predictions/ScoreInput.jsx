@@ -14,30 +14,39 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
     if (!dragState.current) setLocalValue(value);
   }, [value]);
 
+  // Every STEP_PX of travel bumps the value by exactly one, and resets —
+  // so a long continuous drag counts 1,2,3,4,5,6... one at a time just like
+  // the old tap-the-arrow behavior did, instead of jumping straight to
+  // wherever the total drag distance maps to.
+  const STEP_PX = 40;
+
   const handlePointerDown = (e) => {
     if (disabled) return;
     const startValue = localValue === undefined || localValue === null ? -1 : localValue;
-    dragState.current = { startY: e.clientY, startValue, steps: 0 };
+    dragState.current = { lastY: e.clientY, acc: 0, value: startValue, moved: false };
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e) => {
     if (disabled || !dragState.current || e.buttons !== 1) return;
-    const dy = dragState.current.startY - e.clientY;
-    const steps = Math.round(dy / 24); // ~24px per unit
-    if (steps !== dragState.current.steps) {
-      dragState.current.steps = steps;
-      setLocalValue(Math.max(0, dragState.current.startValue + steps));
+    const d = dragState.current;
+    d.acc += d.lastY - e.clientY;
+    d.lastY = e.clientY;
+    while (Math.abs(d.acc) >= STEP_PX) {
+      const dir = d.acc > 0 ? 1 : -1;
+      d.acc -= dir * STEP_PX;
+      d.value = Math.max(0, d.value + dir);
+      d.moved = true;
     }
+    setLocalValue(d.value);
   };
 
   const handlePointerUp = () => {
     if (disabled || !dragState.current) return;
+    const d = dragState.current;
     // A tap with no meaningful drag still bumps the value by one — keeps the
     // control usable with a single finger tap, not just a drag gesture.
-    const finalValue = dragState.current.steps === 0
-      ? Math.max(0, dragState.current.startValue + 1)
-      : Math.max(0, dragState.current.startValue + dragState.current.steps);
+    const finalValue = d.moved ? d.value : Math.max(0, d.value + 1);
     setLocalValue(finalValue);
     dragState.current = null;
     onChange(finalValue);
