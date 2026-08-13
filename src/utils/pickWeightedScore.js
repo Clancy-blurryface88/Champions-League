@@ -1,17 +1,20 @@
-// Picks a plausible exact score for "בחר עבורי" — weighted by the match's own
-// score_odds (lower odds = more likely outcome = higher weight), capped at
-// maxGoals per side so it can never suggest something like 10-12. Combos not
-// explicitly listed in score_odds (e.g. 5-0) fall back to the table's "other"
-// odds, so they're still possible but appropriately rarer than the named ones.
-export function pickWeightedScore(scoreOdds, maxGoals = 7) {
-  const fallbackWeight = scoreOdds?.other ? 1 / scoreOdds.other : 1 / 20;
-  const candidates = [];
-  for (let h = 0; h <= maxGoals; h++) {
-    for (let a = 0; a <= maxGoals; a++) {
-      const odds = scoreOdds?.[`${h}:${a}`];
-      candidates.push({ h, a, weight: odds ? 1 / odds : fallbackWeight });
-    }
-  }
+// Picks a plausible exact score for "בחר עבורי" — weighted purely by the
+// match's own score_odds ratios (lower odds = more likely = higher weight).
+// Only scores explicitly listed in score_odds are candidates (the real,
+// curated set an odds table actually offers — typically up to ~4 goals each
+// way), so this never suggests something outside what the odds themselves
+// say is plausible. The "other" catch-all isn't a concrete score, so it's
+// excluded rather than used as a fallback weight for made-up combinations.
+export function pickWeightedScore(scoreOdds) {
+  const candidates = Object.entries(scoreOdds || {})
+    .filter(([key]) => key !== 'other' && /^\d+:\d+$/.test(key))
+    .map(([key, odds]) => {
+      const [h, a] = key.split(':').map(Number);
+      return { h, a, weight: 1 / odds };
+    });
+
+  if (candidates.length === 0) return { h: 0, a: 0 };
+
   const total = candidates.reduce((sum, c) => sum + c.weight, 0);
   let r = Math.random() * total;
   for (const c of candidates) {
