@@ -200,11 +200,421 @@ function V4() {
   );
 }
 
+// ── 5. Vertical stacked accordion — collapsed header bars, one expands full ─
+function V5() {
+  const [sel, setSel] = useState(0);
+  return (
+    <div className="flex flex-col gap-1.5">
+      {ROUND_DATES.map((d, i) => {
+        const active = sel === i;
+        return (
+          <div key={d.key} className="rounded-xl overflow-hidden" style={{ background: active ? `rgba(${BLUE},0.14)` : 'rgba(255,255,255,0.05)', border: active ? `1px solid rgba(${BLUE},0.4)` : '1px solid transparent' }}>
+            <button onClick={() => setSel(i)} className="w-full flex items-center justify-between px-3 py-2">
+              <span className="text-white text-xs font-bold">{d.dow}, {d.day} {d.month}</span>
+              <span className="text-slate-400 text-[10px]">{active ? '▲' : '▼'}</span>
+            </button>
+            <AnimatePresence>
+              {active && (
+                <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden px-3">
+                  <div className="pb-2">{d.matches.map((m, mi) => <MatchRow key={mi} m={m} />)}</div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── 6. Triptych split-screen — permanently visible thirds, tap brings forward ─
+function V6() {
+  const [sel, setSel] = useState(0);
+  return (
+    <div className="flex gap-1" style={{ height: 160 }}>
+      {ROUND_DATES.map((d, i) => (
+        <motion.button key={d.key} onClick={() => setSel(i)} animate={{ scale: sel === i ? 1.04 : 0.96, zIndex: sel === i ? 2 : 1 }}
+          className="flex-1 rounded-lg p-2 flex flex-col gap-1" style={{ background: sel === i ? `rgba(${BLUE},0.16)` : 'rgba(255,255,255,0.04)', border: sel === i ? `1px solid rgba(${BLUE},0.5)` : '1px solid rgba(255,255,255,0.06)' }}>
+          <span className="text-white text-[11px] font-bold text-center">{d.day}</span>
+          {d.matches.map((m, mi) => <MatchRow key={mi} m={m} />)}
+        </motion.button>
+      ))}
+    </div>
+  );
+}
+
+// ── 7. Flip-book page turn ───────────────────────────────────────────────────
+function V7() {
+  const [sel, setSel] = useState(0);
+  return (
+    <div className="flex flex-col items-center gap-2" style={{ perspective: 800 }}>
+      <div className="relative w-full" style={{ height: 130 }}>
+        <AnimatePresence mode="popLayout" custom={sel}>
+          <motion.div key={sel} initial={{ rotateY: 90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} exit={{ rotateY: -90, opacity: 0 }}
+            transition={{ duration: 0.4 }} style={{ transformOrigin: 'left center' }}
+            className="absolute inset-0 rounded-lg p-2.5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <span className="text-white text-xs font-bold">{ROUND_DATES[sel].dow}, {ROUND_DATES[sel].day}</span>
+            {ROUND_DATES[sel].matches.map((m, mi) => <MatchRow key={mi} m={m} />)}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      <div className="flex gap-2">
+        <button onClick={() => setSel((s) => Math.max(0, s - 1))} className="text-slate-400 text-xs">◀ עמוד קודם</button>
+        <button onClick={() => setSel((s) => Math.min(ROUND_DATES.length - 1, s + 1))} className="text-slate-400 text-xs">עמוד הבא ▶</button>
+      </div>
+    </div>
+  );
+}
+
+// ── 8. Overlapping circles — tap brings one to front and expands ────────────
+function V8() {
+  const [sel, setSel] = useState(0);
+  return (
+    <div className="relative flex justify-center items-center" style={{ height: 170 }}>
+      {ROUND_DATES.map((d, i) => {
+        const active = sel === i;
+        const offsets = [-40, 0, 40];
+        return (
+          <motion.button key={d.key} onClick={() => setSel(i)}
+            animate={{ x: active ? 0 : offsets[i], scale: active ? 1 : 0.7, zIndex: active ? 10 : i }}
+            className="absolute rounded-full flex flex-col items-center justify-center p-3"
+            style={{ width: active ? 130 : 70, height: active ? 130 : 70, background: `rgba(${BLUE},${active ? 0.22 : 0.1})`, border: `1px solid rgba(${BLUE},${active ? 0.5 : 0.25})` }}>
+            <span className="text-white text-xs font-black">{d.day}</span>
+            {active && <div className="mt-1 w-full">{d.matches.slice(0, 2).map((m, mi) => <MatchRow key={mi} m={m} />)}</div>}
+          </motion.button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── 9. Stacked flip-scoreboard rows — split-flap per date, always visible ──
+function V9() {
+  return (
+    <div className="flex flex-col gap-2.5">
+      {ROUND_DATES.map((d) => (
+        <div key={d.key}>
+          <div className="text-[9px] text-slate-500 font-bold mb-1">{d.dow}, {d.day}</div>
+          <div className="flex flex-col gap-0.5">
+            {d.matches.map((m, mi) => (
+              <motion.div key={mi} initial={{ rotateX: -90 }} animate={{ rotateX: 0 }} transition={{ delay: mi * 0.08 }} style={{ transformOrigin: 'top', perspective: 200 }}>
+                <MatchRow m={m} />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── 10. Comparison table — rows aligned across days ─────────────────────────
+function V10() {
+  const maxRows = Math.max(...ROUND_DATES.map((d) => d.matches.length));
+  return (
+    <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${ROUND_DATES.length}, 1fr)` }}>
+      {ROUND_DATES.map((d) => <div key={d.key} className="text-white text-[10px] font-bold text-center pb-1">{d.day}</div>)}
+      {Array.from({ length: maxRows }).map((_, r) => ROUND_DATES.map((d) => {
+        const m = d.matches[r];
+        return (
+          <div key={d.key + r} className="rounded px-1 py-1" style={{ background: 'rgba(255,255,255,0.04)' }}>
+            {m ? <MatchRow m={m} /> : <div className="h-4" />}
+          </div>
+        );
+      }))}
+    </div>
+  );
+}
+
+// ── 11. Horizontal scrub timeline — continuous drag, not snap ───────────────
+function V11() {
+  const [pct, setPct] = useState(0);
+  const idx = Math.min(ROUND_DATES.length - 1, Math.round((pct / 100) * (ROUND_DATES.length - 1)));
+  return (
+    <div className="flex flex-col gap-2">
+      <input type="range" min="0" max="100" value={pct} onChange={(e) => setPct(Number(e.target.value))} className="w-full" style={{ accentColor: `rgb(${BLUE})` }} />
+      <div className="flex justify-between text-[9px] text-slate-500">
+        {ROUND_DATES.map((d) => <span key={d.key}>{d.day}</span>)}
+      </div>
+      <div className="rounded-lg p-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
+        <span className="text-white text-xs font-bold">{ROUND_DATES[idx].dow}, {ROUND_DATES[idx].day}</span>
+        {ROUND_DATES[idx].matches.map((m, mi) => <MatchRow key={mi} m={m} />)}
+      </div>
+    </div>
+  );
+}
+
+// ── 12. Tri-fold brochure — panels fold/unfold in 3D ─────────────────────────
+function V12() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="flex justify-center" style={{ perspective: 700 }}>
+      <div className="flex" style={{ transformStyle: 'preserve-3d' }}>
+        {ROUND_DATES.map((d, i) => (
+          <motion.div key={d.key} animate={{ rotateY: open ? 0 : i === 1 ? 0 : i === 0 ? 25 : -25 }} transition={{ duration: 0.5 }}
+            onClick={() => setOpen((o) => !o)} className="w-20 p-2 flex-shrink-0" style={{ background: i % 2 ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', transformOrigin: i === 0 ? 'right' : i === 2 ? 'left' : 'center', cursor: 'pointer' }}>
+            <span className="text-white text-[10px] font-bold block text-center mb-1">{d.day}</span>
+            {open && d.matches.slice(0, 2).map((m, mi) => <MatchRow key={mi} m={m} />)}
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── 13. Stories tray + main viewer ───────────────────────────────────────────
+function V13() {
+  const [sel, setSel] = useState(0);
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="rounded-lg p-2.5" style={{ background: `rgba(${BLUE},0.12)`, border: `1px solid rgba(${BLUE},0.35)` }}>
+        <span className="text-white text-xs font-bold">{ROUND_DATES[sel].dow}, {ROUND_DATES[sel].day}</span>
+        {ROUND_DATES[sel].matches.map((m, mi) => <MatchRow key={mi} m={m} />)}
+      </div>
+      <div className="flex gap-2 justify-center">
+        {ROUND_DATES.map((d, i) => (
+          <button key={d.key} onClick={() => setSel(i)} className="w-9 h-9 rounded-full flex items-center justify-center text-[10px] font-bold"
+            style={{ background: sel === i ? `rgba(${BLUE},1)` : 'transparent', border: `2px solid rgba(${BLUE},${sel === i ? 1 : 0.4})`, color: '#fff' }}>
+            {d.day}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── 14. Dashboard widget tiles ───────────────────────────────────────────────
+function V14() {
+  const [sel, setSel] = useState(0);
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {ROUND_DATES.map((d, i) => (
+        <button key={d.key} onClick={() => setSel(i)} className={`rounded-xl p-2 text-right ${i === 0 ? 'col-span-2' : ''}`}
+          style={{ background: sel === i ? `rgba(${BLUE},0.16)` : 'rgba(255,255,255,0.05)', border: sel === i ? `1px solid rgba(${BLUE},0.5)` : '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="text-white text-[11px] font-bold mb-1">{d.dow}, {d.day}</div>
+          {d.matches.slice(0, i === 0 ? 3 : 2).map((m, mi) => <MatchRow key={mi} m={m} />)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── 15. Radial burst reveal from a center button ────────────────────────────
+function V15() {
+  const [open, setOpen] = useState(false);
+  const [sel, setSel] = useState(0);
+  const pos = [{ x: -60, y: -10 }, { x: 0, y: -55 }, { x: 60, y: -10 }];
+  return (
+    <div className="relative flex flex-col items-center gap-2" style={{ minHeight: 150 }}>
+      <div className="relative" style={{ width: 140, height: 70 }}>
+        <button onClick={() => setOpen((o) => !o)} className="absolute rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+          style={{ left: '50%', top: 55, transform: 'translateX(-50%)', width: 40, height: 40, background: `rgba(${BLUE},1)` }}>
+          {open ? '✕' : 'ימים'}
+        </button>
+        {open && ROUND_DATES.map((d, i) => (
+          <motion.button key={d.key} onClick={() => setSel(i)} initial={{ x: 0, y: 0, opacity: 0 }} animate={{ x: pos[i].x, y: pos[i].y, opacity: 1 }}
+            className="absolute rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ left: '50%', top: 55, marginLeft: -16, marginTop: -16, width: 32, height: 32, background: sel === i ? '#4ade80' : 'rgba(255,255,255,0.15)' }}>
+            {d.day}
+          </motion.button>
+        ))}
+      </div>
+      {open && <div className="rounded-lg p-2 w-full" style={{ background: 'rgba(255,255,255,0.04)' }}>{ROUND_DATES[sel].matches.map((m, mi) => <MatchRow key={mi} m={m} />)}</div>}
+    </div>
+  );
+}
+
+// ── 16. Sliding drawers — pull one open, others stay ajar ───────────────────
+function V16() {
+  const [sel, setSel] = useState(0);
+  return (
+    <div className="flex flex-col gap-1">
+      {ROUND_DATES.map((d, i) => (
+        <motion.div key={d.key} animate={{ x: sel === i ? 0 : -10 }} onClick={() => setSel(i)} className="rounded-r-lg overflow-hidden cursor-pointer"
+          style={{ background: sel === i ? `rgba(${BLUE},0.14)` : 'rgba(255,255,255,0.04)', borderRight: `3px solid rgba(${BLUE},${sel === i ? 1 : 0.3})` }}>
+          <div className="px-3 py-1.5 text-white text-[11px] font-bold">{d.dow}, {d.day}</div>
+          {sel === i && <div className="px-3 pb-2">{d.matches.map((m, mi) => <MatchRow key={mi} m={m} />)}</div>}
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+// ── 17. Podium heights ───────────────────────────────────────────────────────
+function V17() {
+  const [sel, setSel] = useState(1);
+  const heights = [70, 100, 60];
+  return (
+    <div className="flex items-end justify-center gap-1.5" style={{ height: 130 }}>
+      {ROUND_DATES.map((d, i) => (
+        <button key={d.key} onClick={() => setSel(i)} className="flex flex-col items-center justify-end rounded-t-lg px-2 pt-2"
+          style={{ height: heights[i], width: 70, background: sel === i ? `rgba(${BLUE},0.9)` : 'rgba(255,255,255,0.08)' }}>
+          <span className="text-white text-[11px] font-black mb-1">{d.day}</span>
+          {sel === i && d.matches.slice(0, 1).map((m, mi) => <MatchRow key={mi} m={m} />)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── 18. Magazine spread — one hero block, others as side strips ─────────────
+function V18() {
+  const [sel, setSel] = useState(0);
+  const others = ROUND_DATES.filter((_, i) => i !== sel);
+  return (
+    <div className="flex gap-2" style={{ height: 165 }}>
+      <div className="flex-[2] rounded-xl p-2.5" style={{ background: `rgba(${BLUE},0.14)`, border: `1px solid rgba(${BLUE},0.4)` }}>
+        <span className="text-white text-xs font-bold">{ROUND_DATES[sel].dow}, {ROUND_DATES[sel].day}</span>
+        {ROUND_DATES[sel].matches.map((m, mi) => <MatchRow key={mi} m={m} />)}
+      </div>
+      <div className="flex-1 flex flex-col gap-1.5">
+        {others.map((d) => (
+          <button key={d.key} onClick={() => setSel(ROUND_DATES.indexOf(d))} className="flex-1 rounded-lg p-1.5 text-right" style={{ background: 'rgba(255,255,255,0.05)' }}>
+            <span className="text-white text-[10px] font-bold">{d.day}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── 19. Orbiting previews around a hero center ───────────────────────────────
+function V19() {
+  const [sel, setSel] = useState(0);
+  const others = ROUND_DATES.filter((_, i) => i !== sel);
+  return (
+    <div className="relative flex items-center justify-center" style={{ height: 160 }}>
+      <motion.div animate={{ scale: [1, 1.03, 1] }} transition={{ duration: 2.4, repeat: Infinity }}
+        className="rounded-xl p-2.5 z-10" style={{ width: 130, background: `rgba(${BLUE},0.16)`, border: `1px solid rgba(${BLUE},0.5)` }}>
+        <span className="text-white text-xs font-bold">{ROUND_DATES[sel].dow}, {ROUND_DATES[sel].day}</span>
+        {ROUND_DATES[sel].matches.slice(0, 2).map((m, mi) => <MatchRow key={mi} m={m} />)}
+      </motion.div>
+      {others.map((d, i) => (
+        <button key={d.key} onClick={() => setSel(ROUND_DATES.indexOf(d))} className="absolute rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+          style={{ width: 34, height: 34, background: 'rgba(255,255,255,0.1)', left: i === 0 ? 10 : undefined, right: i === 1 ? 10 : undefined, top: i === 0 ? 15 : undefined, bottom: i === 1 ? 15 : undefined }}>
+          {d.day}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── 20. Now vs Next duo — one big, the rest small alongside ─────────────────
+function V20b() {
+  const [sel, setSel] = useState(0);
+  const rest = ROUND_DATES.filter((_, i) => i !== sel);
+  return (
+    <div className="flex gap-2">
+      <div className="flex-1 rounded-xl p-2.5" style={{ background: `rgba(${GREEN},0.12)`, border: `1px solid rgba(${GREEN},0.4)` }}>
+        <span className="text-[9px] text-emerald-400 font-bold">עכשיו</span>
+        <div className="text-white text-sm font-black mb-1">{ROUND_DATES[sel].day}</div>
+        {ROUND_DATES[sel].matches.map((m, mi) => <MatchRow key={mi} m={m} />)}
+      </div>
+      <div className="flex flex-col gap-1.5" style={{ width: 70 }}>
+        <span className="text-[9px] text-slate-500 font-bold">הבא</span>
+        {rest.map((d) => (
+          <button key={d.key} onClick={() => setSel(ROUND_DATES.indexOf(d))} className="rounded-lg py-2 text-center" style={{ background: 'rgba(255,255,255,0.05)' }}>
+            <span className="text-white text-xs font-bold">{d.day}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── 21. Floating glass cards with tilt on tap ────────────────────────────────
+function V21() {
+  const [sel, setSel] = useState(0);
+  return (
+    <div className="flex gap-3 justify-center items-center" style={{ height: 150 }}>
+      {ROUND_DATES.map((d, i) => (
+        <motion.button key={d.key} onClick={() => setSel(i)} animate={{ rotateZ: sel === i ? 0 : i % 2 ? 4 : -4, y: sel === i ? -6 : 0, scale: sel === i ? 1.05 : 0.95 }}
+          className="rounded-xl p-2 flex flex-col gap-1" style={{ width: 78, background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(10px)', border: sel === i ? `1px solid rgba(${BLUE},0.5)` : '1px solid rgba(255,255,255,0.1)', boxShadow: sel === i ? `0 8px 24px rgba(${BLUE},0.3)` : 'none' }}>
+          <span className="text-white text-[11px] font-bold text-center">{d.day}</span>
+          {sel === i && d.matches.slice(0, 1).map((m, mi) => <MatchRow key={mi} m={m} />)}
+        </motion.button>
+      ))}
+    </div>
+  );
+}
+
+// ── 22. Fill-up quadrant square ──────────────────────────────────────────────
+function V22() {
+  const [sel, setSel] = useState(0);
+  return (
+    <div className="flex gap-3 items-center">
+      <div className="grid grid-cols-3 gap-1" style={{ width: 70, height: 70 }}>
+        {ROUND_DATES.map((d, i) => (
+          <button key={d.key} onClick={() => setSel(i)} className="rounded flex items-center justify-center text-[9px] font-bold text-white" style={{ background: sel === i ? `rgba(${BLUE},1)` : 'rgba(255,255,255,0.1)' }}>{d.day}</button>
+        ))}
+      </div>
+      <div className="flex-1 rounded-lg p-2" style={{ background: 'rgba(255,255,255,0.04)' }}>{ROUND_DATES[sel].matches.map((m, mi) => <MatchRow key={mi} m={m} />)}</div>
+    </div>
+  );
+}
+
+// ── 23. Shared hourglass — days as sand-timer segments ──────────────────────
+function V23() {
+  const [sel, setSel] = useState(0);
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div className="flex items-end gap-0.5" style={{ height: 40 }}>
+        {ROUND_DATES.map((d, i) => (
+          <button key={d.key} onClick={() => setSel(i)} style={{ width: 20, height: 14 + i * 10, background: sel === i ? `rgba(${BLUE},1)` : 'rgba(255,255,255,0.15)', clipPath: 'polygon(0 0,100% 0,50% 100%)' }} />
+        ))}
+      </div>
+      <div className="rounded-lg p-2 w-full" style={{ background: 'rgba(255,255,255,0.04)' }}>
+        <span className="text-white text-xs font-bold">{ROUND_DATES[sel].dow}, {ROUND_DATES[sel].day}</span>
+        {ROUND_DATES[sel].matches.map((m, mi) => <MatchRow key={mi} m={m} />)}
+      </div>
+    </div>
+  );
+}
+
+// ── 24. Football pitch zones — dates as thirds of the pitch ─────────────────
+function V24() {
+  const [sel, setSel] = useState(0);
+  const labels = ['הגנה', 'קישור', 'התקפה'];
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-0.5 rounded-lg overflow-hidden" style={{ border: '2px solid rgba(255,255,255,0.15)' }}>
+        {ROUND_DATES.map((d, i) => (
+          <button key={d.key} onClick={() => setSel(i)} className="flex-1 flex flex-col items-center py-2"
+            style={{ background: sel === i ? 'rgba(74,222,128,0.2)' : i % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.06)' }}>
+            <span className="text-[8px] text-slate-400">{labels[i] || d.dow}</span>
+            <span className="text-white text-sm font-black">{d.day}</span>
+          </button>
+        ))}
+      </div>
+      <div className="rounded-lg p-2" style={{ background: 'rgba(255,255,255,0.04)' }}>{ROUND_DATES[sel].matches.map((m, mi) => <MatchRow key={mi} m={m} />)}</div>
+    </div>
+  );
+}
+
 const VARIANTS = [
   ['1. פאנלים רחבים זה לצד זה', 'כל 3 התאריכים גלויים במקביל, כל אחד עם תצוגה מקדימה מלאה — אין "בחירה", רק לחיצה להדגשה', V1],
   ['2. התרחבות בלחיצה (Accordion אופקי)', 'לוחצים על תאריך והוא "אוכל" את הרוחב מהשכנים ומגלה את כל המשחקים בפנים', V2],
   ['3. קרוסלה נגררת עם הצצה', 'גוררים אצבע ימינה/שמאלה בין תאריכים, כל אחד כרטיס עשיר מלא', V3],
   ['4. ציר מסע מחובר', 'תאריכים כתחנות גדולות על קו התקדמות, לחיצה מציגה את כל משחקי היום למטה', V4],
+  ['5. מחסנית אנכית מתקפלת', 'שורות כותרת מתקפלות, אחת פתוחה בכל רגע עם כל המשחקים', V5],
+  ['6. שלישיה מפוצלת', 'שלושת התאריכים גלויים תמיד זה לצד זה, לחיצה מגדילה ומדגישה', V6],
+  ['7. דפדוף ספר', 'כל תאריך "עמוד" שמתהפך בתלת-ממד לעמוד הבא', V7],
+  ['8. עיגולים חופפים', 'תאריכים כעיגולים חופפים, לחיצה מביאה אחד לחזית ומרחיבה', V8],
+  ['9. סקורבורד מתהפך ערום', 'כל התאריכים גלויים, כל שורת משחק "מתהפכת" פנימה בכניסה', V9],
+  ['10. טבלת השוואה', 'עמודה לכל תאריך, שורות מיושרות כדי להשוות משחק מול משחק', V10],
+  ['11. ציר גרירה רציף', 'סליידר אחד גורר בין הימים ברצף, לא קפיצה בין כרטיסים', V11],
+  ['12. חוברת מתקפלת', 'שלושה פאנלים כמו חוברת מתקפלת, טאפ פותח/סוגר בתלת-ממד', V12],
+  ['13. רצועת סטוריז + מציג ראשי', 'עיגולים קטנים למטה כמו סטוריז, התוכן המלא למעלה', V13],
+  ['14. אריחי דשבורד', 'התאריך הראשי אריח רחב, השאר אריחים קטנים לצדו', V14],
+  ['15. פיצוץ רדיאלי ממרכז', 'כפתור מרכזי "פותח" את הימים כבועות שמתפזרות סביבו', V15],
+  ['16. ערימת מגירות', 'כל תאריך מגירה שנפתחת בלחיצה, השאר נשארות פתוחות חלקית', V16],
+  ['17. פודיום', 'התאריכים בגבהים משתנים כמו פודיום אולימפי', V17],
+  ['18. פריסת מגזין', 'בלוק גיבור גדול אחד + שני פסי צד קטנים לשאר התאריכים', V18],
+  ['19. לוויינים מקיפים', 'תאריך מרכזי "נושם" באמצע, השאר מקיפים אותו כלוויינים', V19],
+  ['20. עכשיו מול הבא', 'בלוק גדול "עכשיו" ולידו עמודת "הבא" קטנה וצרה', V20b],
+  ['21. כרטיסי זכוכית מרחפים', 'כרטיסים עם נטייה עדינה שמתיישרים בלחיצה, אפקט זכוכית', V21],
+  ['22. ריבוע מתמלא', 'גריד קטן 3 משבצות לצד תוכן מלא של הנבחר', V22],
+  ['23. שעון חול משותף', 'ימים כמשולשי שעון חול בגבהים משתנים', V23],
+  ['24. מגרש כדורגל', 'שלושת התאריכים כשליש הגנה/קישור/התקפה של המגרש', V24],
 ];
 
 export default function AdminRichDatePanelsDemo() {
