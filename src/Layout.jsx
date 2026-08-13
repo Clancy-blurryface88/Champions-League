@@ -1414,13 +1414,7 @@ export default function Layout({ children, currentPageName }) {
                         transition={{ duration: 0.45, ease: 'easeIn' }}
                         className="px-10 py-8 flex flex-col items-center gap-5"
                       >
-                        <div
-                          className="flex items-center gap-2 px-3 py-1 rounded-full"
-                          style={{
-                            background: 'linear-gradient(rgba(8,18,32,0.95), rgba(8,18,32,0.95)) padding-box, linear-gradient(90deg, #3b82f6, #a855f7) border-box',
-                            border: '1px solid transparent',
-                          }}
-                        >
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.35)' }}>
                           <span
                             className="text-xs font-bold tracking-widest uppercase"
                             style={{
