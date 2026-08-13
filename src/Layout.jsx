@@ -1369,7 +1369,14 @@ export default function Layout({ children, currentPageName }) {
                 <motion.div
                   layout
                   initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  animate={{
+                    opacity: 1, scale: 1,
+                    boxShadow: [
+                      '0 0 60px rgba(74,222,128,0.15), 0 20px 60px rgba(0,0,0,0.7)',
+                      '0 0 90px rgba(74,222,128,0.4), 0 20px 60px rgba(0,0,0,0.7)',
+                      '0 0 60px rgba(74,222,128,0.15), 0 20px 60px rgba(0,0,0,0.7)',
+                    ],
+                  }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   className="rounded-2xl overflow-hidden"
                   style={{
@@ -1377,10 +1384,13 @@ export default function Layout({ children, currentPageName }) {
                     background: 'rgba(8,18,32,0.95)',
                     border: '1px solid rgba(74,222,128,0.4)',
                     backdropFilter: 'blur(28px)',
-                    boxShadow: '0 0 60px rgba(74,222,128,0.15), 0 20px 60px rgba(0,0,0,0.7)',
                     pointerEvents: 'auto',
                   }}
-                  transition={{ type: 'spring', stiffness: 180, damping: 26 }}
+                  transition={{
+                    scale: { type: 'spring', stiffness: 180, damping: 26 },
+                    opacity: { type: 'spring', stiffness: 180, damping: 26 },
+                    boxShadow: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' },
+                  }}
                 >
                   {introPhase === 'solo' && (
                     <motion.button
@@ -1404,7 +1414,13 @@ export default function Layout({ children, currentPageName }) {
                         transition={{ duration: 0.45, ease: 'easeIn' }}
                         className="px-10 py-8 flex flex-col items-center gap-5"
                       >
-                        <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.35)' }}>
+                        <div
+                          className="flex items-center gap-2 px-3 py-1 rounded-full"
+                          style={{
+                            background: 'linear-gradient(rgba(8,18,32,0.95), rgba(8,18,32,0.95)) padding-box, linear-gradient(90deg, #3b82f6, #a855f7) border-box',
+                            border: '1px solid transparent',
+                          }}
+                        >
                           <span
                             className="text-xs font-bold tracking-widest uppercase"
                             style={{
