@@ -6,7 +6,7 @@ import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { User } from "@/api/entities";
 import { AiBrief } from "@/api/entities";
-import { ArrowLeft, Check, Calendar, Lock, HelpCircle, Eye, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Check, Lock, HelpCircle, Eye, Sparkles, ChevronDown, ChevronUp, Dices } from "lucide-react";
 import AiBriefModal from "@/components/AiBriefModal"; // ADDED Eye icon
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -28,13 +28,13 @@ import MatchArenaSection from "../components/predictions/MatchArenaSection";
 import { RevealText } from "@/components/magicui/reveal-text";
 import TeamFlag from "@/components/TeamFlag";
 import MatchCountRing from "@/components/MatchCountRing";
-import QuickJumpCalendar from "@/components/QuickJumpCalendar";
 import LeagueTableModal from "@/components/LeagueTableModal";
 import TeamInfoModal from "@/components/TeamInfoModal";
 import { ShineBorder } from "@/components/magicui/shine-border";
 import { loadLeagueTableOverride, applyOverride } from '@/utils/standingsOverride';
 import { calcStandings } from '@/utils/standings';
 import { STAGES, STAGE_LABELS, DIRECT_R16_CUTOFF, PLAYOFF_CUTOFF } from '@/config/tournament';
+import { pickWeightedScore } from '@/utils/pickWeightedScore';
 
 // --- Slot-machine position badge (starts when element enters viewport) ---
 function SlotBadge({ value, color }) {
@@ -152,8 +152,6 @@ export default function Predictions() {
   const arenaMatchesLoadedRef = useRef(false);
   const [teamPositions, setTeamPositions] = useState({});
   const [activeDateKey, setActiveDateKey] = useState(null);
-  const [showDateCalendar, setShowDateCalendar] = useState(false);
-  const [calMonth, setCalMonth] = useState(new Date());
   const dateRefs = useRef({});
   const dateTabRefs = useRef({});
   const matchGridRefs = useRef({});
@@ -471,7 +469,6 @@ export default function Predictions() {
     // Set active date to today or first upcoming
     const firstOpen = sortedDateKeys.find(k => !moment(k).isBefore(today)) || sortedDateKeys[sortedDateKeys.length - 1];
     setActiveDateKey(firstOpen);
-    setCalMonth(new Date(firstOpen + "T00:00:00"));
   }, [sortedDateKeys.join(',')]);
 
   const toggleDate = (dateKey) => {
@@ -665,7 +662,6 @@ export default function Predictions() {
             <h1 className="text-3xl font-bold text-white mb-2">{currentRound?.name}</h1>
             <p className="text-slate-400">נחש את תוצאות המשחקים</p>
           </div>
-          <div className="w-9 flex-shrink-0" />
         </div>
 
         {error &&
@@ -734,87 +730,60 @@ export default function Predictions() {
               borderBottom: '1px solid rgba(255,255,255,0.07)',
             }}
           >
-          <div className="flex items-center gap-2">
-            <div ref={dateStripRef} className="flex-1 min-w-0 flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
-              {sortedDateKeys.map(dateKey => {
-                const isActive = activeDateKey === dateKey;
-                const isToday  = moment(dateKey).isSame(moment(), 'day');
-                const isPast   = moment(dateKey).isBefore(moment().startOf('day'));
-                const dayMatches = matchesByDate[dateKey] || [];
-                const count    = dayMatches.length;
-                const finishedCount = dayMatches.filter(m => m.is_finished).length;
-                const hasMissing = dateHasMissingPredictions(dateKey);
-                const dayName  = isToday ? 'היום' : moment(dateKey).locale('he').format('ddd');
-                const dayNum   = moment(dateKey).format('D');
+          <div ref={dateStripRef} className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
+            {sortedDateKeys.map(dateKey => {
+              const isActive = activeDateKey === dateKey;
+              const isToday  = moment(dateKey).isSame(moment(), 'day');
+              const isPast   = moment(dateKey).isBefore(moment().startOf('day'));
+              const dayMatches = matchesByDate[dateKey] || [];
+              const count    = dayMatches.length;
+              const finishedCount = dayMatches.filter(m => m.is_finished).length;
+              const hasMissing = dateHasMissingPredictions(dateKey);
+              const dayName  = isToday ? 'היום' : moment(dateKey).locale('he').format('ddd');
+              const dayNum   = moment(dateKey).format('D');
 
-                return (
-                  <button
-                    key={dateKey}
-                    ref={el => dateTabRefs.current[dateKey] = el}
-                    onClick={() => scrollToDate(dateKey)}
-                    className="relative flex-shrink-0 flex flex-col items-center gap-1 pt-2 pb-2.5 px-3 rounded-2xl transition-all duration-250"
-                    style={{
-                      background: isActive
-                        ? 'linear-gradient(135deg,#097adc,#7cadee)'
-                        : 'rgba(255,255,255,0.05)',
-                      border: isActive
-                        ? '1px solid rgba(9, 122, 220,0.6)'
-                        : '1px solid rgba(255,255,255,0.08)',
-                      minWidth: 56,
-                    }}
-                  >
-                    {/* Missing predictions indicator */}
-                    {hasMissing && !isPast && (
-                      <span
-                        className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-orange-500 border-2 border-[#060e1c] z-10"
-                        title="יש משחקים ללא ניחוש"
-                      />
-                    )}
-
-                    <span className={`text-[10px] font-semibold leading-none ${isActive ? 'text-black/60' : isPast ? 'text-slate-600' : 'text-slate-400'}`}>
-                      {dayName}
-                    </span>
-                    <span className={`text-base font-black leading-none ${isActive ? 'text-black' : isPast ? 'text-slate-500' : 'text-white'}`}>
-                      {dayNum}
-                    </span>
-                    <MatchCountRing
-                      finished={finishedCount}
-                      total={count}
-                      active={isActive}
-                      size={20}
-                      activeClassName="text-black/70"
-                      inactiveClassName={isPast ? "text-slate-600" : "text-white/40"}
+              return (
+                <button
+                  key={dateKey}
+                  ref={el => dateTabRefs.current[dateKey] = el}
+                  onClick={() => scrollToDate(dateKey)}
+                  className="relative flex-shrink-0 flex flex-col items-center gap-1 pt-2 pb-2.5 px-3 rounded-2xl transition-all duration-250"
+                  style={{
+                    background: isActive
+                      ? 'linear-gradient(135deg,#097adc,#7cadee)'
+                      : 'rgba(255,255,255,0.05)',
+                    border: isActive
+                      ? '1px solid rgba(9, 122, 220,0.6)'
+                      : '1px solid rgba(255,255,255,0.08)',
+                    minWidth: 56,
+                  }}
+                >
+                  {/* Missing predictions indicator */}
+                  {hasMissing && !isPast && (
+                    <span
+                      className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-orange-500 border-2 border-[#060e1c] z-10"
+                      title="יש משחקים ללא ניחוש"
                     />
-                  </button>
-                );
-              })}
-            </div>
+                  )}
 
-            {/* Quick-jump — icon-only, styled like a date tab, fixed on the left */}
-            <button
-              onClick={() => setShowDateCalendar(v => !v)}
-              className="flex-shrink-0 flex items-center justify-center rounded-2xl transition-all duration-250"
-              style={{
-                width: 48, height: 56,
-                background: showDateCalendar ? 'linear-gradient(135deg,#097adc,#7cadee)' : 'rgba(255,255,255,0.05)',
-                border: showDateCalendar ? '1px solid rgba(9, 122, 220,0.6)' : '1px solid rgba(255,255,255,0.08)',
-              }}
-            >
-              <Calendar className={`w-5 h-5 ${showDateCalendar ? 'text-black/70' : 'text-slate-400'}`} />
-            </button>
+                  <span className={`text-[10px] font-semibold leading-none ${isActive ? 'text-black/60' : isPast ? 'text-slate-600' : 'text-slate-400'}`}>
+                    {dayName}
+                  </span>
+                  <span className={`text-base font-black leading-none ${isActive ? 'text-black' : isPast ? 'text-slate-500' : 'text-white'}`}>
+                    {dayNum}
+                  </span>
+                  <MatchCountRing
+                    finished={finishedCount}
+                    total={count}
+                    active={isActive}
+                    size={20}
+                    activeClassName="text-black/70"
+                    inactiveClassName={isPast ? "text-slate-600" : "text-white/40"}
+                  />
+                </button>
+              );
+            })}
           </div>
-
-          {showDateCalendar && (
-            <div className="mt-2 -mx-1 rounded-2xl overflow-hidden" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <QuickJumpCalendar
-                calMonth={calMonth}
-                setCalMonth={setCalMonth}
-                markedDates={new Set(sortedDateKeys)}
-                selected={activeDateKey}
-                onPick={(d) => { scrollToDate(d); setShowDateCalendar(false); }}
-              />
-            </div>
-          )}
           </div>
         )}
 
@@ -1091,6 +1060,25 @@ export default function Predictions() {
                         </div>
                       </div>
                     </div>
+
+                    {!isLocked && (
+                      <div className="flex justify-center -mt-1 mb-1">
+                        <motion.button
+                          whileTap={{ scale: 0.92 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const { h, a } = pickWeightedScore(match.score_odds);
+                            handlePredictionChange(match.id, 'predicted_score_a', h);
+                            handlePredictionChange(match.id, 'predicted_score_b', a);
+                          }}
+                          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full"
+                          style={{ color: '#c4b5fd', background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)' }}
+                        >
+                          <Dices className="w-3.5 h-3.5" />
+                          בחר עבורי
+                        </motion.button>
+                      </div>
+                    )}
 
                     {/* Previous Match Score */}
                     {match.previous_match_score_a !== undefined && match.previous_match_score_a !== null &&
