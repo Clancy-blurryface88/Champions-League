@@ -1372,9 +1372,9 @@ export default function Layout({ children, currentPageName }) {
                   animate={{
                     opacity: 1, scale: 1,
                     boxShadow: [
-                      '0 0 60px rgba(74,222,128,0.15), 0 20px 60px rgba(0,0,0,0.7)',
-                      '0 0 90px rgba(74,222,128,0.4), 0 20px 60px rgba(0,0,0,0.7)',
-                      '0 0 60px rgba(74,222,128,0.15), 0 20px 60px rgba(0,0,0,0.7)',
+                      '0 0 60px rgba(96,165,250,0.18), 0 20px 60px rgba(0,0,0,0.7)',
+                      '0 0 90px rgba(96,165,250,0.45), 0 20px 60px rgba(0,0,0,0.7)',
+                      '0 0 60px rgba(96,165,250,0.18), 0 20px 60px rgba(0,0,0,0.7)',
                     ],
                   }}
                   exit={{ opacity: 0, scale: 0.9 }}
@@ -1382,7 +1382,7 @@ export default function Layout({ children, currentPageName }) {
                   style={{
                     position: 'relative',
                     background: 'rgba(8,18,32,0.95)',
-                    border: '1px solid rgba(74,222,128,0.4)',
+                    border: '1px solid rgba(96,165,250,0.45)',
                     backdropFilter: 'blur(28px)',
                     pointerEvents: 'auto',
                   }}
@@ -1414,11 +1414,11 @@ export default function Layout({ children, currentPageName }) {
                         transition={{ duration: 0.45, ease: 'easeIn' }}
                         className="px-10 py-8 flex flex-col items-center gap-5"
                       >
-                        <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.35)' }}>
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(96,165,250,0.14)', border: '1px solid rgba(96,165,250,0.4)' }}>
                           <span
                             className="text-xs font-bold tracking-widest uppercase"
                             style={{
-                              background: 'linear-gradient(90deg, #4ade80, #16a34a)',
+                              background: 'linear-gradient(90deg, #93c5fd, #3b82f6)',
                               WebkitBackgroundClip: 'text',
                               backgroundClip: 'text',
                               color: 'transparent',
