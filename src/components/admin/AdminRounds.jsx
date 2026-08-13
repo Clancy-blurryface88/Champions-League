@@ -63,6 +63,7 @@ export default function AdminRounds() {
         loadRounds();
       } catch (error) {
         console.error("Error deleting round:", error);
+        alert("שגיאה במחיקת המחזור: " + (error?.message || JSON.stringify(error)));
       }
     }
   };

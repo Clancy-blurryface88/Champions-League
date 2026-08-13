@@ -62,6 +62,7 @@ export default function AdminMatches() {
         loadData();
       } catch (error) {
         console.error("Error deleting match:", error);
+        alert("שגיאה במחיקת המשחק: " + (error?.message || JSON.stringify(error)));
       }
     }
   };
