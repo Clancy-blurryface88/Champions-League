@@ -1452,24 +1452,26 @@ export default function Layout({ children, currentPageName }) {
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.3 }}
                         className="px-6 py-6 flex flex-col items-center gap-3"
-                        style={{ width: 340 }}
+                        style={{ width: 380 }}
                       >
                         <span className="text-yellow-400 text-xs font-bold tracking-widest uppercase">שאר משחקי הערב</span>
-                        <div className="flex flex-col gap-2 w-full">
+                        <div className="grid grid-cols-3 gap-2 w-full">
                           {restMatches.map((m, i) => (
                             <div key={m.id} style={{ overflow: 'hidden', borderRadius: 12 }}>
                               <motion.div
                                 initial={{ clipPath: 'inset(0 100% 0 0)' }}
                                 animate={{ clipPath: 'inset(0 0% 0 0)' }}
                                 transition={{ delay: i * 0.35, duration: 0.7, ease: 'easeInOut' }}
-                                className="flex items-center justify-center gap-3 px-3 py-2.5"
+                                className="flex flex-col items-center justify-center gap-1.5 px-2 py-2.5"
                                 style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
                               >
-                                <TeamFlag logo={m.team_a_logo} name={m.team_a} className="w-8 h-8 flex-shrink-0" animate={false} />
-                                <span className="text-slate-400 text-[11px] font-bold flex-shrink-0" dir="ltr">
+                                <div className="flex items-center gap-1.5">
+                                  <TeamFlag logo={m.team_a_logo} name={m.team_a} className="w-7 h-7 flex-shrink-0" animate={false} />
+                                  <TeamFlag logo={m.team_b_logo} name={m.team_b} className="w-7 h-7 flex-shrink-0" animate={false} />
+                                </div>
+                                <span className="text-slate-400 text-[10px] font-bold flex-shrink-0" dir="ltr">
                                   {new Date(m.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
                                 </span>
-                                <TeamFlag logo={m.team_b_logo} name={m.team_b} className="w-8 h-8 flex-shrink-0" animate={false} />
                               </motion.div>
                             </div>
                           ))}
