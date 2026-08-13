@@ -301,7 +301,7 @@ export default function Layout({ children, currentPageName }) {
   const [liveCheckDone, setLiveCheckDone] = useState(false);
   const [nextMatch, setNextMatch] = useState(null);
   const [upcomingMatches, setUpcomingMatches] = useState([]);
-  const [nextMatchIndex, setNextMatchIndex] = useState(0);
+  const [introPhase, setIntroPhase] = useState('solo'); // 'solo' | 'list'
   const [nextMatchChecked, setNextMatchChecked] = useState(false);
   const [showNextMatchIntro, setShowNextMatchIntro] = useState(false);
   const [nextMatchPrediction, setNextMatchPrediction] = useState(null);
@@ -602,49 +602,38 @@ export default function Layout({ children, currentPageName }) {
     }
   }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading, showWelcomeModal, tournamentEnded]);
 
-  // Cycle through every known upcoming match once (zoom-through transition),
-  // then auto-dismiss — this overlay blocks the rest of the UI while open,
-  // same as it always has, so it always ends on its own rather than looping
-  // forever with no way to close it. The first card gets extra settled time
-  // since it's the very first thing the user reads.
-  const NEXT_MATCH_CARD_MS = 4000;       // 3.5s settled + 0.5s transition
-  const NEXT_MATCH_FIRST_CARD_MS = 4500; // 4s settled + 0.5s transition
+  // "המשחק הקרוב" shows solo first (settled read time), then — if there are
+  // more matches that evening — reveals them as a typewriter list. Either
+  // phase can also be dismissed early with the close button. This overlay
+  // always ends on its own rather than looping forever with no way out.
+  const SOLO_MS = 4500;
+  const LIST_MS = 10000;
   useEffect(() => {
     if (!showNextMatchIntro) return;
-    setNextMatchIndex(0);
-    if (upcomingMatches.length <= 1) {
-      const t = setTimeout(() => setShowNextMatchIntro(false), 8000);
-      return () => clearTimeout(t);
-    }
-    let cancelled = false;
-    let timer;
-    const advance = (i) => {
-      const delay = i === 0 ? NEXT_MATCH_FIRST_CARD_MS : NEXT_MATCH_CARD_MS;
-      timer = setTimeout(() => {
-        if (cancelled) return;
-        if (i + 1 >= upcomingMatches.length) {
-          setShowNextMatchIntro(false);
-          return;
-        }
-        setNextMatchIndex(i + 1);
-        advance(i + 1);
-      }, delay);
-    };
-    advance(0);
-    return () => { cancelled = true; clearTimeout(timer); };
+    setIntroPhase('solo');
+    const t = setTimeout(() => {
+      if (upcomingMatches.length > 1) setIntroPhase('list');
+      else setShowNextMatchIntro(false);
+    }, SOLO_MS);
+    return () => clearTimeout(t);
   }, [showNextMatchIntro, upcomingMatches.length]);
 
-  // Fetch the user's own prediction for whichever match is currently shown
-  // in the cycle (already our DB match — no name matching needed).
   useEffect(() => {
-    const current = upcomingMatches[nextMatchIndex];
+    if (!showNextMatchIntro || introPhase !== 'list') return;
+    const t = setTimeout(() => setShowNextMatchIntro(false), LIST_MS);
+    return () => clearTimeout(t);
+  }, [showNextMatchIntro, introPhase]);
+
+  // Fetch the user's own prediction for the featured "קרוב" match.
+  useEffect(() => {
+    const current = upcomingMatches[0];
     if (!current?.id || !user?.id) { setNextMatchPrediction(null); return; }
     let cancelled = false;
     Prediction.filter({ match_id: current.id, user_id: user.id })
       .then((preds) => { if (!cancelled) setNextMatchPrediction(preds.length > 0 ? preds[0] : null); })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, [upcomingMatches, nextMatchIndex, user?.id]);
+  }, [upcomingMatches, user?.id]);
 
   // Fetch user prediction for the live match
   useEffect(() => {
@@ -1354,11 +1343,14 @@ export default function Layout({ children, currentPageName }) {
           )}
         </AnimatePresence>
 
-        {/* Next Match Intro Overlay — shown once per session when there's no live
-            match; cycles (zoom-through) through every known upcoming match. */}
+        {/* Next Match Intro Overlay — shown once per fresh app load when there's
+            no live match. "המשחק הקרוב" first, then (if the evening has more
+            matches) a typewriter-revealed list of the rest. Closable anytime;
+            the list phase also auto-dismisses after LIST_MS. */}
         <AnimatePresence>
-          {showNextMatchIntro && (upcomingMatches[nextMatchIndex] || nextMatch) && (() => {
-            const currentMatch = upcomingMatches[nextMatchIndex] || nextMatch;
+          {showNextMatchIntro && (upcomingMatches[0] || nextMatch) && (() => {
+            const soloMatch = upcomingMatches[0] || nextMatch;
+            const restMatches = upcomingMatches.slice(1);
             return (
             <>
               <motion.div
@@ -1372,6 +1364,7 @@ export default function Layout({ children, currentPageName }) {
               />
               <div className="fixed inset-0 z-[56] flex items-center justify-center pointer-events-none">
                 <motion.div
+                  layout
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
@@ -1382,70 +1375,103 @@ export default function Layout({ children, currentPageName }) {
                     border: '1px solid rgba(9, 122, 220,0.4)',
                     backdropFilter: 'blur(28px)',
                     boxShadow: '0 0 60px rgba(9, 122, 220,0.15), 0 20px 60px rgba(0,0,0,0.7)',
+                    pointerEvents: 'auto',
                   }}
                   transition={{ type: 'spring', stiffness: 180, damping: 26 }}
                 >
-                  {nextMatchIndex >= 3 && (
-                    <motion.button
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      onClick={() => setShowNextMatchIntro(false)}
-                      style={{ pointerEvents: 'auto', position: 'absolute', top: 10, left: 10, zIndex: 1 }}
-                      className="w-7 h-7 flex items-center justify-center rounded-full bg-white/8 text-white/50 hover:text-white hover:bg-white/15 transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </motion.button>
-                  )}
-                  <AnimatePresence mode="popLayout">
-                    <motion.div
-                      key={nextMatchIndex}
-                      initial={{ opacity: 0, scale: 0.5, filter: 'blur(8px)' }}
-                      animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-                      exit={{ opacity: 0, scale: 1.6, filter: 'blur(8px)' }}
-                      transition={{ duration: 0.5, ease: 'easeInOut' }}
-                      className="px-10 py-8 flex flex-col items-center gap-5"
-                    >
-                      <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(9, 122, 220,0.12)', border: '1px solid rgba(9, 122, 220,0.35)' }}>
-                        <span className="text-sky-400 text-xs font-bold tracking-widest uppercase">{nextMatchIndex === 0 ? 'המשחק הקרוב' : 'המשחק הבא'}</span>
-                      </div>
-                      <div className="flex items-center gap-6" dir="ltr">
-                        <div className="flex flex-col items-center gap-1.5 w-20">
-                          <TeamFlag logo={currentMatch.team_a_logo} name={currentMatch.team_a} className="w-14 h-14" animate={false} />
-                          <span className="text-slate-400 text-[11px] text-center">{currentMatch.team_a}</span>
+                  <motion.button
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    onClick={() => setShowNextMatchIntro(false)}
+                    style={{ position: 'absolute', top: 10, left: 10, zIndex: 1 }}
+                    className="w-7 h-7 flex items-center justify-center rounded-full bg-white/8 text-white/50 hover:text-white hover:bg-white/15 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </motion.button>
+
+                  <AnimatePresence mode="wait">
+                    {introPhase === 'solo' ? (
+                      <motion.div
+                        key="solo"
+                        initial={{ opacity: 0, scale: 0.5, filter: 'blur(8px)' }}
+                        animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, scale: 1.6, filter: 'blur(8px)' }}
+                        transition={{ duration: 0.5, ease: 'easeInOut' }}
+                        className="px-10 py-8 flex flex-col items-center gap-5"
+                      >
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(9, 122, 220,0.12)', border: '1px solid rgba(9, 122, 220,0.35)' }}>
+                          <span className="text-sky-400 text-xs font-bold tracking-widest uppercase">המשחק הקרוב</span>
                         </div>
-                        <span className="text-slate-500 font-bold text-sm">VS</span>
-                        <div className="flex flex-col items-center gap-1.5 w-20">
-                          <TeamFlag logo={currentMatch.team_b_logo} name={currentMatch.team_b} className="w-14 h-14" animate={false} />
-                          <span className="text-slate-400 text-[11px] text-center">{currentMatch.team_b}</span>
+                        <div className="flex items-center gap-6" dir="ltr">
+                          <div className="flex flex-col items-center gap-1.5 w-20">
+                            <TeamFlag logo={soloMatch.team_a_logo} name={soloMatch.team_a} className="w-14 h-14" animate={false} />
+                            <span className="text-slate-400 text-[11px] text-center">{soloMatch.team_a}</span>
+                          </div>
+                          <span className="text-slate-500 font-bold text-sm">VS</span>
+                          <div className="flex flex-col items-center gap-1.5 w-20">
+                            <TeamFlag logo={soloMatch.team_b_logo} name={soloMatch.team_b} className="w-14 h-14" animate={false} />
+                            <span className="text-slate-400 text-[11px] text-center">{soloMatch.team_b}</span>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="flex flex-col items-center gap-0.5">
-                        <span className="text-slate-400 text-[11px] tracking-wide">
-                          {new Date(currentMatch.match_date).toLocaleDateString('he-IL', { weekday: 'long', day: '2-digit', month: '2-digit' })}
-                        </span>
-                        <span className="text-white text-xl font-black" dir="ltr">
-                          {new Date(currentMatch.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
-
-                      <MatchCountdown target={currentMatch.match_date} />
-
-                      {nextMatchPrediction && (
-                        <div className="flex flex-col items-center gap-1 mt-1">
-                          <span className="text-slate-400 text-xs">הניחוש שלי</span>
-                          <span className="text-sky-400 text-sm font-bold">
-                            ({nextMatchPrediction.predicted_score_a} - {nextMatchPrediction.predicted_score_b})
+                        <div className="flex flex-col items-center gap-0.5">
+                          <span className="text-slate-400 text-[11px] tracking-wide">
+                            {new Date(soloMatch.match_date).toLocaleDateString('he-IL', { weekday: 'long', day: '2-digit', month: '2-digit' })}
+                          </span>
+                          <span className="text-white text-xl font-black" dir="ltr">
+                            {new Date(soloMatch.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
-                      )}
 
-                      {upcomingMatches.length > 1 && (
-                        <span className="text-slate-600 text-[10px] tracking-wide" dir="ltr">
-                          {nextMatchIndex + 1} / {upcomingMatches.length}
-                        </span>
-                      )}
-                    </motion.div>
+                        <MatchCountdown target={soloMatch.match_date} />
+
+                        {nextMatchPrediction && (
+                          <div className="flex flex-col items-center gap-1 mt-1">
+                            <span className="text-slate-400 text-xs">הניחוש שלי</span>
+                            <span className="text-sky-400 text-sm font-bold">
+                              ({nextMatchPrediction.predicted_score_a} - {nextMatchPrediction.predicted_score_b})
+                            </span>
+                          </div>
+                        )}
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="list"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="px-6 py-6 flex flex-col items-center gap-3"
+                        style={{ width: 300 }}
+                      >
+                        <span className="text-slate-400 text-xs font-bold tracking-widest uppercase">שאר משחקי הערב</span>
+                        <div className="flex flex-col gap-2 w-full">
+                          {restMatches.map((m, i) => (
+                            <div key={m.id} style={{ overflow: 'hidden', borderRadius: 12 }}>
+                              <motion.div
+                                initial={{ clipPath: 'inset(0 100% 0 0)' }}
+                                animate={{ clipPath: 'inset(0 0% 0 0)' }}
+                                transition={{ delay: i * 0.15, duration: 0.4, ease: 'easeInOut' }}
+                                className="flex items-center gap-2 px-3 py-2"
+                                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+                              >
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                  <TeamFlag logo={m.team_a_logo} name={m.team_a} className="w-6 h-6 flex-shrink-0" animate={false} />
+                                  <span className="text-white text-xs font-medium truncate">{m.team_a}</span>
+                                </div>
+                                <span className="text-slate-400 text-[11px] font-bold flex-shrink-0" dir="ltr">
+                                  {new Date(m.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
+                                  <span className="text-white text-xs font-medium truncate">{m.team_b}</span>
+                                  <TeamFlag logo={m.team_b_logo} name={m.team_b} className="w-6 h-6 flex-shrink-0" animate={false} />
+                                </div>
+                              </motion.div>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
                   </AnimatePresence>
                 </motion.div>
               </div>
