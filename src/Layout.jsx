@@ -1350,9 +1350,16 @@ export default function Layout({ children, currentPageName }) {
         <AnimatePresence>
           {showNextMatchIntro && (upcomingMatches[0] || nextMatch) && (() => {
             const soloMatch = upcomingMatches[0] || nextMatch;
-            // The grid shows every match that evening, including the one just
-            // featured solo — it shrinks down and joins the rest rather than
-            // disappearing.
+            // If two+ matches kick off at the exact same time as the next
+            // match, their countdown is identical — show them together
+            // instead of arbitrarily picking just one.
+            const soloMatches = upcomingMatches.length
+              ? upcomingMatches.filter(m => m.match_date === soloMatch.match_date)
+              : [soloMatch];
+            const soloIds = new Set(soloMatches.map(m => m.id));
+            // The grid shows every match that evening, including the one(s)
+            // just featured solo — they shrink down and join the rest rather
+            // than disappearing.
             const gridMatches = upcomingMatches;
             return (
             <>
@@ -1423,18 +1430,23 @@ export default function Layout({ children, currentPageName }) {
                               backgroundClip: 'text',
                               color: 'transparent',
                             }}
-                          >המשחק הקרוב</span>
+                          >{soloMatches.length > 1 ? 'המשחקים הקרובים' : 'המשחק הקרוב'}</span>
                         </div>
-                        <div className="flex items-center gap-6" dir="ltr">
-                          <div className="flex flex-col items-center gap-1.5 w-20">
-                            <TeamFlag logo={soloMatch.team_a_logo} name={soloMatch.team_a} className="w-14 h-14" animate={false} />
-                            <span className="text-slate-400 text-[11px] text-center">{soloMatch.team_a}</span>
-                          </div>
-                          <span className="text-slate-500 font-bold text-sm">VS</span>
-                          <div className="flex flex-col items-center gap-1.5 w-20">
-                            <TeamFlag logo={soloMatch.team_b_logo} name={soloMatch.team_b} className="w-14 h-14" animate={false} />
-                            <span className="text-slate-400 text-[11px] text-center">{soloMatch.team_b}</span>
-                          </div>
+
+                        <div className="flex flex-col items-center gap-4">
+                          {soloMatches.map((m) => (
+                            <div key={m.id} className="flex items-center gap-6" dir="ltr">
+                              <div className="flex flex-col items-center gap-1.5 w-20">
+                                <TeamFlag logo={m.team_a_logo} name={m.team_a} className="w-14 h-14" animate={false} />
+                                <span className="text-slate-400 text-[11px] text-center">{m.team_a}</span>
+                              </div>
+                              <span className="text-slate-500 font-bold text-sm">VS</span>
+                              <div className="flex flex-col items-center gap-1.5 w-20">
+                                <TeamFlag logo={m.team_b_logo} name={m.team_b} className="w-14 h-14" animate={false} />
+                                <span className="text-slate-400 text-[11px] text-center">{m.team_b}</span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
 
                         <div className="flex flex-col items-center gap-0.5">
@@ -1448,7 +1460,7 @@ export default function Layout({ children, currentPageName }) {
 
                         <MatchCountdown target={soloMatch.match_date} />
 
-                        {nextMatchPrediction && (
+                        {soloMatches.length === 1 && nextMatchPrediction && (
                           <div className="flex flex-col items-center gap-1 mt-1">
                             <span className="text-slate-400 text-xs">הניחוש שלי</span>
                             <span className="text-sky-400 text-sm font-bold">
@@ -1470,7 +1482,7 @@ export default function Layout({ children, currentPageName }) {
                         <span className="text-yellow-400 text-xs font-bold tracking-widest uppercase">משחקי הערב</span>
                         <div className="grid grid-cols-3 gap-2 w-full">
                           {gridMatches.map((m, i) => {
-                            const isFeatured = m.id === soloMatch.id;
+                            const isFeatured = soloIds.has(m.id);
                             return (
                               <div key={m.id} style={{ overflow: 'hidden', borderRadius: 12 }}>
                                 <motion.div
