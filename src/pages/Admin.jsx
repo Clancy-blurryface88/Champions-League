@@ -19,6 +19,7 @@ import AdminReset from "../components/admin/AdminReset";
 import AdminLeagueOverride from "../components/admin/AdminLeagueOverride";
 import AdminPlayoffOverride from "../components/admin/AdminPlayoffOverride";
 import AdminNextMatchRevealDemo from "../components/admin/AdminNextMatchRevealDemo";
+import AdminDateTabsDemo from "../components/admin/AdminDateTabsDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -80,6 +81,7 @@ export default function Admin() {
       case 'league-override': return <AdminLeagueOverride />;
       case 'playoff-override': return <AdminPlayoffOverride />;
       case 'next-match-reveal-demo': return <AdminNextMatchRevealDemo />;
+      case 'date-tabs-demo': return <AdminDateTabsDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -97,6 +99,7 @@ export default function Admin() {
     { id: 'league-override',   label: '🔀 סידור טבלה',          icon: BarChart3 },
     { id: 'playoff-override',  label: '🏆 פלייאוף',              icon: Trophy },
     { id: 'next-match-reveal-demo', label: 'דמו חשיפת משחקי ערב', icon: LayoutGrid },
+    { id: 'date-tabs-demo', label: 'דמו תצוגת תאריכים', icon: BarChart3 },
   ];
 
   return (
