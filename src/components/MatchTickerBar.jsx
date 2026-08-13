@@ -120,7 +120,16 @@ export default function MatchTickerBar({ onClick }) {
           {isUpcoming && (
             <span style={{ color: '#ffffff', fontSize: 8, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>בקרוב</span>
           )}
-          <span style={{ color: '#ffffff', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>{dateLabel}</span>
+          <span
+            style={{
+              fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none',
+              background: 'linear-gradient(90deg, #4ade80, #16a34a)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              color: 'transparent',
+              filter: 'drop-shadow(0 0 4px rgba(74,222,128,0.85))',
+            }}
+          >{dateLabel}</span>
         </span>
       </button>
 
