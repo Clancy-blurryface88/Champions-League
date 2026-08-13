@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useModalBackButton } from "@/hooks/useModalBackButton";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Clock, CheckCircle } from "lucide-react";
+import { X, Clock, CheckCircle, Calendar, ChevronRight, ChevronLeft } from "lucide-react";
 import { Match } from "@/api/entities";
 import TeamFlag from "@/components/TeamFlag";
 
@@ -47,6 +47,82 @@ function formatDayName(date) {
 function formatTime(dateStr) {
   const date = new Date(dateStr);
   return date.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+}
+
+function MatchCountRing({ finished, total, active, size = 22 }) {
+  const pct = total ? finished / total : 0;
+  const r = (size - 4) / 2;
+  const c = 2 * Math.PI * r;
+  return (
+    <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <g transform={`translate(${size / 2},${size / 2}) rotate(-90)`}>
+          <circle r={r} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={2.5} />
+          <circle
+            r={r} fill="none" stroke="#4ade80" strokeWidth={2.5}
+            strokeDasharray={c} strokeDashoffset={c * (1 - pct)} strokeLinecap="round"
+            style={{ filter: "drop-shadow(0 0 3px rgba(74,222,128,0.75))" }}
+          />
+        </g>
+      </svg>
+      <span className={`absolute text-[8px] font-bold ${active ? "text-sky-400/90" : "text-white/40"}`}>
+        {finished}/{total}
+      </span>
+    </div>
+  );
+}
+
+const WEEKDAY_LABELS = ["א", "ב", "ג", "ד", "ה", "ו", "ש"];
+
+function QuickJumpCalendar({ calMonth, setCalMonth, markedDates, selected, onPick }) {
+  const y = calMonth.getFullYear(), m = calMonth.getMonth();
+  const first = new Date(y, m, 1);
+  const startPad = first.getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const cells = [...Array(startPad).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
+  const key = (day) => `${y}-${String(m + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+  return (
+    <div className="px-5 pb-3">
+      <div className="flex items-center justify-between mb-2">
+        <button onClick={() => setCalMonth(new Date(y, m - 1, 1))} className="w-7 h-7 flex items-center justify-center rounded-full text-white/50 hover:text-white hover:bg-white/8">
+          <ChevronRight className="w-4 h-4" />
+        </button>
+        <span className="text-white/70 text-xs font-bold">{calMonth.toLocaleDateString("he-IL", { month: "long", year: "numeric" })}</span>
+        <button onClick={() => setCalMonth(new Date(y, m + 1, 1))} className="w-7 h-7 flex items-center justify-center rounded-full text-white/50 hover:text-white hover:bg-white/8">
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {WEEKDAY_LABELS.map((d) => (
+          <div key={d} className="text-center text-[9px] text-white/25">{d}</div>
+        ))}
+        {cells.map((day, i) => {
+          if (!day) return <div key={i} />;
+          const dk = key(day);
+          const hasMatch = markedDates.has(dk);
+          const isSel = dk === selected;
+          return (
+            <button
+              key={i}
+              disabled={!hasMatch}
+              onClick={() => hasMatch && onPick(dk)}
+              className="relative aspect-square rounded-md flex items-center justify-center text-[10px]"
+              style={{
+                background: isSel ? "rgba(9,122,220,0.25)" : "transparent",
+                border: isSel ? "1px solid rgba(9,122,220,0.6)" : "1px solid transparent",
+                color: hasMatch ? "#fff" : "rgba(255,255,255,0.2)",
+                fontWeight: hasMatch ? 700 : 400,
+              }}
+            >
+              {day}
+              {hasMatch && !isSel && <span className="absolute bottom-0.5 w-1 h-1 rounded-full bg-emerald-400" />}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 function MatchCard({ match }) {
@@ -103,6 +179,8 @@ export default function MatchesByDateSheet({ isOpen, onClose }) {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calMonth, setCalMonth] = useState(new Date());
   const tabsRef = useRef(null);
 
   useEffect(() => {
@@ -118,6 +196,7 @@ export default function MatchesByDateSheet({ isOpen, onClose }) {
         ? today
         : dates.find((d) => d >= today) || dates[dates.length - 1];
       setSelectedDate(todayOrNearest);
+      setCalMonth(todayOrNearest ? new Date(todayOrNearest + "T00:00:00") : new Date());
       setLoading(false);
     });
   }, [isOpen]);
@@ -164,13 +243,46 @@ export default function MatchesByDateSheet({ isOpen, onClose }) {
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-3 flex-shrink-0">
               <h2 className="text-sm font-semibold text-white/80 tracking-widest uppercase">משחקים לפי תאריך</h2>
-              <button
-                onClick={onClose}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/8 text-white/50 hover:text-white hover:bg-white/12 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowCalendar((v) => !v)}
+                  className={`h-8 px-3 flex items-center gap-1.5 rounded-full border text-xs font-semibold transition-colors ${
+                    showCalendar
+                      ? "bg-sky-500/15 border-sky-400/40 text-sky-400"
+                      : "bg-white/8 border-transparent text-white/50 hover:text-white hover:bg-white/12"
+                  }`}
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  קפיצה מהירה
+                </button>
+                <button
+                  onClick={onClose}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/8 text-white/50 hover:text-white hover:bg-white/12 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
+
+            {/* Quick-jump calendar */}
+            <AnimatePresence>
+              {showCalendar && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden flex-shrink-0 border-b border-white/5"
+                >
+                  <QuickJumpCalendar
+                    calMonth={calMonth}
+                    setCalMonth={setCalMonth}
+                    markedDates={new Set(dates)}
+                    selected={selectedDate}
+                    onPick={(d) => { setSelectedDate(d); setShowCalendar(false); }}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Date Tabs */}
             <div
@@ -197,11 +309,7 @@ export default function MatchesByDateSheet({ isOpen, onClose }) {
                   >
                     <span className="text-xs font-bold leading-none">{label}</span>
                     <span className={`text-[10px] leading-none mt-0.5 ${isActive ? "text-sky-400/70" : "text-white/30"}`}>{sub}</span>
-                    <div className="flex items-center gap-0.5 mt-1">
-                      <span className={`text-[9px] font-semibold ${isActive ? "text-sky-400/80" : "text-white/25"}`}>
-                        {finishedCount}/{dayMatches.length}
-                      </span>
-                    </div>
+                    <MatchCountRing finished={finishedCount} total={dayMatches.length} active={isActive} />
                   </button>
                 );
               })}
