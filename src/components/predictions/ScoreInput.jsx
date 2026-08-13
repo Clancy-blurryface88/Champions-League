@@ -1,12 +1,23 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ScoreInput({ value, onChange, hasError, disabled }) {
+  // Dragging updates this local value only — instant, cheap re-render of just
+  // this pill. Calling the parent's onChange on every pixel of movement was
+  // triggering a re-render of the whole match card on every step, which made
+  // fast pointermove events coalesce and the count skip out of order. The
+  // parent is only told about the change once, when the drag ends.
+  const [localValue, setLocalValue] = useState(value);
   const dragState = useRef(null);
+
+  useEffect(() => {
+    if (!dragState.current) setLocalValue(value);
+  }, [value]);
 
   const handlePointerDown = (e) => {
     if (disabled) return;
-    dragState.current = { startY: e.clientY, startValue: value === undefined || value === null ? -1 : value, steps: 0 };
+    const startValue = localValue === undefined || localValue === null ? -1 : localValue;
+    dragState.current = { startY: e.clientY, startValue, steps: 0 };
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
@@ -16,7 +27,7 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
     const steps = Math.round(dy / 24); // ~24px per unit
     if (steps !== dragState.current.steps) {
       dragState.current.steps = steps;
-      onChange(Math.max(0, dragState.current.startValue + steps));
+      setLocalValue(Math.max(0, dragState.current.startValue + steps));
     }
   };
 
@@ -24,14 +35,16 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
     if (disabled || !dragState.current) return;
     // A tap with no meaningful drag still bumps the value by one — keeps the
     // control usable with a single finger tap, not just a drag gesture.
-    if (dragState.current.steps === 0) {
-      onChange(Math.max(0, dragState.current.startValue + 1));
-    }
+    const finalValue = dragState.current.steps === 0
+      ? Math.max(0, dragState.current.startValue + 1)
+      : Math.max(0, dragState.current.startValue + dragState.current.steps);
+    setLocalValue(finalValue);
     dragState.current = null;
+    onChange(finalValue);
   };
 
-  const displayValue = (value === undefined || value === null) ? '?' : value;
-  const isUndefined = value === undefined || value === null;
+  const displayValue = (localValue === undefined || localValue === null) ? '?' : localValue;
+  const isUndefined = localValue === undefined || localValue === null;
 
   return (
     <div
