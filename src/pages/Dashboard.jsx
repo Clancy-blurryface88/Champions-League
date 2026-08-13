@@ -5,11 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import TournamentHeader from "../components/TournamentHeader";
 import AppBackground from "../components/AppBackground";
 import { LoaderBar } from "../components/ui/LoaderBar";
-// Import the new button component - this import is no longer needed but will be removed by user on a later refactor
-import { RoundsMarquee } from "../components/RoundsMarquee"; // NEW: Import RoundsMarquee
 import { Round } from "@/api/entities"; // NEW: Import Round entity
 import { motion, AnimatePresence } from "framer-motion";
 import LottieAnimation from "@/components/ui/LottieAnimation";
@@ -121,15 +118,21 @@ export default function Dashboard() {
     <div className="min-h-[calc(100vh-7rem)] relative flex flex-col">
       <AppBackground />
 
-      <div className="relative z-[1] flex-1 flex flex-col items-center justify-center w-full gap-10 md:gap-16 pt-8 pb-12">
-        <TournamentHeader />
-
-        {/* Rounds Marquee Section */}
-        {rounds.length > 0 && (
-          <div className="w-full max-w-6xl mx-auto px-4">
-            <RoundsMarquee rounds={rounds} user={user} onRoundClick={handleRoundSelect} />
-          </div>
-        )}
+      <div className="relative z-[1] flex-1 flex flex-col items-center justify-center w-full gap-10 md:gap-16 pt-24 pb-12">
+        {/* Current round — direct entry point into predictions now that the
+            logo/trophy header and rounds marquee are gone from this screen. */}
+        {rounds.length > 0 && (() => {
+          const activeRound = rounds.find(r => r.is_active) || rounds[0];
+          return (
+            <div className="w-full max-w-sm mx-auto px-4">
+              <Button
+                onClick={() => handleRoundSelect(activeRound)}
+                className="w-full bg-blue-600 hover:bg-blue-700">
+                {activeRound.name} — לניחושים
+              </Button>
+            </div>
+          );
+        })()}
 
         {/* Admin Panel Button */}
         {user?.is_admin && (
