@@ -1350,7 +1350,10 @@ export default function Layout({ children, currentPageName }) {
         <AnimatePresence>
           {showNextMatchIntro && (upcomingMatches[0] || nextMatch) && (() => {
             const soloMatch = upcomingMatches[0] || nextMatch;
-            const restMatches = upcomingMatches.slice(1);
+            // The grid shows every match that evening, including the one just
+            // featured solo — it shrinks down and joins the rest rather than
+            // disappearing.
+            const gridMatches = upcomingMatches;
             return (
             <>
               <motion.div
@@ -1397,8 +1400,8 @@ export default function Layout({ children, currentPageName }) {
                         key="solo"
                         initial={{ opacity: 0, scale: 0.5, filter: 'blur(8px)' }}
                         animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-                        exit={{ opacity: 0, scale: 1.6, filter: 'blur(8px)' }}
-                        transition={{ duration: 0.5, ease: 'easeInOut' }}
+                        exit={{ opacity: 0, scale: 0.2, y: -60, filter: 'blur(2px)' }}
+                        transition={{ duration: 0.45, ease: 'easeIn' }}
                         className="px-10 py-8 flex flex-col items-center gap-5"
                       >
                         <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.35)' }}>
@@ -1454,27 +1457,33 @@ export default function Layout({ children, currentPageName }) {
                         className="px-6 py-6 flex flex-col items-center gap-3"
                         style={{ width: 380 }}
                       >
-                        <span className="text-yellow-400 text-xs font-bold tracking-widest uppercase">שאר משחקי הערב</span>
+                        <span className="text-yellow-400 text-xs font-bold tracking-widest uppercase">משחקי הערב</span>
                         <div className="grid grid-cols-3 gap-2 w-full">
-                          {restMatches.map((m, i) => (
-                            <div key={m.id} style={{ overflow: 'hidden', borderRadius: 12 }}>
-                              <motion.div
-                                initial={{ clipPath: 'inset(0 100% 0 0)' }}
-                                animate={{ clipPath: 'inset(0 0% 0 0)' }}
-                                transition={{ delay: i * 0.35, duration: 0.7, ease: 'easeInOut' }}
-                                className="flex flex-col items-center justify-center gap-1.5 px-2 py-2.5"
-                                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
-                              >
-                                <div className="flex items-center gap-1.5">
-                                  <TeamFlag logo={m.team_a_logo} name={m.team_a} className="w-7 h-7 flex-shrink-0" animate={false} />
-                                  <TeamFlag logo={m.team_b_logo} name={m.team_b} className="w-7 h-7 flex-shrink-0" animate={false} />
-                                </div>
-                                <span className="text-slate-400 text-[10px] font-bold flex-shrink-0" dir="ltr">
-                                  {new Date(m.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
-                                </span>
-                              </motion.div>
-                            </div>
-                          ))}
+                          {gridMatches.map((m, i) => {
+                            const isFeatured = m.id === soloMatch.id;
+                            return (
+                              <div key={m.id} style={{ overflow: 'hidden', borderRadius: 12 }}>
+                                <motion.div
+                                  initial={{ clipPath: 'inset(0 100% 0 0)', ...(isFeatured ? { scale: 3, opacity: 0 } : {}) }}
+                                  animate={{ clipPath: 'inset(0 0% 0 0)', scale: 1, opacity: 1 }}
+                                  transition={{ delay: isFeatured ? 0 : i * 0.35, duration: isFeatured ? 0.45 : 0.7, ease: 'easeInOut' }}
+                                  className="flex flex-col items-center justify-center gap-1.5 px-2 py-2.5"
+                                  style={{
+                                    background: isFeatured ? 'rgba(74,222,128,0.10)' : 'rgba(255,255,255,0.05)',
+                                    border: isFeatured ? '1px solid rgba(74,222,128,0.45)' : '1px solid rgba(255,255,255,0.1)',
+                                  }}
+                                >
+                                  <div className="flex items-center gap-1.5">
+                                    <TeamFlag logo={m.team_a_logo} name={m.team_a} className="w-7 h-7 flex-shrink-0" animate={false} />
+                                    <TeamFlag logo={m.team_b_logo} name={m.team_b} className="w-7 h-7 flex-shrink-0" animate={false} />
+                                  </div>
+                                  <span className="text-slate-400 text-[10px] font-bold flex-shrink-0" dir="ltr">
+                                    {new Date(m.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                </motion.div>
+                              </div>
+                            );
+                          })}
                         </div>
 
                         <button
