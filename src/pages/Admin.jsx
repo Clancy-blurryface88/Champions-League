@@ -17,6 +17,7 @@ import AdminMatchPredictions from "../components/admin/AdminMatchPredictions";
 import AdminImportMatches from "../components/admin/AdminImportMatches";
 import AdminReset from "../components/admin/AdminReset";
 import AdminLeagueOverride from "../components/admin/AdminLeagueOverride";
+import AdminPlayoffOverride from "../components/admin/AdminPlayoffOverride";
 import AdminCountdownDemo from "../components/admin/AdminCountdownDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
@@ -77,6 +78,7 @@ export default function Admin() {
       case 'import': return <AdminImportMatches />;
       case 'reset':      return <AdminReset />;
       case 'league-override': return <AdminLeagueOverride />;
+      case 'playoff-override': return <AdminPlayoffOverride />;
       case 'countdown-demo': return <AdminCountdownDemo />;
       default: return <AdminRounds />;
     }
@@ -93,6 +95,7 @@ export default function Admin() {
     { id: 'import', label: 'ייבוא משחקים', icon: Download },
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'league-override',   label: '🔀 סידור טבלה',          icon: BarChart3 },
+    { id: 'playoff-override',  label: '🏆 פלייאוף',              icon: Trophy },
     { id: 'countdown-demo',   label: 'דמו ספירה לאחור',          icon: Clock },
   ];
 

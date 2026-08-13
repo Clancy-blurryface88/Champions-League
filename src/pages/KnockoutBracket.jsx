@@ -5,6 +5,7 @@ import TeamFlag from '@/components/TeamFlag';
 import AppBackground from '@/components/AppBackground';
 import { RefreshCw, ArrowRight } from 'lucide-react';
 import { loadLeagueTableOverride, applyOverride } from '@/utils/standingsOverride';
+import { loadPlayoffOverride, resolvePlayoffWinner } from '@/utils/playoffOverride';
 import { calcStandings } from '@/utils/standings';
 import { STAGES } from '@/config/tournament';
 
@@ -169,18 +170,21 @@ export default function KnockoutBracket() {
   const [leaguePhaseMatches, setLeaguePhaseMatches] = useState([]);
   const [knockoutMatches, setKnockoutMatches]       = useState([]);
   const [leagueTableOverride, setLeagueTableOverride] = useState([]);
+  const [playoffSlots, setPlayoffSlots]           = useState([]);
   const [loading, setLoading]                     = useState(true);
   const [lastUpdate, setLastUpdate]               = useState(null);
 
   const load = async () => {
     try {
-      const [data, { override }] = await Promise.all([
+      const [data, { override }, { slots }] = await Promise.all([
         Match.list('match_date'),
         loadLeagueTableOverride(),
+        loadPlayoffOverride(),
       ]);
       setLeaguePhaseMatches(data.filter(m => m.stage === STAGES.LEAGUE_PHASE));
       setKnockoutMatches(data.filter(m => m.stage && m.stage !== STAGES.LEAGUE_PHASE));
       setLeagueTableOverride(override || []);
+      setPlayoffSlots(slots || []);
       setLastUpdate(new Date());
     } catch(e) { console.error(e); }
     setLoading(false);
@@ -228,6 +232,8 @@ export default function KnockoutBracket() {
         return t ? { name: t.name, logo: t.logo, projected: !leaguePhaseComplete } : null;
       }
       if (typeof label === 'object' && label.playoff != null) {
+        const winner = resolvePlayoffWinner(playoffSlots, label.playoff);
+        if (winner) return { name: winner.name, logo: winner.logo, projected: false };
         return { name: `TBD — מנצחת פלייאוף ${label.playoff}`, logo: null, projected: true, placeholder: true };
       }
       if (typeof label === 'string' && label.startsWith('W')) {
@@ -309,7 +315,7 @@ export default function KnockoutBracket() {
     const final    = { ...FINAL_SLOT, ...resolveOne(FINAL_SLOT) };
 
     return { leftR16, leftQF, leftSF, rightR16, rightQF, rightSF, final };
-  }, [standings, leaguePhaseComplete, knockoutMatches]);
+  }, [standings, leaguePhaseComplete, knockoutMatches, playoffSlots]);
 
   // ─── SVG lines ─────────────────────────────────────────────────────────────
   const lineColor = 'rgba(71,85,105,0.55)';
