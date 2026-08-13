@@ -31,6 +31,10 @@ import FinalResultsOverlay from "./components/FinalResultsOverlay";
 // Measures a ref'd element's rendered box size, updating on resize (the live
 // card's width is responsive — min(370px, 92vw) — so the ring's actual
 // dimensions aren't known ahead of render).
+function localDayKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
 function useElementSize(ref) {
   const [size, setSize] = useState({ width: 0, height: 0 });
   useEffect(() => {
@@ -717,7 +721,11 @@ export default function Layout({ children, currentPageName }) {
         .filter(m => !m.is_finished && new Date(m.match_date) > now)
         .sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
       setNextMatch(upcoming[0] || null);
-      setUpcomingMatches(upcoming);
+      // Cycle only through matches on the same day as the next match — otherwise,
+      // on a day with few/no games left, this would keep going and cycle into a
+      // whole future matchday's worth of fixtures.
+      const nextDayKey = upcoming[0] ? localDayKey(new Date(upcoming[0].match_date)) : null;
+      setUpcomingMatches(nextDayKey ? upcoming.filter(m => localDayKey(new Date(m.match_date)) === nextDayKey) : []);
       setTournamentEnded(all.length > 0 && all.every(m => m.is_finished));
     }).catch(() => {}).finally(() => setNextMatchChecked(true));
   }, []);
@@ -1366,6 +1374,7 @@ export default function Layout({ children, currentPageName }) {
                   exit={{ opacity: 0, scale: 0.9 }}
                   className="rounded-2xl overflow-hidden"
                   style={{
+                    position: 'relative',
                     background: 'rgba(8,18,32,0.95)',
                     border: '1px solid rgba(9, 122, 220,0.4)',
                     backdropFilter: 'blur(28px)',
@@ -1373,6 +1382,17 @@ export default function Layout({ children, currentPageName }) {
                   }}
                   transition={{ type: 'spring', stiffness: 180, damping: 26 }}
                 >
+                  {nextMatchIndex >= 3 && (
+                    <motion.button
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      onClick={() => setShowNextMatchIntro(false)}
+                      style={{ pointerEvents: 'auto', position: 'absolute', top: 10, left: 10, zIndex: 1 }}
+                      className="w-7 h-7 flex items-center justify-center rounded-full bg-white/8 text-white/50 hover:text-white hover:bg-white/15 transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </motion.button>
+                  )}
                   <AnimatePresence mode="popLayout">
                     <motion.div
                       key={nextMatchIndex}
