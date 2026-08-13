@@ -20,6 +20,7 @@ import AdminLeagueOverride from "../components/admin/AdminLeagueOverride";
 import AdminPlayoffOverride from "../components/admin/AdminPlayoffOverride";
 import AdminCountdownDemo from "../components/admin/AdminCountdownDemo";
 import AdminDateSelectorDemo from "../components/admin/AdminDateSelectorDemo";
+import AdminScorePickerDemo from "../components/admin/AdminScorePickerDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -82,6 +83,7 @@ export default function Admin() {
       case 'playoff-override': return <AdminPlayoffOverride />;
       case 'countdown-demo': return <AdminCountdownDemo />;
       case 'date-selector-demo': return <AdminDateSelectorDemo />;
+      case 'score-picker-demo': return <AdminScorePickerDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -100,6 +102,7 @@ export default function Admin() {
     { id: 'playoff-override',  label: '🏆 פלייאוף',              icon: Trophy },
     { id: 'countdown-demo',   label: 'דמו ספירה לאחור',          icon: Clock },
     { id: 'date-selector-demo', label: 'דמו בורר תאריכים',       icon: Calendar },
+    { id: 'score-picker-demo', label: 'דמו בורר תוצאה',          icon: Target },
   ];
 
   return (
