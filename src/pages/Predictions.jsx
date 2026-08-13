@@ -665,32 +665,8 @@ export default function Predictions() {
             <h1 className="text-3xl font-bold text-white mb-2">{currentRound?.name}</h1>
             <p className="text-slate-400">נחש את תוצאות המשחקים</p>
           </div>
-          {sortedDateKeys.length > 0 && (
-            <button
-              onClick={() => setShowDateCalendar(v => !v)}
-              className={`h-9 px-3 flex items-center gap-1.5 rounded-full border text-xs font-semibold transition-colors flex-shrink-0 ${
-                showDateCalendar
-                  ? "bg-sky-500/15 border-sky-400/40 text-sky-400"
-                  : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10"
-              }`}
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              קפיצה מהירה
-            </button>
-          )}
+          <div className="w-9 flex-shrink-0" />
         </div>
-
-        {showDateCalendar && sortedDateKeys.length > 0 && (
-          <div className="mb-6 -mx-1 rounded-2xl overflow-hidden" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
-            <QuickJumpCalendar
-              calMonth={calMonth}
-              setCalMonth={setCalMonth}
-              markedDates={new Set(sortedDateKeys)}
-              selected={activeDateKey}
-              onPick={(d) => { scrollToDate(d); setShowDateCalendar(false); }}
-            />
-          </div>
-        )}
 
         {error &&
         <div className="bg-red-900/50 border border-red-700 rounded-lg p-4 mb-6">
@@ -758,60 +734,87 @@ export default function Predictions() {
               borderBottom: '1px solid rgba(255,255,255,0.07)',
             }}
           >
-          <div ref={dateStripRef} className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
-            {sortedDateKeys.map(dateKey => {
-              const isActive = activeDateKey === dateKey;
-              const isToday  = moment(dateKey).isSame(moment(), 'day');
-              const isPast   = moment(dateKey).isBefore(moment().startOf('day'));
-              const dayMatches = matchesByDate[dateKey] || [];
-              const count    = dayMatches.length;
-              const finishedCount = dayMatches.filter(m => m.is_finished).length;
-              const hasMissing = dateHasMissingPredictions(dateKey);
-              const dayName  = isToday ? 'היום' : moment(dateKey).locale('he').format('ddd');
-              const dayNum   = moment(dateKey).format('D');
+          <div className="flex items-center gap-2">
+            <div ref={dateStripRef} className="flex-1 min-w-0 flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
+              {sortedDateKeys.map(dateKey => {
+                const isActive = activeDateKey === dateKey;
+                const isToday  = moment(dateKey).isSame(moment(), 'day');
+                const isPast   = moment(dateKey).isBefore(moment().startOf('day'));
+                const dayMatches = matchesByDate[dateKey] || [];
+                const count    = dayMatches.length;
+                const finishedCount = dayMatches.filter(m => m.is_finished).length;
+                const hasMissing = dateHasMissingPredictions(dateKey);
+                const dayName  = isToday ? 'היום' : moment(dateKey).locale('he').format('ddd');
+                const dayNum   = moment(dateKey).format('D');
 
-              return (
-                <button
-                  key={dateKey}
-                  ref={el => dateTabRefs.current[dateKey] = el}
-                  onClick={() => scrollToDate(dateKey)}
-                  className="relative flex-shrink-0 flex flex-col items-center gap-1 pt-2 pb-2.5 px-3 rounded-2xl transition-all duration-250"
-                  style={{
-                    background: isActive
-                      ? 'linear-gradient(135deg,#097adc,#7cadee)'
-                      : 'rgba(255,255,255,0.05)',
-                    border: isActive
-                      ? '1px solid rgba(9, 122, 220,0.6)'
-                      : '1px solid rgba(255,255,255,0.08)',
-                    minWidth: 56,
-                  }}
-                >
-                  {/* Missing predictions indicator */}
-                  {hasMissing && !isPast && (
-                    <span
-                      className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-orange-500 border-2 border-[#060e1c] z-10"
-                      title="יש משחקים ללא ניחוש"
+                return (
+                  <button
+                    key={dateKey}
+                    ref={el => dateTabRefs.current[dateKey] = el}
+                    onClick={() => scrollToDate(dateKey)}
+                    className="relative flex-shrink-0 flex flex-col items-center gap-1 pt-2 pb-2.5 px-3 rounded-2xl transition-all duration-250"
+                    style={{
+                      background: isActive
+                        ? 'linear-gradient(135deg,#097adc,#7cadee)'
+                        : 'rgba(255,255,255,0.05)',
+                      border: isActive
+                        ? '1px solid rgba(9, 122, 220,0.6)'
+                        : '1px solid rgba(255,255,255,0.08)',
+                      minWidth: 56,
+                    }}
+                  >
+                    {/* Missing predictions indicator */}
+                    {hasMissing && !isPast && (
+                      <span
+                        className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-orange-500 border-2 border-[#060e1c] z-10"
+                        title="יש משחקים ללא ניחוש"
+                      />
+                    )}
+
+                    <span className={`text-[10px] font-semibold leading-none ${isActive ? 'text-black/60' : isPast ? 'text-slate-600' : 'text-slate-400'}`}>
+                      {dayName}
+                    </span>
+                    <span className={`text-base font-black leading-none ${isActive ? 'text-black' : isPast ? 'text-slate-500' : 'text-white'}`}>
+                      {dayNum}
+                    </span>
+                    <MatchCountRing
+                      finished={finishedCount}
+                      total={count}
+                      active={isActive}
+                      size={20}
+                      activeClassName="text-black/70"
+                      inactiveClassName={isPast ? "text-slate-600" : "text-white/40"}
                     />
-                  )}
+                  </button>
+                );
+              })}
+            </div>
 
-                  <span className={`text-[10px] font-semibold leading-none ${isActive ? 'text-black/60' : isPast ? 'text-slate-600' : 'text-slate-400'}`}>
-                    {dayName}
-                  </span>
-                  <span className={`text-base font-black leading-none ${isActive ? 'text-black' : isPast ? 'text-slate-500' : 'text-white'}`}>
-                    {dayNum}
-                  </span>
-                  <MatchCountRing
-                    finished={finishedCount}
-                    total={count}
-                    active={isActive}
-                    size={20}
-                    activeClassName="text-black/70"
-                    inactiveClassName={isPast ? "text-slate-600" : "text-white/40"}
-                  />
-                </button>
-              );
-            })}
+            {/* Quick-jump — icon-only, styled like a date tab, fixed on the left */}
+            <button
+              onClick={() => setShowDateCalendar(v => !v)}
+              className="flex-shrink-0 flex items-center justify-center rounded-2xl transition-all duration-250"
+              style={{
+                width: 48, height: 56,
+                background: showDateCalendar ? 'linear-gradient(135deg,#097adc,#7cadee)' : 'rgba(255,255,255,0.05)',
+                border: showDateCalendar ? '1px solid rgba(9, 122, 220,0.6)' : '1px solid rgba(255,255,255,0.08)',
+              }}
+            >
+              <Calendar className={`w-5 h-5 ${showDateCalendar ? 'text-black/70' : 'text-slate-400'}`} />
+            </button>
           </div>
+
+          {showDateCalendar && (
+            <div className="mt-2 -mx-1 rounded-2xl overflow-hidden" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <QuickJumpCalendar
+                calMonth={calMonth}
+                setCalMonth={setCalMonth}
+                markedDates={new Set(sortedDateKeys)}
+                selected={activeDateKey}
+                onPick={(d) => { scrollToDate(d); setShowDateCalendar(false); }}
+              />
+            </div>
+          )}
           </div>
         )}
 
