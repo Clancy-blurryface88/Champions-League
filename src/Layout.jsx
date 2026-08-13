@@ -305,6 +305,7 @@ export default function Layout({ children, currentPageName }) {
   const [nextMatchChecked, setNextMatchChecked] = useState(false);
   const [showNextMatchIntro, setShowNextMatchIntro] = useState(false);
   const [nextMatchPrediction, setNextMatchPrediction] = useState(null);
+  const introShownRef = useRef(false); // resets on every fresh app load — unlike sessionStorage, doesn't persist across reloads
   const [tournamentEnded, setTournamentEnded] = useState(false);
   const [showFinalResults, setShowFinalResults] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
@@ -582,14 +583,16 @@ export default function Layout({ children, currentPageName }) {
   // for both checks to resolve avoids flashing the wrong one while the live
   // check is still in flight. Also waits for the welcome/intro-video
   // onboarding flow to finish first — otherwise this fires (and burns its
-  // one-time session flag) underneath/behind those modals, so it never
-  // actually gets seen once they close.
+  // one-time flag) underneath/behind those modals, so it never actually
+  // gets seen once they close. Uses an in-memory ref (not sessionStorage) so
+  // it shows again on every fresh app load, while still only firing once
+  // per continuous visit even if hasLiveMatch/nextMatch change mid-session.
   useEffect(() => {
     if (authLoading || !liveCheckDone || !nextMatchChecked) return;
     if (showWelcomeModal) return;
     if (hasLiveMatch && livePredictionLoading) return; // wait so the card appears complete, prediction included
-    if (sessionStorage.getItem('match_intro_shown')) return;
-    sessionStorage.setItem('match_intro_shown', '1');
+    if (introShownRef.current) return;
+    introShownRef.current = true;
     if (tournamentEnded) {
       setShowFinalResults(true);
     } else if (hasLiveMatch) {
