@@ -1379,15 +1379,17 @@ export default function Layout({ children, currentPageName }) {
                   }}
                   transition={{ type: 'spring', stiffness: 180, damping: 26 }}
                 >
-                  <motion.button
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    onClick={() => setShowNextMatchIntro(false)}
-                    style={{ position: 'absolute', top: 10, left: 10, zIndex: 1 }}
-                    className="w-7 h-7 flex items-center justify-center rounded-full bg-white/8 text-white/50 hover:text-white hover:bg-white/15 transition-colors"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </motion.button>
+                  {introPhase === 'solo' && (
+                    <motion.button
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      onClick={() => setShowNextMatchIntro(false)}
+                      style={{ position: 'absolute', top: 10, left: 10, zIndex: 1 }}
+                      className="w-7 h-7 flex items-center justify-center rounded-full bg-white/8 text-white/50 hover:text-white hover:bg-white/15 transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </motion.button>
+                  )}
 
                   <AnimatePresence mode="wait">
                     {introPhase === 'solo' ? (
@@ -1442,7 +1444,7 @@ export default function Layout({ children, currentPageName }) {
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.3 }}
                         className="px-6 py-6 flex flex-col items-center gap-3"
-                        style={{ width: 300 }}
+                        style={{ width: 340 }}
                       >
                         <span className="text-slate-400 text-xs font-bold tracking-widest uppercase">שאר משחקי הערב</span>
                         <div className="flex flex-col gap-2 w-full">
@@ -1451,25 +1453,26 @@ export default function Layout({ children, currentPageName }) {
                               <motion.div
                                 initial={{ clipPath: 'inset(0 100% 0 0)' }}
                                 animate={{ clipPath: 'inset(0 0% 0 0)' }}
-                                transition={{ delay: i * 0.15, duration: 0.4, ease: 'easeInOut' }}
-                                className="flex items-center gap-2 px-3 py-2"
+                                transition={{ delay: i * 0.35, duration: 0.7, ease: 'easeInOut' }}
+                                className="flex items-center justify-center gap-3 px-3 py-2.5"
                                 style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
                               >
-                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                  <TeamFlag logo={m.team_a_logo} name={m.team_a} className="w-6 h-6 flex-shrink-0" animate={false} />
-                                  <span className="text-white text-xs font-medium truncate">{m.team_a}</span>
-                                </div>
+                                <TeamFlag logo={m.team_a_logo} name={m.team_a} className="w-8 h-8 flex-shrink-0" animate={false} />
                                 <span className="text-slate-400 text-[11px] font-bold flex-shrink-0" dir="ltr">
                                   {new Date(m.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
                                 </span>
-                                <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
-                                  <span className="text-white text-xs font-medium truncate">{m.team_b}</span>
-                                  <TeamFlag logo={m.team_b_logo} name={m.team_b} className="w-6 h-6 flex-shrink-0" animate={false} />
-                                </div>
+                                <TeamFlag logo={m.team_b_logo} name={m.team_b} className="w-8 h-8 flex-shrink-0" animate={false} />
                               </motion.div>
                             </div>
                           ))}
                         </div>
+
+                        <button
+                          onClick={() => setShowNextMatchIntro(false)}
+                          className="mt-1 w-full py-2.5 rounded-xl text-sm font-semibold bg-white/8 text-white/70 hover:text-white hover:bg-white/15 transition-colors"
+                        >
+                          סגור
+                        </button>
                       </motion.div>
                     )}
                   </AnimatePresence>
