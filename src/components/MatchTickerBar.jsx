@@ -76,7 +76,6 @@ export default function MatchTickerBar({ onClick }) {
               WebkitBackgroundClip: 'text',
               backgroundClip: 'text',
               color: 'transparent',
-              filter: 'drop-shadow(0 0 4px rgba(74,222,128,0.85))',
             }}
           >{time}</span>
         )}
@@ -127,7 +126,6 @@ export default function MatchTickerBar({ onClick }) {
               WebkitBackgroundClip: 'text',
               backgroundClip: 'text',
               color: 'transparent',
-              filter: 'drop-shadow(0 0 4px rgba(74,222,128,0.85))',
             }}
           >{dateLabel}</span>
         </span>

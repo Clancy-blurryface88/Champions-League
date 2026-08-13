@@ -1,6 +1,7 @@
 export default function CircleLoader({ size = 50 }) {
   const orbes = 5;
-  const gold = '#097adc';
+  const gradient = 'linear-gradient(135deg, #4ade80, #16a34a)';
+  const glow = '#4ade80';
 
   return (
     <>
@@ -31,8 +32,8 @@ export default function CircleLoader({ size = 50 }) {
           left: 0;
           width: var(--size-orbe);
           height: var(--size-orbe);
-          background-color: ${gold};
-          box-shadow: 0px 0px 20px 3px ${gold};
+          background: ${gradient};
+          box-shadow: 0px 0px 20px 3px ${glow};
           border-radius: 50%;
         }
         @keyframes orbit7456 {
