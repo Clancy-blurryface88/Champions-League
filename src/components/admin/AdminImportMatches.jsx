@@ -15,7 +15,7 @@ import { STAGES, LEAGUE_PHASE_MATCHDAYS } from '@/config/tournament';
 const MATCHES_JSON = [];
 
 const ROUND_NAMES = Object.fromEntries(
-  Array.from({ length: LEAGUE_PHASE_MATCHDAYS }, (_, i) => [i + 1, `מחזור ${i + 1} - שלב הליגה`])
+  Array.from({ length: LEAGUE_PHASE_MATCHDAYS }, (_, i) => [i + 1, `מחזור ${i + 1} - League Phase`])
 );
 
 export default function AdminImportMatches() {
@@ -29,7 +29,7 @@ export default function AdminImportMatches() {
 
   const handleImport = async () => {
     if (MATCHES_JSON.length === 0) {
-      addLog('MATCHES_JSON ריק — יש להדביק את פיקסצ׳רי שלב הליגה האמיתיים בקובץ לפני הייבוא.', 'error');
+      addLog('MATCHES_JSON ריק — יש להדביק את פיקסצ׳רי League Phase האמיתיים בקובץ לפני הייבוא.', 'error');
       setStatus('error');
       return;
     }
@@ -183,7 +183,7 @@ export default function AdminImportMatches() {
           ייבוא משחקי ליגת האלופות 2026
         </CardTitle>
         <p className="text-slate-400 text-sm">
-          יצירת {LEAGUE_PHASE_MATCHDAYS} מחזורים ({MATCHES_JSON.length} משחקים) עם דגלי הנבחרות — שלב הליגה
+          יצירת {LEAGUE_PHASE_MATCHDAYS} מחזורים ({MATCHES_JSON.length} משחקים) עם דגלי הנבחרות — League Phase
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -191,7 +191,7 @@ export default function AdminImportMatches() {
           <div className="flex items-start gap-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-yellow-300 text-sm">
             <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
             <span>
-              MATCHES_JSON ריק כרגע — יש להדביק את פיקסצ׳רי שלב הליגה האמיתיים (36 קבוצות × 8 מחזורים) בקובץ <code className="text-xs">AdminImportMatches.jsx</code> כשההגרלה הרשמית של העונה תתפרסם, בפורמט <code className="text-xs">{'{MatchNumber, RoundNumber, DateUtc, Location, HomeTeam, AwayTeam}'}</code> (RoundNumber = מחזור 1-8).
+              MATCHES_JSON ריק כרגע — יש להדביק את פיקסצ׳רי League Phase האמיתיים (36 קבוצות × 8 מחזורים) בקובץ <code className="text-xs">AdminImportMatches.jsx</code> כשההגרלה הרשמית של העונה תתפרסם, בפורמט <code className="text-xs">{'{MatchNumber, RoundNumber, DateUtc, Location, HomeTeam, AwayTeam}'}</code> (RoundNumber = מחזור 1-8).
             </span>
           </div>
         )}

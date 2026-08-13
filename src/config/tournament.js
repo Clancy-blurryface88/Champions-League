@@ -22,7 +22,7 @@ export const STAGES = {
 };
 
 export const STAGE_LABELS = {
-  [STAGES.LEAGUE_PHASE]: 'שלב הליגה',
+  [STAGES.LEAGUE_PHASE]: 'League Phase',
   [STAGES.PLAYOFF]: 'פלייאוף',
   [STAGES.R16]: 'שמינית גמר',
   [STAGES.QF]: 'רבע גמר',
