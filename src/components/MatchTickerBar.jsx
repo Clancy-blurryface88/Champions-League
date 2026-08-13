@@ -116,9 +116,9 @@ export default function MatchTickerBar({ onClick }) {
         }}
       >
         <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.1 }}>
-          {isUpcoming && (
-            <span style={{ color: '#ffffff', fontSize: 8, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>בקרוב</span>
-          )}
+          <span style={{ color: '#ffffff', fontSize: 8, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none' }}>
+            {isUpcoming ? 'בקרוב' : 'משחקי היום'}
+          </span>
           <span
             style={{
               fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none',
