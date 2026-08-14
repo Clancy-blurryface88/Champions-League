@@ -960,7 +960,13 @@ export default function Predictions() {
                       <div className="flex justify-center mb-4">
                         <button
                           onClick={() => setShowLeagueTable(true)}
-                          className="text-sm font-semibold text-yellow-400 bg-transparent border border-yellow-400/40 px-5 py-1 rounded-full hover:border-yellow-400/70 transition-colors cursor-pointer"
+                          className="relative overflow-hidden text-sm font-semibold text-yellow-400 border border-yellow-400/40 px-5 py-1 rounded-full hover:border-yellow-400/70 transition-colors cursor-pointer"
+                          style={{
+                            background: 'rgba(255,255,255,0.07)',
+                            backdropFilter: 'blur(20px) saturate(140%)',
+                            WebkitBackdropFilter: 'blur(20px) saturate(140%)',
+                            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.30)',
+                          }}
                         >
                           {STAGE_LABELS[match.stage] || match.stage}
                         </button>
