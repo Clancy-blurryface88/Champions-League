@@ -32,8 +32,8 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
         <ChevronUp className="w-6 h-6 text-yellow-400" strokeWidth={2.5} />
       </motion.button>
 
-      {/* תצוגת הספרה */}
-      <div className="w-12 h-20 md:w-14 md:h-24 flex items-center justify-center rounded-[20px] relative overflow-hidden"
+      {/* תצוגת הספרה — לוח פיצול-דפים (split-flap) */}
+      <div className="w-12 h-20 md:w-14 md:h-24 relative rounded-[20px] overflow-hidden"
         style={{
           background: hasError && isUndefined
             ? 'rgba(248,113,113,0.07)'
@@ -50,7 +50,7 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
         {/* glass top gloss */}
         <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"
           style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.22) 0%, transparent 100%)' }} />
-        <div style={{ perspective: 240 }}>
+        <div style={{ perspective: 240 }} className="absolute inset-0 flex items-center justify-center">
           <AnimatePresence mode="popLayout">
             <motion.span
               key={displayValue}
@@ -66,6 +66,12 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
             </motion.span>
           </AnimatePresence>
         </div>
+        {/* תפר אמצעי בין שני "הדפים" */}
+        <div className="absolute left-0 right-0 top-1/2 h-px pointer-events-none"
+          style={{ background: 'rgba(0,0,0,0.55)', boxShadow: '0 1px 0 rgba(255,255,255,0.08)' }} />
+        {/* הצללה קלה לדף התחתון, לתחושת עומק */}
+        <div className="absolute inset-x-0 top-1/2 bottom-0 pointer-events-none"
+          style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.14) 0%, transparent 35%)' }} />
       </div>
 
       {/* חץ למטה */}
