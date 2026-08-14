@@ -901,7 +901,7 @@ export default function Predictions() {
                   {/* Champions League starball background art */}
                   <div className="absolute inset-0 pointer-events-none"
                     style={{
-                      backgroundImage: 'url(/champions/background.jpeg)',
+                      backgroundImage: 'url(/champions/match-card-bg.png)',
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       opacity: 0.3,
