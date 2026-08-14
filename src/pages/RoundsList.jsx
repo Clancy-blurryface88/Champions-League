@@ -112,9 +112,12 @@ export default function RoundsList() {
   const displayedRounds = user?.is_admin ? rounds : rounds.filter((r) => r.is_active);
 
   return (
-    <div className="min-h-screen relative">
+    <div
+      className="min-h-screen relative"
+      style={{ background: 'linear-gradient(135deg, #4c1d95 0%, #0a1220 45%, #1e40af 100%)' }}
+    >
       <ParticleBackground />
-      
+
       <div className="relative z-[1] pt-16">
         <div className="max-w-4xl mx-auto px-4 pb-8 mt-6">
           {/* כפתור חזרה */}
@@ -142,11 +145,7 @@ export default function RoundsList() {
                 {displayedRounds.map((round) =>
               <div
                 key={round.id}
-                className="backdrop-blur-sm shadow-xl rounded-xl transition-colors"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(76,29,149,0.95) 0%, rgba(8,18,32,0.95) 45%, rgba(29,78,216,0.95) 100%)',
-                  border: '1px solid rgba(167,139,250,0.4)',
-                }}>
+                className="bg-slate-800/60 border border-slate-700 hover:bg-slate-800/80 backdrop-blur-sm shadow-xl rounded-xl">
 
                     <div className="px-6 py-2 flex items-center justify-between w-full">
                       <div className="flex items-center gap-4">
