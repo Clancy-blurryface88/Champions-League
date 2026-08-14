@@ -1061,33 +1061,29 @@ export default function Predictions() {
                         <div style={{ gridColumn: 1, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center cursor-pointer"
                              onClick={() => setSelectedTeam({ name: match.team_a, logo: match.team_a_logo })}>
-                          <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words">
+                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-bold text-xs leading-tight text-center w-full break-words">
                             {match.team_a}
                           </RevealText>
                           <span className="text-[10px] font-semibold leading-none text-center" style={{
-                            backgroundImage: 'linear-gradient(135deg, #6ee7b7 0%, #059669 100%)',
+                            backgroundImage: 'linear-gradient(135deg, #a7f3d0 0%, #34d399 100%)',
                             WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent',
                           }}>(Home)</span>
                           {teamPositions[match.team_a] && (
-                            <span className="text-[10px] font-bold leading-none text-center mt-0.5" style={{ color: teamPositions[match.team_a].color }}>
-                              #{teamPositions[match.team_a].pos}
-                            </span>
+                            <SlotBadge value={teamPositions[match.team_a].pos} color={teamPositions[match.team_a].color} />
                           )}
                         </div>
                         <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center cursor-pointer"
                              onClick={() => setSelectedTeam({ name: match.team_b, logo: match.team_b_logo })}>
-                          <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words">
+                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-bold text-xs leading-tight text-center w-full break-words">
                             {match.team_b}
                           </RevealText>
                           <span className="text-[10px] font-semibold leading-none text-center" style={{
-                            backgroundImage: 'linear-gradient(135deg, #74bef6 0%, #095cae 100%)',
+                            backgroundImage: 'linear-gradient(135deg, #b1defb 0%, #097adc 100%)',
                             WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent',
                           }}>(Away)</span>
                           {teamPositions[match.team_b] && (
-                            <span className="text-[10px] font-bold leading-none text-center mt-0.5" style={{ color: teamPositions[match.team_b].color }}>
-                              #{teamPositions[match.team_b].pos}
-                            </span>
+                            <SlotBadge value={teamPositions[match.team_b].pos} color={teamPositions[match.team_b].color} />
                           )}
                         </div>
                       </div>
