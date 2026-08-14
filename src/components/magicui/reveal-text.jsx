@@ -2,12 +2,12 @@ import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-export function RevealText({ children, className, delay = 0, animate = true }) {
+export function RevealText({ children, className, style, delay = 0, animate = true }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "0px" });
 
   if (!animate) {
-    return <div className={cn(className)}>{children}</div>;
+    return <div className={cn(className)} style={style}>{children}</div>;
   }
 
   return (
@@ -21,6 +21,7 @@ export function RevealText({ children, className, delay = 0, animate = true }) {
         ease: "easeOut",
       }}
       className={cn(className)}
+      style={style}
     >
       {children}
     </motion.div>
