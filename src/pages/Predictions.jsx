@@ -1109,7 +1109,7 @@ export default function Predictions() {
                     {/* Footer: Date & Location */}
                     <div className="pt-3 space-y-1">
                       <div className="h-px mb-2" style={{ background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)' }} />
-                      <div className="flex items-center justify-center gap-1.5 text-xs text-slate-300">
+                      <div className="flex items-center justify-center gap-1.5 text-xs text-white">
                         <span className="text-sm">🗓️</span>
                         <span className="font-medium">{moment(match.match_date).format('DD/MM/YYYY')} · {moment(match.match_date).format('HH:mm')}</span>
                       </div>
