@@ -1066,10 +1066,10 @@ export default function Predictions() {
                         <div style={{ gridColumn: 1, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center cursor-pointer"
                              onClick={() => setSelectedTeam({ name: match.team_a, logo: match.team_a_logo })}>
-                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-bold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)' }}>
+                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)' }}>
                             {match.team_a}
                           </RevealText>
-                          <span className="text-[10px] font-semibold leading-none text-center" style={{
+                          <span className="text-[10px] font-extrabold leading-none text-center" style={{
                             backgroundImage: 'linear-gradient(135deg, #a7f3d0 0%, #34d399 100%)',
                             WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent',
                           }}>(Home)</span>
@@ -1080,10 +1080,10 @@ export default function Predictions() {
                         <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center cursor-pointer"
                              onClick={() => setSelectedTeam({ name: match.team_b, logo: match.team_b_logo })}>
-                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-bold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)' }}>
+                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)' }}>
                             {match.team_b}
                           </RevealText>
-                          <span className="text-[10px] font-semibold leading-none text-center" style={{
+                          <span className="text-[10px] font-extrabold leading-none text-center" style={{
                             backgroundImage: 'linear-gradient(135deg, #b1defb 0%, #097adc 100%)',
                             WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent',
                           }}>(Away)</span>
@@ -1128,7 +1128,7 @@ export default function Predictions() {
                       <div className="h-px mb-2" style={{ background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)' }} />
                       <div className="flex items-center justify-center gap-1.5 text-xs text-white">
                         <span className="text-sm">🗓️</span>
-                        <span className="font-black">{moment(match.match_date).format('DD/MM/YYYY')} · {moment(match.match_date).format('HH:mm')}</span>
+                        <span className="font-extrabold">{moment(match.match_date).format('DD/MM/YYYY')} · {moment(match.match_date).format('HH:mm')}</span>
                       </div>
                       {match.location && (
                         <div className="flex items-center justify-center gap-1 text-xs text-slate-400">
