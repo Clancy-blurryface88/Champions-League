@@ -993,7 +993,7 @@ export default function Predictions() {
                               'drop-shadow(0 4px 10px rgba(0,0,0,0.5))',
                             ]}}
                             transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}>
-                            <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
+                            <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-20 h-20" animate={shouldAnimate} rounded="md" />
                           </motion.div>
                         </div>
 
@@ -1053,7 +1053,7 @@ export default function Predictions() {
                               'drop-shadow(0 4px 10px rgba(0,0,0,0.5))',
                             ]}}
                             transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut', delay: 1.4 }}>
-                            <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-14 h-14" animate={shouldAnimate} rounded="md" />
+                            <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-20 h-20" animate={shouldAnimate} rounded="md" />
                           </motion.div>
                         </div>
 
