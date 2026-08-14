@@ -895,11 +895,18 @@ export default function Predictions() {
                   glowIntensity="xs"
                   className={`relative transition-all duration-300 h-full flex flex-col overflow-hidden ${isLocked ? 'opacity-65' : ''}`}
                   style={{
-                    background: isLocked
-                      ? 'rgba(10,18,35,0.45)'
-                      : 'radial-gradient(ellipse at 15% 20%, rgba(30,136,229,0.45) 0%, transparent 55%), radial-gradient(ellipse at 80% 10%, rgba(16,185,129,0.35) 0%, transparent 45%), rgba(5,10,18,0.75)',
+                    background: isLocked ? 'rgba(10,18,35,0.45)' : 'rgba(5,10,18,0.75)',
                   }}
                 >
+                  {/* Champions League starball background art */}
+                  <div className="absolute inset-0 pointer-events-none"
+                    style={{
+                      backgroundImage: 'url(/champions/background.jpeg)',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      opacity: 0.3,
+                    }} />
+
                   {/* Noise texture overlay */}
                   <div className="absolute inset-0 pointer-events-none opacity-[0.025]"
                     style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundSize: '180px' }} />
