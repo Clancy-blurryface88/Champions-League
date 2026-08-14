@@ -142,7 +142,11 @@ export default function RoundsList() {
                 {displayedRounds.map((round) =>
               <div
                 key={round.id}
-                className="bg-slate-800/60 border border-slate-700 hover:bg-slate-800/80 backdrop-blur-sm shadow-xl rounded-xl">
+                className="backdrop-blur-sm shadow-xl rounded-xl transition-colors"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(76,29,149,0.95) 0%, rgba(8,18,32,0.95) 45%, rgba(29,78,216,0.95) 100%)',
+                  border: '1px solid rgba(167,139,250,0.4)',
+                }}>
 
                     <div className="px-6 py-2 flex items-center justify-between w-full">
                       <div className="flex items-center gap-4">
