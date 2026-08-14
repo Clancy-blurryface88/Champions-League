@@ -650,7 +650,7 @@ export default function Predictions() {
   return (
     <div
       className="fixed inset-0 flex flex-col"
-      style={{ top: '36px', background: 'linear-gradient(135deg, #4c1d95 0%, #0a1220 45%, #1e40af 100%)' }}
+      style={{ top: '36px', background: 'linear-gradient(135deg, #0d2b52 0%, #050d1c 100%)' }}
     >
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0">
       <div className="max-w-4xl mx-auto px-4 py-4 pb-20" style={{ paddingTop: '84px' }}>
