@@ -1229,7 +1229,7 @@ export default function Predictions() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.25 }}
                 className="w-full max-w-sm rounded-2xl overflow-hidden"
-                style={{ background: 'rgba(9, 122, 220,0.05)', border: '1px solid rgba(9, 122, 220,0.35)' }}
+                style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.35)' }}
               >
                 <div className="relative h-10 flex items-center px-4">
                   <motion.div
@@ -1237,9 +1237,9 @@ export default function Predictions() {
                     initial={false}
                     animate={{ scaleX: pct / 100 }}
                     transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-                    style={{ background: 'linear-gradient(90deg, rgba(9, 122, 220,0.25) 0%, rgba(9, 122, 220,0.45) 100%)', transformOrigin: 'left' }}
+                    style={{ background: 'linear-gradient(90deg, rgba(16,185,129,0.25) 0%, rgba(16,185,129,0.45) 100%)', transformOrigin: 'left' }}
                   />
-                  <span className="relative z-10 w-full text-center text-sm font-semibold text-sky-400/90">
+                  <span className="relative z-10 w-full text-center text-sm font-semibold text-white">
                     {filled} / {total} ניחושים
                   </span>
                 </div>
