@@ -43,7 +43,11 @@ function SlotBadge({ value, color }) {
   const [inView, setInView]       = useState(false);
   const badgeRef                  = useRef(null);
 
-  // Trigger only when badge scrolls into view
+  // Trigger when the badge scrolls into view — plus a safety-net timeout,
+  // since the observer can miss the intersection while nested inside
+  // ancestors mid framer-motion transform (scale/opacity entrance
+  // animations), which otherwise left the badge stuck on its initial
+  // placeholder value forever instead of the real position.
   useEffect(() => {
     const el = badgeRef.current;
     if (!el) return;
@@ -52,7 +56,8 @@ function SlotBadge({ value, color }) {
       { threshold: 0.5 }
     );
     obs.observe(el);
-    return () => obs.disconnect();
+    const fallback = setTimeout(() => setInView(true), 700);
+    return () => { obs.disconnect(); clearTimeout(fallback); };
   }, []);
 
   // Slot machine — runs only after entering viewport
