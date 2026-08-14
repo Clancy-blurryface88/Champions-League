@@ -102,7 +102,7 @@ export default function Admin() {
     { id: 'playoff-override',  label: '🏆 פלייאוף',              icon: Trophy },
     { id: 'grid-reveal-demo', label: 'דמו אנימציית גריד', icon: LayoutGrid },
     { id: 'score-input-demo', label: 'דמו בורר תוצאה', icon: Dices },
-    { id: 'score-shape-demo', label: '20 צורות לבורר התוצאה', icon: Hexagon },
+    { id: 'score-shape-demo', label: '40 צורות לבורר התוצאה', icon: Hexagon },
   ];
 
   return (
