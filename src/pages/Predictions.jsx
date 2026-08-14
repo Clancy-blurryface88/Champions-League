@@ -1088,7 +1088,7 @@ export default function Predictions() {
                             handlePredictionChange(match.id, 'predicted_score_b', a);
                           }}
                           className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full"
-                          style={{ color: '#c4b5fd', background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)' }}
+                          style={{ color: '#6ee7b7', background: 'linear-gradient(135deg, rgba(16,185,129,0.20) 0%, rgba(5,150,105,0.10) 100%)', border: '1px solid rgba(52,211,153,0.35)' }}
                         >
                           <Dices className="w-3.5 h-3.5" />
                           בחר עבורי
