@@ -329,22 +329,29 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
                 className="space-y-3 animate-in fade-in"
                 style={{ animationDuration: "200ms", animationFillMode: "both", animationDelay: "140ms" }}
               >
-                <SectionLabel title="פגיעה מדויקת" icon={Target} color="text-sky-400/80" />
+                <SectionLabel title="פגיעה מדויקת" icon={Target} color="text-emerald-400/80" />
 
                 <div className="grid grid-cols-3 gap-2">
-                  {oddsColumns.map(({ label, filter, sort }) => (
-                    <div key={label}>
-                      <div className="text-center text-xs font-bold text-white/55 uppercase tracking-widest mb-1.5">{label}</div>
-                      <div className="space-y-1">
-                        {Object.entries(match.score_odds).filter(filter).sort(sort).map(([score, pts]) => (
-                          <div key={score} className="flex justify-between items-center rounded-lg bg-sky-500/6 border border-sky-500/15 px-2 py-1.5">
-                            <span className="text-sky-400 font-bold text-xs tabular-nums">{pts}</span>
-                            <span className="text-white/70 text-xs font-mono">{score}</span>
-                          </div>
-                        ))}
+                  {oddsColumns.map(({ label, filter, sort }) => {
+                    const cls = label === '1'
+                      ? { pill: 'bg-emerald-500/6 border-emerald-500/15', pts: 'text-emerald-400' }
+                      : label === 'X'
+                        ? { pill: 'bg-yellow-500/6 border-yellow-500/15', pts: 'text-yellow-400' }
+                        : { pill: 'bg-sky-500/6 border-sky-500/15', pts: 'text-sky-400' };
+                    return (
+                      <div key={label}>
+                        <div className="text-center text-xs font-bold text-white/55 uppercase tracking-widest mb-1.5">{label}</div>
+                        <div className="space-y-1">
+                          {Object.entries(match.score_odds).filter(filter).sort(sort).map(([score, pts]) => (
+                            <div key={score} className={`flex justify-between items-center rounded-lg border px-2 py-1.5 ${cls.pill}`}>
+                              <span className={`font-bold text-xs tabular-nums ${cls.pts}`}>{pts}</span>
+                              <span className="text-white/70 text-xs font-mono">{score}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {'other' in match.score_odds && (
