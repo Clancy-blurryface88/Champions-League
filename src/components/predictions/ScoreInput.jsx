@@ -36,12 +36,12 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
       <div className="w-12 h-20 md:w-14 md:h-24 relative rounded-full overflow-hidden"
         style={{
           background: hasError && isUndefined
-            ? 'rgba(248,113,113,0.07)'
+            ? 'rgba(52,211,153,0.07)'
             : 'rgba(255,255,255,0.06)',
           backdropFilter: 'blur(16px) saturate(140%)',
           WebkitBackdropFilter: 'blur(16px) saturate(140%)',
           border: hasError && isUndefined
-            ? '1px solid rgba(248,113,113,0.35)'
+            ? '1px solid rgba(52,211,153,0.35)'
             : isUndefined
               ? '1px solid rgba(255,255,255,0.10)'
               : '1px solid rgba(255,255,255,0.18)',
