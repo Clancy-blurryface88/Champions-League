@@ -683,14 +683,15 @@ export default function Layout({ children, currentPageName }) {
       setTodayMatchCount(count);
 
       const now = new Date();
-      // "משחקי היום" — strictly today's remaining matches. If there's nothing
-      // left today, there's nothing to show (no falling back to a future
-      // matchday's fixtures).
-      const todaysRemaining = all
-        .filter(m => !m.is_finished && new Date(m.match_date) > now && localDayKey(new Date(m.match_date)) === todayKey)
+      // TEMP for testing the frame gradient: fall back to the next upcoming
+      // matchday's fixtures when today has none left, so the overlay always
+      // has data to show. Revert to strictly-today-only once done testing.
+      const upcoming = all
+        .filter(m => !m.is_finished && new Date(m.match_date) > now)
         .sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
-      setNextMatch(todaysRemaining[0] || null);
-      setUpcomingMatches(todaysRemaining);
+      setNextMatch(upcoming[0] || null);
+      const nextDayKey = upcoming[0] ? localDayKey(new Date(upcoming[0].match_date)) : null;
+      setUpcomingMatches(nextDayKey ? upcoming.filter(m => localDayKey(new Date(m.match_date)) === nextDayKey) : []);
       setTournamentEnded(all.length > 0 && all.every(m => m.is_finished));
     }).catch(() => {}).finally(() => setNextMatchChecked(true));
   }, []);
