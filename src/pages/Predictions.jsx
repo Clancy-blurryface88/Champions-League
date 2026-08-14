@@ -1064,7 +1064,15 @@ export default function Predictions() {
                           <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words">
                             {match.team_a}
                           </RevealText>
-                          <span className="text-slate-400 text-[10px] leading-none text-center">(Home)</span>
+                          <span className="text-[10px] font-semibold leading-none text-center" style={{
+                            backgroundImage: 'linear-gradient(135deg, #6ee7b7 0%, #059669 100%)',
+                            WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent',
+                          }}>(Home)</span>
+                          {teamPositions[match.team_a] && (
+                            <span className="text-[10px] font-bold leading-none text-center mt-0.5" style={{ color: teamPositions[match.team_a].color }}>
+                              #{teamPositions[match.team_a].pos}
+                            </span>
+                          )}
                         </div>
                         <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center cursor-pointer"
@@ -1072,7 +1080,15 @@ export default function Predictions() {
                           <RevealText delay={0.5} animate={shouldAnimate} className="text-white font-semibold text-xs leading-tight text-center w-full break-words">
                             {match.team_b}
                           </RevealText>
-                          <span className="text-slate-400 text-[10px] leading-none text-center">(Away)</span>
+                          <span className="text-[10px] font-semibold leading-none text-center" style={{
+                            backgroundImage: 'linear-gradient(135deg, #74bef6 0%, #095cae 100%)',
+                            WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent',
+                          }}>(Away)</span>
+                          {teamPositions[match.team_b] && (
+                            <span className="text-[10px] font-bold leading-none text-center mt-0.5" style={{ color: teamPositions[match.team_b].color }}>
+                              #{teamPositions[match.team_b].pos}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
