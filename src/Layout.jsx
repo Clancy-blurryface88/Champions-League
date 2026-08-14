@@ -1339,17 +1339,17 @@ export default function Layout({ children, currentPageName }) {
                   animate={{
                     opacity: 1, scale: 1,
                     boxShadow: [
-                      '0 0 60px rgba(96,165,250,0.18), 0 20px 60px rgba(0,0,0,0.7)',
+                      '0 0 60px rgba(139,92,246,0.2), 0 20px 60px rgba(0,0,0,0.7)',
                       '0 0 90px rgba(96,165,250,0.45), 0 20px 60px rgba(0,0,0,0.7)',
-                      '0 0 60px rgba(96,165,250,0.18), 0 20px 60px rgba(0,0,0,0.7)',
+                      '0 0 60px rgba(139,92,246,0.2), 0 20px 60px rgba(0,0,0,0.7)',
                     ],
                   }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   className="rounded-2xl overflow-hidden"
                   style={{
                     position: 'relative',
-                    background: 'rgba(8,18,32,0.95)',
-                    border: '1px solid rgba(96,165,250,0.45)',
+                    background: 'linear-gradient(135deg, rgba(76,29,149,0.95) 0%, rgba(8,18,32,0.95) 45%, rgba(29,78,216,0.95) 100%)',
+                    border: '1px solid rgba(167,139,250,0.4)',
                     backdropFilter: 'blur(28px)',
                     pointerEvents: 'auto',
                   }}
