@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, LayoutGrid, Dices, Hexagon } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, LayoutGrid, Dices, Hexagon, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
@@ -21,6 +21,7 @@ import AdminPlayoffOverride from "../components/admin/AdminPlayoffOverride";
 import AdminGridRevealDemo from "../components/admin/AdminGridRevealDemo";
 import AdminScoreInputDemo from "../components/admin/AdminScoreInputDemo";
 import AdminScoreShapeDemo from "../components/admin/AdminScoreShapeDemo";
+import AdminScoreEffectsDemo from "../components/admin/AdminScoreEffectsDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -84,6 +85,7 @@ export default function Admin() {
       case 'grid-reveal-demo': return <AdminGridRevealDemo />;
       case 'score-input-demo': return <AdminScoreInputDemo />;
       case 'score-shape-demo': return <AdminScoreShapeDemo />;
+      case 'score-effects-demo': return <AdminScoreEffectsDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -103,6 +105,7 @@ export default function Admin() {
     { id: 'grid-reveal-demo', label: 'דמו אנימציית גריד', icon: LayoutGrid },
     { id: 'score-input-demo', label: 'דמו בורר תוצאה', icon: Dices },
     { id: 'score-shape-demo', label: '40 צורות לבורר התוצאה', icon: Hexagon },
+    { id: 'score-effects-demo', label: '30 אפקטים לניקוד', icon: Sparkles },
   ];
 
   return (
