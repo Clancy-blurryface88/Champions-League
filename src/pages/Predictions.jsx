@@ -1174,10 +1174,11 @@ export default function Predictions() {
                         className="absolute inset-0 flex items-center justify-center text-xs font-bold transition-colors"
                         style={{
                           clipPath: 'polygon(0 0, 58% 0, 42% 100%, 0 100%)',
-                          background: 'linear-gradient(135deg, rgba(124,173,238,0.38), rgba(9,122,220,0.30))',
-                          backdropFilter: 'blur(12px) saturate(180%)',
-                          WebkitBackdropFilter: 'blur(12px) saturate(180%)',
-                          color: '#dbeaff',
+                          background: 'linear-gradient(135deg, rgba(59,130,246,0.75), rgba(29,78,216,0.65))',
+                          backdropFilter: 'blur(16px) saturate(200%)',
+                          WebkitBackdropFilter: 'blur(16px) saturate(200%)',
+                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)',
+                          color: '#ffffff',
                           paddingInlineEnd: '30%',
                         }}
                       >
@@ -1188,10 +1189,11 @@ export default function Predictions() {
                         className="absolute inset-0 flex items-center justify-center text-xs font-bold transition-colors"
                         style={{
                           clipPath: 'polygon(58% 0, 100% 0, 100% 100%, 42% 100%)',
-                          background: 'linear-gradient(135deg, rgba(52,211,153,0.38), rgba(5,150,105,0.30))',
-                          backdropFilter: 'blur(12px) saturate(180%)',
-                          WebkitBackdropFilter: 'blur(12px) saturate(180%)',
-                          color: '#d7fbe8',
+                          background: 'linear-gradient(135deg, rgba(52,211,153,0.75), rgba(5,150,105,0.65))',
+                          backdropFilter: 'blur(16px) saturate(200%)',
+                          WebkitBackdropFilter: 'blur(16px) saturate(200%)',
+                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)',
+                          color: '#ffffff',
                           paddingInlineStart: '30%',
                         }}
                       >
