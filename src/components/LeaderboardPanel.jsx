@@ -20,6 +20,10 @@ export default function LeaderboardPanel({ onClose, user }) {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [shockwaveActive, setShockwaveActive] = useState(false);
+  // Tracks which cards have actually finished their own opacity/y reveal —
+  // see OdometerValue.jsx for why this (not IntersectionObserver) is what
+  // must gate the points roll animation.
+  const [revealedIds, setRevealedIds] = useState(() => new Set());
 
   const handlePlayerClick = (player) => {
     setSelectedPlayer(player);
@@ -29,6 +33,7 @@ export default function LeaderboardPanel({ onClose, user }) {
   const loadLeaderboard = async () => {
     setLoading(true);
     setError(null);
+    setRevealedIds(new Set());
 
     try {
       const currentUser = await User.me();
@@ -230,6 +235,7 @@ export default function LeaderboardPanel({ onClose, user }) {
                       key={participant.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
+                      onAnimationComplete={() => setRevealedIds(prev => prev.has(participant.id) ? prev : new Set(prev).add(participant.id))}
                       transition={{
                         delay: cardAnimationDelay,
                         duration: 0.6,
@@ -294,7 +300,8 @@ export default function LeaderboardPanel({ onClose, user }) {
                               <OdometerValue
                                 target={participant.total_points}
                                 height={15}
-                                width={7.5} />
+                                width={7.5}
+                                trigger={revealedIds.has(participant.id)} />
                               {' '}Pts
                             </span>
                           </div>

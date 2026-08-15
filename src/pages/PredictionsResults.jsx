@@ -890,6 +890,7 @@ function PodiumStand({ entry, position, isCurrentUser, baseDelay = 0 }) {
   const rankBorder = position === 1 ? 'rgba(250,204,21,0.35)'  : position === 2 ? 'rgba(203,213,225,0.25)' : 'rgba(227,168,105,0.3)';
   const rankGlow   = position === 1 ? 'rgba(250,204,21,0.4)'   : position === 2 ? 'rgba(203,213,225,0.2)'  : 'rgba(227,168,105,0.3)';
   const heights    = { 1: 56, 2: 38, 3: 28 };
+  const [revealed, setRevealed] = useState(false);
 
   if (!entry) return <div className="flex-1" />;
 
@@ -901,6 +902,7 @@ function PodiumStand({ entry, position, isCurrentUser, baseDelay = 0 }) {
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: podiumDelay, duration: 0.55, ease: [0.23, 1, 0.32, 1] }}
+      onAnimationComplete={() => setRevealed(true)}
     >
       {/* Name — rank color */}
       <span style={{ color: rankColor, fontSize: 11, fontWeight: 800, textAlign: 'center',
@@ -910,7 +912,7 @@ function PodiumStand({ entry, position, isCurrentUser, baseDelay = 0 }) {
       </span>
       {/* Points — rank color, slightly dimmer */}
       <span style={{ color: rankColor, opacity: 0.72, fontSize: 11, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>
-        <OdometerValue target={entry.totalPoints} height={14} width={7} />
+        <OdometerValue target={entry.totalPoints} height={14} width={7} trigger={revealed} />
       </span>
       {/* Olympic Classic platform */}
       <div style={{
@@ -942,6 +944,9 @@ function PodiumStand({ entry, position, isCurrentUser, baseDelay = 0 }) {
 }
 
 function LeaderboardView({ roundLeaderboard, loading, user }) {
+  const [revealedRanks, setRevealedRanks] = useState(() => new Set());
+  useEffect(() => { setRevealedRanks(new Set()); }, [roundLeaderboard]);
+
   if (loading) {
     return (
       <div className="flex justify-center py-8">
@@ -991,6 +996,7 @@ function LeaderboardView({ roundLeaderboard, loading, user }) {
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay, duration: 0.35, ease: 'easeOut' }}
+                onAnimationComplete={() => setRevealedRanks(prev => prev.has(entry.rank) ? prev : new Set(prev).add(entry.rank))}
                 className={`flex items-center justify-between text-sm px-3 py-2 rounded-xl ${
                   entry.isCurrentUser
                     ? 'bg-blue-600/20 border border-blue-400/30'
@@ -1004,7 +1010,7 @@ function LeaderboardView({ roundLeaderboard, loading, user }) {
                   <span className="text-white font-medium">{entry.displayName}</span>
                 </div>
                 <span className="text-green-400 font-bold tabular-nums">
-                  <OdometerValue target={entry.totalPoints} height={17} width={9} />
+                  <OdometerValue target={entry.totalPoints} height={17} width={9} trigger={revealedRanks.has(entry.rank)} />
                 </span>
               </motion.div>
             );
@@ -1179,6 +1185,10 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
 function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeStatus, onAllRevealed }) {
   const [expandedPrediction, setExpandedPrediction] = useState(null);
   const [shockwaveActive, setShockwaveActive] = useState(false);
+  // Tracks which rows have actually finished their own opacity/blur reveal —
+  // see OdometerValue.jsx for why this (not IntersectionObserver) is what
+  // must gate the points-pill roll animation.
+  const [revealedIds, setRevealedIds] = useState(() => new Set());
 
   const REVEAL_DELAY = 0.45; // שניות בין חשיפת כל שחקן
 
@@ -1189,6 +1199,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
 
   useEffect(() => {
     setShockwaveActive(false);
+    setRevealedIds(new Set());
     if (sortedPredictions.length === 0) { onAllRevealed?.(); return; }
     // גלול לתחתית כך שהמשתמש רואה את החשיפה הראשונה (הנמוך) ומעלה למנצח
     setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 100);
@@ -1241,6 +1252,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
             initial={{ opacity: 0, filter: 'blur(16px)', scale: 0.85 }}
             animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
             transition={{ delay: revealDelay, duration: 0.45, ease: 'easeOut' }}
+            onAnimationComplete={() => setRevealedIds(prev => prev.has(prediction.id) ? prev : new Set(prev).add(prediction.id))}
             className="relative rounded-xl overflow-hidden"
             style={verdictStyle}>
 
@@ -1306,7 +1318,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="text-xs font-bold tabular-nums px-2.5 py-1 rounded-lg"
                     style={ptsBadgeStyle}>
-                    <OdometerValue target={prediction.points_earned || 0} /> PTS
+                    <OdometerValue target={prediction.points_earned || 0} trigger={revealedIds.has(prediction.id)} /> PTS
                   </span>
                   {outcomeStatus?.type === 'exact'   && <span className="text-base">🎯</span>}
                   {outcomeStatus?.type === 'correct' && (
