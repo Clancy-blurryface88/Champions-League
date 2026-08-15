@@ -1167,23 +1167,23 @@ export default function Predictions() {
                       )}
                     </AnimatePresence>
 
-                    {/* Footer bar — transparent fill, neon blue→green gradient frame.
-                        Divider between the two buttons uses the same skewX technique
-                        as PredictionSummary/LeaderboardPanel's parallelogram cards
-                        (a real CSS transform, not clip-path) for a smooth diagonal. */}
+                    {/* Footer bar — glass-blur buttons with a light color tint,
+                        neon blue→green gradient frame. The frame uses a masked
+                        background (not border-image, which ignores border-radius
+                        and rendered as a broken/disjointed ring at the rounded
+                        corners) so it traces the rounded corners cleanly. Divider
+                        uses the same skewX technique as PredictionSummary/
+                        LeaderboardPanel's parallelogram cards for a smooth diagonal. */}
                     <div className="-mx-5 -mb-5 mt-3 relative overflow-hidden rounded-b-xl" style={{ height: 48 }}>
-                      <div
-                        className="absolute inset-0 pointer-events-none rounded-b-xl"
-                        style={{
-                          border: '1.5px solid transparent',
-                          borderImage: 'linear-gradient(90deg, #3b82f6, #22c55e) 1',
-                          boxShadow: '0 0 10px rgba(59,130,246,0.45), 0 0 10px rgba(34,197,94,0.45), inset 0 0 10px rgba(59,130,246,0.10)',
-                        }}
-                      />
                       <div className="relative flex h-full items-stretch">
                         <button
                           onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
                           className="flex-1 flex items-center justify-center text-xs font-bold text-white transition-colors"
+                          style={{
+                            background: 'rgba(59,130,246,0.16)',
+                            backdropFilter: 'blur(10px) saturate(150%)',
+                            WebkitBackdropFilter: 'blur(10px) saturate(150%)',
+                          }}
                         >
                           1 X 2
                         </button>
@@ -1191,10 +1191,27 @@ export default function Predictions() {
                         <button
                           onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
                           className="flex-1 flex items-center justify-center text-xs font-bold text-white transition-colors"
+                          style={{
+                            background: 'rgba(34,197,94,0.16)',
+                            backdropFilter: 'blur(10px) saturate(150%)',
+                            WebkitBackdropFilter: 'blur(10px) saturate(150%)',
+                          }}
                         >
                           ניחושים
                         </button>
                       </div>
+                      <div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          borderRadius: '0 0 12px 12px',
+                          padding: '1.5px',
+                          background: 'linear-gradient(90deg, #3b82f6, #22c55e)',
+                          WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                          WebkitMaskComposite: 'xor',
+                          maskComposite: 'exclude',
+                          boxShadow: '0 0 10px rgba(59,130,246,0.45), 0 0 10px rgba(34,197,94,0.45)',
+                        }}
+                      />
                     </div>
                   </CardContent>
                 </LiquidGlassCard>
