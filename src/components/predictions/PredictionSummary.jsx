@@ -139,10 +139,10 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                     {/* Score pill — מופיע אחרי הדגלים */}
                     <motion.div
                       variants={scoreVariants}
-                      className="flex flex-col items-center flex-shrink-0 w-[72px]"
+                      className="flex flex-col items-center flex-shrink-0 w-[78px]"
                     >
                       <div
-                        className="w-full flex items-center justify-center px-2 py-1 rounded-xl"
+                        className="w-full flex items-center justify-center px-2 py-1.5 rounded-xl"
                         style={{
                           background: 'rgba(34,197,94,0.11)',
                           border: '1px solid rgba(34,197,94,0.32)',
@@ -150,7 +150,7 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                         }}
                       >
                         <span
-                          className="font-black text-sm tabular-nums"
+                          className="font-black text-base tabular-nums"
                           style={{
                             background: 'linear-gradient(90deg, #16a34a, #22c55e)',
                             WebkitBackgroundClip: 'text',
