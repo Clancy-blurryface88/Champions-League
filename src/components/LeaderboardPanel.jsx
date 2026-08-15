@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PublicProfile } from "@/api/entities";
 import { User } from "@/api/entities";
 import { UserStats } from "@/api/entities";
+import { Prediction } from "@/api/entities";
+import { Match } from "@/api/entities";
 import OdometerValue from "./OdometerValue";
 import PlayerStatsModal from "./PlayerStatsModal";
 import { ShineBorder } from "@/components/magicui/shine-border";
@@ -24,6 +26,7 @@ export default function LeaderboardPanel({ onClose, user }) {
   // see OdometerValue.jsx for why this (not IntersectionObserver) is what
   // must gate the points roll animation.
   const [revealedIds, setRevealedIds] = useState(() => new Set());
+  const [expandedId, setExpandedId] = useState(null);
 
   const handlePlayerClick = (player) => {
     setSelectedPlayer(player);
@@ -46,6 +49,57 @@ export default function LeaderboardPanel({ onClose, user }) {
       } catch (error) {
         console.log("Error loading UserStats:", error.message);
       }
+
+      // Real per-user "כיוונים" (correct-outcome count) and "רצף" (current
+      // streak of correct-outcome hits) for the row-expand accordion — not
+      // tracked as an aggregate anywhere else, so computed here from the raw
+      // predictions + match dates, same approach as CategoryLeaderboards.jsx.
+      let predictions = [];
+      try {
+        predictions = await Prediction.list();
+      } catch (error) {
+        console.log("Error loading predictions:", error.message);
+      }
+      let matches = [];
+      try {
+        matches = await Match.list();
+      } catch (error) {
+        console.log("Error loading matches:", error.message);
+      }
+      const matchDateMap = {};
+      matches.forEach((m) => { matchDateMap[m.id] = m.match_date; });
+
+      const uniquePredictionsMap = {};
+      predictions.forEach((p) => {
+        const key = `${p.user_id}_${p.match_id}`;
+        const existing = uniquePredictionsMap[key];
+        if (!existing || new Date(p.created_date || p.created_at) > new Date(existing.created_date || existing.created_at)) {
+          uniquePredictionsMap[key] = p;
+        }
+      });
+
+      const predictionsByUser = {};
+      Object.values(uniquePredictionsMap).forEach((p) => {
+        if (!predictionsByUser[p.user_id]) predictionsByUser[p.user_id] = [];
+        predictionsByUser[p.user_id].push(p);
+      });
+
+      const computePredictionStats = (userId) => {
+        const graded = (predictionsByUser[userId] || [])
+          .filter((p) => matchDateMap[p.match_id] && p.points_earned !== null && p.points_earned !== undefined)
+          .map((p) => ({ ...p, match_date: matchDateMap[p.match_id] }))
+          .sort((a, b) => new Date(b.match_date) - new Date(a.match_date)); // most recent first
+
+        const correctOutcomeCount = graded.filter((p) => (p.correct_outcome_points_earned || 0) > 0).length;
+
+        let streak = 0;
+        for (const p of graded) {
+          if ((p.correct_outcome_points_earned || 0) > 0) streak++;
+          else break;
+        }
+
+        return { correctOutcomeCount, streak };
+      };
 
       const userIdsWithStats = userStats.map((stat) => stat.user_id);
       let publicProfiles = [];
@@ -84,11 +138,15 @@ export default function LeaderboardPanel({ onClose, user }) {
         // Only include users who have a proper display name (from PublicProfile)
         // and whose display name doesn't start with 'user_' (which indicates a placeholder)
         if (displayName && !displayName.startsWith('user_')) {
+          const { correctOutcomeCount, streak } = computePredictionStats(userStat.user_id);
           const participantData = {
             id: userStat.user_id,
             email: userStat.user_id === currentUser.id ? currentUser.email : `user_${userStat.user_id.slice(0, 8)}@unknown.com`,
             full_name: displayName,
             total_points: userStat.total_points || 0,
+            exact_hits_count: userStat.exact_hits_count || 0,
+            correct_outcome_count: correctOutcomeCount,
+            streak,
             is_current_user: userStat.user_id === currentUser.id
           };
 
@@ -252,7 +310,7 @@ export default function LeaderboardPanel({ onClose, user }) {
 
                         {/* Parallelogram card */}
                         <div
-                          onClick={() => handlePlayerClick(participant)}
+                          onClick={() => setExpandedId(prev => prev === participant.id ? null : participant.id)}
                           style={{
                             transform: 'skewX(-6deg)',
                             position: 'relative',
@@ -280,8 +338,8 @@ export default function LeaderboardPanel({ onClose, user }) {
                               ['#475569','#64748b','#475569']
                             }
                           />
-                          {/* Ghost rank number */}
-                          <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%) skewX(6deg)', fontSize:38, fontWeight:900, color:getRankColor(position), opacity:0.18, lineHeight:1, userSelect:'none', pointerEvents:'none' }}>
+                          {/* Ghost rank number — shadow deepened to make the rank pop more */}
+                          <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%) skewX(6deg)', fontSize:38, fontWeight:900, color:getRankColor(position), opacity:0.18, lineHeight:1, userSelect:'none', pointerEvents:'none', textShadow:`0 3px 10px rgba(0,0,0,0.65), 0 0 22px ${getRankColor(position)}66` }}>
                             {position}
                           </span>
 
@@ -294,14 +352,44 @@ export default function LeaderboardPanel({ onClose, user }) {
                             }}>
                               {participant.full_name}
                             </p>
-                            <span style={{ color:'#4ade80', fontSize:12, fontWeight:700 }}>
-                              <OdometerValue
-                                target={participant.total_points}
-                                height={15}
-                                width={7.5}
-                                trigger={revealedIds.has(participant.id)} />
-                              {' '}Pts
-                            </span>
+                            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}>
+                              <span style={{ color:'#4ade80', fontSize:12, fontWeight:700 }}>
+                                <OdometerValue
+                                  target={participant.total_points}
+                                  height={15}
+                                  width={7.5}
+                                  trigger={revealedIds.has(participant.id)} />
+                                {' '}Pts
+                              </span>
+                              <motion.div animate={{ rotate: expandedId === participant.id ? 180 : 0 }} transition={{ duration: 0.25 }}>
+                                <ChevronDown className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.4)' }} />
+                              </motion.div>
+                            </div>
+
+                            <AnimatePresence initial={false}>
+                              {expandedId === participant.id && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.25 }}
+                                  style={{ overflow: 'hidden' }}
+                                >
+                                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6, paddingTop: 8 }}>
+                                    {[
+                                      ['פגיעות בתוצאה', participant.exact_hits_count || 0],
+                                      ['כיוונים', participant.correct_outcome_count || 0],
+                                      ['רצף', participant.streak || 0],
+                                    ].map(([lbl, v]) => (
+                                      <div key={lbl} style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 8, padding: '4px 6px', textAlign: 'center' }}>
+                                        <div style={{ color: '#94a3b8', fontSize: 9 }}>{lbl}</div>
+                                        <div style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 800 }}>{v}</div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </div>
                         </div>
                         </div>
