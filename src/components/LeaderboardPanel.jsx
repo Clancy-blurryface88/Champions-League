@@ -265,6 +265,8 @@ export default function LeaderboardPanel({ onClose, user }) {
                             borderRadius: 8,
                             border: `2px solid ${getRankBorder(position, isCurrentUser)}`,
                             background: getRankBg(position),
+                            backdropFilter: 'blur(14px) saturate(160%)',
+                            WebkitBackdropFilter: 'blur(14px) saturate(160%)',
                             cursor: 'pointer',
                             transition: 'transform 0.18s ease, box-shadow 0.18s ease',
                             boxShadow: `0 0 6px ${getRankColor(position)}88, 0 0 14px ${getRankColor(position)}44, inset 0 0 6px ${getRankColor(position)}33`,
@@ -291,7 +293,7 @@ export default function LeaderboardPanel({ onClose, user }) {
                           {/* Content — counter-skewed */}
                           <div style={{ transform:'skewX(6deg)', padding:'5px 13px', textAlign:'center' }}>
                             <p className="truncate" style={{
-                              color:'#e2e8f0', fontSize:13, fontWeight:600, marginBottom:1,
+                              color:'#e2e8f0', fontSize:16, fontWeight:600, marginBottom:1,
                               animation: `lb-blur-focus 1.2s ease-out both`,
                               animationDelay: `${cardAnimationDelay}s`,
                             }}>
