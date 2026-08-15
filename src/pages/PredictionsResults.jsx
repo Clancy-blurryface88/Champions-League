@@ -39,6 +39,42 @@ const OUTCOME_COLORS = {
   default: { hex: '#34d399', text: 'text-emerald-400', border: 'border-emerald-500/30', divider: 'bg-emerald-400/40' },
 };
 
+// Odometer-roll digit reveal for the points pill — each column rolls
+// independently through two full spins and settles on the real digit,
+// rightmost digits settling first. Ported from the "30 effects" admin demo
+// (AdminScoreEffectsDemo.jsx, variant #2).
+function OdometerDigit({ digit, delay = 0, height = 16 }) {
+  const spins = 2;
+  const totalSteps = spins * 10 + Number(digit);
+  const strip = Array.from({ length: totalSteps + 1 }, (_, i) => i % 10);
+  return (
+    <span style={{ height, width: 8, overflow: 'hidden', display: 'inline-block', verticalAlign: 'middle' }}>
+      <motion.span
+        style={{ display: 'block' }}
+        initial={{ y: 0 }}
+        animate={{ y: -totalSteps * height }}
+        transition={{ delay, duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+      >
+        {strip.map((d, i) => (
+          <span key={i} style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{d}</span>
+        ))}
+      </motion.span>
+    </span>
+  );
+}
+function OdometerValue({ target }) {
+  const str = (target || 0).toFixed(2);
+  return (
+    <span style={{ display: 'inline-flex' }}>
+      {str.split('').map((c, i) =>
+        c === '.'
+          ? <span key={i}>.</span>
+          : <OdometerDigit key={i} digit={c} delay={str.slice(i + 1).replace('.', '').length * 0.12} />
+      )}
+    </span>
+  );
+}
+
 function AnimatedDonut({ percentage, size = 64, outcomeType }) {
   const [animPct, setAnimPct] = useState(0);
 
@@ -1303,7 +1339,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="text-xs font-bold tabular-nums px-2.5 py-1 rounded-lg"
                     style={ptsBadgeStyle}>
-                    {(prediction.points_earned || 0).toFixed(2)} PTS
+                    <OdometerValue target={prediction.points_earned || 0} /> PTS
                   </span>
                   {outcomeStatus?.type === 'exact'   && <span className="text-base">🎯</span>}
                   {outcomeStatus?.type === 'correct' && (
