@@ -70,7 +70,7 @@ export default function MatchTickerBar({ onClick }) {
           <span
             className="text-xs font-bold mx-0.5"
             style={{
-              background: 'linear-gradient(90deg, #facc15, #f97316)',
+              background: 'linear-gradient(90deg, #fde047, #eab308)',
               WebkitBackgroundClip: 'text',
               backgroundClip: 'text',
               color: 'transparent',

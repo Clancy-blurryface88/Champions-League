@@ -1174,8 +1174,10 @@ export default function Predictions() {
                         className="absolute inset-0 flex items-center justify-center text-xs font-bold transition-colors"
                         style={{
                           clipPath: 'polygon(0 0, 58% 0, 42% 100%, 0 100%)',
-                          background: 'rgba(124,173,238,0.14)',
-                          color: '#9dc2f5',
+                          background: 'linear-gradient(135deg, rgba(124,173,238,0.38), rgba(9,122,220,0.30))',
+                          backdropFilter: 'blur(12px) saturate(180%)',
+                          WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                          color: '#dbeaff',
                           paddingInlineEnd: '30%',
                         }}
                       >
@@ -1186,8 +1188,10 @@ export default function Predictions() {
                         className="absolute inset-0 flex items-center justify-center text-xs font-bold transition-colors"
                         style={{
                           clipPath: 'polygon(58% 0, 100% 0, 100% 100%, 42% 100%)',
-                          background: 'rgba(52,211,153,0.14)',
-                          color: '#7fe4bd',
+                          background: 'linear-gradient(135deg, rgba(52,211,153,0.38), rgba(5,150,105,0.30))',
+                          backdropFilter: 'blur(12px) saturate(180%)',
+                          WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                          color: '#d7fbe8',
                           paddingInlineStart: '30%',
                         }}
                       >
