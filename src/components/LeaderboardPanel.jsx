@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,27 @@ export default function LeaderboardPanel({ onClose, user }) {
   // must gate the points roll animation.
   const [revealedIds, setRevealedIds] = useState(() => new Set());
   const [expandedId, setExpandedId] = useState(null);
+
+  // Long-press vs. short-tap on the card body: a quick tap opens the profile
+  // modal, holding it down (~450ms) opens the stat accordion instead.
+  const pressTimers = useRef({});
+  const longPressFired = useRef({});
+  const handlePressStart = (participant) => {
+    longPressFired.current[participant.id] = false;
+    pressTimers.current[participant.id] = setTimeout(() => {
+      longPressFired.current[participant.id] = true;
+      setExpandedId(prev => prev === participant.id ? null : participant.id);
+    }, 450);
+  };
+  const handlePressEnd = (participant) => {
+    clearTimeout(pressTimers.current[participant.id]);
+    if (!longPressFired.current[participant.id]) {
+      handlePlayerClick(participant);
+    }
+  };
+  const handlePressCancel = (participant) => {
+    clearTimeout(pressTimers.current[participant.id]);
+  };
 
   const handlePlayerClick = (player) => {
     setSelectedPlayer(player);
@@ -310,7 +331,9 @@ export default function LeaderboardPanel({ onClose, user }) {
 
                         {/* Parallelogram card */}
                         <div
-                          onClick={() => handlePlayerClick(participant)}
+                          onPointerDown={() => handlePressStart(participant)}
+                          onPointerUp={() => handlePressEnd(participant)}
+                          onPointerLeave={() => handlePressCancel(participant)}
                           style={{
                             transform: 'skewX(-6deg)',
                             position: 'relative',
@@ -346,6 +369,8 @@ export default function LeaderboardPanel({ onClose, user }) {
                           {/* Expand-accordion toggle — right side, click only, doesn't open the profile modal */}
                           <button
                             onClick={(e) => { e.stopPropagation(); setExpandedId(prev => prev === participant.id ? null : participant.id); }}
+                            onPointerDown={(e) => e.stopPropagation()}
+                            onPointerUp={(e) => e.stopPropagation()}
                             style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%) skewX(6deg)', zIndex:2, display:'flex', alignItems:'center', justifyContent:'center', padding:4 }}
                           >
                             <motion.div animate={{ rotate: expandedId === participant.id ? 90 : 0 }} transition={{ duration: 0.25 }}>
@@ -382,13 +407,13 @@ export default function LeaderboardPanel({ onClose, user }) {
                                 >
                                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6, paddingTop: 8 }}>
                                     {[
-                                      ['פגיעות בתוצאה', participant.exact_hits_count || 0],
+                                      ['פגיעות', participant.exact_hits_count || 0],
                                       ['כיוונים', participant.correct_outcome_count || 0],
                                       ['רצף', participant.streak || 0],
                                     ].map(([lbl, v]) => (
-                                      <div key={lbl} style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 8, padding: '4px 6px', textAlign: 'center' }}>
-                                        <div style={{ color: '#94a3b8', fontSize: 9 }}>{lbl}</div>
-                                        <div style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 800 }}>{v}</div>
+                                      <div key={lbl} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '6px 4px', textAlign: 'center' }}>
+                                        <div style={{ color: '#94a3b8', fontSize: 9.5, letterSpacing: 0.2, whiteSpace: 'nowrap' }}>{lbl}</div>
+                                        <div style={{ color: '#e2e8f0', fontSize: 14, fontWeight: 800, marginTop: 2 }}>{v}</div>
                                       </div>
                                     ))}
                                   </div>
