@@ -884,10 +884,10 @@ export default function PredictionsResults() {
 }
 
 function PodiumStand({ entry, position, isCurrentUser, baseDelay = 0 }) {
-  const rankColor  = position === 1 ? '#097adc' : position === 2 ? '#94a3b8' : '#b45309';
-  const rankBg     = position === 1 ? 'rgba(9, 122, 220,0.1)'   : position === 2 ? 'rgba(148,163,184,0.07)' : 'rgba(180,83,9,0.1)';
-  const rankBorder = position === 1 ? 'rgba(9, 122, 220,0.3)'   : position === 2 ? 'rgba(148,163,184,0.2)'  : 'rgba(180,83,9,0.25)';
-  const rankGlow   = position === 1 ? 'rgba(9, 122, 220,0.35)'  : position === 2 ? 'rgba(148,163,184,0.18)' : 'rgba(180,83,9,0.28)';
+  const rankColor  = position === 1 ? '#facc15' : position === 2 ? '#cbd5e1' : '#e3a869';
+  const rankBg     = position === 1 ? 'rgba(250,204,21,0.1)'   : position === 2 ? 'rgba(203,213,225,0.08)' : 'rgba(227,168,105,0.1)';
+  const rankBorder = position === 1 ? 'rgba(250,204,21,0.35)'  : position === 2 ? 'rgba(203,213,225,0.25)' : 'rgba(227,168,105,0.3)';
+  const rankGlow   = position === 1 ? 'rgba(250,204,21,0.4)'   : position === 2 ? 'rgba(203,213,225,0.2)'  : 'rgba(227,168,105,0.3)';
   const heights    = { 1: 56, 2: 38, 3: 28 };
 
   if (!entry) return <div className="flex-1" />;
@@ -902,13 +902,13 @@ function PodiumStand({ entry, position, isCurrentUser, baseDelay = 0 }) {
       transition={{ delay: podiumDelay, duration: 0.55, ease: [0.23, 1, 0.32, 1] }}
     >
       {/* Name — rank color */}
-      <span style={{ color: rankColor, fontSize: 11, fontWeight: 600, textAlign: 'center',
+      <span style={{ color: rankColor, fontSize: 11, fontWeight: 800, textAlign: 'center',
         maxWidth: 72, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         display: 'block', lineHeight: 1.3 }}>
         {entry.displayName}
       </span>
       {/* Points — rank color, slightly dimmer */}
-      <span style={{ color: rankColor, opacity: 0.72, fontSize: 11, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+      <span style={{ color: rankColor, opacity: 0.72, fontSize: 11, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>
         {entry.totalPoints.toFixed(2)}
       </span>
       {/* Olympic Classic platform */}
