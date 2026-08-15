@@ -267,9 +267,10 @@ export default function LeaderboardPanel({ onClose, user }) {
                             background: getRankBg(position),
                             cursor: 'pointer',
                             transition: 'transform 0.18s ease, box-shadow 0.18s ease',
+                            boxShadow: `0 0 6px ${getRankColor(position)}88, 0 0 14px ${getRankColor(position)}44, inset 0 0 6px ${getRankColor(position)}33`,
                           }}
-                          onMouseEnter={e => { e.currentTarget.style.transform = 'skewX(-6deg) scale(1.04)'; e.currentTarget.style.boxShadow = `0 0 18px ${getRankColor(position)}44`; }}
-                          onMouseLeave={e => { e.currentTarget.style.transform = 'skewX(-6deg)'; e.currentTarget.style.boxShadow = 'none'; }}
+                          onMouseEnter={e => { e.currentTarget.style.transform = 'skewX(-6deg) scale(1.04)'; e.currentTarget.style.boxShadow = `0 0 10px ${getRankColor(position)}bb, 0 0 22px ${getRankColor(position)}66, inset 0 0 8px ${getRankColor(position)}44`; }}
+                          onMouseLeave={e => { e.currentTarget.style.transform = 'skewX(-6deg)'; e.currentTarget.style.boxShadow = `0 0 6px ${getRankColor(position)}88, 0 0 14px ${getRankColor(position)}44, inset 0 0 6px ${getRankColor(position)}33`; }}
                         >
                           <ShineBorder
                             borderRadius={8}
