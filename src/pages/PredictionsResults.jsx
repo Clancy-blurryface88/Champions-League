@@ -39,20 +39,43 @@ const OUTCOME_COLORS = {
   default: { hex: '#34d399', text: 'text-emerald-400', border: 'border-emerald-500/30', divider: 'bg-emerald-400/40' },
 };
 
-// Odometer-roll digit reveal for the points pill — each column rolls
+// Odometer-roll digit reveal for points pills — each column rolls
 // independently through two full spins and settles on the real digit,
 // rightmost digits settling first. Ported from the "30 effects" admin demo
 // (AdminScoreEffectsDemo.jsx, variant #2).
-function OdometerDigit({ digit, delay = 0, height = 16 }) {
+//
+// Triggered by IntersectionObserver (+ a fallback timeout, same pattern as
+// the SlotBadge position-badge component in Predictions.jsx) instead of a
+// fixed mount-relative delay — rows in these lists reveal on a staggered
+// timer independent of scroll position, so a mount-relative delay meant the
+// roll for most rows had already finished off-screen by the time the user
+// actually scrolled to see them. Triggering on real visibility fixes that.
+function useInViewOnce() {
+  const ref = useRef(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setInView(true); obs.disconnect(); } },
+      { threshold: 0.5 }
+    );
+    obs.observe(el);
+    const fallback = setTimeout(() => setInView(true), 700);
+    return () => { obs.disconnect(); clearTimeout(fallback); };
+  }, []);
+  return [ref, inView];
+}
+function OdometerDigit({ digit, delay = 0, height = 16, width = 8, trigger }) {
   const spins = 2;
   const totalSteps = spins * 10 + Number(digit);
   const strip = Array.from({ length: totalSteps + 1 }, (_, i) => i % 10);
   return (
-    <span style={{ height, width: 8, overflow: 'hidden', display: 'inline-block', verticalAlign: 'middle' }}>
+    <span style={{ height, width, overflow: 'hidden', display: 'inline-block', verticalAlign: 'middle' }}>
       <motion.span
         style={{ display: 'block' }}
         initial={{ y: 0 }}
-        animate={{ y: -totalSteps * height }}
+        animate={trigger ? { y: -totalSteps * height } : { y: 0 }}
         transition={{ delay, duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
       >
         {strip.map((d, i) => (
@@ -62,14 +85,15 @@ function OdometerDigit({ digit, delay = 0, height = 16 }) {
     </span>
   );
 }
-function OdometerValue({ target, baseDelay = 0 }) {
+function OdometerValue({ target, height = 16, width = 8 }) {
+  const [ref, inView] = useInViewOnce();
   const str = (target || 0).toFixed(2);
   return (
-    <span style={{ display: 'inline-flex' }}>
+    <span ref={ref} style={{ display: 'inline-flex' }}>
       {str.split('').map((c, i) =>
         c === '.'
           ? <span key={i}>.</span>
-          : <OdometerDigit key={i} digit={c} delay={baseDelay + str.slice(i + 1).replace('.', '').length * 0.12} />
+          : <OdometerDigit key={i} digit={c} delay={str.slice(i + 1).replace('.', '').length * 0.12} trigger={inView} height={height} width={width} />
       )}
     </span>
   );
@@ -945,7 +969,7 @@ function PodiumStand({ entry, position, isCurrentUser, baseDelay = 0 }) {
       </span>
       {/* Points — rank color, slightly dimmer */}
       <span style={{ color: rankColor, opacity: 0.72, fontSize: 11, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>
-        {entry.totalPoints.toFixed(2)}
+        <OdometerValue target={entry.totalPoints} height={14} width={7} />
       </span>
       {/* Olympic Classic platform */}
       <div style={{
@@ -1038,7 +1062,9 @@ function LeaderboardView({ roundLeaderboard, loading, user }) {
                   </span>
                   <span className="text-white font-medium">{entry.displayName}</span>
                 </div>
-                <span className="text-green-400 font-bold tabular-nums">{entry.totalPoints.toFixed(2)}</span>
+                <span className="text-green-400 font-bold tabular-nums">
+                  <OdometerValue target={entry.totalPoints} height={17} width={9} />
+                </span>
               </motion.div>
             );
           })}
@@ -1339,7 +1365,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="text-xs font-bold tabular-nums px-2.5 py-1 rounded-lg"
                     style={ptsBadgeStyle}>
-                    <OdometerValue target={prediction.points_earned || 0} baseDelay={revealDelay + 0.45} /> PTS
+                    <OdometerValue target={prediction.points_earned || 0} /> PTS
                   </span>
                   {outcomeStatus?.type === 'exact'   && <span className="text-base">🎯</span>}
                   {outcomeStatus?.type === 'correct' && (
