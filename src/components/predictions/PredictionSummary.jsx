@@ -17,7 +17,6 @@ const scoreVariants = {
   visible:  { opacity: 1, scale: 1,  transition: { delay: 0.2, type: 'spring', stiffness: 300, damping: 20 } },
 };
 import { Match } from "@/api/entities";
-import { STAGE_LABELS } from "@/config/tournament";
 
 export default function PredictionSummary({ predictions, roundId, onConfirm, onCancel, saving }) {
   const [matches, setMatches] = useState([]);
@@ -78,24 +77,21 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
 
         {/* Header */}
         <div
-          className="flex items-center justify-between px-5 pt-4 pb-4 flex-shrink-0"
+          className="flex flex-col items-center justify-center px-5 pt-4 pb-4 flex-shrink-0 text-center"
           style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
         >
-          <div>
-            <h2
-              className="text-lg font-bold leading-tight"
-              style={{
-                background: 'linear-gradient(90deg, #097adc, #7cadee)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-            >
-              סיכום הניחושים שלך
-            </h2>
-            <p className="text-white/35 text-xs mt-0.5">עבור לפני אישור</p>
-          </div>
-
+          <h2
+            className="text-lg font-bold leading-tight"
+            style={{
+              background: 'linear-gradient(90deg, #16a34a, #22c55e)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            סיכום הניחושים שלך
+          </h2>
+          <p className="text-emerald-400/50 text-xs mt-0.5">עבור לפני אישור</p>
         </div>
 
         {/* Match rows – flex-1 so it fills available space, overflow-y for scroll */}
@@ -122,7 +118,7 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                     borderRadius: 0,
                     background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.02) 50%)',
                     border: '1px solid rgba(255,255,255,0.09)',
-                    borderLeft: '4px solid #097adc',
+                    borderLeft: '4px solid #22c55e',
                     transform: 'skewX(-6deg)',
                     overflow: 'hidden',
                     backdropFilter: 'blur(8px)',
@@ -148,15 +144,15 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                       <div
                         className="w-full flex items-center justify-center px-2 py-1 rounded-xl"
                         style={{
-                          background: 'rgba(9, 122, 220,0.11)',
-                          border: '1px solid rgba(9, 122, 220,0.32)',
-                          boxShadow: '0 0 12px rgba(9, 122, 220,0.10)',
+                          background: 'rgba(34,197,94,0.11)',
+                          border: '1px solid rgba(34,197,94,0.32)',
+                          boxShadow: '0 0 12px rgba(34,197,94,0.10)',
                         }}
                       >
                         <span
                           className="font-black text-sm tabular-nums"
                           style={{
-                            background: 'linear-gradient(90deg, #097adc, #7cadee)',
+                            background: 'linear-gradient(90deg, #16a34a, #22c55e)',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text',
@@ -165,9 +161,6 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                           {prediction.predicted_score_a} – {prediction.predicted_score_b}
                         </span>
                       </div>
-                      {match.stage && (
-                        <span className="text-[9px] text-sky-400/45 font-medium mt-0.5 tracking-wide">{STAGE_LABELS[match.stage] || match.stage}</span>
-                      )}
                     </motion.div>
 
                     {/* Team B — נכנסת משמאל */}
