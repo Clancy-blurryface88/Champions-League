@@ -788,7 +788,7 @@ export default function Predictions() {
                     finished={finishedCount}
                     total={count}
                     active={isActive}
-                    size={20}
+                    size={26}
                     activeClassName="text-sky-300"
                     inactiveClassName={isPast ? "text-slate-600" : "text-white/40"}
                   />
