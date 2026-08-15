@@ -1167,27 +1167,27 @@ export default function Predictions() {
                       )}
                     </AnimatePresence>
 
-                    {/* Footer bar — single diagonal-gradient background (hard color-stop,
-                        no clip-path) so there's no seam between two overlapping
-                        clip-path'd + backdrop-filter'd elements; two plain buttons on
-                        top just handle the clicks. */}
+                    {/* Footer bar — transparent fill, neon blue→green gradient frame.
+                        Divider between the two buttons uses the same skewX technique
+                        as PredictionSummary/LeaderboardPanel's parallelogram cards
+                        (a real CSS transform, not clip-path) for a smooth diagonal. */}
                     <div className="-mx-5 -mb-5 mt-3 relative overflow-hidden rounded-b-xl" style={{ height: 48 }}>
                       <div
-                        className="absolute inset-0 pointer-events-none"
+                        className="absolute inset-0 pointer-events-none rounded-b-xl"
                         style={{
-                          background: 'linear-gradient(105deg, rgba(59,130,246,0.94) 0%, rgba(29,78,216,0.90) 48%, rgba(52,211,153,0.94) 52%, rgba(5,150,105,0.90) 100%)',
-                          backdropFilter: 'blur(10px) saturate(110%)',
-                          WebkitBackdropFilter: 'blur(10px) saturate(110%)',
-                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)',
+                          border: '1.5px solid transparent',
+                          borderImage: 'linear-gradient(90deg, #3b82f6, #22c55e) 1',
+                          boxShadow: '0 0 10px rgba(59,130,246,0.45), 0 0 10px rgba(34,197,94,0.45), inset 0 0 10px rgba(59,130,246,0.10)',
                         }}
                       />
-                      <div className="relative flex h-full">
+                      <div className="relative flex h-full items-stretch">
                         <button
                           onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
                           className="flex-1 flex items-center justify-center text-xs font-bold text-white transition-colors"
                         >
                           1 X 2
                         </button>
+                        <div style={{ width: 1.5, transform: 'skewX(-10deg)', background: 'linear-gradient(180deg, #3b82f6, #22c55e)' }} />
                         <button
                           onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
                           className="flex-1 flex items-center justify-center text-xs font-bold text-white transition-colors"
