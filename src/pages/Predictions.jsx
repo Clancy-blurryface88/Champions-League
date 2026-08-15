@@ -759,11 +759,14 @@ export default function Predictions() {
                   className="relative flex-shrink-0 flex flex-col items-center gap-1 pt-2 pb-2.5 px-4 rounded-2xl transition-all duration-250"
                   style={{
                     background: isActive
-                      ? 'linear-gradient(135deg,#097adc,#7cadee)'
+                      ? 'rgba(9, 122, 220,0.08)'
                       : 'rgba(255,255,255,0.05)',
                     border: isActive
-                      ? '1px solid rgba(9, 122, 220,0.6)'
+                      ? '1.5px solid #3b9eff'
                       : '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: isActive
+                      ? '0 0 8px rgba(59,158,255,0.65), 0 0 18px rgba(59,158,255,0.4), inset 0 0 8px rgba(59,158,255,0.15)'
+                      : 'none',
                     minWidth: 84,
                   }}
                 >
@@ -775,10 +778,10 @@ export default function Predictions() {
                     />
                   )}
 
-                  <span className={`text-[10px] font-semibold leading-none ${isActive ? 'text-black/60' : isPast ? 'text-slate-600' : 'text-slate-400'}`}>
+                  <span className={`text-[10px] font-semibold leading-none ${isActive ? 'text-sky-300' : isPast ? 'text-slate-600' : 'text-slate-400'}`}>
                     {dayName}
                   </span>
-                  <span className={`text-base font-black leading-none ${isActive ? 'text-black' : isPast ? 'text-slate-500' : 'text-white'}`}>
+                  <span className={`text-base font-black leading-none ${isActive ? 'text-white' : isPast ? 'text-slate-500' : 'text-white'}`}>
                     {dayNum}
                   </span>
                   <MatchCountRing
@@ -786,7 +789,7 @@ export default function Predictions() {
                     total={count}
                     active={isActive}
                     size={20}
-                    activeClassName="text-black/70"
+                    activeClassName="text-sky-300"
                     inactiveClassName={isPast ? "text-slate-600" : "text-white/40"}
                   />
                 </button>
