@@ -797,7 +797,7 @@ export default function MyStats() {
                 value={tab.id}
                 className="flex-1 relative z-10 data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:data-[state=active]:bg-transparent rounded-lg"
                 style={{
-                  color: activeTab === tab.id ? '#000' : '#097adc',
+                  color: activeTab === tab.id ? '#000' : '#fff',
                   borderRight: index < arr.length - 1 ? '1px solid rgba(255,255,255,0.14)' : 'none',
                 }}
               >
