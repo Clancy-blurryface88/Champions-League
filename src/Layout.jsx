@@ -13,7 +13,6 @@ import {
 "@/components/ui/dropdown-menu";
 import LeaderboardPanel from "./components/LeaderboardPanel";
 import WelcomeModal from "./components/WelcomeModal";
-import IntroVideoModal from "./components/IntroVideoModal";
 import ExactHitsPanel from "./components/ExactHitsPanel";
 // This import is kept as per outline
 import { createPageUrl } from "@/utils";
@@ -285,7 +284,6 @@ export default function Layout({ children, currentPageName }) {
   const [user, setUser] = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
-  const [showIntroVideoModal, setShowIntroVideoModal] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
@@ -445,21 +443,17 @@ export default function Layout({ children, currentPageName }) {
             userWithStats.total_predictions_count = 0;
           }
 
-          userWithStats.has_seen_intro_video = currentUser.has_seen_intro_video || false;
         } else {
           userWithStats = null;
         }
 
         setUser(userWithStats);
 
-        // פלואו אונבורדינג: WelcomeModal → סרטון → דשבורד
+        // פלואו אונבורדינג: WelcomeModal → דשבורד
         if (currentUser) {
           const hasCompletedWelcome = localStorage.getItem('welcome_completed_' + currentUser.id) === 'true';
-          const hasSeenVideo = !!userWithStats.has_seen_intro_video;
           if (!hasCompletedWelcome) {
             setShowWelcomeModal(true);
-          } else if (!hasSeenVideo) {
-            setShowIntroVideoModal(true);
           }
         }
 
@@ -476,7 +470,6 @@ export default function Layout({ children, currentPageName }) {
               display_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
               avatar_url: session.user.user_metadata?.avatar_url,
               is_admin: false,
-              has_seen_intro_video: false,
             });
           } else {
             setUser(null);
@@ -593,7 +586,7 @@ export default function Layout({ children, currentPageName }) {
   // per continuous visit even if hasLiveMatch/nextMatch change mid-session.
   useEffect(() => {
     if (authLoading || !liveCheckDone || !nextMatchChecked) return;
-    if (showWelcomeModal || showIntroVideoModal) return;
+    if (showWelcomeModal) return;
     if (hasLiveMatch && livePredictionLoading) return; // wait so the card appears complete, prediction included
     if (introShownRef.current) return;
     introShownRef.current = true;
@@ -604,7 +597,7 @@ export default function Layout({ children, currentPageName }) {
     } else if (nextMatch) {
       setShowNextMatchIntro(true);
     }
-  }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading, showWelcomeModal, showIntroVideoModal, tournamentEnded]);
+  }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading, showWelcomeModal, tournamentEnded]);
 
   // "משחקי היום" shows the day's matches as a typewriter-revealed list right
   // away — no solo "המשחק הקרוב" screen first (the ticker bar already covers
@@ -829,24 +822,6 @@ export default function Layout({ children, currentPageName }) {
     setUser((prev) => ({ ...prev, display_name: displayName }));
     try { localStorage.setItem('welcome_completed_' + (user?.id ?? ''), 'true'); } catch {}
     setShowWelcomeModal(false);
-
-    const hasSeenVideo = !!user?.has_seen_intro_video;
-    if (!hasSeenVideo) {
-      setShowIntroVideoModal(true);
-    } else {
-      navigate(createPageUrl("Dashboard"));
-    }
-  };
-
-  // נקראת לאחר שסרטון הכניסה הסתיים (או נכשל)
-  const handleIntroVideoCompleted = async () => {
-    setShowIntroVideoModal(false);
-    try {
-      await User.updateMyUserData({ has_seen_intro_video: true });
-      setUser((prev) => ({ ...prev, has_seen_intro_video: true }));
-    } catch (error) {
-      console.error("Failed to update intro video status:", error);
-    }
     navigate(createPageUrl("Dashboard"));
   };
 
@@ -1440,10 +1415,6 @@ export default function Layout({ children, currentPageName }) {
           onSave={handleProfileSaved}
           userEmail={user?.email}
           currentUser={user} />
-
-        <IntroVideoModal
-          isOpen={showIntroVideoModal}
-          onVideoCompleted={handleIntroVideoCompleted} />
 
         <AnimatePresence>
           {showLeaderboard &&
