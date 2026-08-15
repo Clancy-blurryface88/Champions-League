@@ -106,12 +106,12 @@ export default function LeagueTableModal({ onClose }) {
                         const pos = i + 1;
                         return (
                           <tr key={team.name} className={`border-t border-slate-700/50 ${rowClass(pos)}`}>
-                            <td className="px-3 py-2.5 text-xs">
+                            <td className="px-1.5 py-2.5 text-xs">
                               <span className={`font-bold ${posClass(pos)}`}>{pos}</span>
                             </td>
-                            <td className="px-3 py-2.5">
+                            <td className="px-1.5 py-2.5">
                               <div className="flex items-center gap-2">
-                                <TeamFlag logo={team.logo} name={team.name} className="w-5 h-5" />
+                                <TeamFlag logo={team.logo} name={team.name} className="w-6 h-6" />
                                 <span className="text-white text-xs font-medium truncate max-w-[100px]">{team.name}</span>
                               </div>
                             </td>
