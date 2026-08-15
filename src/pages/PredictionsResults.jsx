@@ -30,6 +30,7 @@ import { getRoundLeaderboard } from "../components/utils/getRoundLeaderboard"; /
 import { AnimatedList } from "@/components/magicui/animated-list";
 import ScoreAccuracyVisuals from "@/components/predictions/ScoreAccuracyVisuals";
 import { calculateMatchMaxPotentialPoints } from "../components/utils/calculateMatchMaxPotentialPoints";
+import OdometerValue from "@/components/OdometerValue";
 
 
 const OUTCOME_COLORS = {
@@ -38,66 +39,6 @@ const OUTCOME_COLORS = {
   wrong:   { hex: '#f87171', text: 'text-red-400',     border: 'border-red-500/25',     divider: 'bg-red-400/40'     },
   default: { hex: '#34d399', text: 'text-emerald-400', border: 'border-emerald-500/30', divider: 'bg-emerald-400/40' },
 };
-
-// Odometer-roll digit reveal for points pills — each column rolls
-// independently through two full spins and settles on the real digit,
-// rightmost digits settling first. Ported from the "30 effects" admin demo
-// (AdminScoreEffectsDemo.jsx, variant #2).
-//
-// Triggered by IntersectionObserver (+ a fallback timeout, same pattern as
-// the SlotBadge position-badge component in Predictions.jsx) instead of a
-// fixed mount-relative delay — rows in these lists reveal on a staggered
-// timer independent of scroll position, so a mount-relative delay meant the
-// roll for most rows had already finished off-screen by the time the user
-// actually scrolled to see them. Triggering on real visibility fixes that.
-function useInViewOnce() {
-  const ref = useRef(null);
-  const [inView, setInView] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setInView(true); obs.disconnect(); } },
-      { threshold: 0.5 }
-    );
-    obs.observe(el);
-    const fallback = setTimeout(() => setInView(true), 700);
-    return () => { obs.disconnect(); clearTimeout(fallback); };
-  }, []);
-  return [ref, inView];
-}
-function OdometerDigit({ digit, delay = 0, height = 16, width = 8, trigger }) {
-  const spins = 2;
-  const totalSteps = spins * 10 + Number(digit);
-  const strip = Array.from({ length: totalSteps + 1 }, (_, i) => i % 10);
-  return (
-    <span style={{ height, width, overflow: 'hidden', display: 'inline-block', verticalAlign: 'middle' }}>
-      <motion.span
-        style={{ display: 'block' }}
-        initial={{ y: 0 }}
-        animate={trigger ? { y: -totalSteps * height } : { y: 0 }}
-        transition={{ delay, duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-      >
-        {strip.map((d, i) => (
-          <span key={i} style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{d}</span>
-        ))}
-      </motion.span>
-    </span>
-  );
-}
-function OdometerValue({ target, height = 16, width = 8 }) {
-  const [ref, inView] = useInViewOnce();
-  const str = (target || 0).toFixed(2);
-  return (
-    <span ref={ref} style={{ display: 'inline-flex' }}>
-      {str.split('').map((c, i) =>
-        c === '.'
-          ? <span key={i}>.</span>
-          : <OdometerDigit key={i} digit={c} delay={str.slice(i + 1).replace('.', '').length * 0.12} trigger={inView} height={height} width={width} />
-      )}
-    </span>
-  );
-}
 
 function AnimatedDonut({ percentage, size = 64, outcomeType }) {
   const [animPct, setAnimPct] = useState(0);

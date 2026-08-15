@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PublicProfile } from "@/api/entities";
 import { User } from "@/api/entities";
 import { UserStats } from "@/api/entities";
-import ScoreCounter from "./ScoreCounter";
+import OdometerValue from "./OdometerValue";
 import PlayerStatsModal from "./PlayerStatsModal";
 import { ShineBorder } from "@/components/magicui/shine-border";
 
@@ -291,11 +291,10 @@ export default function LeaderboardPanel({ onClose, user }) {
                               {participant.full_name}
                             </p>
                             <span style={{ color:'#4ade80', fontSize:12, fontWeight:700 }}>
-                              <ScoreCounter
-                                value={participant.total_points}
-                                duration={1.5}
-                                delay={scoreAnimationDelay}
-                                showDecimals={true} />
+                              <OdometerValue
+                                target={participant.total_points}
+                                height={15}
+                                width={7.5} />
                               {' '}Pts
                             </span>
                           </div>
