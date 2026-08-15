@@ -1167,22 +1167,29 @@ export default function Predictions() {
                       )}
                     </AnimatePresence>
 
-                    {/* Footer bar */}
-                    <div className="-mx-5 -mb-5 mt-3 flex overflow-hidden rounded-b-xl relative">
-                      <div className="absolute top-0 left-6 right-6 h-px pointer-events-none"
-                        style={{ background:'linear-gradient(90deg, transparent, rgba(255,255,255,0.22) 20%, rgba(255,255,255,0.22) 80%, transparent)' }} />
+                    {/* Footer bar — diagonal-cut split (admin demo #7) */}
+                    <div className="-mx-5 -mb-5 mt-3 relative overflow-hidden rounded-b-xl" style={{ height: 48 }}>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
-                        className="flex-1 flex items-center justify-center py-3 text-xs font-bold transition-colors"
-                        style={{ color:'rgba(255,255,255,0.75)', textDecoration:'none' }}
+                        className="absolute inset-0 flex items-center justify-center text-xs font-bold transition-colors"
+                        style={{
+                          clipPath: 'polygon(0 0, 58% 0, 42% 100%, 0 100%)',
+                          background: 'rgba(124,173,238,0.14)',
+                          color: '#9dc2f5',
+                          paddingInlineEnd: '30%',
+                        }}
                       >
                         1 X 2
                       </button>
-                      <div className="w-px my-2.5" style={{ background:'rgba(255,255,255,0.14)' }} />
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
-                        className="flex-1 flex items-center justify-center py-3 text-xs font-bold transition-colors"
-                        style={{ color:'rgba(255,255,255,0.75)', textDecoration:'none' }}
+                        className="absolute inset-0 flex items-center justify-center text-xs font-bold transition-colors"
+                        style={{
+                          clipPath: 'polygon(58% 0, 100% 0, 100% 100%, 42% 100%)',
+                          background: 'rgba(52,211,153,0.14)',
+                          color: '#7fe4bd',
+                          paddingInlineStart: '30%',
+                        }}
                       >
                         ניחושים
                       </button>
