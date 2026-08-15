@@ -7,7 +7,7 @@ import {
 import { ShineBorder } from '@/components/magicui/shine-border';
 import OdometerValue from '@/components/OdometerValue';
 
-// Demo-only: 100 alternative designs for the leaderboard participant card —
+// Demo-only: 150 alternative designs for the leaderboard participant card —
 // the skewed parallelogram rows in LeaderboardPanel.jsx. Mock data,
 // self-contained, replayable. Doesn't touch LeaderboardPanel.jsx.
 //
@@ -2460,6 +2460,1060 @@ function V100() {
   );
 }
 
+// ================= Group K — Football/stadium thematic skins (101-110) =================
+
+const LED_FONT = "'Courier New', monospace";
+
+// 101. Stadium jumbotron/scoreboard card — pixelated LED-style digit font, stadium-light glow.
+function V101() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative', width: 220, padding: '9px 14px', borderRadius: 6, background: '#04120a', border: `2px solid ${RANK_BORDER(row.rank)}`, backgroundImage: 'radial-gradient(rgba(34,197,94,0.12) 1px, transparent 1px)', backgroundSize: '4px 4px', overflow: 'hidden', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <motion.div animate={{ opacity: [0.4, 0.9, 0.4] }} transition={{ duration: 2.2, repeat: Infinity }}
+            style={{ position: 'absolute', inset: 0, background: `radial-gradient(120px circle at 10% 0%, ${RANK_BORDER(row.rank)}30, transparent 70%)`, pointerEvents: 'none' }} />
+          <span style={{ position: 'relative', fontFamily: LED_FONT, fontSize: 16, fontWeight: 900, color: RANK_COLOR(row.rank), textShadow: `0 0 6px ${RANK_BORDER(row.rank)}` }}>{row.rank}</span>
+          <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+            <p className="truncate" style={{ fontFamily: LED_FONT, color: '#8effc0', fontSize: 12, fontWeight: 700, textShadow: '0 0 5px #22c55e' }}>{row.name}</p>
+          </div>
+          <span style={{ position: 'relative' }}><PointsPill value={row.points} trigger={revealed} color="#8effc0" /></span>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 102. Football jersey card — name/number styled like the back of a jersey, subtle fabric-weave texture, team-stripe accent.
+function V102() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative', width: 220, padding: '10px 14px 10px 20px', borderRadius: 10, background: RANK_BG(row.rank), border: `2px solid ${RANK_BORDER(row.rank)}`, backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0 2px, transparent 2px 4px)', display: 'flex', alignItems: 'center', gap: 12, overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 6, background: `repeating-linear-gradient(180deg, ${RANK_BORDER(row.rank)} 0 6px, #0b1220 6px 12px)` }} />
+          <span style={{ fontSize: 24, fontWeight: 900, color: '#fff', WebkitTextStroke: `1px ${RANK_BORDER(row.rank)}`, fontFamily: 'Arial, sans-serif' }}>{row.rank}</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p className="truncate" style={{ color: '#f1f5f9', fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 }}>{row.name}</p>
+            <PointsPill value={row.points} trigger={revealed} />
+          </div>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 103. Trading-card foil-pack reveal — the card appears to tear out of a foil pack wrapper on first render, settling into a sports trading-card layout.
+function V103() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative', width: 220, height: 56 }}>
+          <div style={{ position: 'absolute', inset: 0, borderRadius: 10, overflow: 'hidden', border: `2px solid ${RANK_BORDER(row.rank)}` }}>
+            <CardFace row={row} revealed={revealed} style={{ width: '100%', height: '100%', border: 'none', borderRadius: 0 }} />
+          </div>
+          <motion.div
+            initial={{ x: 0, rotate: 0, opacity: 1 }}
+            animate={{ x: 260, rotate: 24, opacity: 0 }}
+            transition={{ delay: i * 0.18 + 0.3, duration: 0.55, ease: 'easeIn' }}
+            style={{ position: 'absolute', inset: 0, borderRadius: 10, backgroundImage: 'linear-gradient(120deg,#c0c0c0,#f5f5f5 30%,#8a8a8a 55%,#e8e8e8 80%)', backgroundSize: '250% 250%', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+            <Sparkles className="w-5 h-5" style={{ color: '#0b1220' }} />
+          </motion.div>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+function RefWhistle({ color }) {
+  return (
+    <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
+      <circle cx="4" cy="5" r="4" stroke={color} strokeWidth="1.3" />
+      <path d="M8 5H13.5" stroke={color} strokeWidth="1.3" />
+      <path d="M13.5 2.5V7.5" stroke={color} strokeWidth="1.3" />
+    </svg>
+  );
+}
+// 104. Referee-card parody — yellow/red card silhouette shape, a small whistle icon accent (playful, not literal penalty framing).
+function V104() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        const cardColor = row.rank === 2 ? '#ef4444' : '#facc15';
+        return (
+          <div style={{ width: 200, borderRadius: 4, background: cardColor, transform: 'rotate(-2deg)', padding: '9px 14px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 6px 16px rgba(0,0,0,0.4)' }}>
+            <span style={{ fontSize: 14, fontWeight: 900, color: '#1e1b1b' }}>{row.rank}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p className="truncate" style={{ color: '#1e1b1b', fontSize: 12.5, fontWeight: 800 }}>{row.name}</p>
+            </div>
+            <RefWhistle color="#1e1b1b" />
+            <PointsPill value={row.points} trigger={revealed} color="#1e1b1b" />
+          </div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+function PitchLines({ color }) {
+  return (
+    <svg style={{ position: 'absolute', inset: 0 }} viewBox="0 0 220 56" preserveAspectRatio="none">
+      <rect x="2" y="2" width="216" height="52" fill="none" stroke={color} strokeWidth="1" opacity="0.35" />
+      <line x1="110" y1="2" x2="110" y2="54" stroke={color} strokeWidth="1" opacity="0.35" />
+      <circle cx="110" cy="28" r="10" fill="none" stroke={color} strokeWidth="1" opacity="0.35" />
+      <rect x="2" y="14" width="18" height="28" fill="none" stroke={color} strokeWidth="1" opacity="0.35" />
+      <rect x="200" y="14" width="18" height="28" fill="none" stroke={color} strokeWidth="1" opacity="0.35" />
+    </svg>
+  );
+}
+// 105. Pitch-view card — a miniature football-pitch line diagram as the card's background, with a marker dot showing the player's rank position on the pitch.
+function V105() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        const mx = 14 + ((row.rank - 1) / 3) * 190;
+        return (
+          <div style={{ position: 'relative', width: 220, height: 56, borderRadius: 10, background: '#0d2818', border: `2px solid ${RANK_BORDER(row.rank)}`, overflow: 'hidden' }}>
+            <PitchLines color="#4ade80" />
+            <motion.div initial={{ scale: 0 }} animate={{ scale: revealed ? 1 : 0 }} transition={{ type: 'spring', stiffness: 400, damping: 14 }}
+              style={{ position: 'absolute', left: mx, top: 24, width: 8, height: 8, borderRadius: '50%', background: RANK_COLOR(row.rank), boxShadow: `0 0 8px ${RANK_BORDER(row.rank)}` }} />
+            <div style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '0 12px' }}>
+              <span style={{ fontSize: 13, fontWeight: 900, color: '#fff' }}>{row.rank}</span>
+              <div style={{ flex: 1, minWidth: 0 }}><p className="truncate" style={{ color: '#e2e8f0', fontSize: 12.5, fontWeight: 700 }}>{row.name}</p></div>
+              <PointsPill value={row.points} trigger={revealed} />
+            </div>
+          </div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 106. Substitution board card — electronic sub-board LED-digit look (like the boards refs hold up).
+function V106() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ width: 220, borderRadius: 6, background: '#1a1a1a', border: '3px solid #333', padding: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ background: '#000', borderRadius: 4, padding: '4px 8px', border: '1px solid #ef4444' }}>
+            <span style={{ fontFamily: LED_FONT, fontSize: 20, fontWeight: 900, color: '#ef4444', textShadow: '0 0 8px #ef4444' }}>{String(row.rank).padStart(2, '0')}</span>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p className="truncate" style={{ color: '#e5e5e5', fontSize: 11.5, fontWeight: 700, fontFamily: LED_FONT }}>{row.name}</p>
+            <PointsPill value={row.points} trigger={revealed} color="#ef4444" size={11} />
+          </div>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 107. Locker-room nameplate card — brushed-metal plate texture with the name looking engraved/debossed.
+function V107() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ width: 220, padding: '10px 16px', borderRadius: 4, backgroundImage: 'linear-gradient(135deg,#9199a3 0%,#c7ccd3 25%,#7d838d 50%,#c7ccd3 75%,#9199a3 100%)', border: '1px solid #5c6169', boxShadow: '0 2px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 13, fontWeight: 900, color: '#3a3f47', textShadow: '0 1px 0 rgba(255,255,255,0.5)' }}>{row.rank}</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p className="truncate" style={{ color: '#2b2f35', fontSize: 13, fontWeight: 800, textShadow: '0 1px 0 rgba(255,255,255,0.45), 0 -1px 0 rgba(0,0,0,0.25)', textTransform: 'uppercase', letterSpacing: 1 }}>{row.name}</p>
+          </div>
+          <PointsPill value={row.points} trigger={revealed} color="#1e3a24" />
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 108. Match-day ticket stub — perforated edge on one side, a small barcode-style stripe.
+function V108() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative', width: 224, display: 'flex', borderRadius: 8, overflow: 'hidden', border: `2px solid ${RANK_BORDER(row.rank)}`, background: RANK_BG(row.rank) }}>
+          <div style={{ flex: 1, minWidth: 0, padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 900, color: RANK_COLOR(row.rank), flexShrink: 0 }}>{row.rank}</span>
+            <div style={{ flex: 1, minWidth: 0 }}><p className="truncate" style={{ color: '#e2e8f0', fontSize: 12, fontWeight: 700 }}>{row.name}</p></div>
+            <PointsPill value={row.points} trigger={revealed} size={10} />
+          </div>
+          <div style={{ position: 'relative', width: 40, borderInlineStart: `1.5px dashed ${RANK_BORDER(row.rank)}77`, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 0' }}>
+            <div style={{ position: 'absolute', top: -7, left: '50%', transform: 'translateX(-50%)', width: 14, height: 14, borderRadius: '50%', background: '#050a12' }} />
+            <div style={{ position: 'absolute', bottom: -7, left: '50%', transform: 'translateX(-50%)', width: 14, height: 14, borderRadius: '50%', background: '#050a12' }} />
+            <div style={{ display: 'flex', gap: 1 }}>{[2, 1, 3, 1, 2, 1, 3].map((w, idx) => <div key={idx} style={{ width: w, height: 22, background: RANK_COLOR(row.rank) }} />)}</div>
+          </div>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+function TacticsDiagram({ color }) {
+  return (
+    <svg style={{ position: 'absolute', inset: 0, opacity: 0.5 }} viewBox="0 0 220 56" preserveAspectRatio="none">
+      <circle cx="40" cy="40" r="5" fill="none" stroke={color} strokeWidth="1.2" />
+      <text x="36" y="18" fontSize="9" fill={color}>X</text>
+      <path d="M40 35 L100 15" stroke={color} strokeWidth="1" strokeDasharray="3 2" fill="none" />
+      <circle cx="100" cy="15" r="5" fill="none" stroke={color} strokeWidth="1.2" />
+      <path d="M100 20 L170 40" stroke={color} strokeWidth="1" strokeDasharray="3 2" fill="none" />
+    </svg>
+  );
+}
+// 109. Tactics-board card — chalkboard/whiteboard texture with a simple X-O tactical diagram line as background art.
+function V109() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative', width: 220, height: 56, borderRadius: 8, background: '#1b3327', border: '3px solid #5b3a22', overflow: 'hidden' }}>
+          <TacticsDiagram color="#e2e8f0" />
+          <div style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '0 12px' }}>
+            <span style={{ fontFamily: "'Comic Sans MS', cursive", fontSize: 15, fontWeight: 900, color: '#fff' }}>{row.rank}</span>
+            <div style={{ flex: 1, minWidth: 0 }}><p className="truncate" style={{ color: '#f1f5f9', fontFamily: "'Comic Sans MS', cursive", fontSize: 12.5, fontWeight: 700 }}>{row.name}</p></div>
+            <PointsPill value={row.points} trigger={revealed} />
+          </div>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 110. Championship-belt plate — for rank 1 specifically, a belt-plate shape (wide center medallion) as the card frame; other ranks use a simpler consistent shape.
+function V110() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        if (row.rank === 1) {
+          return (
+            <div style={{ position: 'relative', width: 240, height: 70 }}>
+              <div style={{ position: 'absolute', inset: 0, clipPath: 'polygon(15% 0,85% 0,100% 30%,100% 70%,85% 100%,15% 100%,0 70%,0 30%)', background: 'linear-gradient(135deg,#fde68a,#ca8a04 50%,#fde68a)', border: '2px solid #92400e' }} />
+              <div style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '0 26px' }}>
+                <Trophy className="w-5 h-5" style={{ color: '#78350f', flexShrink: 0 }} />
+                <div style={{ textAlign: 'center', minWidth: 0 }}>
+                  <p className="truncate" style={{ color: '#3a2205', fontSize: 12.5, fontWeight: 900 }}>{row.name}</p>
+                  <PointsPill value={row.points} trigger={revealed} color="#3a2205" />
+                </div>
+                <Trophy className="w-5 h-5" style={{ color: '#78350f', flexShrink: 0 }} />
+              </div>
+            </div>
+          );
+        }
+        return <PlainCard row={row} revealed={revealed} rankSlot={<PlainRankBadge rank={row.rank} />} width={200} />;
+      }}
+    </RevealRows>
+  );
+}
+
+// ================= Group L — Typography-led design (111-120) =================
+
+// 111. Oversized rank numeral dominates the card, name rendered small beneath it.
+function V111() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ width: 150, textAlign: 'center' }}>
+          <div style={{ fontSize: 56, fontWeight: 900, lineHeight: 1, color: RANK_COLOR(row.rank) }}>{row.rank}</div>
+          <p className="truncate" style={{ color: '#e2e8f0', fontSize: 12, fontWeight: 600, marginTop: 2 }}>{row.name}</p>
+          <PointsPill value={row.points} trigger={revealed} />
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 112. Newspaper-headline style — serif display type for the name, a thin column rule, "breaking news" energy.
+function V112() {
+  return (
+    <RevealRows rows={MOCK3} direction="row" gap={2}>
+      {(row, i, revealed) => (
+        <div style={{ width: 130, padding: '4px 10px', borderInlineStart: i > 0 ? '1px solid #475569' : 'none' }}>
+          <div style={{ fontSize: 8, letterSpacing: 1.5, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 2 }}>מהדורה מיוחדת</div>
+          <p className="truncate" style={{ fontFamily: 'Georgia, serif', color: '#f1f5f9', fontSize: 15, fontWeight: 900, lineHeight: 1.15 }}>{row.name}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3, borderTop: '1px solid #475569', paddingTop: 3 }}>
+            <span style={{ fontFamily: 'Georgia, serif', fontSize: 10, color: '#94a3b8' }}>#{row.rank}</span>
+            <PointsPill value={row.points} trigger={revealed} size={10} />
+          </div>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 113. Neon marquee sign — letterforms styled like glowing tube-light signage, with a flicker-on entrance.
+function V113() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={revealed ? { opacity: [0, 1, 0.4, 1, 0.6, 1] } : { opacity: 0 }}
+          transition={{ duration: 0.6, times: [0, 0.2, 0.35, 0.5, 0.65, 1] }}
+          style={{ width: 220, padding: '10px 14px', borderRadius: 10, background: '#0a0612', border: `1px solid ${RANK_BORDER(row.rank)}`, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', textShadow: `0 0 6px #fff, 0 0 14px ${RANK_BORDER(row.rank)}, 0 0 28px ${RANK_BORDER(row.rank)}` }}>{row.rank}</span>
+          <p className="truncate" style={{ flex: 1, minWidth: 0, color: RANK_COLOR(row.rank), fontSize: 14, fontWeight: 800, textShadow: `0 0 6px ${RANK_BORDER(row.rank)}, 0 0 16px ${RANK_BORDER(row.rank)}` }}>{row.name}</p>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#f472b6', textShadow: '0 0 6px #f472b6, 0 0 14px #f472b6' }}>{row.points.toFixed(2)}</span>
+        </motion.div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 114. Handwritten signature-style name (script-style font treatment) for a personal, autographed feel.
+function V114() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ width: 220, padding: '9px 14px', borderRadius: 12, border: `1px solid ${RANK_BORDER(row.rank)}55`, background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 13, fontWeight: 900, color: RANK_COLOR(row.rank) }}>{row.rank}</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p className="truncate" style={{ fontFamily: "'Brush Script MT', cursive", color: '#e2e8f0', fontSize: 22, lineHeight: 1, transform: 'rotate(-3deg)', transformOrigin: 'right center' }}>{row.name}</p>
+          </div>
+          <PointsPill value={row.points} trigger={revealed} />
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 115. Monospace terminal/hacker aesthetic — green-on-black, blinking cursor after the name.
+function V115() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ width: 220, padding: '9px 14px', borderRadius: 6, background: '#020604', border: '1px solid #16a34a', display: 'flex', alignItems: 'center', gap: 8, fontFamily: LED_FONT }}>
+          <span style={{ color: '#22c55e', fontSize: 12 }}>&gt;</span>
+          <span style={{ color: '#4ade80', fontSize: 12 }}>rank_{row.rank}:</span>
+          <span className="truncate" style={{ flex: 1, minWidth: 0, color: '#86efac', fontSize: 12 }}>{row.name}</span>
+          <motion.span animate={{ opacity: [1, 0] }} transition={{ duration: 0.7, repeat: Infinity, repeatType: 'reverse' }} style={{ width: 6, height: 12, background: '#4ade80', display: 'inline-block', flexShrink: 0 }} />
+          <PointsPill value={row.points} trigger={revealed} color="#4ade80" size={11} />
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 116. Variable font-weight breathing — the name's font-weight subtly oscillates (400↔800) as an idle animation.
+function V116() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ width: 220, padding: '9px 14px', borderRadius: 12, border: `1px solid ${RANK_BORDER(row.rank)}55`, background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 13, fontWeight: 900, color: RANK_COLOR(row.rank) }}>{row.rank}</span>
+          <motion.p className="truncate" animate={{ fontWeight: [400, 800, 400] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            style={{ flex: 1, minWidth: 0, color: '#e2e8f0', fontSize: 14 }}>{row.name}</motion.p>
+          <PointsPill value={row.points} trigger={revealed} />
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 117. Vertical rotated label running along one edge of the card (rank or a category tag, rotated 90°).
+function V117() {
+  return (
+    <RevealRows rows={MOCK3} direction="row" gap={10}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative', width: 150, height: 60, borderRadius: 10, border: `2px solid ${RANK_BORDER(row.rank)}`, background: RANK_BG(row.rank), overflow: 'hidden', display: 'flex' }}>
+          <div style={{ width: 22, background: RANK_BORDER(row.rank), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ transform: 'rotate(-90deg)', whiteSpace: 'nowrap', color: '#fff', fontSize: 9, fontWeight: 900, letterSpacing: 1 }}>דרגה #{row.rank}</span>
+          </div>
+          <div style={{ flex: 1, minWidth: 0, padding: '0 10px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <p className="truncate" style={{ color: '#e2e8f0', fontSize: 12, fontWeight: 700 }}>{row.name}</p>
+            <PointsPill value={row.points} trigger={revealed} size={10} />
+          </div>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 118. Letterpress engraved typography — subtle inset/emboss shadow making text look pressed into the surface.
+function V118() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ width: 220, padding: '10px 14px', borderRadius: 10, background: '#2b3446', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 14, fontWeight: 900, color: '#5b6577', textShadow: '0 1px 1px rgba(0,0,0,0.6), 0 -1px 0 rgba(255,255,255,0.08)' }}>{row.rank}</span>
+          <p className="truncate" style={{ flex: 1, minWidth: 0, color: '#5b6577', fontSize: 14, fontWeight: 800, textShadow: '0 1px 1px rgba(0,0,0,0.6), 0 -1px 0 rgba(255,255,255,0.08)' }}>{row.name}</p>
+          <motion.span initial={{ opacity: 0 }} animate={{ opacity: revealed ? 1 : 0 }} transition={{ duration: 0.3 }}
+            style={{ fontSize: 12, fontWeight: 800, color: '#4a5568', textShadow: '0 1px 1px rgba(0,0,0,0.6), 0 -1px 0 rgba(255,255,255,0.08)' }}>{row.points.toFixed(2)} Pts</motion.span>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 119. Marquee auto-scroll for long names — text scrolls horizontally like a ticker when it overflows.
+function V119() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        const longName = `${row.name} — מוביל בדירוג השבועי`;
+        return (
+          <div style={{ width: 220, padding: '9px 14px', borderRadius: 12, border: `1px solid ${RANK_BORDER(row.rank)}55`, background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden' }}>
+            <span style={{ fontSize: 13, fontWeight: 900, color: RANK_COLOR(row.rank), flexShrink: 0 }}>{row.rank}</span>
+            <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+              <motion.div animate={{ x: [0, -130] }} transition={{ duration: 4, repeat: Infinity, repeatType: 'loop', ease: 'linear' }} style={{ whiteSpace: 'nowrap', color: '#e2e8f0', fontSize: 13, fontWeight: 600 }}>
+                {longName}
+              </motion.div>
+            </div>
+            <PointsPill value={row.points} trigger={revealed} />
+          </div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 120. Bold condensed jersey-numeral font specifically for the points value, contrasting with a lighter name font.
+function V120() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ width: 220, padding: '9px 14px', borderRadius: 12, border: `1px solid ${RANK_BORDER(row.rank)}55`, background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 13, fontWeight: 300, color: RANK_COLOR(row.rank) }}>{row.rank}</span>
+          <p className="truncate" style={{ flex: 1, minWidth: 0, color: '#cbd5e1', fontSize: 13, fontWeight: 300 }}>{row.name}</p>
+          <span style={{ fontStretch: 'condensed', fontFamily: 'Arial Narrow, sans-serif' }}>
+            <PointsPill value={row.points} trigger={revealed} size={18} />
+          </span>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// ================= Group M — Gamification / RPG-inspired (121-130) =================
+
+// 121. XP progress bar — points rendered as a fill bar progressing toward the next rank threshold, RPG level-up framing.
+function V121() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        const next = MOCK4[Math.max(0, row.rank - 2)]?.points ?? row.points + 10;
+        const pct = Math.min(100, Math.round((row.points / next) * 100));
+        return (
+          <div style={{ width: 220, padding: '9px 14px', borderRadius: 10, border: `2px solid ${RANK_BORDER(row.rank)}`, background: '#161225' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, gap: 8 }}>
+              <span style={{ color: '#fbbf24', fontSize: 10, fontWeight: 900, flexShrink: 0 }}>LVL {row.rank}</span>
+              <p className="truncate" style={{ color: '#e2e8f0', fontSize: 11, fontWeight: 700, minWidth: 0 }}>{row.name}</p>
+            </div>
+            <div style={{ height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.1)', overflow: 'hidden' }}>
+              <motion.div initial={{ width: 0 }} animate={{ width: revealed ? `${pct}%` : 0 }} transition={{ duration: 0.7, ease: 'easeOut' }}
+                style={{ height: '100%', background: 'linear-gradient(90deg,#a78bfa,#fbbf24)' }} />
+            </div>
+            <div style={{ textAlign: 'left', marginTop: 3 }}><PointsPill value={row.points} trigger={revealed} color="#fbbf24" size={10} /></div>
+          </div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 122. Achievement badge shelf — a small row of earned icon badges displayed beneath the name.
+function V122() {
+  const badgesByRank = { 1: [Trophy, Star, Flame], 2: [Medal, Star], 3: [Medal] };
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ width: 220, padding: '9px 14px', borderRadius: 12, border: `1px solid ${RANK_BORDER(row.rank)}55`, background: 'rgba(255,255,255,0.03)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 13, fontWeight: 900, color: RANK_COLOR(row.rank) }}>{row.rank}</span>
+            <p className="truncate" style={{ flex: 1, minWidth: 0, color: '#e2e8f0', fontSize: 13, fontWeight: 700 }}>{row.name}</p>
+            <PointsPill value={row.points} trigger={revealed} />
+          </div>
+          <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+            {(badgesByRank[row.rank] || []).map((Icon, idx) => (
+              <motion.div key={idx} initial={{ opacity: 0, scale: 0 }} animate={revealed ? { opacity: 1, scale: 1 } : {}} transition={{ delay: idx * 0.1, type: 'spring', stiffness: 400, damping: 14 }}
+                style={{ width: 18, height: 18, borderRadius: 5, background: 'rgba(250,204,21,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Icon className="w-3 h-3" style={{ color: '#facc15' }} />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 123. Segmented health-bar style points display, RPG HUD aesthetic.
+function V123() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        const segs = 10;
+        const filled = Math.round((row.points / MOCK4[0].points) * segs);
+        return (
+          <div style={{ width: 220, padding: '9px 14px', borderRadius: 10, background: '#1a0f0f', border: `2px solid ${RANK_BORDER(row.rank)}` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+              <p className="truncate" style={{ color: '#e2e8f0', fontSize: 12, fontWeight: 800 }}>{row.name}</p>
+              <span style={{ color: '#94a3b8', fontSize: 10 }}>#{row.rank}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 2 }}>
+              {Array.from({ length: segs }).map((_, idx) => (
+                <motion.div key={idx} initial={{ opacity: 0.15 }} animate={{ opacity: revealed && idx < filled ? 1 : 0.15 }} transition={{ delay: idx * 0.03 }}
+                  style={{ flex: 1, height: 10, background: idx < filled ? '#ef4444' : 'rgba(255,255,255,0.1)', borderRadius: 1 }} />
+              ))}
+            </div>
+            <div style={{ textAlign: 'left', marginTop: 3 }}><PointsPill value={row.points} trigger={revealed} color="#ef4444" size={10} /></div>
+          </div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 124. Loot-rarity border — border color/glow intensity coded like game item rarity tiers (common/rare/epic/legendary) mapped to rank.
+const RARITY = { 1: { color: '#f59e0b', label: 'אגדי' }, 2: { color: '#a855f7', label: 'אפי' }, 3: { color: '#3b82f6', label: 'נדיר' }, 4: { color: '#9ca3af', label: 'רגיל' } };
+function V124() {
+  return (
+    <RevealRows rows={MOCK4}>
+      {(row, i, revealed) => {
+        const r = RARITY[row.rank] || RARITY[4];
+        return (
+          <div style={{ width: 220, padding: '9px 14px', borderRadius: 12, border: `2px solid ${r.color}`, background: `${r.color}14`, boxShadow: `0 0 ${row.rank === 1 ? 20 : 8}px ${r.color}66`, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 8, fontWeight: 900, color: r.color, border: `1px solid ${r.color}`, borderRadius: 4, padding: '1px 4px', flexShrink: 0 }}>{r.label}</span>
+            <p className="truncate" style={{ flex: 1, minWidth: 0, color: '#e2e8f0', fontSize: 13, fontWeight: 700 }}>{row.name}</p>
+            <PointsPill value={row.points} trigger={revealed} color={r.color} />
+          </div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 125. "LEVEL UP" burst — when points update (simulate on tap/replay), a game-style level-up flash and banner plays.
+function V125() {
+  const [lvl, setLvl] = useState({});
+  const [burst, setBurst] = useState(null);
+  const levelUp = (rank) => {
+    setLvl((p) => ({ ...p, [rank]: (p[rank] || 0) + 1 }));
+    setBurst(rank);
+    setTimeout(() => setBurst((b) => (b === rank ? null : b)), 900);
+  };
+  return (
+    <RevealRows rows={MOCK3} gap={16}>
+      {(row, i, revealed) => (
+        <div onClick={() => levelUp(row.rank)} style={{ position: 'relative', cursor: 'pointer' }}>
+          <CardShell row={row}>
+            <IRow row={row} revealed={revealed} right={<span style={{ color: '#fbbf24', fontSize: 11, fontWeight: 800 }}>LVL {(lvl[row.rank] || 0) + row.rank}</span>} />
+          </CardShell>
+          <AnimatePresence>
+            {burst === row.rank && (
+              <motion.div initial={{ opacity: 0, scale: 0.6, y: 0 }} animate={{ opacity: 1, scale: 1.15, y: -20 }} exit={{ opacity: 0, y: -34 }} transition={{ duration: 0.4 }}
+                style={{ position: 'absolute', left: '50%', top: 0, transform: 'translateX(-50%)', background: '#fbbf24', color: '#1a0f00', fontWeight: 900, fontSize: 11, padding: '3px 10px', borderRadius: 999, boxShadow: '0 0 20px rgba(251,191,36,0.9)', pointerEvents: 'none', whiteSpace: 'nowrap' }}>
+                LEVEL UP! ⭐
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 126. Skill-tree node — the card styled as one connected node in a tree diagram, with faint connector lines to adjacent ranks.
+function V126() {
+  return (
+    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 22 }}>
+      <svg style={{ position: 'absolute', left: 100, top: 0, width: 2, height: '100%' }}><line x1="1" y1="0" x2="1" y2="100%" stroke="#475569" strokeWidth="2" strokeDasharray="3 3" /></svg>
+      <RevealRows rows={MOCK3} gap={22}>
+        {(row, i, revealed) => (
+          <div style={{ position: 'relative', display: 'flex', justifyContent: i % 2 === 0 ? 'flex-start' : 'flex-end' }}>
+            <div style={{ width: 170, borderRadius: 999, border: `2px solid ${RANK_BORDER(row.rank)}`, background: RANK_BG(row.rank), padding: '7px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 900, color: RANK_COLOR(row.rank) }}>{row.rank}</span>
+              <p className="truncate" style={{ flex: 1, minWidth: 0, color: '#e2e8f0', fontSize: 11.5, fontWeight: 700 }}>{row.name}</p>
+              <PointsPill value={row.points} trigger={revealed} size={10} />
+            </div>
+          </div>
+        )}
+      </RevealRows>
+    </div>
+  );
+}
+
+// 127. Quest-log parchment entry — aged paper/scroll texture styled row.
+function V127() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ width: 220, padding: '9px 14px', borderRadius: 4, backgroundImage: 'radial-gradient(rgba(120,90,40,0.08) 1px, transparent 1px), linear-gradient(135deg,#e8d9b5,#d8c395)', backgroundSize: '3px 3px, auto', border: '2px solid #8a6d3b', boxShadow: '0 3px 8px rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontFamily: 'Georgia, serif', fontSize: 13, fontWeight: 900, color: '#5c3d1e' }}>{row.rank}</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p className="truncate" style={{ fontFamily: 'Georgia, serif', color: '#4a2e12', fontSize: 13, fontWeight: 700 }}>{row.name}</p>
+            <span style={{ fontFamily: 'Georgia, serif', fontSize: 9, color: '#8a6d3b' }}>משימה הושלמה ✓</span>
+          </div>
+          <PointsPill value={row.points} trigger={revealed} color="#5c3d1e" />
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 128. Character-sheet stat block — RPG-style labeled stat rows (points as one "stat" among a small mock stat block).
+function V128() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ width: 210, padding: '9px 12px', borderRadius: 10, border: `1px solid ${RANK_BORDER(row.rank)}55`, background: '#12172a' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, gap: 8 }}>
+            <p className="truncate" style={{ color: '#e2e8f0', fontSize: 12.5, fontWeight: 800, minWidth: 0 }}>{row.name}</p>
+            <span style={{ color: RANK_COLOR(row.rank), fontSize: 11, fontWeight: 900, flexShrink: 0 }}>#{row.rank}</span>
+          </div>
+          {[['STR', 8 - row.rank], ['LUK', 10 - row.rank * 2], ['PTS', null]].map(([lbl, v]) => (
+            <div key={lbl} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8', marginTop: 2 }}>
+              <span>{lbl}</span>
+              {v === null ? <PointsPill value={row.points} trigger={revealed} size={10} /> : <span style={{ color: '#e2e8f0', fontWeight: 700 }}>{v}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 129. Boss-battle health bar — dramatic, oversized bar treatment reserved for rank 1 only.
+function V129() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        if (row.rank !== 1) return <PlainCard row={row} revealed={revealed} rankSlot={<PlainRankBadge rank={row.rank} />} width={200} />;
+        return (
+          <div style={{ width: 220, padding: '10px 14px', borderRadius: 10, background: '#1a0808', border: '2px solid #ef4444' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, gap: 8 }}>
+              <span style={{ color: '#ef4444', fontSize: 10, fontWeight: 900, letterSpacing: 1, flexShrink: 0 }}>👑 BOSS</span>
+              <p className="truncate" style={{ color: '#fff', fontSize: 12, fontWeight: 900, minWidth: 0 }}>{row.name}</p>
+            </div>
+            <div style={{ height: 12, borderRadius: 3, background: 'rgba(255,255,255,0.1)', overflow: 'hidden', border: '1px solid #7f1d1d' }}>
+              <motion.div initial={{ width: 0 }} animate={{ width: revealed ? '100%' : 0 }} transition={{ duration: 0.9, ease: 'easeOut' }}
+                style={{ height: '100%', background: 'linear-gradient(90deg,#ef4444,#f87171)' }} />
+            </div>
+            <div style={{ textAlign: 'left', marginTop: 3 }}><PointsPill value={row.points} trigger={revealed} color="#f87171" /></div>
+          </div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 130. Coin-counter points display — a small stack of coin icons plus a running counter, arcade-currency feel.
+function V130() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        const coins = Math.min(5, Math.max(1, Math.round(row.points / 15)));
+        return (
+          <div style={{ width: 220, padding: '9px 14px', borderRadius: 12, border: `1px solid ${RANK_BORDER(row.rank)}55`, background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 13, fontWeight: 900, color: RANK_COLOR(row.rank) }}>{row.rank}</span>
+            <p className="truncate" style={{ flex: 1, minWidth: 0, color: '#e2e8f0', fontSize: 13, fontWeight: 700 }}>{row.name}</p>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              {Array.from({ length: coins }).map((_, idx) => (
+                <motion.div key={idx} initial={{ opacity: 0, y: -8 }} animate={revealed ? { opacity: 1, y: 0 } : {}} transition={{ delay: idx * 0.06 }}
+                  style={{ width: 12, height: 12, borderRadius: '50%', background: '#facc15', border: '1.5px solid #ca8a04', marginInlineStart: idx > 0 ? -5 : 0 }} />
+              ))}
+            </div>
+            <PointsPill value={row.points} trigger={revealed} color="#facc15" size={11} />
+          </div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// ================= Group N — Extreme minimalism (131-140) =================
+
+// 131. Borderless, colorless row — pure whitespace/alignment/type-scale carries all hierarchy, no boxes or accent color at all.
+function V131() {
+  return (
+    <RevealRows rows={MOCK3} gap={14}>
+      {(row, i, revealed) => (
+        <div style={{ width: 220, display: 'flex', alignItems: 'center', gap: 14, padding: '2px 0' }}>
+          <span style={{ fontSize: 13, color: '#94a3b8', width: 14 }}>{row.rank}</span>
+          <span className="truncate" style={{ flex: 1, minWidth: 0, fontSize: 14, color: '#f1f5f9', fontWeight: row.rank === 1 ? 700 : 400 }}>{row.name}</span>
+          <PointsPill value={row.points} trigger={revealed} color="#f1f5f9" size={12} />
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 132. Single accent dot — one small color-coded dot is the ENTIRE rank indicator, no badge/number shape.
+function V132() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ width: 220, display: 'flex', alignItems: 'center', gap: 10, padding: '6px 2px' }}>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: RANK_COLOR(row.rank), flexShrink: 0 }} />
+          <span className="truncate" style={{ flex: 1, minWidth: 0, color: '#e2e8f0', fontSize: 13 }}>{row.name}</span>
+          <PointsPill value={row.points} trigger={revealed} size={11} />
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 133. Underline-only rank cue — a colored underline beneath the name, no badge at all.
+function V133() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ width: 220, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 2px' }}>
+          <span className="truncate" style={{ color: '#e2e8f0', fontSize: 13.5, paddingBottom: 2, borderBottom: `2px solid ${RANK_COLOR(row.rank)}` }}>{row.name}</span>
+          <PointsPill value={row.points} trigger={revealed} size={11} />
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+function GrayRow({ row, revealed }) {
+  const [active, setActive] = useState(false);
+  return (
+    <div onMouseEnter={() => setActive(true)} onMouseLeave={() => setActive(false)} onPointerDown={() => setActive(true)} onPointerUp={() => setActive(false)}
+      style={{ width: 220, padding: '9px 14px', borderRadius: 12, border: `1px solid ${active ? RANK_BORDER(row.rank) : '#475569'}`, background: active ? RANK_BG(row.rank) : 'rgba(255,255,255,0.03)', transition: 'border-color 0.25s, background 0.25s', display: 'flex', alignItems: 'center', gap: 10 }}>
+      <span style={{ fontSize: 13, fontWeight: 900, color: active ? RANK_COLOR(row.rank) : '#64748b', transition: 'color 0.25s' }}>{row.rank}</span>
+      <p className="truncate" style={{ flex: 1, minWidth: 0, color: active ? '#e2e8f0' : '#94a3b8', fontSize: 13, fontWeight: 600, transition: 'color 0.25s' }}>{row.name}</p>
+      <PointsPill value={row.points} trigger={revealed} color={active ? '#4ade80' : '#64748b'} />
+    </div>
+  );
+}
+// 134. Monochrome/grayscale by default — color only appears on hover/tap interaction.
+function V134() {
+  return <RevealRows rows={MOCK3}>{(row, i, revealed) => <GrayRow row={row} revealed={revealed} />}</RevealRows>;
+}
+
+// 135. Pure line-art / outline-icon only card — nothing filled anywhere.
+function V135() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ width: 220, padding: '9px 14px', borderRadius: 12, border: `1.5px solid ${RANK_BORDER(row.rank)}`, background: 'transparent', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 22, height: 22, borderRadius: '50%', border: `1.5px solid ${RANK_COLOR(row.rank)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ fontSize: 10, color: RANK_COLOR(row.rank) }}>{row.rank}</span>
+          </div>
+          <p className="truncate" style={{ flex: 1, minWidth: 0, color: '#e2e8f0', fontSize: 13, fontWeight: 500 }}>{row.name}</p>
+          <PointsPill value={row.points} trigger={revealed} color={RANK_COLOR(row.rank)} />
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 136. Ultra-compact micro-row — icon + 2-digit points only, built for very dense long lists.
+function V136() {
+  return (
+    <RevealRows rows={MOCK3} gap={2}>
+      {(row, i, revealed) => (
+        <div style={{ width: 140, display: 'flex', alignItems: 'center', gap: 6, padding: '2px 4px' }}>
+          <span style={{ fontSize: 9, color: RANK_COLOR(row.rank), width: 10, flexShrink: 0 }}>{row.rank}</span>
+          <span className="truncate" style={{ flex: 1, minWidth: 0, fontSize: 9.5, color: '#cbd5e1' }}>{row.name}</span>
+          <PointsPill value={Math.round(row.points)} trigger={revealed} size={9} />
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 137. Text-shadow-only depth — no boxes, borders, or fills at all, depth conveyed purely through typographic shadow.
+function V137() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ width: 220, display: 'flex', alignItems: 'center', gap: 10, padding: '6px 4px' }}>
+          <span style={{ fontSize: 14, fontWeight: 900, color: '#cbd5e1', textShadow: '0 2px 3px rgba(0,0,0,0.7)' }}>{row.rank}</span>
+          <p className="truncate" style={{ flex: 1, minWidth: 0, color: '#f1f5f9', fontSize: 14, fontWeight: 800, textShadow: '0 3px 6px rgba(0,0,0,0.7)' }}>{row.name}</p>
+          <PointsPill value={row.points} trigger={revealed} color="#f1f5f9" />
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 138. Hairline-divider spreadsheet row — plain table-row aesthetic, deliberately unstyled/utilitarian.
+function V138() {
+  return (
+    <RevealRows rows={MOCK3} gap={0}>
+      {(row, i, revealed) => (
+        <div style={{ width: 220, display: 'flex', alignItems: 'center', padding: '5px 4px', borderBottom: '1px solid #334155', fontFamily: 'Arial, sans-serif' }}>
+          <span style={{ width: 24, fontSize: 11, color: '#94a3b8' }}>{row.rank}</span>
+          <span className="truncate" style={{ flex: 1, minWidth: 0, fontSize: 11, color: '#e2e8f0' }}>{row.name}</span>
+          <PointsPill value={row.points} trigger={revealed} color="#94a3b8" size={11} />
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 139. Whisper-glow — an extremely subtle (near-imperceptible, ~2% opacity) accent glow, minimalism taken to its edge.
+function V139() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ width: 220, padding: '9px 14px', borderRadius: 12, background: `radial-gradient(120px circle at 20% 50%, ${RANK_BORDER(row.rank)}05, transparent 70%)`, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 13, color: '#e2e8f0' }}>{row.rank}</span>
+          <p className="truncate" style={{ flex: 1, minWidth: 0, color: '#e2e8f0', fontSize: 13 }}>{row.name}</p>
+          <PointsPill value={row.points} trigger={revealed} color="#e2e8f0" />
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 140. Negative-space rank — the rank number is cut OUT of the card as a hole/window, revealing the background through it, rather than printed on top.
+function V140() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative', width: 220, height: 54 }}>
+          <svg width="220" height="54" style={{ position: 'absolute', inset: 0 }}>
+            <defs>
+              <mask id={`hole-${row.rank}`}>
+                <rect width="220" height="54" fill="white" />
+                <text x="26" y="40" fontSize="36" fontWeight="900" fill="black">{row.rank}</text>
+              </mask>
+            </defs>
+            <rect width="220" height="54" rx="12" fill={RANK_BORDER(row.rank)} mask={`url(#hole-${row.rank})`} />
+          </svg>
+          <div style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px 0 66px' }}>
+            <p className="truncate" style={{ flex: 1, minWidth: 0, color: '#e2e8f0', fontSize: 13, fontWeight: 600 }}>{row.name}</p>
+            <PointsPill value={row.points} trigger={revealed} />
+          </div>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// ================= Group O — Maximalism / ornate / novelty (141-150) =================
+
+function BaroqueCorner({ style }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" style={{ position: 'absolute', ...style }}>
+      <path d="M2 18 Q2 2 18 2 Q10 2 8 8 Q6 14 2 18" stroke="#d4af37" strokeWidth="1.4" fill="none" />
+      <circle cx="4" cy="16" r="1.4" fill="#d4af37" />
+    </svg>
+  );
+}
+// 141. Baroque ornamental frame — scrollwork corner flourishes bordering the card.
+function V141() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative', width: 220, padding: '10px 16px', borderRadius: 10, border: '1.5px solid #d4af37', background: 'linear-gradient(135deg,#1c1206,#2c1d0c)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <BaroqueCorner style={{ top: -2, left: -2 }} />
+          <BaroqueCorner style={{ top: -2, right: -2, transform: 'scaleX(-1)' }} />
+          <BaroqueCorner style={{ bottom: -2, left: -2, transform: 'scaleY(-1)' }} />
+          <BaroqueCorner style={{ bottom: -2, right: -2, transform: 'scale(-1,-1)' }} />
+          <span style={{ fontFamily: 'Georgia, serif', fontSize: 15, fontWeight: 900, color: '#d4af37' }}>{row.rank}</span>
+          <p className="truncate" style={{ flex: 1, minWidth: 0, fontFamily: 'Georgia, serif', color: '#f3e6c8', fontSize: 13, fontWeight: 700 }}>{row.name}</p>
+          <PointsPill value={row.points} trigger={revealed} color="#d4af37" />
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 142. Art-deco geometric — gold linework, symmetrical fan/sunburst pattern accents.
+function V142() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative', width: 220, height: 56, borderRadius: 4, border: '1.5px solid #d4af37', background: '#0e0e12', overflow: 'hidden' }}>
+          <svg style={{ position: 'absolute', left: -10, top: -10 }} width="70" height="70" viewBox="0 0 70 70">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <line key={idx} x1="10" y1="10" x2={10 + Math.cos((idx / 5) * Math.PI / 2) * 40} y2={10 + Math.sin((idx / 5) * Math.PI / 2) * 40} stroke="#d4af3755" strokeWidth="1.5" />
+            ))}
+          </svg>
+          <div style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px 0 34px' }}>
+            <span style={{ fontSize: 13, fontWeight: 900, color: '#d4af37' }}>{row.rank}</span>
+            <p className="truncate" style={{ flex: 1, minWidth: 0, color: '#f1f5f9', fontSize: 13, fontWeight: 700, letterSpacing: 1 }}>{row.name}</p>
+            <PointsPill value={row.points} trigger={revealed} color="#d4af37" />
+          </div>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 143. Stained-glass card — segmented color panels separated by dark "leading" lines, like a stained-glass window.
+function V143() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative', width: 220, height: 56, borderRadius: 8, overflow: 'hidden', border: '3px solid #1a1a1a', background: '#1a1a1a' }}>
+          <div style={{ position: 'absolute', inset: 2, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1, background: '#1a1a1a' }}>
+            <div style={{ background: '#7c3aed99' }} /><div style={{ background: '#0ea5e999' }} /><div style={{ background: '#eab30899' }} />
+          </div>
+          <div style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px' }}>
+            <span style={{ fontSize: 13, fontWeight: 900, color: '#fff', textShadow: '0 0 4px #000' }}>{row.rank}</span>
+            <p className="truncate" style={{ flex: 1, minWidth: 0, color: '#fff', fontSize: 13, fontWeight: 700, textShadow: '0 0 4px #000' }}>{row.name}</p>
+            <PointsPill value={row.points} trigger={revealed} />
+          </div>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 144. Circuit-board card — PCB trace-pattern background, tech-novelty aesthetic.
+function V144() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative', width: 220, height: 56, borderRadius: 6, background: '#062b1a', border: '2px solid #10b981', overflow: 'hidden' }}>
+          <svg style={{ position: 'absolute', inset: 0, opacity: 0.5 }} viewBox="0 0 220 56">
+            <path d="M0 10 H60 V30 H140 V10 H220 M40 56 V40 H100 V56 M180 0 V20 H160 V56" stroke="#10b981" strokeWidth="1" fill="none" />
+            {[[60, 10], [140, 30], [100, 40], [160, 20]].map(([x, y], idx) => <circle key={idx} cx={x} cy={y} r="2" fill="#34d399" />)}
+          </svg>
+          <div style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px' }}>
+            <span style={{ fontFamily: LED_FONT, fontSize: 13, fontWeight: 900, color: '#34d399' }}>{row.rank}</span>
+            <p className="truncate" style={{ flex: 1, minWidth: 0, fontFamily: LED_FONT, color: '#a7f3d0', fontSize: 12, fontWeight: 700 }}>{row.name}</p>
+            <PointsPill value={row.points} trigger={revealed} color="#34d399" />
+          </div>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 145. Constellation/star-map — the name connects via thin lines to small "star" points representing the score, night-sky styled.
+function V145() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        const stars = Math.min(6, Math.max(2, Math.round(row.points / 12)));
+        return (
+          <div style={{ position: 'relative', width: 220, height: 60, borderRadius: 10, background: 'radial-gradient(ellipse at 30% 20%, #1e1b4b, #0a0a1a)', border: '1px solid #312e81', overflow: 'hidden' }}>
+            <svg style={{ position: 'absolute', inset: 0 }} width="220" height="60">
+              {Array.from({ length: stars }).map((_, idx) => {
+                const x = 130 + idx * 14;
+                const y = 15 + (idx % 2) * 20;
+                return (
+                  <g key={idx}>
+                    <line x1={26} y1={30} x2={x} y2={y} stroke="#6366f1" strokeWidth="0.6" opacity={revealed ? 0.5 : 0} style={{ transition: `opacity 0.4s ${idx * 0.08}s` }} />
+                    <motion.circle cx={x} cy={y} r="1.8" fill="#c7d2fe" initial={{ opacity: 0 }} animate={{ opacity: revealed ? [0.4, 1, 0.4] : 0 }} transition={{ delay: idx * 0.08, duration: 1.8, repeat: Infinity }} />
+                  </g>
+                );
+              })}
+            </svg>
+            <div style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px' }}>
+              <span style={{ fontSize: 12, fontWeight: 900, color: '#c7d2fe', flexShrink: 0 }}>{row.rank}</span>
+              <p className="truncate" style={{ maxWidth: 90, color: '#e0e7ff', fontSize: 11.5, fontWeight: 700 }}>{row.name}</p>
+              <div style={{ marginInlineStart: 'auto' }}><PointsPill value={row.points} trigger={revealed} color="#a5b4fc" size={10} /></div>
+            </div>
+          </div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 146. Royal wax-seal decree — parchment background with an animated wax-seal stamp effect, reserved for rank 1.
+function V146() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        if (row.rank !== 1) return <PlainCard row={row} revealed={revealed} rankSlot={<PlainRankBadge rank={row.rank} />} width={200} />;
+        return (
+          <div style={{ position: 'relative', width: 220, padding: '10px 14px', borderRadius: 4, background: '#e8d9b5', border: '2px solid #8a6d3b', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p className="truncate" style={{ fontFamily: 'Georgia, serif', color: '#3d2b13', fontSize: 14, fontWeight: 900 }}>{row.name}</p>
+              <span style={{ fontFamily: 'Georgia, serif', fontSize: 9, color: '#6b4f24' }}>המלך של הליגה</span>
+            </div>
+            <PointsPill value={row.points} trigger={revealed} color="#5c3d1e" />
+            <motion.div initial={{ scale: 0, rotate: -40 }} animate={{ scale: revealed ? 1 : 0, rotate: -14 }} transition={{ delay: 0.2, type: 'spring', stiffness: 260, damping: 14 }}
+              style={{ position: 'absolute', right: -6, top: -6, width: 30, height: 30, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%, #b91c1c, #7f1d1d 70%)', border: '2px solid #450a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 3px 8px rgba(0,0,0,0.5)' }}>
+              <Crown className="w-3.5 h-3.5" style={{ color: '#fca5a5' }} />
+            </motion.div>
+          </div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 147. Vintage postage-stamp — perforated-edge border framing the whole card like a stamp.
+function V147() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative', width: 210, padding: '10px 14px' }}>
+          <div style={{ position: 'absolute', inset: -8, backgroundImage: 'radial-gradient(circle, #050a12 3px, transparent 3.5px)', backgroundSize: '11px 11px' }} />
+          <div style={{ position: 'absolute', inset: 0, background: '#f5eee0', border: '1px solid #a8987a' }} />
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontFamily: 'Georgia, serif', fontSize: 13, fontWeight: 900, color: '#5c4a2e' }}>{row.rank}</span>
+            <p className="truncate" style={{ flex: 1, minWidth: 0, fontFamily: 'Georgia, serif', color: '#3d3220', fontSize: 12.5, fontWeight: 700 }}>{row.name}</p>
+            <PointsPill value={row.points} trigger={revealed} color="#5c4a2e" />
+          </div>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 148. Graffiti/street-art — spray-paint texture background, bold tag-style lettering for the name.
+function V148() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative', width: 220, padding: '10px 14px', borderRadius: 8, background: 'radial-gradient(circle at 20% 30%, #ec489944, transparent 40%), radial-gradient(circle at 80% 70%, #22d3ee44, transparent 40%), #14141a', border: `2px solid ${RANK_BORDER(row.rank)}`, display: 'flex', alignItems: 'center', gap: 10, transform: 'rotate(-1deg)' }}>
+          <span style={{ fontSize: 16, fontWeight: 900, color: '#facc15', WebkitTextStroke: '1px #000', transform: 'rotate(-6deg)', display: 'inline-block' }}>{row.rank}</span>
+          <p className="truncate" style={{ flex: 1, minWidth: 0, color: '#f472b6', fontSize: 15, fontWeight: 900, fontStyle: 'italic', WebkitTextStroke: '0.5px #000' }}>{row.name}</p>
+          <PointsPill value={row.points} trigger={revealed} color="#22d3ee" />
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+function BubbleField({ color }) {
+  const bubbles = [
+    { x: 20, size: 4, dur: 3.2, delay: 0 }, { x: 60, size: 3, dur: 2.6, delay: 0.4 },
+    { x: 110, size: 5, dur: 3.6, delay: 0.8 }, { x: 150, size: 3, dur: 2.8, delay: 0.2 },
+    { x: 190, size: 4, dur: 3.1, delay: 0.6 },
+  ];
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      {bubbles.map((b, idx) => (
+        <motion.div key={idx} initial={{ y: 60, opacity: 0 }} animate={{ y: -70, opacity: [0, 0.8, 0] }} transition={{ duration: b.dur, repeat: Infinity, delay: b.delay, ease: 'easeIn' }}
+          style={{ position: 'absolute', left: b.x, bottom: 0, width: b.size, height: b.size, borderRadius: '50%', background: color, border: `1px solid ${color}` }} />
+      ))}
+    </div>
+  );
+}
+// 149. Aquarium/bubble card — floating bubble particles drifting upward, cool underwater blue tint.
+function V149() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative', width: 220, height: 56, borderRadius: 14, background: 'linear-gradient(180deg,#0c4a6e,#083344)', border: '2px solid #0ea5e9', overflow: 'hidden' }}>
+          <BubbleField color="#7dd3fc" />
+          <div style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px' }}>
+            <span style={{ fontSize: 13, fontWeight: 900, color: '#7dd3fc' }}>{row.rank}</span>
+            <p className="truncate" style={{ flex: 1, minWidth: 0, color: '#e0f2fe', fontSize: 13, fontWeight: 600 }}>{row.name}</p>
+            <PointsPill value={row.points} trigger={revealed} color="#7dd3fc" />
+          </div>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 150. Origami paper-fold — visible fold-crease lines, the card visually "unfolds" into place on reveal.
+function V150() {
+  return (
+    <RevealRows rows={MOCK3} style={{ perspective: 600 }} itemStyle={{ transformOrigin: 'top center' }}
+      initial={{ opacity: 0, rotateX: -90, scaleY: 0.3 }} animate={{ opacity: 1, rotateX: 0, scaleY: 1 }}
+      transitionFor={(i) => ({ delay: i * 0.2, duration: 0.5, ease: 'easeOut' })}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative', width: 220, padding: '9px 14px', borderRadius: 6, background: '#f8fafc', border: '1px solid #cbd5e1', display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', left: 8, right: 8, top: '50%', borderTop: '1px dashed #cbd5e1' }} />
+          <div style={{ position: 'absolute', top: 8, bottom: 8, left: '33%', borderInlineStart: '1px dashed #cbd5e1' }} />
+          <div style={{ position: 'absolute', top: 8, bottom: 8, left: '66%', borderInlineStart: '1px dashed #cbd5e1' }} />
+          <span style={{ position: 'relative', fontSize: 13, fontWeight: 900, color: '#334155' }}>{row.rank}</span>
+          <p className="truncate" style={{ position: 'relative', flex: 1, minWidth: 0, color: '#1e293b', fontSize: 13, fontWeight: 700 }}>{row.name}</p>
+          <span style={{ position: 'relative' }}><PointsPill value={row.points} trigger={revealed} color="#166534" /></span>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
 const GROUPS = [
   { title: 'קבוצה A — צורות גיאומטריות לכרטיס', items: [
     ['1. הנוכחי (בסיס להשוואה)', 'המקבילית המוטה המקורית מ-LeaderboardPanel: מספר רפאים, ShineBorder ומסגרת צבועה לפי דרגה', V1],
@@ -2581,14 +3635,74 @@ const GROUPS = [
     ['99. מודע ל-prefers-reduced-motion', 'מתג מציג זה לצד זה תנועה מלאה מול חלופת תנועה מופחתת', V99],
     ['100. חותם זהב למקום ראשון', 'אפקט חתימה ייחודי — מטבע/חותם שנוחת רק על מקום 1', V100],
   ]},
+  { title: 'קבוצה K — עיצובי כדורגל ואצטדיון', items: [
+    ['101. לוח תוצאות אצטדיון', 'גופן ספרות LED פיקסלי וזוהר תאורת אצטדיון', V101],
+    ['102. חולצת משחק', 'שם ומספר בסגנון גב חולצה, טקסטורת בד עדינה ופס קבוצתי', V102],
+    ['103. קריעת חבילת קלפים', 'הכרטיס "נקרע" מתוך עטיפת נייר כסף באנימציה בחשיפה הראשונה', V103],
+    ['104. כרטיס שופט', 'צללית כרטיס צהוב/אדום עם אייקון משרוקית קטן', V104],
+    ['105. תצוגת מגרש', 'תרשים קווי מגרש כדורגל מיניאטורי ברקע עם נקודת מיקום לפי דרגה', V105],
+    ['106. לוח חילופים', 'מראה לוח LED אלקטרוני כמו זה שמניפים השופטים', V106],
+    ['107. שלט ארון הלבשה', 'טקסטורת מתכת מוברשת עם שם חרוט/מוטבע', V107],
+    ['108. כרטיס כניסה למשחק', 'קצה מחורר בצד אחד ופס דמוי ברקוד', V108],
+    ['109. לוח טקטי', 'טקסטורת לוח גיר עם תרשים טקטי פשוט של X-O ברקע', V109],
+    ['110. חגורת אליפות', 'למקום הראשון בלבד: צורת מדליון חגורה רחבה; לשאר צורה אחידה פשוטה', V110],
+  ]},
+  { title: 'קבוצה L — טיפוגרפיה כמוקד עיצובי', items: [
+    ['111. ספרת דרגה ענקית', 'מספר הדרגה שולט בכרטיס, השם קטן מתחתיו', V111],
+    ['112. כותרת עיתון', 'גופן serif דרמטי לשם, קו טור דק, אנרגיית "מהדורה מיוחדת"', V112],
+    ['113. שלט ניאון', 'אותיות בסגנון שלט זכוכית זוהרת עם הבהוב כניסה', V113],
+    ['114. חתימה בכתב יד', 'שם בגופן חתימה, תחושת אוטוגרף אישי', V114],
+    ['115. טרמינל האקרים', 'ירוק על שחור במונוספייס, סמן מהבהב אחרי השם', V115],
+    ['116. נשימת משקל גופן', 'עובי הגופן של השם נע בעדינות בין 400 ל-800 באנימציית סרק', V116],
+    ['117. תווית אנכית', 'תג דרגה מסובב 90° לאורך קצה הכרטיס', V117],
+    ['118. טיפוגרפיה חרוטה', 'צל שקוע עדין שגורם לטקסט להיראות לחוץ אל תוך המשטח', V118],
+    ['119. שם גולש', 'שם ארוך גולש אופקית כמו כרזת חדשות כשאין לו מקום', V119],
+    ['120. ספרת מספר חולצה', 'גופן מודגש ומצומצם לניקוד, בניגוד לגופן הקליל של השם', V120],
+  ]},
+  { title: 'קבוצה M — גיימיפיקציה בהשראת RPG', items: [
+    ['121. פס XP', 'הניקוד כפס התקדמות לקראת סף הדרגה הבאה, תחושת עליית שלב במשחק', V121],
+    ['122. מדף הישגים', 'שורת אייקוני תגים שהושגו מתחת לשם', V122],
+    ['123. פס בריאות מקוטע', 'תצוגת ניקוד בסגנון HUD של פס בריאות מפולח', V123],
+    ['124. מסגרת נדירות שלל', 'צבע ועוצמת זוהר המסגרת מקודדים כמו דרגות נדירות פריט במשחק, לפי דרגה', V124],
+    ['125. פרץ "עליית שלב"', 'הקשה מדמה עדכון ניקוד: הבזק ובאנר LEVEL UP בסגנון משחק', V125],
+    ['126. צומת עץ מיומנויות', 'הכרטיס כצומת מחובר בתרשים עץ, עם קווי חיבור עדינים לדרגות שכנות', V126],
+    ['127. רישום קלף משימה', 'שורה בסגנון קלף משימה על נייר מיושן', V127],
+    ['128. גיליון תכונות דמות', 'שורות סטטיסטיקה בסגנון RPG, הניקוד כאחת התכונות', V128],
+    ['129. פס בריאות בוס', 'תצוגה דרמטית וגדולה, שמורה למקום הראשון בלבד', V129],
+    ['130. מונה מטבעות', 'ערימת אייקוני מטבעות ומונה רץ, תחושת מטבע ארקייד', V130],
+  ]},
+  { title: 'קבוצה N — מינימליזם קיצוני', items: [
+    ['131. שורה נטולת מסגרת וצבע', 'רווח, יישור וסולם גופנים בלבד יוצרים היררכיה — בלי תיבות או צבע הדגשה', V131],
+    ['132. נקודת הדגשה בודדת', 'נקודה צבעונית קטנה אחת היא כל מדד הדרגה — בלי תג או מספר', V132],
+    ['133. קו תחתי בלבד', 'קו צבעוני מתחת לשם, בלי תג דרגה כלל', V133],
+    ['134. מונוכרום כברירת מחדל', 'הכרטיס אפור לגמרי, צבע מופיע רק בריחוף/לחיצה', V134],
+    ['135. קווי מתאר בלבד', 'הכרטיס כולו קווי מתאר, בלי שום מילוי', V135],
+    ['136. שורת מיקרו דחוסה', 'מדד דרגה + ניקוד דו-ספרתי בלבד, לרשימות ארוכות וצפופות', V136],
+    ['137. עומק בצל טקסט בלבד', 'בלי תיבות, מסגרות או מילוי — העומק מגיע רק מצל טיפוגרפי', V137],
+    ['138. שורת גיליון אלקטרוני', 'קו הפרדה דק בלבד, אסתטיקת טבלה מכוונת ולא מעוצבת', V138],
+    ['139. זוהר לחישה', 'זוהר הדגשה כמעט בלתי מורגש (כ-2% שקיפות) — מינימליזם בקצה הקיצון', V139],
+    ['140. דרגה בחלל שלילי', 'מספר הדרגה "חתוך" מהכרטיס כחור שדרכו נראה הרקע, במקום מודפס עליו', V140],
+  ]},
+  { title: 'קבוצה O — מקסימליזם ותפאורה קישוטית', items: [
+    ['141. מסגרת בארוק מקושטת', 'קישוטי גליל בפינות הכרטיס', V141],
+    ['142. ארט-דקו גיאומטרי', 'קווי זהב ותבנית מניפה/שמש סימטרית', V142],
+    ['143. כרטיס ויטראז׳', 'פאנלים צבעוניים מופרדים בקווי "עופרת" כהים, כמו חלון ויטראז׳', V143],
+    ['144. לוח מעגלים אלקטרוני', 'רקע תבנית מסלולי PCB, אסתטיקת נוברלטי טכנולוגית', V144],
+    ['145. מפת כוכבים', 'השם מתחבר בקווים דקים ל"כוכבים" שמייצגים את הניקוד, בסגנון שמי לילה', V145],
+    ['146. צו מלכותי בחותם שעווה', 'רקע קלף עם אפקט הטבעת חותם שעווה מונפש, שמור למקום הראשון', V146],
+    ['147. בול דואר וינטג׳', 'מסגרת קצה מחוררת סביב כל הכרטיס, כמו בול', V147],
+    ['148. גרפיטי רחוב', 'רקע טקסטורת ריסוס וכתב תג נועז לשם', V148],
+    ['149. כרטיס אקווריום', 'בועות צפות כלפי מעלה, גוון כחול קריר תת-ימי', V149],
+    ['150. קיפול אוריגמי', 'קווי קיפול נראים לעין, הכרטיס "נפתח" למקומו בחשיפה', V150],
+  ]},
 ];
 
 export default function AdminLeaderboardCardDemo() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-bold text-white mb-1">דמו — 100 עיצובים לכרטיס משתתף בלוח התוצאות</h2>
-        <p className="text-slate-500 text-sm">1-50: וריאציות צורה/פריסה/חומר/תנועה. 51-100: אינטראקטיביות אמיתית וגימור עדין — גרירה, ריחוף, לחיצה ארוכה ועוד. כולן חיות עם כפתור "הצג שוב". דאטה קבועה לדוגמה. כלי דמו בלבד — לא משפיע על LeaderboardPanel.jsx.</p>
+        <h2 className="text-xl font-bold text-white mb-1">דמו — 150 עיצובים לכרטיס משתתף בלוח התוצאות</h2>
+        <p className="text-slate-500 text-sm">1-50: וריאציות צורה/פריסה/חומר/תנועה. 51-100: אינטראקטיביות אמיתית וגימור עדין — גרירה, ריחוף, לחיצה ארוכה ועוד. 101-150: כיווני עיצוב חדשים — כדורגל/אצטדיון, טיפוגרפיה, גיימיפיקציה, מינימליזם קיצוני ומקסימליזם קישוטי. כולן חיות עם כפתור "הצג שוב". דאטה קבועה לדוגמה. כלי דמו בלבד — לא משפיע על LeaderboardPanel.jsx.</p>
       </div>
       {GROUPS.map((group) => (
         <div key={group.title} className="space-y-3">
