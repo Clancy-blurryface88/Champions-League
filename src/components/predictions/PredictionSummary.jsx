@@ -91,7 +91,7 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
           >
             סיכום הניחושים שלך
           </h2>
-          <p className="text-emerald-400/50 text-xs mt-0.5">עבור לפני אישור</p>
+          <p className="text-white/70 text-xs mt-0.5">עבור לפני אישור</p>
         </div>
 
         {/* Match rows – flex-1 so it fills available space, overflow-y for scroll */}
