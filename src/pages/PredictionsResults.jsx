@@ -34,7 +34,7 @@ import { calculateMatchMaxPotentialPoints } from "../components/utils/calculateM
 
 const OUTCOME_COLORS = {
   exact:   { hex: '#34d399', text: 'text-emerald-400', border: 'border-emerald-500/30', divider: 'bg-emerald-400/40' },
-  correct: { hex: '#097adc', text: 'text-sky-400',   border: 'border-sky-500/30',   divider: 'bg-sky-400/40'   },
+  correct: { hex: '#fbbf24', text: 'text-amber-400',  border: 'border-amber-500/30',  divider: 'bg-amber-400/40'  },
   wrong:   { hex: '#f87171', text: 'text-red-400',     border: 'border-red-500/25',     divider: 'bg-red-400/40'     },
   default: { hex: '#34d399', text: 'text-emerald-400', border: 'border-emerald-500/30', divider: 'bg-emerald-400/40' },
 };
@@ -247,8 +247,8 @@ function FlipBoardPicker({ rounds, value, onChange }) {
     <div className="flex flex-col items-center gap-2 w-full">
       <div className="flex items-center gap-3 w-full justify-center">
         <button onClick={() => canPrev && onChange(rounds[idx - 1].id)} disabled={!canPrev}
-          className="w-9 h-9 flex items-center justify-center rounded-full disabled:opacity-20 hover:text-sky-400 transition-all"
-          style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.70)' }}>
+          className="w-9 h-9 flex items-center justify-center rounded-full disabled:opacity-20 hover:text-yellow-400 transition-all"
+          style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(250,204,21,0.22)', color: 'rgba(250,204,21,0.75)' }}>
           <ChevronUp className="w-5 h-5" />
         </button>
         <AnimatePresence mode="wait">
@@ -257,21 +257,21 @@ function FlipBoardPicker({ rounds, value, onChange }) {
             animate={{ rotateX: 0, opacity: 1 }}
             exit={{ rotateX: 90, opacity: 0 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}
-            className="px-8 py-2.5 rounded-xl border border-sky-400/30 min-w-[180px] text-center"
-            style={{ perspective: 600, background: 'rgba(9, 122, 220,0.08)' }}>
-            <span className="text-sky-400 font-bold text-base tracking-wide">{current?.name}</span>
+            className="px-8 py-2.5 rounded-xl border border-yellow-400/30 min-w-[180px] text-center"
+            style={{ perspective: 600, background: 'rgba(250,204,21,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)' }}>
+            <span className="text-yellow-400 font-bold text-base tracking-wide">{current?.name}</span>
           </motion.div>
         </AnimatePresence>
         <button onClick={() => canNext && onChange(rounds[idx + 1].id)} disabled={!canNext}
-          className="w-9 h-9 flex items-center justify-center rounded-full disabled:opacity-20 hover:text-sky-400 transition-all"
-          style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.70)' }}>
+          className="w-9 h-9 flex items-center justify-center rounded-full disabled:opacity-20 hover:text-yellow-400 transition-all"
+          style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(250,204,21,0.22)', color: 'rgba(250,204,21,0.75)' }}>
           <ChevronDown className="w-5 h-5" />
         </button>
       </div>
       <div className="flex gap-1.5">
         {rounds.map((r, i) => (
           <button key={r.id} onClick={() => onChange(r.id)}
-            className={`rounded-full transition-all duration-200 ${i === idx ? 'bg-sky-400 w-4 h-1.5' : 'bg-slate-700 w-1.5 h-1.5 hover:bg-slate-500'}`} />
+            className={`rounded-full transition-all duration-200 ${i === idx ? 'bg-yellow-400 w-4 h-1.5' : 'bg-slate-700 w-1.5 h-1.5 hover:bg-slate-500'}`} />
         ))}
       </div>
     </div>
@@ -653,12 +653,12 @@ export default function PredictionsResults() {
                 background: 'rgba(255,255,255,0.10)',
                 backdropFilter: 'blur(40px) saturate(180%)',
                 WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-                border: '1px solid rgba(255,255,255,0.22)',
+                border: '1px solid rgba(250,204,21,0.25)',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)',
               }}
             >
               <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-2xl" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 100%)' }} />
-              <span className="text-base uppercase tracking-[0.16em] text-sky-400/70 font-bold">בחר מחזור</span>
+              <span className="text-base uppercase tracking-[0.16em] text-yellow-400/80 font-bold">בחר מחזור</span>
               <FlipBoardPicker
                 rounds={availableRounds}
                 value={selectedRound}
@@ -687,8 +687,10 @@ export default function PredictionsResults() {
                   <div
                     className="relative flex p-1 mb-2 rounded-2xl"
                     style={{
-                      background: 'transparent',
-                      border: '1px solid rgba(9, 122, 220,0.45)',
+                      background: 'rgba(255,255,255,0.06)',
+                      backdropFilter: 'blur(20px) saturate(160%)',
+                      WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+                      border: '1px solid rgba(34,197,94,0.45)',
                     }}
                   >
                     {[
@@ -703,7 +705,7 @@ export default function PredictionsResults() {
                           onClick={() => setViewMode(tab.key)}
                           className="relative flex-1 flex items-center justify-center py-1.5 px-1 rounded-xl transition-colors z-10"
                           style={{
-                            color: active ? '#000' : '#097adc',
+                            color: '#fff',
                             borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.14)' : 'none',
                           }}
                         >
@@ -712,9 +714,9 @@ export default function PredictionsResults() {
                               layoutId="tab-pill"
                               className="absolute inset-0 rounded-xl"
                               style={{
-                                background: 'linear-gradient(135deg, #097adc 0%, #7cadee 60%, #fff 100%)',
-                                boxShadow: '0 2px 12px rgba(9, 122, 220,0.35)',
-                                opacity: 0.82,
+                                background: 'linear-gradient(135deg, #16a34a 0%, #097adc 100%)',
+                                boxShadow: '0 2px 12px rgba(22,163,74,0.35)',
+                                opacity: 0.88,
                               }}
                               transition={{ type: 'spring', bounce: 0.2, duration: 0.45 }}
                             />
@@ -1291,9 +1293,9 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                       {getUserDisplayName(prediction.user_id)}
                     </button>
                     <div className="text-slate-400 text-base flex items-center gap-1">
-                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-4 h-4" rounded="sm" />
+                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5" rounded="sm" />
                       <span className="text-slate-50 pr-2 pl-2 text-sm font-medium">{prediction.predicted_score_a} - {prediction.predicted_score_b}</span>
-                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-4 h-4" rounded="sm" />
+                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5" rounded="sm" />
                     </div>
                   </div>
                 </div>
@@ -1307,7 +1309,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                   {outcomeStatus?.type === 'correct' && (
                     <span className="inline-flex items-center justify-center w-6 h-6 rounded-lg"
                       style={{ background:'rgba(251,191,36,0.15)', border:'1px solid rgba(251,191,36,0.35)' }}>
-                      <Check className="w-3.5 h-3.5 text-sky-400" strokeWidth={3} />
+                      <Check className="w-3.5 h-3.5 text-amber-400" strokeWidth={3} />
                     </span>
                   )}
                   {outcomeStatus?.type === 'wrong' && (
