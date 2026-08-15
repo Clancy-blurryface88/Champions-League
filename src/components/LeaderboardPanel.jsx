@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronRight } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PublicProfile } from "@/api/entities";
@@ -361,25 +361,15 @@ export default function LeaderboardPanel({ onClose, user }) {
                               ['#475569','#64748b','#475569']
                             }
                           />
-                          {/* Ghost rank number — shadow deepened to make the rank pop more */}
-                          <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%) skewX(6deg)', fontSize:38, fontWeight:900, color:getRankColor(position), opacity:0.18, lineHeight:1, userSelect:'none', pointerEvents:'none', textShadow:`0 3px 10px rgba(0,0,0,0.65), 0 0 22px ${getRankColor(position)}66` }}>
+                          {/* Ghost rank number — anchored to a fixed offset (not 50%) so it
+                              doesn't sink lower as the card grows taller when the accordion
+                              opens; shadow deepened to make the rank pop more */}
+                          <span style={{ position:'absolute', left:12, top:24, transform:'translateY(-50%) skewX(6deg)', fontSize:38, fontWeight:900, color:getRankColor(position), opacity:0.18, lineHeight:1, userSelect:'none', pointerEvents:'none', textShadow:`0 3px 10px rgba(0,0,0,0.65), 0 0 22px ${getRankColor(position)}66` }}>
                             {position}
                           </span>
 
-                          {/* Expand-accordion toggle — right side, click only, doesn't open the profile modal */}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setExpandedId(prev => prev === participant.id ? null : participant.id); }}
-                            onPointerDown={(e) => e.stopPropagation()}
-                            onPointerUp={(e) => e.stopPropagation()}
-                            style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%) skewX(6deg)', zIndex:2, display:'flex', alignItems:'center', justifyContent:'center', padding:4 }}
-                          >
-                            <motion.div animate={{ rotate: expandedId === participant.id ? 90 : 0 }} transition={{ duration: 0.25 }}>
-                              <ChevronRight className="w-5 h-5" style={{ color: 'rgba(255,255,255,0.55)' }} />
-                            </motion.div>
-                          </button>
-
                           {/* Content — counter-skewed */}
-                          <div style={{ transform:'skewX(6deg)', padding:'5px 32px 5px 13px', textAlign:'center' }}>
+                          <div style={{ transform:'skewX(6deg)', padding:'5px 13px', textAlign:'center' }}>
                             <p className="truncate" style={{
                               color:'#e2e8f0', fontSize:16, fontWeight:600, marginBottom:1,
                               animation: `lb-blur-focus 1.2s ease-out both`,
