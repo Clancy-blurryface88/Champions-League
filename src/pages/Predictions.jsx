@@ -989,9 +989,8 @@ export default function Predictions() {
                         style={{ gridTemplateColumns: '1fr auto 1fr', gridTemplateRows: 'auto auto' }}
                       >
                         {/* Row 1: flags */}
-                        <div className="flex justify-center items-center cursor-pointer pt-14"
-                             style={{ gridColumn: 1, gridRow: 1 }}
-                             onClick={() => setSelectedTeam({ name: match.team_a, logo: match.team_a_logo })}>
+                        <div className="flex justify-center items-center pt-14"
+                             style={{ gridColumn: 1, gridRow: 1 }}>
                           <motion.div
                             animate={{ filter: [
                               'drop-shadow(0 4px 10px rgba(0,0,0,0.5))',
@@ -1049,9 +1048,8 @@ export default function Predictions() {
                           )}
                         </div>
 
-                        <div className="flex justify-center items-center cursor-pointer pt-14"
-                             style={{ gridColumn: 3, gridRow: 1 }}
-                             onClick={() => setSelectedTeam({ name: match.team_b, logo: match.team_b_logo })}>
+                        <div className="flex justify-center items-center pt-14"
+                             style={{ gridColumn: 3, gridRow: 1 }}>
                           <motion.div
                             animate={{ filter: [
                               'drop-shadow(0 4px 10px rgba(0,0,0,0.5))',
@@ -1065,8 +1063,7 @@ export default function Predictions() {
 
                         {/* Row 2: name + label tightly stacked, top-aligned */}
                         <div style={{ gridColumn: 1, gridRow: 2, alignSelf: 'start' }}
-                             className="flex flex-col items-center cursor-pointer"
-                             onClick={() => setSelectedTeam({ name: match.team_a, logo: match.team_a_logo })}>
+                             className="flex flex-col items-center">
                           <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)' }}>
                             {match.team_a}
                           </RevealText>
@@ -1079,8 +1076,7 @@ export default function Predictions() {
                           )}
                         </div>
                         <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
-                             className="flex flex-col items-center cursor-pointer"
-                             onClick={() => setSelectedTeam({ name: match.team_b, logo: match.team_b_logo })}>
+                             className="flex flex-col items-center">
                           <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)' }}>
                             {match.team_b}
                           </RevealText>
