@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useModalBackButtonOnMount } from "@/hooks/useModalBackButton";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import { Match } from "@/api/entities";
@@ -9,10 +9,11 @@ import { calcStandings } from "@/utils/standings";
 import { loadLeagueTableOverride, applyOverride } from "@/utils/standingsOverride";
 import { STAGES, DIRECT_R16_CUTOFF, PLAYOFF_CUTOFF } from "@/config/tournament";
 
-export default function LeagueTableModal({ onClose }) {
+export default function LeagueTableModal({ onClose, highlightTeams = [] }) {
   const [matches, setMatches] = useState([]);
   const [override, setOverride] = useState([]);
   const [loading, setLoading] = useState(true);
+  const highlightRowRef = useRef(null);
 
   useModalBackButtonOnMount(onClose);
 
@@ -34,8 +35,16 @@ export default function LeagueTableModal({ onClose }) {
     load();
   }, []);
 
+  // Scroll the first highlighted team's row into view once the table has data
+  useEffect(() => {
+    if (!loading && highlightTeams.length > 0 && highlightRowRef.current) {
+      highlightRowRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [loading, highlightTeams]);
+
   const standings = applyOverride(calcStandings(matches), override);
   const hasOverride = override.length > 0;
+  let highlightRowAssigned = false;
 
   const rowClass = (pos) =>
     pos <= DIRECT_R16_CUTOFF ? "bg-green-500/5" : pos <= PLAYOFF_CUTOFF ? "bg-yellow-500/5" : "bg-red-500/5";
@@ -104,13 +113,25 @@ export default function LeagueTableModal({ onClose }) {
                     <tbody>
                       {standings.map((team, i) => {
                         const pos = i + 1;
+                        const isHighlighted = highlightTeams.includes(team.name);
+                        const assignRef = isHighlighted && !highlightRowAssigned;
+                        if (assignRef) highlightRowAssigned = true;
                         return (
-                          <tr key={team.name} className={`border-t border-slate-700/50 ${rowClass(pos)}`}>
+                          <tr
+                            key={team.name}
+                            ref={assignRef ? highlightRowRef : null}
+                            className={`border-t border-slate-700/50 ${rowClass(pos)}`}
+                            style={isHighlighted ? {
+                              boxShadow: 'inset 0 0 0 2px rgba(56,189,248,0.7)',
+                              background: 'rgba(56,189,248,0.10)',
+                            } : undefined}
+                          >
                             <td className="px-1.5 py-2.5 text-xs">
                               <span className={`font-bold ${posClass(pos)}`}>{pos}</span>
                             </td>
                             <td className="px-1.5 py-2.5">
                               <div className="flex items-center gap-2">
+                                {isHighlighted && <span className="text-sky-400 text-xs flex-shrink-0">⚽</span>}
                                 <TeamFlag logo={team.logo} name={team.name} className="w-6 h-6" />
                                 <span className="text-white text-xs font-medium truncate max-w-[100px]">{team.name}</span>
                               </div>
