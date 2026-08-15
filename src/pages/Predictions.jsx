@@ -1167,51 +1167,38 @@ export default function Predictions() {
                       )}
                     </AnimatePresence>
 
-                    {/* Footer bar — glass-blur buttons with a light color tint,
-                        neon blue→green gradient frame. The frame uses a masked
-                        background (not border-image, which ignores border-radius
-                        and rendered as a broken/disjointed ring at the rounded
-                        corners) so it traces the rounded corners cleanly. Divider
-                        uses the same skewX technique as PredictionSummary/
-                        LeaderboardPanel's parallelogram cards for a smooth diagonal. */}
-                    <div className="-mx-5 -mb-5 mt-3 relative overflow-hidden rounded-b-xl" style={{ height: 48 }}>
-                      <div className="relative flex h-full items-stretch">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
-                          className="flex-1 flex items-center justify-center text-xs font-bold text-white transition-colors"
-                          style={{
-                            background: 'rgba(59,130,246,0.16)',
-                            backdropFilter: 'blur(10px) saturate(150%)',
-                            WebkitBackdropFilter: 'blur(10px) saturate(150%)',
-                          }}
-                        >
-                          1 X 2
-                        </button>
-                        <div style={{ width: 1.5, transform: 'skewX(-10deg)', background: 'linear-gradient(180deg, #3b82f6, #22c55e)' }} />
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
-                          className="flex-1 flex items-center justify-center text-xs font-bold text-white transition-colors"
-                          style={{
-                            background: 'rgba(34,197,94,0.16)',
-                            backdropFilter: 'blur(10px) saturate(150%)',
-                            WebkitBackdropFilter: 'blur(10px) saturate(150%)',
-                          }}
-                        >
-                          ניחושים
-                        </button>
-                      </div>
-                      <div
-                        className="absolute inset-0 pointer-events-none"
+                    {/* Footer bar — deliberately simple: two plain bordered buttons,
+                        each carrying its own solid color end-to-end (background,
+                        border, glow). No shared gradient border, no clip-path, no
+                        mask, no skewed hairline — those kept breaking in ways that
+                        varied by browser. Plain CSS that can't render "broken." */}
+                    <div className="-mx-5 -mb-5 mt-3 flex h-12 overflow-hidden rounded-b-xl">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
+                        className="flex-1 flex items-center justify-center text-xs font-bold text-white transition-colors"
                         style={{
-                          borderRadius: '0 0 12px 12px',
-                          padding: '1.5px',
-                          background: 'linear-gradient(90deg, #3b82f6, #22c55e)',
-                          WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                          WebkitMaskComposite: 'xor',
-                          maskComposite: 'exclude',
-                          boxShadow: '0 0 10px rgba(59,130,246,0.45), 0 0 10px rgba(34,197,94,0.45)',
+                          background: 'rgba(59,130,246,0.18)',
+                          backdropFilter: 'blur(10px) saturate(150%)',
+                          WebkitBackdropFilter: 'blur(10px) saturate(150%)',
+                          border: '1px solid rgba(59,130,246,0.55)',
+                          boxShadow: '0 0 8px rgba(59,130,246,0.35)',
                         }}
-                      />
+                      >
+                        1 X 2
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
+                        className="flex-1 flex items-center justify-center text-xs font-bold text-white transition-colors"
+                        style={{
+                          background: 'rgba(34,197,94,0.18)',
+                          backdropFilter: 'blur(10px) saturate(150%)',
+                          WebkitBackdropFilter: 'blur(10px) saturate(150%)',
+                          border: '1px solid rgba(34,197,94,0.55)',
+                          boxShadow: '0 0 8px rgba(34,197,94,0.35)',
+                        }}
+                      >
+                        ניחושים
+                      </button>
                     </div>
                   </CardContent>
                 </LiquidGlassCard>
