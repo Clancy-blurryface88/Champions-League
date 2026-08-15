@@ -62,14 +62,14 @@ function OdometerDigit({ digit, delay = 0, height = 16 }) {
     </span>
   );
 }
-function OdometerValue({ target }) {
+function OdometerValue({ target, baseDelay = 0 }) {
   const str = (target || 0).toFixed(2);
   return (
     <span style={{ display: 'inline-flex' }}>
       {str.split('').map((c, i) =>
         c === '.'
           ? <span key={i}>.</span>
-          : <OdometerDigit key={i} digit={c} delay={str.slice(i + 1).replace('.', '').length * 0.12} />
+          : <OdometerDigit key={i} digit={c} delay={baseDelay + str.slice(i + 1).replace('.', '').length * 0.12} />
       )}
     </span>
   );
@@ -1339,7 +1339,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="text-xs font-bold tabular-nums px-2.5 py-1 rounded-lg"
                     style={ptsBadgeStyle}>
-                    <OdometerValue target={prediction.points_earned || 0} /> PTS
+                    <OdometerValue target={prediction.points_earned || 0} baseDelay={revealDelay + 0.45} /> PTS
                   </span>
                   {outcomeStatus?.type === 'exact'   && <span className="text-base">🎯</span>}
                   {outcomeStatus?.type === 'correct' && (
