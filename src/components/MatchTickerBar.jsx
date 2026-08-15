@@ -67,7 +67,15 @@ export default function MatchTickerBar({ onClick }) {
         <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-4 h-4" />
         <span className="text-white text-xs font-medium">{match.team_a}</span>
         {match.is_finished ? (
-          <span className="text-sky-400 text-xs font-bold mx-0.5">{match.actual_score_a ?? '-'} - {match.actual_score_b ?? '-'}</span>
+          <span
+            className="text-xs font-bold mx-0.5"
+            style={{
+              background: 'linear-gradient(90deg, #facc15, #f97316)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              color: 'transparent',
+            }}
+          >{match.actual_score_a ?? '-'} - {match.actual_score_b ?? '-'}</span>
         ) : (
           <span
             className="text-xs font-bold mx-0.5"
