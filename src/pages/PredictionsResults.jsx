@@ -901,8 +901,8 @@ function PodiumStand({ entry, position, isCurrentUser, baseDelay = 0 }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: podiumDelay, duration: 0.55, ease: [0.23, 1, 0.32, 1] }}
     >
-      {/* Name — white, like every other participant name in the app (only points get the rank color) */}
-      <span style={{ color: '#fff', fontSize: 11, fontWeight: 800, textAlign: 'center',
+      {/* Name — rank color */}
+      <span style={{ color: rankColor, fontSize: 11, fontWeight: 800, textAlign: 'center',
         maxWidth: 72, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         display: 'block', lineHeight: 1.3 }}>
         {entry.displayName}
