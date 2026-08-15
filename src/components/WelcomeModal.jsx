@@ -89,6 +89,7 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
             <div
               className="w-full max-w-sm overflow-hidden"
               style={{
+                position:         "relative",
                 background:       "rgba(255,255,255,0.055)",
                 backdropFilter:   "blur(28px) saturate(1.6)",
                 WebkitBackdropFilter: "blur(28px) saturate(1.6)",
@@ -97,21 +98,32 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                 boxShadow:        "0 32px 64px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.06)",
               }}
             >
+              {/* Champions League starball background art, seen through the glass */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  backgroundImage: "url(/champions/background.jpeg)",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  opacity: 0.4,
+                }}
+              />
+
               {/* Header */}
               <div
-                className="px-8 pt-9 pb-7 text-center"
+                className="relative px-8 pt-9 pb-7 text-center"
                 style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
               >
                 <motion.img
                   src="/champions/ch-trophy.png"
                   alt="Trophy"
-                  className="w-14 h-auto mx-auto mb-6"
+                  className="w-24 h-auto mx-auto mb-6"
                   initial={{ opacity: 0, scale: 0.75, y: 6 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ delay: 0.22, type: "spring", stiffness: 280, damping: 22 }}
                 />
                 <h2 className="text-white text-[18px] font-semibold tracking-tight">
-                  ליגת האלופות 2026
+                  Champions League
                 </h2>
                 <p className="text-white/35 text-[12px] mt-1.5">
                   שמך בטורניר
