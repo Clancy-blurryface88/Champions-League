@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronDown } from "lucide-react";
+import { X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PublicProfile } from "@/api/entities";
@@ -310,7 +310,7 @@ export default function LeaderboardPanel({ onClose, user }) {
 
                         {/* Parallelogram card */}
                         <div
-                          onClick={() => setExpandedId(prev => prev === participant.id ? null : participant.id)}
+                          onClick={() => handlePlayerClick(participant)}
                           style={{
                             transform: 'skewX(-6deg)',
                             position: 'relative',
@@ -343,8 +343,18 @@ export default function LeaderboardPanel({ onClose, user }) {
                             {position}
                           </span>
 
+                          {/* Expand-accordion toggle — right side, click only, doesn't open the profile modal */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setExpandedId(prev => prev === participant.id ? null : participant.id); }}
+                            style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%) skewX(6deg)', zIndex:2, display:'flex', alignItems:'center', justifyContent:'center', padding:4 }}
+                          >
+                            <motion.div animate={{ rotate: expandedId === participant.id ? 90 : 0 }} transition={{ duration: 0.25 }}>
+                              <ChevronRight className="w-5 h-5" style={{ color: 'rgba(255,255,255,0.55)' }} />
+                            </motion.div>
+                          </button>
+
                           {/* Content — counter-skewed */}
-                          <div style={{ transform:'skewX(6deg)', padding:'5px 13px', textAlign:'center' }}>
+                          <div style={{ transform:'skewX(6deg)', padding:'5px 32px 5px 13px', textAlign:'center' }}>
                             <p className="truncate" style={{
                               color:'#e2e8f0', fontSize:16, fontWeight:600, marginBottom:1,
                               animation: `lb-blur-focus 1.2s ease-out both`,
@@ -352,19 +362,14 @@ export default function LeaderboardPanel({ onClose, user }) {
                             }}>
                               {participant.full_name}
                             </p>
-                            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}>
-                              <span style={{ color:'#4ade80', fontSize:12, fontWeight:700 }}>
-                                <OdometerValue
-                                  target={participant.total_points}
-                                  height={15}
-                                  width={7.5}
-                                  trigger={revealedIds.has(participant.id)} />
-                                {' '}Pts
-                              </span>
-                              <motion.div animate={{ rotate: expandedId === participant.id ? 180 : 0 }} transition={{ duration: 0.25 }}>
-                                <ChevronDown className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.4)' }} />
-                              </motion.div>
-                            </div>
+                            <span style={{ color:'#4ade80', fontSize:12, fontWeight:700 }}>
+                              <OdometerValue
+                                target={participant.total_points}
+                                height={15}
+                                width={7.5}
+                                trigger={revealedIds.has(participant.id)} />
+                              {' '}Pts
+                            </span>
 
                             <AnimatePresence initial={false}>
                               {expandedId === participant.id && (
