@@ -144,25 +144,20 @@ export default function LeaderboardPanel({ onClose, user }) {
   }, [participants]);
 
   const getRankColor = (position) => {
-    if (position === 1) return '#7cadee';
+    if (position === 1) return '#facc15';
     if (position === 2) return '#C0C0C0';
     if (position === 3) return '#CD7F32';
     return 'rgba(255,255,255,0.5)';
   };
 
   const getRankBorder = (position, isCurrentUser) => {
-    if (position === 1) return '#7cadee';
+    if (position === 1) return '#facc15';
     if (position === 2) return '#D1D5DB';
     if (position === 3) return '#D97706';
     return isCurrentUser ? '#60A5FA' : '#475569';
   };
 
-  const getRankBg = (position) => {
-    if (position === 1) return 'linear-gradient(135deg,rgba(124, 173, 238,0.22),rgba(9, 122, 220,0.22))';
-    if (position === 2) return 'linear-gradient(135deg,rgba(209,213,219,0.18),rgba(156,163,175,0.18))';
-    if (position === 3) return 'linear-gradient(135deg,rgba(9, 122, 220,0.20),rgba(217,119,6,0.20))';
-    return 'rgba(30,41,59,0.60)';
-  };
+  const getRankBg = () => 'rgba(30,41,59,0.60)';
 
   return (
     <>
@@ -279,7 +274,7 @@ export default function LeaderboardPanel({ onClose, user }) {
                             borderWidth={1}
                             duration={position === 1 ? 6 : position === 2 ? 7 : position === 3 ? 8 : 12}
                             shineColor={
-                              position === 1 ? ['#7cadee','#fff','#097adc'] :
+                              position === 1 ? ['#facc15','#fff','#eab308'] :
                               position === 2 ? ['#C0C0C0','#fff','#94a3b8'] :
                               position === 3 ? ['#CD7F32','#fff','#D97706'] :
                               ['#475569','#64748b','#475569']
