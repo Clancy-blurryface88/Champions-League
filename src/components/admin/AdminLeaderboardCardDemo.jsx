@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, Crown, Trophy, Star, Medal } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring, Reorder } from 'framer-motion';
+import {
+  RefreshCw, Crown, Trophy, Star, Medal, ChevronDown, Eye, Share2, UserPlus, Heart, Check,
+  TrendingUp, TrendingDown, Flame, Sparkles, Loader2, Sun, Moon, Zap, Award,
+} from 'lucide-react';
 import { ShineBorder } from '@/components/magicui/shine-border';
 import OdometerValue from '@/components/OdometerValue';
 
-// Demo-only: 50 alternative designs for the leaderboard participant card —
+// Demo-only: 100 alternative designs for the leaderboard participant card —
 // the skewed parallelogram rows in LeaderboardPanel.jsx. Mock data,
 // self-contained, replayable. Doesn't touch LeaderboardPanel.jsx.
 //
@@ -1020,6 +1023,1443 @@ function V50() {
   );
 }
 
+// ================= Groups F-J — genuinely interactive + high-craft (51-100) =================
+// Shared rule kept from Groups A-E: any per-row hook state (useState/useRef/
+// useMotionValue) lives EITHER at the top of the Vxx function (keyed by
+// row.rank, read via closures inside the per-row renderer) OR inside a real
+// standalone sub-component instance (e.g. TiltRow, PressHold) — never called
+// directly inside the .map()-driven children callback of the same component,
+// which would call hooks in a loop. Reveal-gated effects still key off each
+// row's own onAnimationComplete (via RevealRows/markRevealed), never off
+// mount-relative timers or IntersectionObserver.
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+// Detects a press held past `ms`. A real component instance per row (not a
+// hook called inside a parent's .map), so its own timer ref is Rules-of-
+// Hooks safe no matter how many rows render it.
+function PressHold({ ms = 500, onHold, onTap, children, style }) {
+  const timer = useRef(null);
+  const fired = useRef(false);
+  const start = () => { fired.current = false; timer.current = setTimeout(() => { fired.current = true; onHold?.(); }, ms); };
+  const clear = () => { if (timer.current) clearTimeout(timer.current); };
+  const release = () => { clear(); if (!fired.current) onTap?.(); };
+  return (
+    <div style={{ touchAction: 'manipulation', ...style }} onPointerDown={start} onPointerUp={release} onPointerLeave={clear}>
+      {children}
+    </div>
+  );
+}
+
+// Rank + name + points row content, shared across Groups F-J so each variant
+// only wires the interaction that's unique to it.
+function IRow({ row, revealed, right, contentStyle }) {
+  return (
+    <div style={{ width: '100%', padding: '9px 14px', display: 'flex', alignItems: 'center', gap: 10, position: 'relative', ...contentStyle }}>
+      <span style={{ fontSize: 14, fontWeight: 900, color: RANK_COLOR(row.rank), width: 18, flexShrink: 0 }}>{row.rank}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p className="truncate" style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600 }}>{row.name}</p>
+      </div>
+      {right !== undefined ? right : <PointsPill value={row.points} trigger={revealed} />}
+    </div>
+  );
+}
+
+function CardShell({ row, children, style, width = 220 }) {
+  return (
+    <div style={{ position: 'relative', width, borderRadius: 14, border: `2px solid ${RANK_BORDER(row.rank)}`, background: RANK_BG(row.rank), overflow: 'hidden', ...style }}>
+      {children}
+    </div>
+  );
+}
+
+// ================= Group F — Tap / gesture interactions (51-60) =================
+
+// 51. Tap-to-expand accordion — tapping a row expands it to reveal a stat breakdown, tap again to collapse
+function V51() {
+  const [open, setOpen] = useState(null);
+  return (
+    <RevealRows rows={MOCK3} gap={8}>
+      {(row, i, revealed) => {
+        const isOpen = open === row.rank;
+        return (
+          <motion.div layout onClick={() => setOpen(isOpen ? null : row.rank)} whileTap={{ scale: 0.97 }} style={{ cursor: 'pointer' }}>
+            <CardShell row={row}>
+              <IRow row={row} revealed={revealed} right={
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <PointsPill value={row.points} trigger={revealed} />
+                  <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.25 }}>
+                    <ChevronDown className="w-3.5 h-3.5" style={{ color: '#94a3b8' }} />
+                  </motion.div>
+                </div>
+              } />
+              <AnimatePresence initial={false}>
+                {isOpen && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6, padding: '0 14px 10px' }}>
+                      {[['ניחושים', 12 - row.rank], ['מדויקים', 6 - row.rank], ['רצף', row.rank === 1 ? 4 : 1]].map(([lbl, v]) => (
+                        <div key={lbl} style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 8, padding: '4px 6px', textAlign: 'center' }}>
+                          <div style={{ color: '#64748b', fontSize: 8 }}>{lbl}</div>
+                          <div style={{ color: '#e2e8f0', fontSize: 12, fontWeight: 800 }}>{v}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </CardShell>
+          </motion.div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 52. Long-press opens a small radial quick-action menu anchored to the row
+function V52() {
+  const [openRank, setOpenRank] = useState(null);
+  const actions = [Eye, Share2, UserPlus];
+  return (
+    <RevealRows rows={MOCK3} gap={14}>
+      {(row, i, revealed) => (
+        <PressHold onHold={() => setOpenRank(row.rank)} style={{ position: 'relative' }}>
+          <motion.div whileTap={{ scale: 0.97 }}>
+            <CardShell row={row}><IRow row={row} revealed={revealed} /></CardShell>
+          </motion.div>
+          <AnimatePresence>
+            {openRank === row.rank && (
+              <>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpenRank(null)}
+                  style={{ position: 'fixed', inset: 0, zIndex: 20 }} />
+                {actions.map((Icon, idx) => {
+                  const angle = -150 + idx * 60;
+                  const rad = (angle * Math.PI) / 180;
+                  const dist = 44;
+                  return (
+                    <motion.button key={idx}
+                      initial={{ opacity: 0, x: 0, y: 0, scale: 0 }}
+                      animate={{ opacity: 1, x: Math.cos(rad) * dist, y: Math.sin(rad) * dist, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 18, delay: idx * 0.04 }}
+                      onClick={() => setOpenRank(null)}
+                      style={{ position: 'absolute', left: '50%', top: '50%', marginLeft: -14, marginTop: -14, width: 28, height: 28, borderRadius: '50%', background: RANK_BORDER(row.rank), border: '2px solid #0b1220', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 21, cursor: 'pointer' }}>
+                      <Icon className="w-3.5 h-3.5" style={{ color: '#fff' }} />
+                    </motion.button>
+                  );
+                })}
+              </>
+            )}
+          </AnimatePresence>
+        </PressHold>
+      )}
+    </RevealRows>
+  );
+}
+
+// 53. Swipe-left-to-reveal action buttons behind the row (iOS-style), swipe back or tap elsewhere to close
+function V53() {
+  const [openRank, setOpenRank] = useState(null);
+  return (
+    <RevealRows rows={MOCK3} gap={8}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative', width: 220, borderRadius: 14, overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', justifyContent: 'flex-end', alignItems: 'stretch' }}>
+            {[{ Icon: Eye, bg: '#3b82f6' }, { Icon: Heart, bg: '#ef4444' }].map(({ Icon, bg }, idx) => (
+              <button key={idx} onClick={() => setOpenRank(null)} style={{ width: 46, background: bg, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <Icon className="w-4 h-4" style={{ color: '#fff' }} />
+              </button>
+            ))}
+          </div>
+          <motion.div
+            drag="x"
+            dragConstraints={{ left: -92, right: 0 }}
+            dragElastic={0.08}
+            animate={{ x: openRank === row.rank ? -92 : 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+            onDragEnd={(e, info) => setOpenRank(info.offset.x < -40 ? row.rank : null)}
+            onClick={() => openRank === row.rank && setOpenRank(null)}
+            style={{ position: 'relative' }}>
+            <CardShell row={row}><IRow row={row} revealed={revealed} /></CardShell>
+          </motion.div>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 54. Double-tap "cheer" — a heart/burst particle animation plays and a cheer counter increments
+function V54() {
+  const [state, setState] = useState({});
+  const lastTap = useRef({});
+  const cheer = (rank) => {
+    setState((prev) => {
+      const cur = prev[rank] || { count: 0, bursts: [] };
+      const id = Date.now() + Math.random();
+      return { ...prev, [rank]: { count: cur.count + 1, bursts: [...cur.bursts, id] } };
+    });
+    setTimeout(() => {
+      setState((prev) => {
+        const cur = prev[rank];
+        if (!cur) return prev;
+        return { ...prev, [rank]: { ...cur, bursts: cur.bursts.slice(1) } };
+      });
+    }, 700);
+  };
+  const handleTap = (rank) => {
+    const now = Date.now();
+    if (now - (lastTap.current[rank] || 0) < 320) cheer(rank);
+    lastTap.current[rank] = now;
+  };
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        const s = state[row.rank] || { count: 0, bursts: [] };
+        return (
+          <div onClick={() => handleTap(row.rank)} style={{ position: 'relative', cursor: 'pointer' }}>
+            <CardShell row={row}>
+              <IRow row={row} revealed={revealed} right={
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <Heart className="w-3.5 h-3.5" style={{ color: s.count > 0 ? '#f87171' : '#475569' }} fill={s.count > 0 ? '#f87171' : 'none'} />
+                  <span style={{ color: '#e2e8f0', fontSize: 11, fontWeight: 700, minWidth: 12 }}>{s.count}</span>
+                  <PointsPill value={row.points} trigger={revealed} />
+                </div>
+              } />
+            </CardShell>
+            <AnimatePresence>
+              {s.bursts.map((id) => (
+                <motion.div key={id} initial={{ opacity: 1, scale: 0.4, y: 0 }} animate={{ opacity: 0, scale: 1.6, y: -26 }} exit={{ opacity: 0 }} transition={{ duration: 0.65, ease: 'easeOut' }}
+                  style={{ position: 'absolute', right: 26, top: 8, pointerEvents: 'none' }}>
+                  <Heart className="w-5 h-5" style={{ color: '#f87171' }} fill="#f87171" />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 55. Tap the avatar to flip the whole card (3D rotateY) revealing a small stat card on the back, tap again to flip back
+function V55() {
+  const [flipped, setFlipped] = useState({});
+  return (
+    <RevealRows rows={MOCK3} style={{ perspective: 800 }}>
+      {(row, i, revealed) => {
+        const isFlipped = !!flipped[row.rank];
+        return (
+          <div style={{ width: 220, height: 54, position: 'relative' }}>
+            <motion.div animate={{ rotateY: isFlipped ? 180 : 0 }} transition={{ duration: 0.5, ease: 'easeInOut' }}
+              style={{ position: 'relative', width: '100%', height: '100%', transformStyle: 'preserve-3d' }}>
+              <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden' }}>
+                <CardShell row={row} style={{ height: '100%' }}>
+                  <IRow row={row} revealed={revealed} right={
+                    <button onClick={() => setFlipped((p) => ({ ...p, [row.rank]: true }))} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                      <div style={{ width: 26, height: 26, borderRadius: '50%', background: RANK_BORDER(row.rank), display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: 11 }}>{row.name[0]}</div>
+                    </button>
+                  } />
+                </CardShell>
+              </div>
+              <div onClick={() => setFlipped((p) => ({ ...p, [row.rank]: false }))} style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', cursor: 'pointer' }}>
+                <CardShell row={row} style={{ height: '100%' }}>
+                  <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 10px' }}>
+                    <div style={{ textAlign: 'center' }}><div style={{ color: '#64748b', fontSize: 8 }}>ניחושים</div><div style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 800 }}>{12 - row.rank}</div></div>
+                    <div style={{ textAlign: 'center' }}><div style={{ color: '#64748b', fontSize: 8 }}>מדויקים</div><div style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 800 }}>{6 - row.rank}</div></div>
+                    <div style={{ textAlign: 'center' }}><div style={{ color: '#64748b', fontSize: 8 }}>רצף</div><div style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 800 }}>{row.rank === 1 ? 4 : 1}🔥</div></div>
+                  </div>
+                </CardShell>
+              </div>
+            </motion.div>
+          </div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 56. Drag handle for reordering — grabbing and dragging a row reorders the list with a snap-to-slot on release
+function V56() {
+  const [rows, setRows] = useState(MOCK3);
+  const [revealed, markRevealed] = useRevealTracking();
+  return (
+    <Reorder.Group axis="y" values={rows} onReorder={setRows} style={{ display: 'flex', flexDirection: 'column', gap: 8, width: 220, listStyle: 'none', padding: 0, margin: 0 }}>
+      {rows.map((row, i) => (
+        <Reorder.Item key={row.rank} value={row} whileDrag={{ scale: 1.05, boxShadow: '0 8px 24px rgba(0,0,0,0.4)', zIndex: 10 }} style={{ listStyle: 'none' }}>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1, duration: 0.35 }} onAnimationComplete={() => markRevealed(row.rank)}>
+            <CardShell row={row}>
+              <IRow row={row} revealed={revealed.has(row.rank)} right={
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <PointsPill value={row.points} trigger={revealed.has(row.rank)} />
+                  <div style={{ cursor: 'grab', color: '#64748b', fontSize: 14, letterSpacing: -2 }}>⠿</div>
+                </div>
+              } />
+            </CardShell>
+          </motion.div>
+        </Reorder.Item>
+      ))}
+    </Reorder.Group>
+  );
+}
+
+// 57. Pull-to-refresh gesture at the top of the list — dragging down past a threshold spins then re-shuffles data, with a bounce-back
+function V57() {
+  const [rows, setRows] = useState(MOCK3);
+  const [pull, setPull] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const [revealed, markRevealed] = useRevealTracking();
+  const THRESHOLD = 54;
+  return (
+    <div style={{ width: 220 }}>
+      <div style={{ display: 'flex', justifyContent: 'center', height: 28, alignItems: 'center' }}>
+        <motion.div animate={{ rotate: refreshing ? 360 : Math.min(pull, THRESHOLD) * 3, opacity: pull > 4 || refreshing ? 1 : 0 }} transition={refreshing ? { duration: 0.6, repeat: Infinity, ease: 'linear' } : { duration: 0 }}>
+          <Loader2 className="w-4 h-4" style={{ color: pull >= THRESHOLD || refreshing ? '#4ade80' : '#64748b' }} />
+        </motion.div>
+      </div>
+      <motion.div
+        drag="y"
+        dragDirectionLock
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={{ top: 0.5, bottom: 0 }}
+        onDrag={(e, info) => setPull(Math.max(0, info.offset.y))}
+        onDragEnd={() => {
+          if (pull >= THRESHOLD && !refreshing) {
+            setRefreshing(true);
+            setTimeout(() => { setRows(shuffle(MOCK3)); setRefreshing(false); }, 700);
+          }
+          setPull(0);
+        }}
+        style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {rows.map((row, i) => (
+          <motion.div key={row.rank} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1, duration: 0.35 }} onAnimationComplete={() => markRevealed(row.rank)}>
+            <CardShell row={row}><IRow row={row} revealed={revealed.has(row.rank)} /></CardShell>
+          </motion.div>
+        ))}
+      </motion.div>
+      <div style={{ textAlign: 'center', color: '#475569', fontSize: 9, marginTop: 4 }}>משוך מטה לרענון</div>
+    </div>
+  );
+}
+
+// 58. Press-and-hold shows a preview popover with more profile detail, released to dismiss
+function V58() {
+  const [open, setOpen] = useState(null);
+  return (
+    <RevealRows rows={MOCK3} gap={16}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative' }}>
+          <PressHold onHold={() => setOpen(row.rank)}>
+            <motion.div onPointerUp={() => setOpen(null)} onPointerLeave={() => setOpen(null)} whileTap={{ scale: 0.98 }}>
+              <CardShell row={row}><IRow row={row} revealed={revealed} /></CardShell>
+            </motion.div>
+          </PressHold>
+          <AnimatePresence>
+            {open === row.rank && (
+              <motion.div initial={{ opacity: 0, y: 8, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.92 }} transition={{ duration: 0.2 }}
+                style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 8, width: 170, background: '#111a2b', border: `1px solid ${RANK_BORDER(row.rank)}`, borderRadius: 10, padding: 10, zIndex: 20, boxShadow: '0 10px 28px rgba(0,0,0,0.5)' }}>
+                <p style={{ color: '#e2e8f0', fontSize: 12, fontWeight: 800, textAlign: 'center' }}>{row.name}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: 6 }}>
+                  <div style={{ textAlign: 'center' }}><div style={{ color: '#64748b', fontSize: 8 }}>דרגה</div><div style={{ color: RANK_COLOR(row.rank), fontSize: 13, fontWeight: 900 }}>#{row.rank}</div></div>
+                  <div style={{ textAlign: 'center' }}><div style={{ color: '#64748b', fontSize: 8 }}>ניקוד</div><div style={{ color: '#4ade80', fontSize: 13, fontWeight: 900 }}>{row.points.toFixed(2)}</div></div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 59. Tap-select two rows, then a "compare" button appears to open a side-by-side comparison view
+function V59() {
+  const [selected, setSelected] = useState([]);
+  const [comparing, setComparing] = useState(false);
+  const toggle = (rank) => {
+    setComparing(false);
+    setSelected((prev) => prev.includes(rank) ? prev.filter((r) => r !== rank) : prev.length < 2 ? [...prev, rank] : [prev[1], rank]);
+  };
+  const chosen = MOCK3.filter((r) => selected.includes(r.rank));
+  return (
+    <div style={{ width: 220, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <RevealRows rows={MOCK3} gap={8}>
+        {(row, i, revealed) => {
+          const isSel = selected.includes(row.rank);
+          return (
+            <motion.div onClick={() => toggle(row.rank)} whileTap={{ scale: 0.97 }} animate={{ scale: isSel ? 1.03 : 1 }} style={{ cursor: 'pointer' }}>
+              <CardShell row={row} style={{ borderColor: isSel ? '#4ade80' : RANK_BORDER(row.rank), boxShadow: isSel ? '0 0 0 2px rgba(74,222,128,0.4)' : 'none' }}>
+                <IRow row={row} revealed={revealed} right={<div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>{isSel && <Check className="w-3.5 h-3.5" style={{ color: '#4ade80' }} />}<PointsPill value={row.points} trigger={revealed} /></div>} />
+              </CardShell>
+            </motion.div>
+          );
+        }}
+      </RevealRows>
+      <AnimatePresence>
+        {selected.length === 2 && !comparing && (
+          <motion.button initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} onClick={() => setComparing(true)}
+            style={{ alignSelf: 'center', fontSize: 11, fontWeight: 700, color: '#0b1220', background: '#4ade80', border: 'none', borderRadius: 999, padding: '5px 14px', cursor: 'pointer' }}>
+            השווה ⚔️
+          </motion.button>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {comparing && chosen.length === 2 && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ display: 'flex', gap: 8, overflow: 'hidden' }}>
+            {chosen.map((row) => (
+              <div key={row.rank} style={{ flex: 1, borderRadius: 10, border: `1px solid ${RANK_BORDER(row.rank)}`, padding: 8, textAlign: 'center' }}>
+                <p className="truncate" style={{ color: '#e2e8f0', fontSize: 11, fontWeight: 700 }}>{row.name}</p>
+                <div style={{ color: '#4ade80', fontSize: 13, fontWeight: 900, marginTop: 2 }}>{row.points.toFixed(2)}</div>
+                <div style={{ color: '#64748b', fontSize: 9 }}>#{row.rank}</div>
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// 60. Swipe-right to bookmark/follow a row — a checkmark morphs in with a satisfying spring, swipe again to unfollow
+function V60() {
+  const [followed, setFollowed] = useState({});
+  return (
+    <RevealRows rows={MOCK3} gap={8}>
+      {(row, i, revealed) => {
+        const isFollowed = !!followed[row.rank];
+        return (
+          <motion.div
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.5}
+            onDragEnd={(e, info) => { if (info.offset.x > 50) setFollowed((p) => ({ ...p, [row.rank]: !p[row.rank] })); }}
+            style={{ position: 'relative' }}>
+            <CardShell row={row} style={{ borderColor: isFollowed ? '#4ade80' : RANK_BORDER(row.rank) }}>
+              <IRow row={row} revealed={revealed} right={
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <PointsPill value={row.points} trigger={revealed} />
+                  <motion.div initial={false} animate={{ scale: isFollowed ? 1 : 0, opacity: isFollowed ? 1 : 0 }} transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                    style={{ width: 18, height: 18, borderRadius: '50%', background: '#4ade80', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Check className="w-3 h-3" style={{ color: '#0b1220' }} />
+                  </motion.div>
+                </div>
+              } />
+            </CardShell>
+          </motion.div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// ================= Group G — Pointer/hover-driven polish (61-70) =================
+// Each has a touch fallback: press/drag stands in for hover since there's no
+// true hover on touch devices.
+
+function TiltRow({ row, revealed }) {
+  const ref = useRef(null);
+  const rx = useMotionValue(0);
+  const ry = useMotionValue(0);
+  const srx = useSpring(rx, { stiffness: 300, damping: 22 });
+  const sry = useSpring(ry, { stiffness: 300, damping: 22 });
+  const update = (clientX, clientY) => {
+    const el = ref.current; if (!el) return;
+    const rect = el.getBoundingClientRect();
+    ry.set(((clientX - rect.left) / rect.width - 0.5) * 18);
+    rx.set(-((clientY - rect.top) / rect.height - 0.5) * 18);
+  };
+  const reset = () => { rx.set(0); ry.set(0); };
+  return (
+    <motion.div ref={ref}
+      onMouseMove={(e) => update(e.clientX, e.clientY)} onMouseLeave={reset}
+      onTouchMove={(e) => { const t = e.touches[0]; if (t) update(t.clientX, t.clientY); }} onTouchEnd={reset}
+      style={{ rotateX: srx, rotateY: sry, transformPerspective: 700 }}>
+      <CardShell row={row}>
+        <IRow row={row} revealed={revealed} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(255,255,255,0.18), transparent 60%)', pointerEvents: 'none' }} />
+      </CardShell>
+    </motion.div>
+  );
+}
+// 61. 3D tilt-on-hover — the card tilts in perspective following cursor position, holographic-card feel (touch: follows the finger)
+function V61() {
+  return <RevealRows rows={MOCK3}>{(row, i, revealed) => <TiltRow row={row} revealed={revealed} />}</RevealRows>;
+}
+
+function SpotlightRow({ row, revealed }) {
+  const ref = useRef(null);
+  const [pos, setPos] = useState({ x: 50, y: 50, on: false });
+  const update = (clientX, clientY) => {
+    const el = ref.current; if (!el) return;
+    const rect = el.getBoundingClientRect();
+    setPos({ x: ((clientX - rect.left) / rect.width) * 100, y: ((clientY - rect.top) / rect.height) * 100, on: true });
+  };
+  return (
+    <div ref={ref} style={{ position: 'relative' }}
+      onMouseMove={(e) => update(e.clientX, e.clientY)} onMouseLeave={() => setPos((p) => ({ ...p, on: false }))}
+      onTouchStart={(e) => { const t = e.touches[0]; if (t) update(t.clientX, t.clientY); }}
+      onTouchMove={(e) => { const t = e.touches[0]; if (t) update(t.clientX, t.clientY); }}
+      onTouchEnd={() => setPos((p) => ({ ...p, on: false }))}>
+      <CardShell row={row}>
+        <div style={{ position: 'absolute', inset: 0, opacity: pos.on ? 1 : 0, transition: 'opacity 0.2s', background: `radial-gradient(120px circle at ${pos.x}% ${pos.y}%, ${RANK_BORDER(row.rank)}55, transparent 70%)`, pointerEvents: 'none' }} />
+        <IRow row={row} revealed={revealed} />
+      </CardShell>
+    </div>
+  );
+}
+// 62. Magnetic cursor-follow spotlight glow beneath the cursor as it moves across the card (touch: follows the finger)
+function V62() {
+  return <RevealRows rows={MOCK3}>{(row, i, revealed) => <SpotlightRow row={row} revealed={revealed} />}</RevealRows>;
+}
+
+function SparkleRow({ row, revealed }) {
+  const [sparks, setSparks] = useState([]);
+  const lastAt = useRef(0);
+  const spawn = (clientX, clientY, el) => {
+    const now = Date.now();
+    if (now - lastAt.current < 60) return;
+    lastAt.current = now;
+    const rect = el.getBoundingClientRect();
+    const id = now + Math.random();
+    setSparks((p) => [...p.slice(-8), { id, x: clientX - rect.left, y: clientY - rect.top }]);
+    setTimeout(() => setSparks((p) => p.filter((s) => s.id !== id)), 550);
+  };
+  return (
+    <div style={{ position: 'relative' }}
+      onMouseMove={(e) => spawn(e.clientX, e.clientY, e.currentTarget)}
+      onTouchMove={(e) => { const t = e.touches[0]; if (t) spawn(t.clientX, t.clientY, e.currentTarget); }}>
+      <CardShell row={row}>
+        <div style={{ position: 'absolute', inset: 0, borderRadius: 14, overflow: 'hidden', pointerEvents: 'none' }}>
+          <AnimatePresence>
+            {sparks.map((s) => (
+              <motion.div key={s.id} initial={{ opacity: 1, scale: 0.6, x: s.x, y: s.y }} animate={{ opacity: 0, scale: 1.2, y: s.y - 14 }} exit={{ opacity: 0 }} transition={{ duration: 0.55 }}
+                style={{ position: 'absolute' }}>
+                <Sparkles className="w-3 h-3" style={{ color: '#facc15' }} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+        <IRow row={row} revealed={revealed} />
+      </CardShell>
+    </div>
+  );
+}
+// 63. Cursor-trailing sparkle particles while hovering over the card (touch: trails the finger while dragging)
+function V63() {
+  return <RevealRows rows={MOCK3}>{(row, i, revealed) => <SparkleRow row={row} revealed={revealed} />}</RevealRows>;
+}
+
+function ProxRow({ row, revealed, pointer }) {
+  const ref = useRef(null);
+  let lift = 0;
+  if (pointer && ref.current) {
+    const rect = ref.current.getBoundingClientRect();
+    const dist = Math.hypot(pointer.x - (rect.left + rect.width / 2), pointer.y - (rect.top + rect.height / 2));
+    lift = Math.max(0, 1 - dist / 220);
+  }
+  return (
+    <motion.div ref={ref} animate={{ y: -lift * 8, boxShadow: `0 ${6 + lift * 18}px ${14 + lift * 26}px rgba(0,0,0,${0.15 + lift * 0.35})` }}
+      whileTap={{ y: -8 }} transition={{ type: 'spring', stiffness: 300, damping: 26 }}>
+      <CardShell row={row}><IRow row={row} revealed={revealed} /></CardShell>
+    </motion.div>
+  );
+}
+// 64. Card lifts (translateY + shadow grows) proportionally to how close the cursor is, before full hover (touch: lifts on press)
+function V64() {
+  const [pointer, setPointer] = useState(null);
+  return (
+    <div onMouseMove={(e) => setPointer({ x: e.clientX, y: e.clientY })} onMouseLeave={() => setPointer(null)}>
+      <RevealRows rows={MOCK3}>{(row, i, revealed) => <ProxRow row={row} revealed={revealed} pointer={pointer} />}</RevealRows>
+    </div>
+  );
+}
+
+function ChaseRow({ row, revealed }) {
+  const [active, setActive] = useState(false);
+  return (
+    <motion.div
+      onHoverStart={() => setActive(true)} onHoverEnd={() => setActive(false)}
+      onPointerDown={() => setActive(true)} onPointerUp={() => setActive(false)}
+      style={{ position: 'relative', width: 220, borderRadius: 14, overflow: 'hidden' }}>
+      <motion.div animate={active ? { rotate: 360 } : { rotate: 0 }} transition={active ? { duration: 1.6, repeat: Infinity, ease: 'linear' } : { duration: 0.3 }}
+        style={{ position: 'absolute', inset: -40, background: `conic-gradient(from 0deg, transparent 0%, ${RANK_BORDER(row.rank)} 8%, transparent 18%)`, opacity: active ? 1 : 0, transition: 'opacity 0.25s' }} />
+      <div style={{ position: 'relative', borderRadius: 12, background: RANK_BG(row.rank), margin: 2, border: `1px solid ${RANK_BORDER(row.rank)}55` }}>
+        <IRow row={row} revealed={revealed} />
+      </div>
+    </motion.div>
+  );
+}
+// 65. A light chases around the card's border perimeter continuously on hover (touch: on press-hold)
+function V65() {
+  return <RevealRows rows={MOCK3}>{(row, i, revealed) => <ChaseRow row={row} revealed={revealed} />}</RevealRows>;
+}
+
+function ParallaxRow({ row, revealed }) {
+  const ref = useRef(null);
+  const [off, setOff] = useState({ x: 0, y: 0 });
+  const update = (clientX, clientY) => {
+    const el = ref.current; if (!el) return;
+    const rect = el.getBoundingClientRect();
+    setOff({ x: ((clientX - rect.left) / rect.width - 0.5) * -10, y: ((clientY - rect.top) / rect.height - 0.5) * -10 });
+  };
+  return (
+    <div ref={ref} style={{ position: 'relative' }}
+      onMouseMove={(e) => update(e.clientX, e.clientY)} onMouseLeave={() => setOff({ x: 0, y: 0 })}
+      onTouchMove={(e) => { const t = e.touches[0]; if (t) update(t.clientX, t.clientY); }} onTouchEnd={() => setOff({ x: 0, y: 0 })}>
+      <CardShell row={row} style={{ overflow: 'hidden' }}>
+        <motion.div animate={{ x: off.x, y: off.y }} transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+          style={{ position: 'absolute', inset: -10, background: `radial-gradient(60px circle at 30% 30%, ${RANK_BORDER(row.rank)}44, transparent 70%)`, pointerEvents: 'none' }} />
+        <motion.div animate={{ x: off.x * 0.5, y: off.y * 0.5 }} transition={{ type: 'spring', stiffness: 200, damping: 20 }} style={{ position: 'relative' }}>
+          <IRow row={row} revealed={revealed} />
+        </motion.div>
+      </CardShell>
+    </div>
+  );
+}
+// 66. Subtle parallax — background layers inside the card shift opposite to cursor position for a depth effect (touch: shifts with finger drag)
+function V66() {
+  return <RevealRows rows={MOCK3}>{(row, i, revealed) => <ParallaxRow row={row} revealed={revealed} />}</RevealRows>;
+}
+
+function TooltipRow({ row, revealed }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div style={{ position: 'relative' }} onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)} onPointerDown={() => setShow((s) => !s)}>
+      <CardShell row={row}><IRow row={row} revealed={revealed} /></CardShell>
+      <AnimatePresence>
+        {show && (
+          <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} transition={{ duration: 0.18 }}
+            style={{ position: 'absolute', top: -8, right: 8, transform: 'translateY(-100%)', background: '#111a2b', border: `1px solid ${RANK_BORDER(row.rank)}`, borderRadius: 8, padding: '5px 9px', fontSize: 10, color: '#e2e8f0', whiteSpace: 'nowrap', zIndex: 10, boxShadow: '0 6px 18px rgba(0,0,0,0.4)' }}>
+            {6 - row.rank} תחזיות מדויקות · רצף {row.rank === 1 ? 4 : 1}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+// 67. Hover reveals a small "quick stats" tooltip anchored above the card (touch: tap toggles it)
+function V67() {
+  return <RevealRows rows={MOCK3} gap={20}>{(row, i, revealed) => <TooltipRow row={row} revealed={revealed} />}</RevealRows>;
+}
+
+function RippleRow({ row, revealed }) {
+  const [ripples, setRipples] = useState([]);
+  const onDown = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const id = Date.now() + Math.random();
+    setRipples((p) => [...p, { id, x: e.clientX - rect.left, y: e.clientY - rect.top }]);
+    setTimeout(() => setRipples((p) => p.filter((r) => r.id !== id)), 650);
+  };
+  return (
+    <div onPointerDown={onDown} style={{ position: 'relative', cursor: 'pointer' }}>
+      <CardShell row={row} style={{ overflow: 'hidden' }}>
+        <IRow row={row} revealed={revealed} />
+        {ripples.map((r) => (
+          <motion.span key={r.id} initial={{ scale: 0, opacity: 0.5 }} animate={{ scale: 5, opacity: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }}
+            style={{ position: 'absolute', left: r.x - 8, top: r.y - 8, width: 16, height: 16, borderRadius: '50%', background: RANK_COLOR(row.rank), pointerEvents: 'none' }} />
+        ))}
+      </CardShell>
+    </div>
+  );
+}
+// 68. Material-design ripple expanding from the exact click/tap point
+function V68() {
+  return <RevealRows rows={MOCK3}>{(row, i, revealed) => <RippleRow row={row} revealed={revealed} />}</RevealRows>;
+}
+
+function ProxGlowRow({ row, revealed, pointer }) {
+  const ref = useRef(null);
+  let glow = 0;
+  if (pointer && ref.current) {
+    const rect = ref.current.getBoundingClientRect();
+    const dist = Math.hypot(pointer.x - (rect.left + rect.width / 2), pointer.y - (rect.top + rect.height / 2));
+    glow = Math.max(0, 1 - dist / 260);
+  }
+  const alpha = Math.round((0.15 + glow * 0.6) * 255).toString(16).padStart(2, '0');
+  return (
+    <div ref={ref} style={{ borderRadius: 14, transition: 'box-shadow 0.15s', boxShadow: `0 0 ${8 + glow * 30}px ${RANK_BORDER(row.rank)}${alpha}` }}>
+      <CardShell row={row}><IRow row={row} revealed={revealed} /></CardShell>
+    </div>
+  );
+}
+// 69. Cursor-proximity glow — the card's glow brightens as the pointer approaches, even before it's directly hovering (touch: brightens on press)
+function V69() {
+  const [pointer, setPointer] = useState(null);
+  return (
+    <div onMouseMove={(e) => setPointer({ x: e.clientX, y: e.clientY })} onMouseLeave={() => setPointer(null)}
+      onTouchStart={(e) => { const t = e.touches[0]; if (t) setPointer({ x: t.clientX, y: t.clientY }); }} onTouchEnd={() => setPointer(null)}>
+      <RevealRows rows={MOCK3}>{(row, i, revealed) => <ProxGlowRow row={row} revealed={revealed} pointer={pointer} />}</RevealRows>
+    </div>
+  );
+}
+
+function GhostPopRow({ row, revealed }) {
+  const [active, setActive] = useState(false);
+  return (
+    <motion.div
+      onHoverStart={() => setActive(true)} onHoverEnd={() => setActive(false)}
+      onPointerDown={() => setActive(true)} onPointerUp={() => setActive(false)}
+      style={{ position: 'relative', width: 220, borderRadius: 14, border: `2px solid ${RANK_BORDER(row.rank)}`, background: RANK_BG(row.rank), overflow: 'hidden' }}>
+      <span style={{ position: 'absolute', right: -6, top: '50%', transform: 'translateY(-50%)', lineHeight: 1, pointerEvents: 'none', userSelect: 'none' }}>
+        <motion.span animate={{ scale: active ? 1.35 : 1, opacity: active ? 0.32 : 0.16, x: active ? 4 : 0 }} transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+          style={{ display: 'inline-block', fontSize: 48, fontWeight: 900, color: RANK_COLOR(row.rank), filter: active ? `drop-shadow(0 6px 10px ${RANK_BORDER(row.rank)}aa)` : 'none' }}>
+          {row.rank}
+        </motion.span>
+      </span>
+      <IRow row={row} revealed={revealed} />
+    </motion.div>
+  );
+}
+// 70. Hovering makes the ghost rank number pop forward in simulated 3D — scale + shadow deepen (touch: on press)
+function V70() {
+  return <RevealRows rows={MOCK3}>{(row, i, revealed) => <GhostPopRow row={row} revealed={revealed} />}</RevealRows>;
+}
+
+// ================= Group H — Live/dynamic data-driven polish (71-80) =================
+
+// 71. A floating "+X" text pops up and fades when a row's points increase (simulate a point change on tap)
+function V71() {
+  const [pops, setPops] = useState({});
+  const bump = (rank) => {
+    const id = Date.now() + Math.random();
+    setPops((p) => ({ ...p, [rank]: [...(p[rank] || []), id] }));
+    setTimeout(() => setPops((p) => ({ ...p, [rank]: (p[rank] || []).filter((x) => x !== id) })), 800);
+  };
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div onClick={() => bump(row.rank)} style={{ position: 'relative', cursor: 'pointer' }}>
+          <CardShell row={row}><IRow row={row} revealed={revealed} /></CardShell>
+          <AnimatePresence>
+            {(pops[row.rank] || []).map((id) => (
+              <motion.div key={id} initial={{ opacity: 0, y: 0, scale: 0.7 }} animate={{ opacity: [0, 1, 1, 0], y: -28, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }}
+                style={{ position: 'absolute', top: 6, right: 14, color: '#4ade80', fontSize: 13, fontWeight: 900, pointerEvents: 'none' }}>
+                +1.50
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 72. A rank-change up/down arrow animates in when a row's position shifts (simulate a shuffle on tap/replay)
+function V72() {
+  const [rows, setRows] = useState(MOCK3);
+  const [dirs, setDirs] = useState({});
+  const shuffleNow = () => {
+    setRows((prev) => {
+      const arr = shuffle(prev);
+      const nd = {};
+      arr.forEach((r, i) => { const oldIdx = prev.findIndex((p) => p.rank === r.rank); nd[r.rank] = i < oldIdx ? 'up' : i > oldIdx ? 'down' : 'same'; });
+      setDirs(nd);
+      return arr;
+    });
+  };
+  return (
+    <div style={{ width: 220, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <motion.ul layout style={{ display: 'flex', flexDirection: 'column', gap: 8, listStyle: 'none', padding: 0, margin: 0 }}>
+        {rows.map((row) => (
+          <motion.li layout key={row.rank} transition={{ type: 'spring', stiffness: 350, damping: 30 }} style={{ listStyle: 'none' }}>
+            <CardShell row={row}>
+              <IRow row={row} revealed={true} right={
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  {dirs[row.rank] === 'up' && <TrendingUp className="w-3.5 h-3.5" style={{ color: '#4ade80' }} />}
+                  {dirs[row.rank] === 'down' && <TrendingDown className="w-3.5 h-3.5" style={{ color: '#f87171' }} />}
+                  <PointsPill value={row.points} trigger={true} />
+                </div>
+              } />
+            </CardShell>
+          </motion.li>
+        ))}
+      </motion.ul>
+      <button onClick={shuffleNow} style={{ alignSelf: 'center', fontSize: 10, color: '#94a3b8', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 999, padding: '4px 12px', cursor: 'pointer' }}>דמה שינוי דירוג</button>
+    </div>
+  );
+}
+
+// 73. A pulse/heartbeat ring plays on whichever row "just scored" (cycles through rows automatically)
+function V73() {
+  const [activeIdx, setActiveIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setActiveIdx((i) => (i + 1) % MOCK3.length), 1800);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative' }}>
+          {i === activeIdx && (
+            <motion.div key={activeIdx} initial={{ opacity: 0.6, scale: 1 }} animate={{ opacity: 0, scale: 1.25 }} transition={{ duration: 1.2, repeat: Infinity, ease: 'easeOut' }}
+              style={{ position: 'absolute', inset: -2, borderRadius: 16, border: `2px solid ${RANK_BORDER(row.rank)}`, pointerEvents: 'none' }} />
+          )}
+          <CardShell row={row}><IRow row={row} revealed={revealed} /></CardShell>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 74. A streak-flame icon that visually grows with a simulated consecutive-correct-predictions counter (tap to increment)
+function V74() {
+  const [streaks, setStreaks] = useState({ 1: 2, 2: 4, 3: 1 });
+  const bump = (rank) => setStreaks((p) => ({ ...p, [rank]: (p[rank] || 0) + 1 }));
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        const n = streaks[row.rank] || 0;
+        const size = 14 + Math.min(n, 6) * 2;
+        return (
+          <div onClick={() => bump(row.rank)} style={{ cursor: 'pointer' }}>
+            <CardShell row={row}>
+              <IRow row={row} revealed={revealed} right={
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <motion.div key={n} initial={{ scale: 0.7 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 12 }}>
+                    <Flame style={{ color: '#fb923c', width: size, height: size }} fill="#fb923c" fillOpacity={0.4} />
+                  </motion.div>
+                  <span style={{ color: '#fb923c', fontSize: 11, fontWeight: 800 }}>{n}</span>
+                  <PointsPill value={row.points} trigger={revealed} />
+                </div>
+              } />
+            </CardShell>
+          </div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 75. A fading "ghost trail" showing a row's recent rank movement (afterimage as it moves up/down on reorder)
+function V75() {
+  const [rows, setRows] = useState(MOCK3);
+  const [trails, setTrails] = useState({});
+  const posRef = useRef({});
+  const shuffleNow = () => {
+    setRows((prev) => {
+      prev.forEach((r, i) => { posRef.current[r.rank] = i; });
+      const arr = shuffle(prev);
+      const nt = {};
+      arr.forEach((r, i) => { const from = posRef.current[r.rank]; if (from !== i) nt[r.rank] = (from - i) * 62; });
+      setTrails(nt);
+      setTimeout(() => setTrails({}), 700);
+      return arr;
+    });
+  };
+  return (
+    <div style={{ width: 220, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <motion.ul layout style={{ display: 'flex', flexDirection: 'column', gap: 8, listStyle: 'none', padding: 0, margin: 0 }}>
+        {rows.map((row) => (
+          <motion.li layout key={row.rank} transition={{ type: 'spring', stiffness: 300, damping: 28 }} style={{ position: 'relative', listStyle: 'none' }}>
+            {trails[row.rank] !== undefined && (
+              <motion.div initial={{ opacity: 0.35, y: trails[row.rank] }} animate={{ opacity: 0, y: 0 }} transition={{ duration: 0.6 }}
+                style={{ position: 'absolute', inset: 0, borderRadius: 14, background: RANK_BORDER(row.rank), pointerEvents: 'none' }} />
+            )}
+            <CardShell row={row}><IRow row={row} revealed={true} /></CardShell>
+          </motion.li>
+        ))}
+      </motion.ul>
+      <button onClick={shuffleNow} style={{ alignSelf: 'center', fontSize: 10, color: '#94a3b8', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 999, padding: '4px 12px', cursor: 'pointer' }}>דמה החלפת מקומות</button>
+    </div>
+  );
+}
+
+// 76. A small "👀 N watching" live indicator with an animated count that ticks
+function V76() {
+  const [counts, setCounts] = useState({ 1: 24, 2: 17, 3: 9 });
+  useEffect(() => {
+    const id = setInterval(() => {
+      setCounts((p) => {
+        const next = { ...p };
+        const rank = 1 + Math.floor(Math.random() * 3);
+        next[rank] = Math.max(3, next[rank] + (Math.random() > 0.5 ? 1 : -1));
+        return next;
+      });
+    }, 1400);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <CardShell row={row}>
+          <IRow row={row} revealed={revealed} right={
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 3, color: '#7cadee', fontSize: 10, fontWeight: 700 }}>
+                <Eye className="w-3 h-3" />
+                <AnimatePresence mode="popLayout">
+                  <motion.span key={counts[row.rank]} initial={{ y: -6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 6, opacity: 0 }} transition={{ duration: 0.2 }}>
+                    {counts[row.rank]}
+                  </motion.span>
+                </AnimatePresence>
+              </div>
+              <PointsPill value={row.points} trigger={revealed} />
+            </div>
+          } />
+        </CardShell>
+      )}
+    </RevealRows>
+  );
+}
+
+function ConfettiBurst({ color }) {
+  const pieces = Array.from({ length: 14 });
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'visible' }}>
+      {pieces.map((_, idx) => {
+        const angle = (idx / pieces.length) * Math.PI * 2;
+        const dist = 40 + (idx % 3) * 14;
+        return (
+          <motion.span key={idx} initial={{ opacity: 1, x: 0, y: 0, scale: 1 }} animate={{ opacity: 0, x: Math.cos(angle) * dist, y: Math.sin(angle) * dist - 10, scale: 0.4, rotate: idx * 40 }}
+            transition={{ duration: 0.9, ease: 'easeOut', delay: 0.05 }}
+            style={{ position: 'absolute', left: '50%', top: '50%', width: 5, height: 8, background: idx % 2 ? color : '#facc15', borderRadius: 1 }} />
+        );
+      })}
+    </div>
+  );
+}
+// 77. Confetti/particle burst plays automatically when a row reaches rank #1 (simulated promotion to #1 on replay)
+function V77() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative' }}>
+          <CardShell row={row}><IRow row={row} revealed={revealed} /></CardShell>
+          {row.rank === 1 && revealed && <ConfettiBurst color={RANK_BORDER(1)} />}
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 78. Digit-diff flash — when points update (tap to simulate), only the changed digit(s) briefly flash before settling
+function V78() {
+  const [pts, setPts] = useState({ 1: 61.5, 2: 54.0, 3: 48.5 });
+  const [prevPts, setPrevPts] = useState({ 1: 61.5, 2: 54.0, 3: 48.5 });
+  const bump = (rank) => {
+    setPrevPts((p) => ({ ...p, [rank]: pts[rank] }));
+    setPts((p) => ({ ...p, [rank]: Math.round((p[rank] + 0.75) * 100) / 100 }));
+  };
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        const newStr = pts[row.rank].toFixed(2);
+        const oldStr = prevPts[row.rank].toFixed(2);
+        return (
+          <div onClick={() => bump(row.rank)} style={{ cursor: 'pointer' }}>
+            <CardShell row={row}>
+              <IRow row={row} revealed={revealed} right={
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#4ade80' }}>
+                  {newStr.split('').map((ch, idx) => (
+                    <motion.span key={idx} animate={ch !== oldStr[idx] ? { color: ['#facc15', '#4ade80'] } : {}} transition={{ duration: 0.6 }} style={{ display: 'inline-block' }}>{ch}</motion.span>
+                  ))}
+                  {' Pts'}
+                </span>
+              } />
+            </CardShell>
+          </div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 79. A subtle pulsing connector line between two rows that are close in points ("close race" indicator)
+function V79() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        const isClose = row.rank === 2 || row.rank === 3;
+        return (
+          <div style={{ position: 'relative' }}>
+            {row.rank === 2 && (
+              <motion.div animate={{ opacity: [0.2, 0.8, 0.2] }} transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+                style={{ position: 'absolute', left: 18, bottom: -12, width: 2, height: 16, background: '#f87171', zIndex: 5 }} />
+            )}
+            <CardShell row={row} style={{ borderColor: isClose ? '#f87171' : RANK_BORDER(row.rank) }}>
+              <IRow row={row} revealed={revealed} right={
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  {isClose && <Zap className="w-3 h-3" style={{ color: '#f87171' }} />}
+                  <PointsPill value={row.points} trigger={revealed} />
+                </div>
+              } />
+            </CardShell>
+          </div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 80. A small auto-scrolling ticker strip embedded in the card showing recent mock match results affecting that player's score
+function V80() {
+  const results = ['⚽ ריאל מדריד 2-1 סיטי', '🟨 שער חסר - 45\'', '⚽ הניחוש נפגע', '📈 +2.5 נק\' השבוע'];
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <CardShell row={row}>
+          <IRow row={row} revealed={revealed} />
+          <div style={{ borderTop: `1px solid ${RANK_BORDER(row.rank)}33`, overflow: 'hidden', padding: '3px 0' }}>
+            <motion.div animate={{ x: ['0%', '-50%'] }} transition={{ duration: 9, repeat: Infinity, ease: 'linear' }} style={{ display: 'flex', gap: 20, whiteSpace: 'nowrap', width: 'max-content' }}>
+              {[...results, ...results].map((t, idx) => <span key={idx} style={{ fontSize: 9, color: '#94a3b8' }}>{t}</span>)}
+            </motion.div>
+          </div>
+        </CardShell>
+      )}
+    </RevealRows>
+  );
+}
+
+// ================= Group I — Tactile/haptic-style micro-feedback (visual proxies) (81-90) =================
+
+// 81. A satisfying scale-squish "thump" plays on every tap, like a physical button press
+function V81() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <motion.div whileTap={{ scale: 0.9 }} transition={{ type: 'spring', stiffness: 700, damping: 18 }} style={{ cursor: 'pointer' }}>
+          <CardShell row={row}><IRow row={row} revealed={revealed} /></CardShell>
+        </motion.div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 82. A brief shake + red flash plays for a simulated missed/incorrect prediction reveal (tap to simulate)
+function V82() {
+  const [missed, setMissed] = useState({});
+  const trigger = (rank) => setMissed((p) => ({ ...p, [rank]: (p[rank] || 0) + 1 }));
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div onClick={() => trigger(row.rank)} style={{ position: 'relative', cursor: 'pointer' }}>
+          <motion.div key={missed[row.rank] || 0} animate={missed[row.rank] ? { x: [0, -8, 8, -6, 6, -2, 2, 0] } : {}} transition={{ duration: 0.45 }}>
+            <CardShell row={row}><IRow row={row} revealed={revealed} /></CardShell>
+          </motion.div>
+          {!!missed[row.rank] && (
+            <motion.div key={'flash' + missed[row.rank]} initial={{ opacity: 0.5 }} animate={{ opacity: 0 }} transition={{ duration: 0.5 }}
+              style={{ position: 'absolute', inset: 0, background: '#ef4444', borderRadius: 14, pointerEvents: 'none' }} />
+          )}
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 83. A coin-drop visual + bounce plays when points are added to a row (tap to add points)
+function V83() {
+  const [pts, setPts] = useState({ 1: 61.5, 2: 54.0, 3: 48.5 });
+  const [coins, setCoins] = useState({});
+  const add = (rank) => {
+    setPts((p) => ({ ...p, [rank]: Math.round((p[rank] + 1.5) * 100) / 100 }));
+    const id = Date.now();
+    setCoins((p) => ({ ...p, [rank]: id }));
+    setTimeout(() => setCoins((p) => (p[rank] === id ? { ...p, [rank]: null } : p)), 650);
+  };
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div onClick={() => add(row.rank)} style={{ position: 'relative', cursor: 'pointer' }}>
+          <CardShell row={row}>
+            <IRow row={row} revealed={revealed} right={<span style={{ color: '#4ade80', fontSize: 12, fontWeight: 700 }}>{pts[row.rank].toFixed(2)} Pts</span>} />
+          </CardShell>
+          <AnimatePresence>
+            {coins[row.rank] && (
+              <motion.div key={coins[row.rank]} initial={{ y: -30, opacity: 1, rotate: 0 }} animate={{ y: [-30, 4, -2, 0], opacity: 1, rotate: 360 }} exit={{ opacity: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }}
+                style={{ position: 'absolute', right: 16, top: 4, width: 16, height: 16, borderRadius: '50%', background: '#facc15', border: '2px solid #ca8a04', pointerEvents: 'none' }} />
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 84. The current-user's row has a subtle idle "breathing" scale pulse to keep it findable at a glance
+function V84() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        const isMe = row.rank === 2;
+        return (
+          <motion.div animate={isMe ? { scale: [1, 1.025, 1] } : {}} transition={{ duration: 2.4, repeat: isMe ? Infinity : 0, ease: 'easeInOut' }}>
+            <CardShell row={row} style={isMe ? { borderColor: '#60A5FA' } : {}}>
+              <IRow row={row} revealed={revealed} right={<div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>{isMe && <span style={{ fontSize: 8, color: '#60A5FA', fontWeight: 800 }}>אתה</span>}<PointsPill value={row.points} trigger={revealed} /></div>} />
+            </CardShell>
+          </motion.div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 85. When the list re-sorts (button-triggered), rows animate into their new slots with a satisfying snap/settle, not just teleporting
+function V85() {
+  const [rows, setRows] = useState(MOCK3);
+  return (
+    <div style={{ width: 220, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <motion.ul layout style={{ display: 'flex', flexDirection: 'column', gap: 8, listStyle: 'none', padding: 0, margin: 0 }}>
+        {rows.map((row) => (
+          <motion.li layout key={row.rank} transition={{ type: 'spring', stiffness: 380, damping: 26 }} style={{ listStyle: 'none' }}>
+            <CardShell row={row}><IRow row={row} revealed={true} /></CardShell>
+          </motion.li>
+        ))}
+      </motion.ul>
+      <button onClick={() => setRows((r) => shuffle(r))} style={{ alignSelf: 'center', fontSize: 10, color: '#94a3b8', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 999, padding: '4px 12px', cursor: 'pointer' }}>מיין מחדש</button>
+    </div>
+  );
+}
+
+// 86. A radiant flash + checkmark replaces a raw number update as a "success chime" visual (tap to confirm)
+function V86() {
+  const [confirmed, setConfirmed] = useState({});
+  const confirm = (rank) => {
+    setConfirmed((p) => ({ ...p, [rank]: true }));
+    setTimeout(() => setConfirmed((p) => ({ ...p, [rank]: false })), 900);
+  };
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div onClick={() => confirm(row.rank)} style={{ cursor: 'pointer' }}>
+          <CardShell row={row}>
+            <IRow row={row} revealed={revealed} right={
+              <AnimatePresence mode="wait">
+                {confirmed[row.rank] ? (
+                  <motion.div key="ok" initial={{ scale: 0, rotate: -30 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0 }} transition={{ type: 'spring', stiffness: 500, damping: 16 }}
+                    style={{ width: 20, height: 20, borderRadius: '50%', background: '#4ade80', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 16px rgba(74,222,128,0.8)' }}>
+                    <Check className="w-3 h-3" style={{ color: '#052e14' }} />
+                  </motion.div>
+                ) : (
+                  <motion.div key="pts" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <PointsPill value={row.points} trigger={revealed} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            } />
+          </CardShell>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 87. Elastic drag-resistance visual (rubber-band effect) when trying to drag past the list's boundary
+function V87() {
+  return (
+    <motion.div drag="y" dragConstraints={{ top: 0, bottom: 0 }} dragElastic={0.35} whileDrag={{ cursor: 'grabbing' }}
+      style={{ width: 220, display: 'flex', flexDirection: 'column', gap: 8, background: 'rgba(255,255,255,0.02)', borderRadius: 14, padding: 6 }}>
+      <RevealRows rows={MOCK3}>{(row, i, revealed) => <CardShell row={row}><IRow row={row} revealed={revealed} /></CardShell>}</RevealRows>
+      <div style={{ textAlign: 'center', color: '#475569', fontSize: 9 }}>גררו למעלה/למטה כדי להרגיש את ה-rubber band</div>
+    </motion.div>
+  );
+}
+
+// 88. Rapid repeated taps make the top card "wobble" like jello — a playful easter egg, capped so it doesn't get silly
+function V88() {
+  const [tapCount, setTapCount] = useState(0);
+  const wobble = Math.min(tapCount, 5);
+  const onTap = () => setTapCount((c) => Math.min(c + 1, 5));
+  useEffect(() => {
+    if (tapCount === 0) return;
+    const t = setTimeout(() => setTapCount(0), 900);
+    return () => clearTimeout(t);
+  }, [tapCount]);
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <motion.div onClick={row.rank === 1 ? onTap : undefined}
+          animate={row.rank === 1 && wobble > 0 ? { rotate: [0, -wobble * 2, wobble * 1.6, -wobble, wobble * 0.6, 0], scale: [1, 1 + wobble * 0.01, 1] } : {}}
+          transition={{ duration: 0.5 }} style={{ cursor: row.rank === 1 ? 'pointer' : 'default' }}>
+          <CardShell row={row}><IRow row={row} revealed={revealed} /></CardShell>
+          {row.rank === 1 && <div style={{ textAlign: 'center', fontSize: 8, color: '#475569', marginTop: 2 }}>לחצו כמה פעמים ברצף 😄</div>}
+        </motion.div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 89. A shimmering skeleton loading state morphs smoothly into the real revealed card (not an abrupt swap)
+function V89() {
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setLoaded(true), 1100); return () => clearTimeout(t); }, []);
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative', width: 220, height: 46 }}>
+          <AnimatePresence>
+            {!loaded && (
+              <motion.div exit={{ opacity: 0 }} transition={{ duration: 0.4 }} style={{ position: 'absolute', inset: 0, borderRadius: 14, overflow: 'hidden', background: 'rgba(255,255,255,0.05)' }}>
+                <motion.div animate={{ x: ['-100%', '100%'] }} transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+                  style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)' }} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: loaded ? 1 : 0 }} transition={{ duration: 0.5 }} style={{ position: 'absolute', inset: 0 }}>
+            <CardShell row={row}><IRow row={row} revealed={revealed && loaded} /></CardShell>
+          </motion.div>
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
+// 90. Tapping-and-releasing shows a brief "held" compressed state before releasing back, like a real button's press-travel
+function V90() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <motion.div whileTap={{ scale: 0.95, y: 2 }} transition={{ duration: 0.12 }}
+          style={{ width: 220, borderRadius: 14, border: `2px solid ${RANK_BORDER(row.rank)}`, background: RANK_BG(row.rank), cursor: 'pointer' }}>
+          <IRow row={row} revealed={revealed} />
+        </motion.div>
+      )}
+    </RevealRows>
+  );
+}
+
+// ================= Group J — Advanced craft details (91-100) =================
+
+// 91. Adaptive contrast — card visually adjusts its glow/text intensity based on a simulated "ambient brightness" toggle
+function V91() {
+  const [bright, setBright] = useState(false);
+  return (
+    <div style={{ width: 220, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <RevealRows rows={MOCK3}>
+        {(row, i, revealed) => (
+          <div style={{ borderRadius: 14, border: `2px solid ${RANK_BORDER(row.rank)}`, background: bright ? 'rgba(255,255,255,0.9)' : RANK_BG(row.rank), boxShadow: bright ? `0 0 4px ${RANK_BORDER(row.rank)}55` : `0 0 16px ${RANK_BORDER(row.rank)}55`, transition: 'background 0.35s, box-shadow 0.35s' }}>
+            <div style={{ padding: '9px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 14, fontWeight: 900, color: bright ? RANK_BORDER(row.rank) : RANK_COLOR(row.rank) }}>{row.rank}</span>
+              <div style={{ flex: 1, minWidth: 0 }}><p className="truncate" style={{ color: bright ? '#111827' : '#e2e8f0', fontSize: 13, fontWeight: 600 }}>{row.name}</p></div>
+              <PointsPill value={row.points} trigger={revealed} color={bright ? '#166534' : '#4ade80'} />
+            </div>
+          </div>
+        )}
+      </RevealRows>
+      <button onClick={() => setBright((b) => !b)} style={{ alignSelf: 'center', display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: '#94a3b8', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 999, padding: '4px 12px', cursor: 'pointer' }}>
+        {bright ? <Sun className="w-3 h-3" /> : <Moon className="w-3 h-3" />} {bright ? 'בהיר' : 'כהה'}
+      </button>
+    </div>
+  );
+}
+
+function AvatarParallaxRow({ row, revealed }) {
+  const ref = useRef(null);
+  const rx = useMotionValue(0);
+  const ry = useMotionValue(0);
+  const srx = useSpring(rx, { stiffness: 260, damping: 20 });
+  const sry = useSpring(ry, { stiffness: 260, damping: 20 });
+  const avX = useTransform(sry, (v) => -v * 1.2);
+  const avY = useTransform(srx, (v) => v * 1.2);
+  const update = (clientX, clientY) => {
+    const el = ref.current; if (!el) return;
+    const rect = el.getBoundingClientRect();
+    ry.set(((clientX - rect.left) / rect.width - 0.5) * 14);
+    rx.set(-((clientY - rect.top) / rect.height - 0.5) * 14);
+  };
+  const reset = () => { rx.set(0); ry.set(0); };
+  return (
+    <motion.div ref={ref}
+      onMouseMove={(e) => update(e.clientX, e.clientY)} onMouseLeave={reset}
+      onTouchMove={(e) => { const t = e.touches[0]; if (t) update(t.clientX, t.clientY); }} onTouchEnd={reset}
+      style={{ rotateX: srx, rotateY: sry, transformPerspective: 600, width: 220, borderRadius: 14, border: `2px solid ${RANK_BORDER(row.rank)}`, background: RANK_BG(row.rank), padding: '9px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+      <motion.div style={{ x: avX, y: avY, width: 26, height: 26, borderRadius: '50%', background: RANK_BORDER(row.rank), display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: 11, flexShrink: 0 }}>{row.name[0]}</motion.div>
+      <div style={{ flex: 1, minWidth: 0 }}><p className="truncate" style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600 }}>{row.name}</p></div>
+      <PointsPill value={row.points} trigger={revealed} />
+    </motion.div>
+  );
+}
+// 92. Micro-parallax avatar — the avatar shifts slightly opposite to any card tilt/hover motion, adding depth (touch: follows the finger)
+function V92() {
+  return <RevealRows rows={MOCK3}>{(row, i, revealed) => <AvatarParallaxRow row={row} revealed={revealed} />}</RevealRows>;
+}
+
+// 93. Kinetic typography — the player name's letters spring in individually with a slight stagger and overshoot on reveal
+function V93() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <CardShell row={row}>
+          <div style={{ padding: '9px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 14, fontWeight: 900, color: RANK_COLOR(row.rank), width: 18, flexShrink: 0 }}>{row.rank}</span>
+            <div style={{ flex: 1, minWidth: 0, display: 'flex' }}>
+              {row.name.split('').map((ch, ci) => (
+                <motion.span key={ci} initial={{ opacity: 0, y: 10, scale: 0.5 }} animate={revealed ? { opacity: 1, y: 0, scale: 1 } : {}} transition={{ delay: ci * 0.035, type: 'spring', stiffness: 400, damping: 12 }}
+                  style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600, display: 'inline-block', whiteSpace: 'pre' }}>{ch}</motion.span>
+              ))}
+            </div>
+            <PointsPill value={row.points} trigger={revealed} />
+          </div>
+        </CardShell>
+      )}
+    </RevealRows>
+  );
+}
+
+// 94. Dynamic accent color — the card's accent color is sampled/derived from a mock "avatar dominant color" per row, distinct per person
+const AVATAR_ACCENTS = { 'דניאל כהן': '#f97316', 'נועה לוי': '#ec4899', 'איתי מזרחי': '#22d3ee', 'שירה בן דוד': '#a78bfa' };
+function V94() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        const accent = AVATAR_ACCENTS[row.name] || '#7cadee';
+        return (
+          <div style={{ width: 220, borderRadius: 14, border: `2px solid ${accent}`, background: `linear-gradient(135deg, ${accent}22, ${accent}0d)`, padding: '9px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 24, height: 24, borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: 10, flexShrink: 0 }}>{row.name[0]}</div>
+            <div style={{ flex: 1, minWidth: 0 }}><p className="truncate" style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600 }}>{row.name}</p></div>
+            <PointsPill value={row.points} trigger={revealed} color={accent} />
+          </div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 95. Elegant smart truncation — an overflowing tag list truncates with an expandable "…ועוד N" footer that expands smoothly
+function V95() {
+  const EXTRA = { 1: ["פרמייר ליג", "צ'מפיונס ליג", 'גביע המדינה'], 2: ['פרמייר ליג', 'קונפרנס ליג'], 3: ["צ'מפיונס ליג"] };
+  const [open, setOpen] = useState({});
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        const extra = EXTRA[row.rank] || [];
+        const isOpen = !!open[row.rank];
+        return (
+          <CardShell row={row}>
+            <IRow row={row} revealed={revealed} />
+            {extra.length > 0 && (
+              <div style={{ padding: '0 14px 8px' }}>
+                {isOpen ? (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                    {extra.map((tag) => <span key={tag} style={{ fontSize: 8.5, color: '#94a3b8', background: 'rgba(255,255,255,0.06)', borderRadius: 6, padding: '2px 6px' }}>{tag}</span>)}
+                  </motion.div>
+                ) : (
+                  <button onClick={() => setOpen((p) => ({ ...p, [row.rank]: true }))} style={{ fontSize: 9, color: RANK_COLOR(row.rank), background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                    …ועוד {extra.length}
+                  </button>
+                )}
+              </div>
+            )}
+          </CardShell>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 96. A polished empty-state / loading skeleton with a subtle rotating tip or light joke text while "loading" (demo-only mock delay)
+function V96() {
+  const tips = ['טוען נתונים מהיציע האחורי…', 'סופר גולים... שוב...', 'מיישר את המקבילית 😅', 'כמעט מוכנים!'];
+  const [tipIdx, setTipIdx] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => {
+    const id = setInterval(() => setTipIdx((t) => (t + 1) % tips.length), 700);
+    const done = setTimeout(() => { setLoaded(true); clearInterval(id); }, 2200);
+    return () => { clearInterval(id); clearTimeout(done); };
+  }, []);
+  return (
+    <div style={{ width: 220, minHeight: 120, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <AnimatePresence mode="wait">
+        {!loaded ? (
+          <motion.div key="loading" exit={{ opacity: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[0, 1, 2].map((idx) => (
+              <div key={idx} style={{ height: 42, borderRadius: 12, background: 'rgba(255,255,255,0.05)', overflow: 'hidden', position: 'relative' }}>
+                <motion.div animate={{ x: ['-100%', '100%'] }} transition={{ duration: 1.1, repeat: Infinity, ease: 'linear', delay: idx * 0.1 }}
+                  style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)' }} />
+              </div>
+            ))}
+            <AnimatePresence mode="wait">
+              <motion.p key={tipIdx} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.25 }}
+                style={{ textAlign: 'center', color: '#64748b', fontSize: 9.5 }}>{tips[tipIdx]}</motion.p>
+            </AnimatePresence>
+          </motion.div>
+        ) : (
+          <motion.div key="loaded" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <RevealRows rows={MOCK3}>{(row, i, revealed) => <CardShell row={row}><IRow row={row} revealed={revealed} /></CardShell>}</RevealRows>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// 97. Adaptive density — the card compresses to a denser single-line layout during fast scroll (simulate via a scroll-speed toggle)
+function V97() {
+  const [dense, setDense] = useState(false);
+  return (
+    <div style={{ width: 220, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <RevealRows rows={MOCK3} gap={dense ? 4 : 8}>
+        {(row, i, revealed) => (
+          <motion.div layout transition={{ duration: 0.3 }} style={{ width: 220, borderRadius: dense ? 8 : 14, border: `${dense ? 1 : 2}px solid ${RANK_BORDER(row.rank)}`, background: RANK_BG(row.rank), overflow: 'hidden' }}>
+            <motion.div layout style={{ padding: dense ? '3px 10px' : '9px 14px', display: 'flex', alignItems: 'center', gap: dense ? 6 : 10 }}>
+              <span style={{ fontSize: dense ? 10 : 14, fontWeight: 900, color: RANK_COLOR(row.rank), width: dense ? 12 : 18, flexShrink: 0 }}>{row.rank}</span>
+              <div style={{ flex: 1, minWidth: 0 }}><p className="truncate" style={{ color: '#e2e8f0', fontSize: dense ? 10.5 : 13, fontWeight: 600 }}>{row.name}</p></div>
+              <PointsPill value={row.points} trigger={revealed} size={dense ? 9 : 12} />
+            </motion.div>
+          </motion.div>
+        )}
+      </RevealRows>
+      <button onClick={() => setDense((d) => !d)} style={{ alignSelf: 'center', fontSize: 10, color: '#94a3b8', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 999, padding: '4px 12px', cursor: 'pointer' }}>
+        {dense ? 'מצב רגיל' : 'דמה גלילה מהירה'}
+      </button>
+    </div>
+  );
+}
+
+// 98. A crisp animated focus-ring for keyboard navigation (Tab to focus a row), styled in the row's rank color — genuinely keyboard-operable
+function V98() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => {
+        const cls = `v98-r${row.rank}`;
+        return (
+          <div tabIndex={0} role="button" className={cls} style={{ borderRadius: 14, outline: 'none' }}>
+            <style>{`.${cls}:focus-visible { box-shadow: 0 0 0 3px ${RANK_BORDER(row.rank)}, 0 0 16px ${RANK_BORDER(row.rank)}aa; border-radius: 14px; }`}</style>
+            <CardShell row={row}><IRow row={row} revealed={revealed} /></CardShell>
+          </div>
+        );
+      }}
+    </RevealRows>
+  );
+}
+
+// 99. A prefers-reduced-motion-aware variant that visibly shows both states via a toggle — full motion vs. the graceful reduced-motion fallback
+function V99() {
+  const [reduced, setReduced] = useState(false);
+  return (
+    <div style={{ width: 220, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <RevealRows key={String(reduced)} rows={MOCK3}
+        initial={reduced ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.9 }}
+        animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+        transitionFor={(i) => reduced ? { delay: 0, duration: 0.2 } : { delay: i * 0.15, type: 'spring', stiffness: 300, damping: 16 }}>
+        {(row, i, revealed) => <CardShell row={row}><IRow row={row} revealed={revealed} /></CardShell>}
+      </RevealRows>
+      <button onClick={() => setReduced((r) => !r)} style={{ alignSelf: 'center', fontSize: 10, color: '#94a3b8', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 999, padding: '4px 12px', cursor: 'pointer' }}>
+        {reduced ? 'תנועה מלאה' : 'prefers-reduced-motion'}
+      </button>
+    </div>
+  );
+}
+
+// 100. A one-of-a-kind "signature" flourish reserved for rank #1 only — an animated medal-mint wax-seal stamp, distinct from other rank treatments
+function V100() {
+  return (
+    <RevealRows rows={MOCK3}>
+      {(row, i, revealed) => (
+        <div style={{ position: 'relative' }}>
+          <CardShell row={row}><IRow row={row} revealed={revealed} /></CardShell>
+          {row.rank === 1 && revealed && (
+            <motion.div initial={{ scale: 2.2, opacity: 0, rotate: -18 }} animate={{ scale: 1, opacity: 1, rotate: -12 }} transition={{ type: 'spring', stiffness: 220, damping: 14, delay: 0.15 }}
+              style={{ position: 'absolute', right: -10, top: -10, width: 34, height: 34, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%, #fde68a, #ca8a04 70%)', border: '2px solid #92400e', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(0,0,0,0.5)', zIndex: 5 }}>
+              <Award className="w-4 h-4" style={{ color: '#78350f' }} />
+            </motion.div>
+          )}
+        </div>
+      )}
+    </RevealRows>
+  );
+}
+
 const GROUPS = [
   { title: 'קבוצה A — צורות גיאומטריות לכרטיס', items: [
     ['1. הנוכחי (בסיס להשוואה)', 'המקבילית המוטה המקורית מ-LeaderboardPanel: מספר רפאים, ShineBorder ומסגרת צבועה לפי דרגה', V1],
@@ -1081,14 +2521,74 @@ const GROUPS = [
     ['49. הופעה איבר-איבר', 'אווטאר, אז שם, אז ניקוד — כל אחד בעיכוב משלו', V49],
     ['50. התיישבות מגנטית', 'overshoot בשני הצירים ואז התייצבות רכה', V50],
   ]},
+  { title: 'קבוצה F — אינטראקציות מגע ומחוות', items: [
+    ['51. אקורדיון בהקשה', 'הקשה על שורה פותחת אותה עם פירוט סטטיסטי, הקשה נוספת סוגרת', V51],
+    ['52. תפריט רדיאלי בלחיצה ארוכה', 'החזקה ארוכה פותחת תפריט פעולות מהיר סביב השורה', V52],
+    ['53. פעולות בהחלקה שמאלה', 'סגנון iOS — החלקה חושפת כפתורי פעולה מאחורי השורה', V53],
+    ['54. עידוד בהקשה כפולה', 'הקשה כפולה מפעילה פרץ לב ומעלה מונה עידוד', V54],
+    ['55. היפוך כרטיס בהקשה על האווטאר', 'הקשה על האווטאר הופכת את הכרטיס (rotateY) לצד סטטיסטי', V55],
+    ['56. סידור מחדש בגרירה', 'אחיזה וגרירה של שורה מסדרת מחדש עם הצמדה לחריץ', V56],
+    ['57. משיכה לרענון', 'משיכה מטה מעבר לסף מפעילה טעינה וערבוב נתונים', V57],
+    ['58. תצוגה מקדימה בלחיצה ממושכת', 'החזקה מציגה חלון פרופיל קצר, שחרור סוגר אותו', V58],
+    ['59. השוואת שני שחקנים', 'בוחרים שתי שורות בהקשה ומקבלים תצוגת השוואה זו לצד זו', V59],
+    ['60. מעקב בהחלקה ימינה', 'החלקה ימינה מוסיפה סימן וי בקפיץ, החלקה נוספת מבטלת', V60],
+  ]},
+  { title: 'קבוצה G — פולחן מצביע/ריחוף (עם נפילה חלופית למגע)', items: [
+    ['61. הטיה תלת-ממדית בריחוף', 'הכרטיס נוטה בפרספקטיבה בעקבות העכבר, תחושת קלף הולוגרפי (במגע: עוקב אחרי האצבע)', V61],
+    ['62. זרקור מגנטי עוקב עכבר', 'זוהר עדין נע מתחת לעכבר בתוך הכרטיס (במגע: עוקב אחרי האצבע)', V62],
+    ['63. ניצוצות בעקבות הסמן', 'חלקיקי נצנוץ נגררים אחרי הסמן מעל הכרטיס (במגע: בגרירה)', V63],
+    ['64. הרמה לפי קרבה לסמן', 'הכרטיס עולה וצילו מעמיק ככל שהעכבר מתקרב (במגע: בלחיצה)', V64],
+    ['65. אור נע היקפי בריחוף', 'קו אור רץ סביב מסגרת הכרטיס ברציפות בזמן ריחוף (במגע: בהחזקה)', V65],
+    ['66. פרלקס פנימי', 'שכבות רקע בתוך הכרטיס נעות הפוך למיקום הסמן (במגע: בגרירה)', V66],
+    ['67. טולטיפ סטטיסטי בריחוף', 'ריחוף חושף בועת סטטיסטיקה קצרה מעל הכרטיס (במגע: הקשה מחליפה מצב)', V67],
+    ['68. אדווה מנקודת ההקשה', 'אפקט ripple של מטריאל דיזיין שמתפשט בדיוק מנקודת הלחיצה', V68],
+    ['69. זוהר לפי קרבת סמן', 'הזוהר של הכרטיס מתחזק ככל שהעכבר מתקרב, עוד לפני ריחוף ישיר (במגע: בלחיצה)', V69],
+    ['70. מספר הרפאים קופץ קדימה', 'ריחוף מגדיל את מספר הרפאים בתלת-ממד מדומה עם צל מעמיק (במגע: בלחיצה)', V70],
+  ]},
+  { title: 'קבוצה H — נתונים חיים ודינמיים', items: [
+    ['71. "+X" צף בהקשה', 'הקשה על שורה מדמה עליית ניקוד — טקסט צף דוהה למעלה', V71],
+    ['72. חץ שינוי דירוג', 'כפתור מדמה ערבוב דירוג; חץ עולה/יורד נכנס באנימציה לכל שורה שזזה', V72],
+    ['73. טבעת פעימה מסתובבת', 'טבעת דופק רצה אוטומטית על השורה ש"קלעה" ברגע זה', V73],
+    ['74. להבת רצף גדלה', 'הקשה מגדילה מונה רצף חיזויים מדומה ואת אייקון הלהבה שלו', V74],
+    ['75. שובל רפאים דועך', 'כפתור מדמה החלפת מקומות; שובל דועך מסמן את כיוון התנועה', V75],
+    ['76. "N צופים" בזמן אמת', 'מונה צפייה קטן מתעדכן ומונפש כל כמה שניות', V76],
+    ['77. פרץ קונפטי למקום ראשון', 'בכל הצגה מחדש, השורה במקום 1 מקבלת פרץ חלקיקים אוטומטי', V77],
+    ['78. הבהוב ספרה שהשתנתה', 'הקשה מעדכנת ניקוד; רק הספרות שהשתנו מהבהבות לפני שמתייצבות', V78],
+    ['79. קו "מירוץ צמוד"', 'קו מחבר פועם בין שתי שורות עם פער ניקוד קטן', V79],
+    ['80. סרגל תוצאות גולש', 'רצועת חדשות קטנה בתוך הכרטיס גוללת תוצאות משחקים אחרונים', V80],
+  ]},
+  { title: 'קבוצה I — משוב מישושי מדומה', items: [
+    ['81. "תבום" בלחיצה', 'כל הקשה מקבלת כיווץ קפיצי קצר, כמו לחיצה על כפתור פיזי', V81],
+    ['82. רעידה ואדום לחיזוי שגוי', 'הקשה מדמה חיזוי שגוי — רעד קצר וברק אדום', V82],
+    ['83. מטבע נופל בזכיית נקודות', 'הקשה מוסיפה ניקוד עם אנימציית מטבע נופל וקופץ', V83],
+    ['84. נשימה עדינה למשתמש הנוכחי', 'פעימת קנה מידה איטית שומרת על השורה שלך בולטת בקלות', V84],
+    ['85. מיון מחדש עם הצמדה', 'כפתור ממיין מחדש; השורות קופצות לחריץ החדש בקפיץ, לא מקפיצות פתאום', V85],
+    ['86. הבזק הצלחה במקום מספר', 'הקשה מחליפה רגעית את הניקוד בהבזק ירוק וסימן וי', V86],
+    ['87. התנגדות גומייה בקצה', 'גרירה מעבר לקצה הרשימה נמתחת כמו גומייה וקופצת חזרה', V87],
+    ['88. רעידת ג׳לי בהקשות מהירות', 'הקשות חוזרות על השורה הראשונה גורמות לה "לרעוד" — מוגבל בעוצמה', V88],
+    ['89. שלד טעינה נוצץ', 'שלד מנצנץ עובר בצורה חלקה לכרטיס האמיתי כשהטעינה מסתיימת', V89],
+    ['90. מסע לחיצה של כפתור אמיתי', 'לחיצה והחזקה מציגה מצב "לחוץ" דחוס לפני שהכרטיס משתחרר בחזרה', V90],
+  ]},
+  { title: 'קבוצה J — פרטי גימור מתקדמים', items: [
+    ['91. ניגודיות מסתגלת', 'מתג בהיר/כהה מדגים איך הזוהר והטקסט מתאזנים לתאורת סביבה מדומה', V91],
+    ['92. פרלקס עדין באווטאר', 'האווטאר זז מעט הפוך לכל הטיה של הכרטיס, מוסיף עומק (במגע: עוקב אחרי האצבע)', V92],
+    ['93. טיפוגרפיה קינטית', 'אותיות השם קופצות פנימה אחת-אחת עם overshoot קליל', V93],
+    ['94. גוון אישי לכל שחקן', 'צבע ההדגשה נגזר מ"צבע אווטאר דומיננטי" מדומה לכל שורה בנפרד', V94],
+    ['95. קיצור חכם עם "ועוד"', 'תגיות עודפות מתקצרות לכפתור "…ועוד N" שנפתח בעדינות', V95],
+    ['96. שלד טעינה עם טיפ מתחלף', 'טקסט טיפ/בדיחה קליל מתחלף בזמן טעינה מדומה', V96],
+    ['97. צפיפות מסתגלת לגלילה', 'מתג מדמה גלילה מהירה — הכרטיס מצטמצם לשורה דחוסה ומתרחב בחזרה', V97],
+    ['98. טבעת פוקוס למקלדת', 'Tab מדגיש שורה בטבעת פוקוס בצבע הדרגה — נגישות אמיתית במקלדת', V98],
+    ['99. מודע ל-prefers-reduced-motion', 'מתג מציג זה לצד זה תנועה מלאה מול חלופת תנועה מופחתת', V99],
+    ['100. חותם זהב למקום ראשון', 'אפקט חתימה ייחודי — מטבע/חותם שנוחת רק על מקום 1', V100],
+  ]},
 ];
 
 export default function AdminLeaderboardCardDemo() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-bold text-white mb-1">דמו — 50 עיצובים לכרטיס משתתף בלוח התוצאות</h2>
-        <p className="text-slate-500 text-sm">כולן חיות עם כפתור "הצג שוב". דאטה קבועה לדוגמה. כלי דמו בלבד — לא משפיע על LeaderboardPanel.jsx.</p>
+        <h2 className="text-xl font-bold text-white mb-1">דמו — 100 עיצובים לכרטיס משתתף בלוח התוצאות</h2>
+        <p className="text-slate-500 text-sm">1-50: וריאציות צורה/פריסה/חומר/תנועה. 51-100: אינטראקטיביות אמיתית וגימור עדין — גרירה, ריחוף, לחיצה ארוכה ועוד. כולן חיות עם כפתור "הצג שוב". דאטה קבועה לדוגמה. כלי דמו בלבד — לא משפיע על LeaderboardPanel.jsx.</p>
       </div>
       {GROUPS.map((group) => (
         <div key={group.title} className="space-y-3">

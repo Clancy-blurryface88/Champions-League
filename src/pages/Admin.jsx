@@ -96,7 +96,7 @@ export default function Admin() {
     { id: 'reset',        label: 'Reset Center',    icon: RotateCcw },
     { id: 'league-override',   label: '🔀 סידור טבלה',          icon: BarChart3 },
     { id: 'playoff-override',  label: '🏆 פלייאוף',              icon: Trophy },
-    { id: 'leaderboard-card-demo', label: '50 עיצובי כרטיס משתתף', icon: IdCard },
+    { id: 'leaderboard-card-demo', label: '100 עיצובי כרטיס משתתף', icon: IdCard },
   ];
 
   return (
