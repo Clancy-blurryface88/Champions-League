@@ -9,7 +9,7 @@ import { calcStandings } from "@/utils/standings";
 import { loadLeagueTableOverride, applyOverride } from "@/utils/standingsOverride";
 import { STAGES, DIRECT_R16_CUTOFF, PLAYOFF_CUTOFF } from "@/config/tournament";
 
-export default function LeagueTableModal({ onClose, highlightTeams = [] }) {
+export default function LeagueTableModal({ onClose, highlightTeams = {} }) {
   const [matches, setMatches] = useState([]);
   const [override, setOverride] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +37,7 @@ export default function LeagueTableModal({ onClose, highlightTeams = [] }) {
 
   // Scroll the first highlighted team's row into view once the table has data
   useEffect(() => {
-    if (!loading && highlightTeams.length > 0 && highlightRowRef.current) {
+    if (!loading && (highlightTeams.home || highlightTeams.away) && highlightRowRef.current) {
       highlightRowRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }, [loading, highlightTeams]);
@@ -113,17 +113,21 @@ export default function LeagueTableModal({ onClose, highlightTeams = [] }) {
                     <tbody>
                       {standings.map((team, i) => {
                         const pos = i + 1;
-                        const isHighlighted = highlightTeams.includes(team.name);
+                        const isHome = team.name === highlightTeams.home;
+                        const isAway = team.name === highlightTeams.away;
+                        const isHighlighted = isHome || isAway;
                         const assignRef = isHighlighted && !highlightRowAssigned;
                         if (assignRef) highlightRowAssigned = true;
+                        const highlightColor = isHome ? 'rgba(52,211,153,0.7)' : 'rgba(9,122,220,0.7)';
+                        const highlightBg = isHome ? 'rgba(52,211,153,0.10)' : 'rgba(9,122,220,0.10)';
                         return (
                           <tr
                             key={team.name}
                             ref={assignRef ? highlightRowRef : null}
                             className={`border-t border-slate-700/50 ${rowClass(pos)}`}
                             style={isHighlighted ? {
-                              boxShadow: 'inset 0 0 0 2px rgba(56,189,248,0.7)',
-                              background: 'rgba(56,189,248,0.10)',
+                              boxShadow: `inset 0 0 0 2px ${highlightColor}`,
+                              background: highlightBg,
                             } : undefined}
                           >
                             <td className="px-1.5 py-2.5 text-xs">
@@ -131,7 +135,6 @@ export default function LeagueTableModal({ onClose, highlightTeams = [] }) {
                             </td>
                             <td className="px-1.5 py-2.5">
                               <div className="flex items-center gap-2">
-                                {isHighlighted && <span className="text-sky-400 text-xs flex-shrink-0">⚽</span>}
                                 <TeamFlag logo={team.logo} name={team.name} className="w-6 h-6" />
                                 <span className="text-white text-xs font-medium truncate max-w-[100px]">{team.name}</span>
                               </div>

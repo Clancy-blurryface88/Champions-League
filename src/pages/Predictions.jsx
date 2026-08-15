@@ -144,7 +144,7 @@ export default function Predictions() {
   // NEW: Add state for predictions modal
   const [showPredictionsModal, setShowPredictionsModal] = useState(false);
   const [showLeagueTable, setShowLeagueTable] = useState(false);
-  const [leagueTableHighlight, setLeagueTableHighlight] = useState([]);
+  const [leagueTableHighlight, setLeagueTableHighlight] = useState({});
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [selectedMatchForPredictions, setSelectedMatchForPredictions] = useState(null);
   const [briefs, setBriefs] = useState({});
@@ -965,7 +965,7 @@ export default function Predictions() {
                     {match.stage && (
                       <div className="flex justify-center mb-4">
                         <button
-                          onClick={() => { setLeagueTableHighlight([match.team_a, match.team_b]); setShowLeagueTable(true); }}
+                          onClick={() => { setLeagueTableHighlight({ home: match.team_a, away: match.team_b }); setShowLeagueTable(true); }}
                           className="relative overflow-hidden text-sm font-semibold text-yellow-400 border border-yellow-400/40 px-5 py-1 rounded-full hover:border-yellow-400/70 transition-colors cursor-pointer"
                           style={{
                             background: 'rgba(255,255,255,0.07)',
