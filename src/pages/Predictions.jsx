@@ -739,7 +739,7 @@ export default function Predictions() {
               borderBottom: '1px solid rgba(255,255,255,0.07)',
             }}
           >
-          <div ref={dateStripRef} className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
+          <div ref={dateStripRef} className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 py-2 -my-2">
             {sortedDateKeys.map(dateKey => {
               const isActive = activeDateKey === dateKey;
               const isToday  = moment(dateKey).isSame(moment(), 'day');

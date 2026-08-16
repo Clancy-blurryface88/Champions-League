@@ -64,12 +64,13 @@ function WinRow({ teamA, teamB, probs }) {
   ];
   return (
     <div
-      className="flex w-full rounded-xl overflow-hidden"
+      className="w-full rounded-xl"
       style={{
         border: '1px solid rgba(255,255,255,0.75)',
         boxShadow: '0 0 8px rgba(255,255,255,0.55), 0 0 18px rgba(255,255,255,0.30), inset 0 0 10px rgba(255,255,255,0.12)',
       }}
     >
+      <div className="flex w-full rounded-xl overflow-hidden">
       {cols.map(({ label, p, delay }, i) => {
         const count = useCountUp(p, delay); // eslint-disable-line react-hooks/rules-of-hooks
         return (
@@ -83,6 +84,7 @@ function WinRow({ teamA, teamB, probs }) {
           </div>
         );
       })}
+      </div>
     </div>
   );
 }
