@@ -1167,36 +1167,31 @@ export default function Predictions() {
                       )}
                     </AnimatePresence>
 
-                    {/* Footer bar — deliberately simple: two plain bordered buttons,
-                        each carrying its own solid color end-to-end (background,
-                        border, glow). No shared gradient border, no clip-path, no
-                        mask, no skewed hairline — those kept breaking in ways that
-                        varied by browser. Plain CSS that can't render "broken." */}
-                    <div className="-mx-5 -mb-5 mt-3 flex h-12 overflow-hidden rounded-b-xl">
+                    {/* Footer bar — exact demo #7 geometry (clip-path chevron split),
+                        but with opaque gradients and no backdrop-filter. The earlier
+                        rendering bugs came from combining clip-path with
+                        backdrop-filter blur/saturate on semi-transparent fills — the
+                        demo itself never used backdrop-filter, only solid gradients,
+                        which is why it never broke there. */}
+                    <div className="-mx-5 -mb-5 mt-3 relative overflow-hidden rounded-b-xl" style={{ height: 48 }}>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
-                        className="flex-1 flex items-center justify-center text-xs font-bold text-white transition-colors"
+                        className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white transition-colors"
                         style={{
-                          background: 'rgba(59,130,246,0.18)',
-                          backdropFilter: 'blur(10px) saturate(150%)',
-                          WebkitBackdropFilter: 'blur(10px) saturate(150%)',
-                          border: '1px solid rgba(59,130,246,0.55)',
-                          borderBottomLeftRadius: 12,
-                          boxShadow: '0 0 8px rgba(59,130,246,0.35)',
+                          clipPath: 'polygon(0 0, 58% 0, 42% 100%, 0 100%)',
+                          background: 'linear-gradient(135deg, #93c5fd, #3b82f6)',
+                          paddingInlineEnd: '30%',
                         }}
                       >
                         1 X 2
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
-                        className="flex-1 flex items-center justify-center text-xs font-bold text-white transition-colors"
+                        className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white transition-colors"
                         style={{
-                          background: 'rgba(34,197,94,0.18)',
-                          backdropFilter: 'blur(10px) saturate(150%)',
-                          WebkitBackdropFilter: 'blur(10px) saturate(150%)',
-                          border: '1px solid rgba(34,197,94,0.55)',
-                          borderBottomRightRadius: 12,
-                          boxShadow: '0 0 8px rgba(34,197,94,0.35)',
+                          clipPath: 'polygon(58% 0, 100% 0, 100% 100%, 42% 100%)',
+                          background: 'linear-gradient(135deg, #6ee7b7, #22c55e)',
+                          paddingInlineStart: '30%',
                         }}
                       >
                         ניחושים
