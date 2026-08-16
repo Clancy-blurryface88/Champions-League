@@ -731,7 +731,7 @@ export default function Predictions() {
         {/* Week Strip */}
         {expandedDates !== null && sortedDateKeys.length > 0 && (
           <div
-            className="sticky top-[76px] z-20 -mx-4 px-4 pt-2 pb-2 mb-2"
+            className="sticky top-[65px] z-20 -mx-4 px-4 pt-2 pb-2 mb-2"
             style={{
               background: 'rgba(5,10,20,0.35)',
               backdropFilter: 'blur(28px) saturate(1.6)',
