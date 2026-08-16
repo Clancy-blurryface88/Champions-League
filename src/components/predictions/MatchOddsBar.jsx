@@ -75,7 +75,7 @@ function WinRow({ teamA, teamB, probs }) {
             className="flex-1 flex flex-col items-center py-1.5"
             style={{ borderRight: i < 2 ? '1px solid rgba(255,255,255,0.08)' : 'none' }}
           >
-            <span className="text-[9px] text-white/70 text-center px-1 w-full truncate leading-tight">{label}</span>
+            <span className="text-[9px] text-white/95 text-center px-1 w-full truncate leading-tight">{label}</span>
             <span className="text-sm font-bold text-white leading-none">{count}%</span>
           </div>
         );
