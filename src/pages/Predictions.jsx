@@ -1180,7 +1180,7 @@ export default function Predictions() {
                         style={{
                           clipPath: 'polygon(0 0, 58% 0, 42% 100%, 0 100%)',
                           background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                          paddingInlineEnd: '30%',
+                          paddingInlineEnd: '38%',
                         }}
                       >
                         1 X 2
@@ -1191,7 +1191,7 @@ export default function Predictions() {
                         style={{
                           clipPath: 'polygon(58% 0, 100% 0, 100% 100%, 42% 100%)',
                           background: 'linear-gradient(135deg, #22c55e, #15803d)',
-                          paddingInlineStart: '30%',
+                          paddingInlineStart: '38%',
                         }}
                       >
                         ניחושים
