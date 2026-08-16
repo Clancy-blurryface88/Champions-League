@@ -1179,7 +1179,7 @@ export default function Predictions() {
                         className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white transition-colors"
                         style={{
                           clipPath: 'polygon(0 0, 58% 0, 42% 100%, 0 100%)',
-                          background: 'linear-gradient(135deg, #93c5fd, #3b82f6)',
+                          background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
                           paddingInlineEnd: '30%',
                         }}
                       >
@@ -1190,7 +1190,7 @@ export default function Predictions() {
                         className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white transition-colors"
                         style={{
                           clipPath: 'polygon(58% 0, 100% 0, 100% 100%, 42% 100%)',
-                          background: 'linear-gradient(135deg, #6ee7b7, #22c55e)',
+                          background: 'linear-gradient(135deg, #22c55e, #15803d)',
                           paddingInlineStart: '30%',
                         }}
                       >
