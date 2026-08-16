@@ -67,7 +67,7 @@ function WinRow({ teamA, teamB, probs }) {
       className="w-full rounded-xl"
       style={{
         border: '1px solid rgba(255,255,255,0.75)',
-        boxShadow: '0 0 8px rgba(255,255,255,0.55), 0 0 18px rgba(255,255,255,0.30), inset 0 0 10px rgba(255,255,255,0.12)',
+        boxShadow: '0 0 12px rgba(255,255,255,0.45)',
       }}
     >
       <div className="flex w-full rounded-xl overflow-hidden">

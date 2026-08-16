@@ -765,7 +765,7 @@ export default function Predictions() {
                       ? '1.5px solid #3b9eff'
                       : '1px solid rgba(255,255,255,0.08)',
                     boxShadow: isActive
-                      ? '0 0 8px rgba(59,158,255,0.65), 0 0 18px rgba(59,158,255,0.4), inset 0 0 8px rgba(59,158,255,0.15)'
+                      ? '0 0 12px rgba(59,158,255,0.55)'
                       : 'none',
                     minWidth: 84,
                   }}
