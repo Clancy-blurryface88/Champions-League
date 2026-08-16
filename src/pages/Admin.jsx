@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, IdCard, PanelBottom } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, IdCard, PanelBottom, ListOrdered } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
@@ -20,6 +20,7 @@ import AdminLeagueOverride from "../components/admin/AdminLeagueOverride";
 import AdminPlayoffOverride from "../components/admin/AdminPlayoffOverride";
 import AdminLeaderboardCardDemo from "../components/admin/AdminLeaderboardCardDemo";
 import AdminFooterTabsDemo from "../components/admin/AdminFooterTabsDemo";
+import AdminListRevealDemo from "../components/admin/AdminListRevealDemo";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -82,6 +83,7 @@ export default function Admin() {
       case 'playoff-override': return <AdminPlayoffOverride />;
       case 'leaderboard-card-demo': return <AdminLeaderboardCardDemo />;
       case 'footer-tabs-demo': return <AdminFooterTabsDemo />;
+      case 'list-reveal-demo': return <AdminListRevealDemo />;
       default: return <AdminRounds />;
     }
   };
@@ -100,6 +102,7 @@ export default function Admin() {
     { id: 'playoff-override',  label: '🏆 פלייאוף',              icon: Trophy },
     { id: 'leaderboard-card-demo', label: '150 עיצובי כרטיס משתתף', icon: IdCard },
     { id: 'footer-tabs-demo', label: '75 עיצובי כפתורי תחתית', icon: PanelBottom },
+    { id: 'list-reveal-demo', label: '35 רעיונות לרצף חשיפה', icon: ListOrdered },
   ];
 
   return (
