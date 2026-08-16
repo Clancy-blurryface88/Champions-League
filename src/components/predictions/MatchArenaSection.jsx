@@ -170,7 +170,7 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 2, ease: 'easeOut' }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
             >
               <MatchOddsBar
                 scoreOdds={match.score_odds}
