@@ -1181,6 +1181,7 @@ export default function Predictions() {
                           backdropFilter: 'blur(10px) saturate(150%)',
                           WebkitBackdropFilter: 'blur(10px) saturate(150%)',
                           border: '1px solid rgba(59,130,246,0.55)',
+                          borderBottomLeftRadius: 12,
                           boxShadow: '0 0 8px rgba(59,130,246,0.35)',
                         }}
                       >
@@ -1194,6 +1195,7 @@ export default function Predictions() {
                           backdropFilter: 'blur(10px) saturate(150%)',
                           WebkitBackdropFilter: 'blur(10px) saturate(150%)',
                           border: '1px solid rgba(34,197,94,0.55)',
+                          borderBottomRightRadius: 12,
                           boxShadow: '0 0 8px rgba(34,197,94,0.35)',
                         }}
                       >
