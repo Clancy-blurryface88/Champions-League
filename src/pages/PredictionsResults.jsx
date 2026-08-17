@@ -248,8 +248,8 @@ function FlipBoardPicker({ rounds, value, onChange }) {
     <div className="flex flex-col items-center gap-2 w-full">
       <div className="flex items-center gap-3 w-full justify-center">
         <button onClick={() => canPrev && onChange(rounds[idx - 1].id)} disabled={!canPrev}
-          className="w-9 h-9 flex items-center justify-center rounded-full disabled:opacity-20 hover:text-yellow-400 transition-all"
-          style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(250,204,21,0.22)', color: 'rgba(250,204,21,0.75)' }}>
+          className="w-9 h-9 flex items-center justify-center rounded-full disabled:opacity-20 hover:text-emerald-400 transition-all"
+          style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(52,211,153,0.28)', color: 'rgba(52,211,153,0.75)' }}>
           <ChevronUp className="w-5 h-5" />
         </button>
         <AnimatePresence mode="wait">
@@ -258,21 +258,27 @@ function FlipBoardPicker({ rounds, value, onChange }) {
             animate={{ rotateX: 0, opacity: 1 }}
             exit={{ rotateX: 90, opacity: 0 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}
-            className="px-8 py-2.5 rounded-xl border border-yellow-400/30 min-w-[180px] text-center"
-            style={{ perspective: 600, background: 'rgba(250,204,21,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)' }}>
-            <span className="text-yellow-400 font-bold text-base tracking-wide">{current?.name}</span>
+            className="px-8 py-2.5 rounded-xl border border-emerald-400/30 min-w-[180px] text-center"
+            style={{ perspective: 600, background: 'linear-gradient(135deg, rgba(16,185,129,0.16) 0%, rgba(5,150,105,0.08) 100%)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)' }}>
+            <span
+              className="font-bold text-base tracking-wide"
+              style={{
+                backgroundImage: 'linear-gradient(135deg, #a7f3d0 0%, #34d399 100%)',
+                WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent',
+              }}
+            >{current?.name}</span>
           </motion.div>
         </AnimatePresence>
         <button onClick={() => canNext && onChange(rounds[idx + 1].id)} disabled={!canNext}
-          className="w-9 h-9 flex items-center justify-center rounded-full disabled:opacity-20 hover:text-yellow-400 transition-all"
-          style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(250,204,21,0.22)', color: 'rgba(250,204,21,0.75)' }}>
+          className="w-9 h-9 flex items-center justify-center rounded-full disabled:opacity-20 hover:text-emerald-400 transition-all"
+          style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(52,211,153,0.28)', color: 'rgba(52,211,153,0.75)' }}>
           <ChevronDown className="w-5 h-5" />
         </button>
       </div>
       <div className="flex gap-1.5">
         {rounds.map((r, i) => (
           <button key={r.id} onClick={() => onChange(r.id)}
-            className={`rounded-full transition-all duration-200 ${i === idx ? 'bg-yellow-400 w-4 h-1.5' : 'bg-slate-700 w-1.5 h-1.5 hover:bg-slate-500'}`} />
+            className={`rounded-full transition-all duration-200 ${i === idx ? 'bg-emerald-400 w-4 h-1.5' : 'bg-slate-700 w-1.5 h-1.5 hover:bg-slate-500'}`} />
         ))}
       </div>
     </div>
