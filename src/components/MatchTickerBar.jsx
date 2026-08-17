@@ -70,7 +70,7 @@ export default function MatchTickerBar({ onClick }) {
           <span
             className="text-xs font-bold mx-0.5"
             style={{
-              background: 'linear-gradient(90deg, #fde047, #eab308)',
+              background: 'linear-gradient(90deg, #67e8f9, #0891b2)',
               WebkitBackgroundClip: 'text',
               backgroundClip: 'text',
               color: 'transparent',
@@ -80,7 +80,7 @@ export default function MatchTickerBar({ onClick }) {
           <span
             className="text-xs font-bold mx-0.5"
             style={{
-              background: 'linear-gradient(90deg, #4ade80, #16a34a)',
+              background: 'linear-gradient(90deg, #6ee7b7, #059669)',
               WebkitBackgroundClip: 'text',
               backgroundClip: 'text',
               color: 'transparent',
@@ -130,7 +130,7 @@ export default function MatchTickerBar({ onClick }) {
           <span
             style={{
               fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none',
-              background: 'linear-gradient(90deg, #4ade80, #16a34a)',
+              background: 'linear-gradient(90deg, #6ee7b7, #059669)',
               WebkitBackgroundClip: 'text',
               backgroundClip: 'text',
               color: 'transparent',
