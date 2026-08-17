@@ -665,7 +665,7 @@ export default function PredictionsResults() {
               }}
             >
               <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-2xl" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 100%)' }} />
-              <span className="text-base uppercase tracking-[0.16em] text-yellow-400/80 font-bold">בחר מחזור</span>
+              <span className="text-base uppercase tracking-[0.16em] text-emerald-400/80 font-bold">בחר מחזור</span>
               <FlipBoardPicker
                 rounds={availableRounds}
                 value={selectedRound}
