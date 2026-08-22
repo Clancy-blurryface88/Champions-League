@@ -1173,7 +1173,7 @@ export default function Predictions() {
                         backdrop-filter blur/saturate on semi-transparent fills — the
                         demo itself never used backdrop-filter, only solid gradients,
                         which is why it never broke there. */}
-                    <div className="-mx-5 -mb-5 mt-3 relative overflow-hidden rounded-b-xl" style={{ height: 48 }}>
+                    <div className="-mx-5 -mb-5 mt-3 relative overflow-hidden rounded-b-xl" style={{ height: 38 }}>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
                         className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white transition-colors"
