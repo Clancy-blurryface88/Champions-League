@@ -755,7 +755,7 @@ export default function Predictions() {
                   key={dateKey}
                   ref={el => dateTabRefs.current[dateKey] = el}
                   onClick={() => scrollToDate(dateKey)}
-                  className="relative flex-shrink-0 flex flex-col items-center gap-1 pt-2 pb-2.5 px-4 rounded-2xl transition-all duration-250"
+                  className="relative flex-1 flex flex-col items-center gap-1 pt-2 pb-2.5 px-4 rounded-2xl transition-all duration-250"
                   style={{
                     background: isActive
                       ? 'rgba(9, 122, 220,0.08)'
@@ -766,7 +766,6 @@ export default function Predictions() {
                     boxShadow: isActive
                       ? '0 0 12px rgba(59,158,255,0.55)'
                       : 'none',
-                    minWidth: 84,
                   }}
                 >
                   {/* Missing predictions indicator */}
