@@ -1178,7 +1178,7 @@ export default function Predictions() {
                         onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
                         className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white transition-colors"
                         style={{
-                          clipPath: 'polygon(0 0, 58% 0, 42% 100%, 0 100%)',
+                          clipPath: 'polygon(0 0, 53% 0, 47% 100%, 0 100%)',
                           background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
                           paddingInlineEnd: '46%',
                         }}
@@ -1189,7 +1189,7 @@ export default function Predictions() {
                         onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
                         className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white transition-colors"
                         style={{
-                          clipPath: 'polygon(58% 0, 100% 0, 100% 100%, 42% 100%)',
+                          clipPath: 'polygon(53% 0, 100% 0, 100% 100%, 47% 100%)',
                           background: 'linear-gradient(135deg, #22c55e, #15803d)',
                           paddingInlineStart: '46%',
                         }}
