@@ -83,10 +83,7 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
           <h2
             className="text-lg font-bold leading-tight"
             style={{
-              background: 'linear-gradient(90deg, #16a34a, #22c55e)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              color: '#4ade80',
             }}
           >
             סיכום הניחושים שלך
@@ -151,12 +148,7 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                       >
                         <span
                           className="font-black text-base tabular-nums"
-                          style={{
-                            background: 'linear-gradient(90deg, #16a34a, #22c55e)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            backgroundClip: 'text',
-                          }}
+                          style={{ color: '#4ade80' }}
                         >
                           {prediction.predicted_score_a} – {prediction.predicted_score_b}
                         </span>
@@ -194,12 +186,12 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
             }}
           >
             {saving ? (
-              <span className="flex items-center justify-center gap-2" style={{ color: '#22c55e' }}>
+              <span className="flex items-center justify-center gap-2" style={{ color: '#4ade80' }}>
                 <OrbitSpinner size={18} />
                 שומר...
               </span>
             ) : (
-              <span style={{ background: 'linear-gradient(90deg, #16a34a, #22c55e)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              <span style={{ color: '#4ade80' }}>
                 אישור ושליחה
               </span>
             )}

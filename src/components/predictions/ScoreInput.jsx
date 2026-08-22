@@ -62,7 +62,7 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
                 fontFamily: "'Bebas Neue', sans-serif",
                 display: 'inline-block',
                 ...(isUndefined ? {
-                  backgroundImage: 'linear-gradient(135deg, #6ee7b7 0%, #059669 100%)',
+                  backgroundImage: 'linear-gradient(135deg, #bbf7d0 0%, #4ade80 100%)',
                   WebkitBackgroundClip: 'text',
                   backgroundClip: 'text',
                   color: 'transparent',

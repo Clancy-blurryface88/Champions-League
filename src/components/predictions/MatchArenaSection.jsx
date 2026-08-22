@@ -77,13 +77,7 @@ function AvgGoals({ scored, conceded }) {
   return (
     <span className="text-[10px] font-medium flex items-center flex-shrink-0">
       <span>⚽</span>
-      <span style={{
-        background: 'linear-gradient(135deg, #bbf7d0, #4ade80)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        backgroundClip: 'text',
-        marginLeft: 2,
-      }}>{scored}</span>
+      <span style={{ color: '#4ade80', marginLeft: 2 }}>{scored}</span>
       <span className="text-slate-600 mx-1">/</span>
       <span style={{ color: '#f87171' }}>✕ {conceded}</span>
     </span>
