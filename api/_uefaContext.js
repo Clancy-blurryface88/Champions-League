@@ -221,3 +221,24 @@ export async function getOfficialStandings() {
     }))
     .sort((a, b) => a.rank - b.rank);
 }
+
+/**
+ * Most recently FINISHED Champions League matches (any phase — qualifying
+ * included), newest first — so AdminLiveMatchExplorer.jsx has real match
+ * ids to test lineups/events against even when nothing is live right now.
+ */
+export async function getRecentFinishedMatches(limit = 12) {
+  const seasonYear = currentSeasonYear();
+  const allMatches = await getMatches({ competitionId: COMPETITION_ID, seasonYear }, undefined, 500, 0);
+  return allMatches
+    .filter((m) => m.status === 'FINISHED')
+    .sort((a, b) => new Date(b.kickOffTime?.dateTime) - new Date(a.kickOffTime?.dateTime))
+    .slice(0, limit)
+    .map((m) => ({
+      id: m.id,
+      utcDate: m.kickOffTime?.dateTime,
+      homeTeam: m.homeTeam.internationalName,
+      awayTeam: m.awayTeam.internationalName,
+      score: { home: m.score?.total?.home ?? null, away: m.score?.total?.away ?? null },
+    }));
+}

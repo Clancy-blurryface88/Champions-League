@@ -52,13 +52,15 @@ function TeamLineupCard({ label, teamLineup }) {
 export default function AdminLiveMatchExplorer() {
   const [liveMatches, setLiveMatches] = useState([]);
   const [loadingLive, setLoadingLive] = useState(true);
+  const [recentMatches, setRecentMatches] = useState([]);
+  const [loadingRecent, setLoadingRecent] = useState(true);
   const [matchId, setMatchId] = useState('');
   const [lineups, setLineups] = useState(null);
   const [events, setEvents] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => { loadLiveMatches(); }, []);
+  useEffect(() => { loadLiveMatches(); loadRecentMatches(); }, []);
 
   const loadLiveMatches = async () => {
     setLoadingLive(true);
@@ -70,6 +72,18 @@ export default function AdminLiveMatchExplorer() {
       setLiveMatches([]);
     }
     setLoadingLive(false);
+  };
+
+  const loadRecentMatches = async () => {
+    setLoadingRecent(true);
+    try {
+      const res = await fetch('/api/uefa-recent-matches');
+      const data = await res.json();
+      setRecentMatches(data.success ? data.matches : []);
+    } catch {
+      setRecentMatches([]);
+    }
+    setLoadingRecent(false);
   };
 
   const loadDetail = async (id) => {
@@ -117,7 +131,7 @@ export default function AdminLiveMatchExplorer() {
         </CardHeader>
         <CardContent>
           {liveMatches.length === 0 ? (
-            <p className="text-slate-500 text-sm">אין כרגע משחק ליגת אלופות חי — אפשר להזין Match ID ידנית למטה כדי לבדוק את הכלי בכל זאת (למשל על משחק שהסתיים).</p>
+            <p className="text-slate-500 text-sm">אין כרגע משחק ליגת אלופות חי — אפשר לבחור משחק מהרשימה "משחקים אחרונים" למטה כדי לבדוק את הכלי בכל זאת.</p>
           ) : (
             <div className="space-y-2">
               {liveMatches.map((m) => (
@@ -135,13 +149,41 @@ export default function AdminLiveMatchExplorer() {
         </CardContent>
       </Card>
 
-      {/* Manual match id */}
+      {/* Quick-pick: recently finished matches — real ids to test with when nothing's live */}
+      <Card className="bg-slate-800/60 border-slate-700">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-white text-sm">משחקים אחרונים (לבדיקה)</CardTitle>
+          <Button onClick={loadRecentMatches} disabled={loadingRecent} variant="ghost" size="icon" className="text-slate-400">
+            <RefreshCw className={`w-4 h-4 ${loadingRecent ? 'animate-spin' : ''}`} />
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {recentMatches.length === 0 ? (
+            <p className="text-slate-500 text-sm">{loadingRecent ? 'טוען...' : 'לא נמצאו משחקים שהסתיימו עדיין העונה.'}</p>
+          ) : (
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {recentMatches.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => loadDetail(m.id)}
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-slate-700/50 hover:bg-slate-700 text-sm text-white text-right"
+                >
+                  <span>{m.homeTeam} {m.score.home}-{m.score.away} {m.awayTeam}</span>
+                  <span className="text-slate-500 text-xs">{new Date(m.utcDate).toLocaleDateString('he-IL')}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Manual match id — fallback if you already have one */}
       <Card className="bg-slate-800/60 border-slate-700">
         <CardContent className="pt-4 flex gap-2">
           <Input
             value={matchId}
             onChange={(e) => setMatchId(e.target.value)}
-            placeholder="UEFA Match ID (למשל מתוך /api/uefa-fixtures)"
+            placeholder="או הזינו UEFA Match ID ידנית"
             className="bg-slate-900 border-slate-700 text-white"
           />
           <Button onClick={() => loadDetail(matchId)} disabled={loading || !matchId.trim()}>
