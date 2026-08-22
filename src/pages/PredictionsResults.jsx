@@ -666,9 +666,9 @@ export default function PredictionsResults() {
             <div
               className="mb-6 flex flex-col items-center gap-2 px-4 py-3 rounded-2xl relative overflow-hidden"
               style={{
-                background: 'rgba(255,255,255,0.10)',
-                backdropFilter: 'blur(40px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+                background: 'rgba(6,12,28,0.55)',
+                backdropFilter: 'blur(52px) saturate(200%)',
+                WebkitBackdropFilter: 'blur(52px) saturate(200%)',
                 border: '1px solid rgba(74,222,128,0.25)',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)',
               }}
@@ -690,9 +690,9 @@ export default function PredictionsResults() {
               <div
                 className="rounded-2xl overflow-hidden mt-3 relative"
                 style={{
-                  background: 'rgba(255,255,255,0.10)',
-                  backdropFilter: 'blur(40px) saturate(180%)',
-                  WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+                  background: 'rgba(6,12,28,0.55)',
+                  backdropFilter: 'blur(52px) saturate(200%)',
+                  WebkitBackdropFilter: 'blur(52px) saturate(200%)',
                   border: '1px solid rgba(255,255,255,0.22)',
                   boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)',
                 }}
