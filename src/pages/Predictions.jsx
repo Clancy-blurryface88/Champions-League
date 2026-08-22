@@ -27,7 +27,6 @@ import MatchOddsBar from "../components/predictions/MatchOddsBar";
 import MatchArenaSection from "../components/predictions/MatchArenaSection";
 import { RevealText } from "@/components/magicui/reveal-text";
 import TeamFlag from "@/components/TeamFlag";
-import MatchCountRing from "@/components/MatchCountRing";
 import LeagueTableModal from "@/components/LeagueTableModal";
 import TeamInfoModal from "@/components/TeamInfoModal";
 import { ShineBorder } from "@/components/magicui/shine-border";
@@ -784,14 +783,15 @@ export default function Predictions() {
                   <span className={`text-base font-black leading-none ${isActive ? 'text-white' : isPast ? 'text-slate-500' : 'text-white'}`}>
                     {dayNum}
                   </span>
-                  <MatchCountRing
-                    finished={finishedCount}
-                    total={count}
-                    active={isActive}
-                    size={26}
-                    activeClassName="text-sky-300"
-                    inactiveClassName={isPast ? "text-slate-600" : "text-white/40"}
-                  />
+                  <span className={`text-[9px] font-semibold leading-none ${isActive ? 'text-sky-300' : isPast ? 'text-slate-600' : 'text-white/40'}`}>
+                    {finishedCount}/{count}
+                  </span>
+                  <div className="w-full h-1 rounded-full mt-0.5" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                    <div
+                      className="h-full rounded-full"
+                      style={{ width: `${count ? (finishedCount / count) * 100 : 0}%`, background: isPast ? '#64748b' : '#4ade80' }}
+                    />
+                  </div>
                 </button>
               );
             })}
