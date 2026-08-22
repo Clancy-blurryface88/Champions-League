@@ -355,8 +355,8 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
                 </div>
 
                 {'other' in match.score_odds && (
-                  <div className="flex justify-between items-center rounded-lg bg-sky-500/6 border border-sky-500/15 px-3 py-2.5">
-                    <span className="text-sky-400 font-bold text-sm tabular-nums">{match.score_odds['other']}</span>
+                  <div className="flex justify-between items-center rounded-lg bg-yellow-500/6 border border-yellow-500/15 px-3 py-2.5">
+                    <span className="text-yellow-400 font-bold text-sm tabular-nums">{match.score_odds['other']}</span>
                     <span className="text-white/70 text-xs">כל תוצאה אחרת</span>
                   </div>
                 )}
