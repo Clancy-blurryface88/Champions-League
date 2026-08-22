@@ -1161,6 +1161,11 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
   const sortedPredictions = [...predictions].sort((a, b) => (b.points_earned || 0) - (a.points_earned || 0));
 
   const bottomRef = useRef(null);
+  // One row per prediction id, so each reveal can scroll itself into view as
+  // the cascade climbs from last place back up to the winner — with enough
+  // participants that the list is taller than the screen, only the initial
+  // scroll-to-bottom isn't enough to keep the higher reveals on screen.
+  const rowRefs = useRef(new Map());
 
   useEffect(() => {
     setShockwaveActive(false);
@@ -1214,10 +1219,14 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
         return (
           <motion.div
             key={prediction.id}
+            ref={(el) => { if (el) rowRefs.current.set(prediction.id, el); }}
             initial={{ opacity: 0, filter: 'blur(16px)', scale: 0.85 }}
             animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
             transition={{ delay: revealDelay, duration: 0.45, ease: 'easeOut' }}
-            onAnimationComplete={() => setRevealedIds(prev => prev.has(prediction.id) ? prev : new Set(prev).add(prediction.id))}
+            onAnimationComplete={() => {
+              setRevealedIds(prev => prev.has(prediction.id) ? prev : new Set(prev).add(prediction.id));
+              rowRefs.current.get(prediction.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
             className="relative rounded-xl overflow-hidden"
             style={verdictStyle}>
 
