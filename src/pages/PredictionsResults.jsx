@@ -8,7 +8,7 @@ import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Eye, Check, X } from "lucide-react";
+import { ArrowLeft, ChevronUp, ChevronDown, Eye, Check, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -559,12 +559,46 @@ export default function PredictionsResults() {
     setCurrentMatchIndex(0);
   };
 
-  const nextMatch = () => {
-    setCurrentMatchIndex((prev) => (prev + 1) % finishedMatches.length);
+  const matchTrackRef = useRef(null);
+  const chipStripRef = useRef(null);
+  // Set right before setCurrentMatchIndex from the track's own scroll handler,
+  // so the sync effect below doesn't fight an in-progress swipe gesture.
+  const skipNextTrackSyncRef = useRef(false);
+
+  const goToMatch = (i) => {
+    setCurrentMatchIndex(i);
   };
 
-  const prevMatch = () => {
-    setCurrentMatchIndex((prev) => (prev - 1 + finishedMatches.length) % finishedMatches.length);
+  // Keep the active chip visible as the current match changes (swipe or tap)
+  useEffect(() => {
+    const chip = chipStripRef.current?.children[currentMatchIndex];
+    chip?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, [currentMatchIndex]);
+
+  // Keep the swipeable track in sync whenever the active match changes
+  // for a reason other than the user's own scroll (chip tap, default-to-last, round change).
+  useEffect(() => {
+    if (skipNextTrackSyncRef.current) {
+      skipNextTrackSyncRef.current = false;
+      return;
+    }
+    const el = matchTrackRef.current;
+    if (!el) return;
+    const target = currentMatchIndex * el.clientWidth;
+    if (Math.abs(el.scrollLeft - target) > 4) {
+      el.scrollTo({ left: target, behavior: 'smooth' });
+    }
+  }, [currentMatchIndex, finishedMatches.length]);
+
+  const handleMatchTrackScroll = () => {
+    const el = matchTrackRef.current;
+    if (!el) return;
+    const width = el.clientWidth || 1;
+    const i = Math.round(el.scrollLeft / width);
+    if (i !== currentMatchIndex && i >= 0 && i < finishedMatches.length) {
+      skipNextTrackSyncRef.current = true;
+      setCurrentMatchIndex(i);
+    }
   };
 
   const getOutcomeStatus = (prediction, match) => {
@@ -737,84 +771,53 @@ export default function PredictionsResults() {
                   </div>
 
                   {viewMode === 'all_predictions' &&
-                    <div className="flex items-center justify-between">
-                      {/* Progress Arc — next */}
-                      {(() => {
-                        const pct = finishedMatches.length > 1 ? (currentMatchIndex + 1) / finishedMatches.length : 1;
-                        const r = 18, c = 22, stroke = 2.5, circ = 2 * Math.PI * r;
-                        return (
-                          <div className="relative w-11 h-11 flex items-center justify-center flex-shrink-0">
-                            <svg width="44" height="44" className="absolute top-0 left-0 pointer-events-none" style={{ transform: 'rotate(-90deg)' }}>
-                              <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
-                              <circle cx={c} cy={c} r={r} fill="none" stroke="#097adc" strokeWidth={stroke}
-                                strokeDasharray={`${circ * pct} ${circ}`} strokeLinecap="round"
-                                style={{ filter: 'drop-shadow(0 0 4px rgba(9, 122, 220,0.5))', transition: 'stroke-dasharray 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
-                            </svg>
-                            <button onClick={nextMatch} disabled={finishedMatches.length <= 1}
-                              className="relative w-8 h-8 flex items-center justify-center disabled:opacity-30 rounded-full z-10 transition-transform hover:scale-105 active:scale-95"
-                              style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(255,255,255,0.18)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 8px rgba(0,0,0,0.3)' }}>
-                              <ChevronLeft className="w-4 h-4 text-white" />
-                            </button>
+                    <div className="flex flex-col gap-2">
+                      <h3 className="text-white font-semibold text-sm text-center">
+                        משחק {currentMatchIndex + 1} מתוך {finishedMatches.length}
+                      </h3>
+
+                      {/* Swipeable match card — snaps one match per screen-width */}
+                      <div
+                        ref={matchTrackRef}
+                        onScroll={handleMatchTrackScroll}
+                        className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide"
+                        style={{ WebkitOverflowScrolling: 'touch' }}
+                      >
+                        {finishedMatches.map((match) => (
+                          <div key={match.id} className="flex-none w-full snap-start flex items-center justify-center gap-2 py-1">
+                            <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-6 h-6" rounded="md" />
+                            <div className="bg-slate-700 px-2 py-0.5 rounded-md">
+                              <span className="text-white font-bold text-sm">
+                                {match.actual_score_a} - {match.actual_score_b}
+                              </span>
+                            </div>
+                            <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-6 h-6" rounded="md" />
                           </div>
-                        );
-                      })()}
-
-                      <div className="text-center flex-1 px-2">
-                        <h3 className="text-white font-semibold text-sm mb-1">
-                          משחק {currentMatchIndex + 1} מתוך {finishedMatches.length}
-                        </h3>
-                        <div key={currentMatchIndex} className="flex items-center justify-center gap-2 overflow-hidden">
-                          {/* קבוצה א — נכנסת משמאל */}
-                          <motion.div
-                            initial={{ x: -60, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            transition={{ type: "spring", stiffness: 220, damping: 22 }}>
-                            <TeamFlag logo={finishedMatches[currentMatchIndex]?.team_a_logo} name={finishedMatches[currentMatchIndex]?.team_a} className="w-6 h-6" rounded="md" />
-                          </motion.div>
-
-                          {/* תוצאה — מופיעה אחרי שתי הקבוצות */}
-                          <motion.div
-                            className="bg-slate-700 px-2 py-0.5 rounded-md"
-                            initial={{ opacity: 0, scale: 0.7 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.25, type: "spring", stiffness: 300, damping: 20 }}>
-                            <span className="text-white font-bold text-sm">
-                              {finishedMatches[currentMatchIndex]?.actual_score_a} - {finishedMatches[currentMatchIndex]?.actual_score_b}
-                            </span>
-                          </motion.div>
-
-                          {/* קבוצה ב — נכנסת מימין */}
-                          <motion.div
-                            initial={{ x: 60, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            transition={{ type: "spring", stiffness: 220, damping: 22 }}>
-                            <TeamFlag logo={finishedMatches[currentMatchIndex]?.team_b_logo} name={finishedMatches[currentMatchIndex]?.team_b} className="w-6 h-6" rounded="md" />
-                          </motion.div>
-                        </div>
+                        ))}
                       </div>
 
-                      {/* Progress Arc — prev */}
-                      {(() => {
-                        const pct = finishedMatches.length > 1 ? (currentMatchIndex + 1) / finishedMatches.length : 1;
-                        const r = 18, c = 22, stroke = 2.5, circ = 2 * Math.PI * r;
-                        return (
-                          <div className="relative w-11 h-11 flex items-center justify-center flex-shrink-0">
-                            <div className="absolute top-0 left-0 pointer-events-none" style={{ transform: 'scaleX(-1)', width: 44, height: 44 }}>
-                              <svg width="44" height="44" style={{ transform: 'rotate(-90deg)' }}>
-                                <circle cx={c} cy={c} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
-                                <circle cx={c} cy={c} r={r} fill="none" stroke="#097adc" strokeWidth={stroke}
-                                  strokeDasharray={`${circ * pct} ${circ}`} strokeLinecap="round"
-                                  style={{ filter: 'drop-shadow(0 0 4px rgba(9, 122, 220,0.5))', transition: 'stroke-dasharray 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
-                              </svg>
-                            </div>
-                            <button onClick={prevMatch} disabled={finishedMatches.length <= 1}
-                              className="relative w-8 h-8 flex items-center justify-center disabled:opacity-30 rounded-full z-10 transition-transform hover:scale-105 active:scale-95"
-                              style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(255,255,255,0.18)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 8px rgba(0,0,0,0.3)' }}>
-                              <ChevronRight className="w-4 h-4 text-white" />
-                            </button>
-                          </div>
-                        );
-                      })()}
+                      {/* Chip strip — jump straight to any match */}
+                      {finishedMatches.length > 1 &&
+                        <div ref={chipStripRef} className="flex gap-1.5 overflow-x-auto px-0.5 scrollbar-hide">
+                          {finishedMatches.map((match, i) => {
+                            const active = i === currentMatchIndex;
+                            return (
+                              <button
+                                key={match.id}
+                                onClick={() => goToMatch(i)}
+                                className="flex-none flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all"
+                                style={active
+                                  ? { background: 'linear-gradient(135deg, #16a34a 0%, #097adc 100%)', color: '#04150c' }
+                                  : { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)', color: 'rgba(255,255,255,0.55)' }}
+                              >
+                                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-3.5 h-3.5" rounded="sm" />
+                                <span className="tabular-nums">{match.actual_score_a}-{match.actual_score_b}</span>
+                                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-3.5 h-3.5" rounded="sm" />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      }
                     </div>
                   }
 
