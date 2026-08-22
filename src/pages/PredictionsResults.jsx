@@ -819,12 +819,12 @@ export default function PredictionsResults() {
                                 onClick={() => goToMatch(i)}
                                 className="flex-none flex items-center gap-1 px-1.5 py-1 rounded-lg text-xs font-bold transition-all"
                                 style={active
-                                  ? { background: 'linear-gradient(135deg, #16a34a 0%, #097adc 100%)', color: '#04150c' }
-                                  : { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)', color: 'rgba(255,255,255,0.55)' }}
+                                  ? { background: 'linear-gradient(135deg, #16a34a 0%, #097adc 100%)' }
+                                  : { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)' }}
                               >
-                                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-[5px] h-[5px]" rounded="sm" />
-                                <span className="tabular-nums">{match.actual_score_a}-{match.actual_score_b}</span>
-                                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-[5px] h-[5px]" rounded="sm" />
+                                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-[7px] h-[7px]" rounded="sm" />
+                                <span className="tabular-nums" style={{ color: '#22d3ee' }}>{match.actual_score_a}-{match.actual_score_b}</span>
+                                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-[7px] h-[7px]" rounded="sm" />
                               </button>
                             );
                           })}
