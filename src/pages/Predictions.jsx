@@ -624,6 +624,28 @@ export default function Predictions() {
     setSelectedMatchForRules(null);
   };
 
+  // Open the AI pre-match brief modal — shows the cached brief immediately
+  // if there is one, and generates+caches one in the background otherwise
+  // (AiBriefModal itself just renders whatever `brief` it's given, it
+  // doesn't fetch, so this is the only place that needs to trigger generation).
+  const handleShowAiBrief = (match) => {
+    setSelectedMatchForBrief(match);
+    if (!briefs[match.id]) {
+      fetch('/api/generate-brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ match_id: match.id }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.brief) {
+            setBriefs((prev) => ({ ...prev, [match.id]: { match_id: match.id, ...data.brief } }));
+          }
+        })
+        .catch(() => {}); // silent — modal already shows a "coming soon" fallback
+    }
+  };
+
   // NEW: Handle predictions modal open
   const handleShowPredictions = (match) => {
     setSelectedMatchForPredictions(match);
@@ -969,9 +991,9 @@ export default function Predictions() {
                       }
                     </div>
 
-                    {/* Stage badge */}
-                    {match.stage && (
-                      <div className="flex justify-center mb-4">
+                    {/* Stage badge + AI pre-match brief */}
+                    <div className="flex justify-center items-center gap-2 mb-4">
+                      {match.stage && (
                         <button
                           onClick={() => { setLeagueTableHighlight({ home: match.team_a, away: match.team_b }); setShowLeagueTable(true); }}
                           className="relative overflow-hidden text-sm font-semibold text-yellow-400 border border-yellow-400/40 px-5 py-1 rounded-full hover:border-yellow-400/70 transition-colors cursor-pointer"
@@ -984,8 +1006,21 @@ export default function Predictions() {
                         >
                           {STAGE_LABELS[match.stage] || match.stage}
                         </button>
-                      </div>
-                    )}
+                      )}
+                      <button
+                        onClick={() => handleShowAiBrief(match)}
+                        className="relative overflow-hidden flex items-center gap-1 text-sm font-semibold text-yellow-400 border border-yellow-400/40 px-4 py-1 rounded-full hover:border-yellow-400/70 transition-colors cursor-pointer"
+                        style={{
+                          background: 'rgba(255,255,255,0.07)',
+                          backdropFilter: 'blur(20px) saturate(140%)',
+                          WebkitBackdropFilter: 'blur(20px) saturate(140%)',
+                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.30)',
+                        }}
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        ניתוח AI
+                      </button>
+                    </div>
 
                     {/* Separator below group badge */}
                     <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)' }} />
