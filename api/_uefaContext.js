@@ -2,7 +2,7 @@
 // Pulls real recent-form + standings data for two teams directly from
 // UEFA's own backend (uefa-api package, no key required) so the AI brief
 // can be grounded in real numbers instead of Claude's general knowledge.
-import { getTeams, getMatches, getStandings } from 'uefa-api';
+import { getTeams, getMatches, getStandings, getLivescore, getMatch, getMatchEvents } from 'uefa-api';
 
 export const COMPETITION_ID = 1; // UEFA Champions League
 
@@ -121,4 +121,76 @@ export async function getLeaguePhaseFixtures() {
         AwayTeam: m.awayTeam.internationalName,
       };
     });
+}
+
+function toFootballDataStatus(m) {
+  if (m.status === 'LIVE') return m.phase === 'HALF_TIME_BREAK' ? 'PAUSED' : 'IN_PLAY';
+  if (m.status === 'FINISHED') return 'FINISHED';
+  return 'SCHEDULED';
+}
+
+/**
+ * Live/near-live UEFA Champions League matches, reshaped to look exactly
+ * like football-data.org's match objects (homeTeam.name/crest, score.fullTime,
+ * status, minute, goals[]) so it's a drop-in fallback for /api/football —
+ * no changes needed in any component that already consumes that shape.
+ *
+ * getLivescore() itself covers ALL UEFA competitions and doesn't say which
+ * one each match belongs to, so each live match is cross-checked against
+ * its full detail (getMatch) and non-Champions-League ones are dropped.
+ */
+export async function getUefaLiveMatches() {
+  const live = await getLivescore();
+  if (live.length === 0) return [];
+
+  const full = await Promise.all(live.map((l) => getMatch(l.id).catch(() => null)));
+  const clMatches = full.filter((m) => m && String(m.competition?.id) === String(COMPETITION_ID));
+
+  return Promise.all(clMatches.map(async (m) => {
+    let goals = [];
+    if (m.status === 'LIVE' || m.status === 'FINISHED') {
+      try {
+        const events = await getMatchEvents(m.id);
+        goals = events
+          .filter((e) => e.type === 'GOAL')
+          .map((e) => ({
+            minute: e.time?.minute ?? null,
+            injuryTime: e.time?.injuryMinute || undefined,
+            team: { id: e.primaryActor?.team?.id },
+            scorer: {
+              name: e.primaryActor?.person?.internationalName || null,
+              shortName: e.primaryActor?.person?.internationalName || null,
+            },
+          }));
+      } catch {
+        // Event feed failing shouldn't hide the live score itself.
+      }
+    }
+
+    return {
+      id: m.id,
+      utcDate: m.kickOffTime?.dateTime,
+      status: toFootballDataStatus(m),
+      minute: m.minute?.normal ?? null,
+      homeTeam: {
+        id: m.homeTeam.id,
+        name: m.homeTeam.translations?.displayOfficialName?.EN || m.homeTeam.internationalName,
+        shortName: m.homeTeam.internationalName,
+        crest: m.homeTeam.logoUrl,
+      },
+      awayTeam: {
+        id: m.awayTeam.id,
+        name: m.awayTeam.translations?.displayOfficialName?.EN || m.awayTeam.internationalName,
+        shortName: m.awayTeam.internationalName,
+        crest: m.awayTeam.logoUrl,
+      },
+      score: {
+        fullTime: {
+          home: m.score?.total?.home ?? null,
+          away: m.score?.total?.away ?? null,
+        },
+      },
+      goals,
+    };
+  }));
 }

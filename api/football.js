@@ -1,5 +1,6 @@
 // Vercel Serverless Function — proxies football-data.org API
 import { TOURNAMENT_CODE } from '../src/config/tournament.js';
+import { getUefaLiveMatches } from './_uefaContext.js';
 
 export default async function handler(req, res) {
   const { competition = TOURNAMENT_CODE, filter = 'LIVE', type } = req.query;
@@ -8,6 +9,20 @@ export default async function handler(req, res) {
   res.setHeader('Pragma', 'no-cache');
 
   const apiKey = process.env.FOOTBALL_DATA_API_KEY;
+
+  // The LIVE view is the one place a broken/missing football-data.org key
+  // shouldn't just fail outright — UEFA's own live feed (no key needed)
+  // covers exactly this case, reshaped to match football-data.org's
+  // response so nothing on the client needs to change.
+  if (!type && filter === 'LIVE' && !apiKey) {
+    try {
+      const matches = await getUefaLiveMatches();
+      return res.status(200).json({ success: true, matches, source: 'uefa' });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
   if (!apiKey) {
     return res.status(500).json({ error: 'Missing FOOTBALL_DATA_API_KEY' });
   }
@@ -65,6 +80,16 @@ export default async function handler(req, res) {
     const response = await fetch(url, { headers: { 'X-Auth-Token': apiKey, 'X-Api-Version': 'v4.1' } });
 
     if (!response.ok) {
+      // football-data.org itself failing (rate limit, outage, etc.) — same
+      // UEFA fallback as the missing-key case, but only for the LIVE view.
+      if (filter === 'LIVE') {
+        try {
+          const matches = await getUefaLiveMatches();
+          return res.status(200).json({ success: true, matches, source: 'uefa' });
+        } catch {
+          // fall through to reporting the original football-data.org error
+        }
+      }
       const text = await response.text();
       console.error(`[football API] error ${response.status}: ${text}`);
       return res.status(response.status).json({ error: text });
@@ -95,6 +120,21 @@ export default async function handler(req, res) {
           }
           return { ...m, minute: m.minute ?? elapsed };
         });
+
+      // football-data.org came back OK but genuinely has nothing live right
+      // now doesn't necessarily mean UEFA agrees — only fall back when
+      // football-data.org found zero, so a real (non-empty) answer from it
+      // is never second-guessed.
+      if (matches.length === 0) {
+        try {
+          const uefaMatches = await getUefaLiveMatches();
+          if (uefaMatches.length > 0) {
+            return res.status(200).json({ success: true, matches: uefaMatches, source: 'uefa' });
+          }
+        } catch {
+          // no UEFA data either — just return the empty football-data.org result below
+        }
+      }
     } else if (filter === 'FINISHED') {
       matches = matches.filter(m => m.status === 'FINISHED');
     }
