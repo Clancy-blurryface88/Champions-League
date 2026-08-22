@@ -460,10 +460,10 @@ export default function RoundInsightsTicker({ user }) {
 
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerContent
-          className="border-white/10 max-h-[80vh]"
+          className="border-white/10 mt-6 max-h-[94vh] overflow-hidden"
           style={{ background: 'linear-gradient(180deg, #0c1830 0%, #050b18 100%)' }}
         >
-          <div dir="rtl" className="px-4 pb-6 pt-2 overflow-y-auto scrollbar-hide">
+          <div dir="rtl" className="min-h-0 px-4 pb-6 pt-2 overflow-y-auto scrollbar-hide">
             <DrawerTitle asChild>
               <h3 className="text-center text-white font-bold text-base mb-4">סיכום מחזור — {roundName}</h3>
             </DrawerTitle>
