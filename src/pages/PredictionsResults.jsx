@@ -763,7 +763,7 @@ export default function PredictionsResults() {
                                 onClick={() => goToMatch(i)}
                                 className="flex-none flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-bold transition-all"
                                 style={active
-                                  ? { background: 'linear-gradient(135deg, #16a34a 0%, #097adc 100%)' }
+                                  ? { background: 'linear-gradient(135deg, #7c3aed 0%, #2e1065 100%)' }
                                   : { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)' }}
                               >
                                 <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-6 h-6" rounded="sm" />
