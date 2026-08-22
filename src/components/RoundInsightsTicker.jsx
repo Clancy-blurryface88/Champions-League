@@ -5,8 +5,11 @@ import { Round } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
 import { calculateMatchMaxPotentialPoints } from "@/components/utils/calculateMatchMaxPotentialPoints";
-import { Trophy, Target, Star, Zap } from "lucide-react";
-import { TextLoop } from "@/components/core/text-loop";
+import { motion } from "framer-motion";
+import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
+import { useModalBackButton } from "@/hooks/useModalBackButton";
+
+const TROPHY_ICON = "https://media.base44.com/images/public/68656264510003eeef16bac3/628f03bf9_Pngtreegoldtrophyicon-trophy_4979039.png";
 
 const CircularProgress = ({ percentage }) => {
   const radius = 8;
@@ -90,7 +93,11 @@ const calculateRoundStats = (userId, roundMatches, allPredictions) => {
 
 export default function RoundInsightsTicker({ user }) {
   const [tickerData, setTickerData] = useState(null);
+  const [roundName, setRoundName] = useState('');
   const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+
+  useModalBackButton(open, () => setOpen(false));
 
   useEffect(() => {
     const fetchInsights = async () => {
@@ -345,11 +352,6 @@ export default function RoundInsightsTicker({ user }) {
 
         const items = [
         {
-          id: 0,
-          text: <span className="text-white font-bold">סיכום מחזור - {lastCompletedRound.name}</span>,
-          icon: <img src="https://media.base44.com/images/public/68656264510003eeef16bac3/628f03bf9_Pngtreegoldtrophyicon-trophy_4979039.png" alt="Trophy" className="w-[18px] h-[18px] object-contain" />
-        },
-        {
           id: 1,
           text: <><span className="text-white">המיקום שלך במחזור :</span> <span className="text-emerald-400 font-bold">{myRank}</span></>,
           icon: <img src="https://media.base44.com/images/public/68656264510003eeef16bac3/9ec46453b_podium_6111775.png" alt="Rank" className="w-[18px] h-[18px] object-contain" />
@@ -431,6 +433,7 @@ export default function RoundInsightsTicker({ user }) {
         }] : []),
         ];
 
+        setRoundName(lastCompletedRound.name);
         setTickerData(items);
       } catch (error) {
         console.error("Error fetching round insights:", error);
@@ -444,27 +447,48 @@ export default function RoundInsightsTicker({ user }) {
   if (loading || !tickerData || tickerData.length === 0) return null;
 
   return (
-    <div
-      className="fixed bottom-0 left-0 right-0 z-50 h-[44px] rounded-t-3xl border-t border-white/[0.08]"
-      style={{ background: 'rgba(5,10,20,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)', boxShadow: '0 -4px 20px rgba(0,0,0,0.2)' }}
-    >
-    <div className="h-full flex items-center justify-center overflow-hidden rounded-t-3xl">
-      <TextLoop
-        interval={4}
-        className="text-[14px] font-medium"
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="fixed bottom-0 left-0 right-0 z-50 h-[44px] flex items-center justify-center gap-2 rounded-t-3xl border-t border-white/[0.08]"
+        style={{ background: 'rgba(5,10,20,0.55)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)', boxShadow: '0 -4px 20px rgba(0,0,0,0.2)' }}
+        dir="rtl"
       >
-        {tickerData.map((item) => (
-          <div key={item.id} className="flex items-center justify-center gap-2 px-4" dir="rtl">
-            {item.icon && (
-              <span className="flex items-center justify-center bg-slate-800/80 p-1.5 rounded-md shadow-sm border border-slate-700/50 shrink-0">
-                {item.icon}
-              </span>
-            )}
-            <span className="tracking-wide">{item.text}</span>
+        <img src={TROPHY_ICON} alt="" className="w-[18px] h-[18px] object-contain" />
+        <span className="text-white text-sm font-bold tracking-wide">סיכום מחזור — {roundName}</span>
+      </button>
+
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerContent
+          className="border-white/10 max-h-[80vh]"
+          style={{ background: 'linear-gradient(180deg, #0c1830 0%, #050b18 100%)' }}
+        >
+          <div dir="rtl" className="px-4 pb-6 pt-2 overflow-y-auto scrollbar-hide">
+            <DrawerTitle asChild>
+              <h3 className="text-center text-white font-bold text-base mb-4">סיכום מחזור — {roundName}</h3>
+            </DrawerTitle>
+            <div className="flex flex-col gap-2">
+              {tickerData.map((item, i) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.06, duration: 0.3, ease: 'easeOut' }}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2.5"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)' }}
+                >
+                  {item.icon && (
+                    <span className="flex items-center justify-center bg-slate-800/80 p-1.5 rounded-md shadow-sm border border-slate-700/50 shrink-0">
+                      {item.icon}
+                    </span>
+                  )}
+                  <span className="text-sm leading-snug">{item.text}</span>
+                </motion.div>
+              ))}
+            </div>
           </div>
-        ))}
-      </TextLoop>
-    </div>
-    </div>
+        </DrawerContent>
+      </Drawer>
+    </>
   );
 }
