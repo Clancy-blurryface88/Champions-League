@@ -4,9 +4,9 @@
 // can be grounded in real numbers instead of Claude's general knowledge.
 import { getTeams, getMatches, getStandings } from 'uefa-api';
 
-const COMPETITION_ID = 1; // UEFA Champions League
+export const COMPETITION_ID = 1; // UEFA Champions League
 
-function currentSeasonYear() {
+export function currentSeasonYear() {
   // UEFA's own seasonYear labels a season by the year it ENDS in (verified
   // live: seasonYear=2027 returns the in-progress 2026-27 season, not 2026)
   // — the opposite of the "start year" convention used elsewhere.
@@ -91,4 +91,35 @@ export async function buildUefaContext(teamAName, teamBName) {
     // brief generation, just fall back to general-knowledge mode.
     return null;
   }
+}
+
+/**
+ * Returns the 144 league-phase fixtures (36 teams x 8 matchdays) for the
+ * current season, already shaped for AdminImportMatches.jsx's importer:
+ * { MatchNumber, RoundNumber, DateUtc, Location, HomeTeam, AwayTeam,
+ *   HomeTeamLogo, AwayTeamLogo }. Empty array if the draw hasn't been
+ * published yet (nothing with matchday.type === 'MATCHDAY' exists).
+ */
+export async function getLeaguePhaseFixtures() {
+  const seasonYear = currentSeasonYear();
+  const allMatches = await getMatches({ competitionId: COMPETITION_ID, seasonYear }, undefined, 500, 0);
+  const leaguePhase = allMatches.filter((m) => m.matchday?.type === 'MATCHDAY');
+
+  const perMatchday = {};
+  return leaguePhase
+    .sort((a, b) => new Date(a.kickOffTime?.dateTime) - new Date(b.kickOffTime?.dateTime))
+    .map((m) => {
+      const roundNumber = parseInt(m.matchday.sequenceNumber, 10);
+      perMatchday[roundNumber] = (perMatchday[roundNumber] || 0) + 1;
+      return {
+        MatchNumber: perMatchday[roundNumber],
+        RoundNumber: roundNumber,
+        DateUtc: m.kickOffTime?.dateTime,
+        Location: m.stadium?.translations?.name?.EN || '',
+        HomeTeam: m.homeTeam.internationalName,
+        AwayTeam: m.awayTeam.internationalName,
+        HomeTeamLogo: m.homeTeam.logoUrl,
+        AwayTeamLogo: m.awayTeam.logoUrl,
+      };
+    });
 }

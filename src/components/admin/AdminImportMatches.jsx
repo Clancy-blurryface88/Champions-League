@@ -4,21 +4,19 @@ import { Match } from '@/api/entities';
 import { TeamLogo } from '@/api/entities';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, CheckCircle, AlertCircle, Loader2, Trash2 } from 'lucide-react';
+import { Download, CheckCircle, AlertCircle, Loader2, Trash2, Globe } from 'lucide-react';
 import { getFlagCode, TEAM_FLAGS } from '@/utils/teamFlags';
 import { STAGES, LEAGUE_PHASE_MATCHDAYS } from '@/config/tournament';
-
-// Real Champions League league-phase fixtures (36 teams × 8 matchdays) go here
-// once UEFA publishes the season draw/calendar. Do NOT fill this with invented
-// pairings — paste the actual fixture list in this shape:
-// { MatchNumber, RoundNumber (1-8, the matchday), DateUtc, Location, HomeTeam, AwayTeam }
-const MATCHES_JSON = [];
 
 const ROUND_NAMES = Object.fromEntries(
   Array.from({ length: LEAGUE_PHASE_MATCHDAYS }, (_, i) => [i + 1, `League Phase - ${i + 1}`])
 );
 
 export default function AdminImportMatches() {
+  // Real fixtures pulled from UEFA (or, before the draw is published, still
+  // empty — see fetchFixtures below). No more hand-pasted MATCHES_JSON.
+  const [matchesJson, setMatchesJson] = useState([]);
+  const [fetchingFixtures, setFetchingFixtures] = useState(false);
   const [status, setStatus] = useState('idle'); // idle | running | done | error
   const [log, setLog] = useState([]);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
@@ -27,13 +25,33 @@ export default function AdminImportMatches() {
     setLog(prev => [...prev, { msg, type, time: new Date().toLocaleTimeString() }]);
   };
 
+  const fetchFixtures = async () => {
+    setFetchingFixtures(true);
+    setLog([]);
+    try {
+      addLog('שולף פיקסצ׳רים אמיתיים מ-UEFA...');
+      const res = await fetch('/api/uefa-fixtures');
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'שגיאה לא ידועה');
+      setMatchesJson(data.fixtures);
+      if (data.fixtures.length === 0) {
+        addLog('UEFA עדיין לא פרסמו את ההגרלה של שלב הליגה לעונה הנוכחית — נסה שוב מאוחר יותר.', 'skip');
+      } else {
+        addLog(`✅ נמצאו ${data.fixtures.length} משחקים אמיתיים מ-UEFA`, 'success');
+      }
+    } catch (err) {
+      addLog(`שגיאה בשליפה מ-UEFA: ${err.message}`, 'error');
+    }
+    setFetchingFixtures(false);
+  };
+
   const handleImport = async () => {
-    if (MATCHES_JSON.length === 0) {
-      addLog('MATCHES_JSON ריק — יש להדביק את פיקסצ׳רי League Phase האמיתיים בקובץ לפני הייבוא.', 'error');
+    if (matchesJson.length === 0) {
+      addLog('אין פיקסצ׳רים לייבא — קודם ללחוץ על "משוך מ-UEFA" (או להדביק ידנית אם UEFA עדיין לא פרסמו).', 'error');
       setStatus('error');
       return;
     }
-    if (!window.confirm(`ייבוא יצור ${LEAGUE_PHASE_MATCHDAYS} מחזורים ו-${MATCHES_JSON.length} משחקים. להמשיך?`)) return;
+    if (!window.confirm(`ייבוא יצור ${LEAGUE_PHASE_MATCHDAYS} מחזורים ו-${matchesJson.length} משחקים. להמשיך?`)) return;
 
     setStatus('running');
     setLog([]);
@@ -75,11 +93,11 @@ export default function AdminImportMatches() {
       const existingMatches = await Match.list('order');
       const existingKeys = new Set(existingMatches.map(m => `${m.round_id}_${m.order}`));
 
-      const totalMatches = MATCHES_JSON.length;
+      const totalMatches = matchesJson.length;
       setProgress({ current: 0, total: totalMatches });
 
-      for (let i = 0; i < MATCHES_JSON.length; i++) {
-        const m = MATCHES_JSON[i];
+      for (let i = 0; i < matchesJson.length; i++) {
+        const m = matchesJson[i];
         const roundId = roundMap[m.RoundNumber];
         if (!roundId) {
           addLog(`לא נמצא round_id למחזור ${m.RoundNumber}`, 'error');
@@ -92,15 +110,18 @@ export default function AdminImportMatches() {
           continue; // skip duplicate
         }
 
-        const homeFlag = getFlagCode(m.HomeTeam);
-        const awayFlag = getFlagCode(m.AwayTeam);
+        // Prefer the real club crest UEFA gave us; TEAM_FLAGS is national
+        // flags only (inherited from the World Cup fork), so it's just a
+        // fallback for manually-entered fixtures without a logo URL.
+        const homeLogo = m.HomeTeamLogo || getFlagCode(m.HomeTeam) || '';
+        const awayLogo = m.AwayTeamLogo || getFlagCode(m.AwayTeam) || '';
 
         await Match.create({
           round_id: roundId,
           team_a: m.HomeTeam,
           team_b: m.AwayTeam,
-          team_a_logo: homeFlag || '',
-          team_b_logo: awayFlag || '',
+          team_a_logo: homeLogo,
+          team_b_logo: awayLogo,
           match_date: new Date(m.DateUtc).toISOString(),
           order: m.MatchNumber,
           stage: STAGES.LEAGUE_PHASE,
@@ -183,23 +204,27 @@ export default function AdminImportMatches() {
           ייבוא משחקי ליגת האלופות 2026
         </CardTitle>
         <p className="text-slate-400 text-sm">
-          יצירת {LEAGUE_PHASE_MATCHDAYS} מחזורים ({MATCHES_JSON.length} משחקים) עם דגלי הנבחרות — League Phase
+          יצירת {LEAGUE_PHASE_MATCHDAYS} מחזורים ({matchesJson.length} משחקים) עם דגלי הנבחרות — League Phase
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
-        {MATCHES_JSON.length === 0 && (
+        {matchesJson.length === 0 && (
           <div className="flex items-start gap-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-yellow-300 text-sm">
             <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
             <span>
-              MATCHES_JSON ריק כרגע — יש להדביק את פיקסצ׳רי League Phase האמיתיים (36 קבוצות × 8 מחזורים) בקובץ <code className="text-xs">AdminImportMatches.jsx</code> כשההגרלה הרשמית של העונה תתפרסם, בפורמט <code className="text-xs">{'{MatchNumber, RoundNumber, DateUtc, Location, HomeTeam, AwayTeam}'}</code> (RoundNumber = מחזור 1-8).
+              אין עדיין פיקסצ׳רים טעונים — לחץ "משוך פיקסצ׳רים מ-UEFA" למטה. אם UEFA עדיין לא פרסמו את ההגרלה, ינסה שוב מאוחר יותר (או שאפשר להדביק ידנית לתוך <code className="text-xs">matchesJson</code> בקוד, בפורמט <code className="text-xs">{'{MatchNumber, RoundNumber, DateUtc, Location, HomeTeam, AwayTeam}'}</code>).
             </span>
           </div>
         )}
         {(status === 'idle' || status === 'error' || status === 'done') && (
           <div className="flex flex-col gap-2">
-            <Button onClick={handleImport} disabled={MATCHES_JSON.length === 0} className="bg-blue-600 hover:bg-blue-700 w-full">
+            <Button onClick={fetchFixtures} disabled={fetchingFixtures} variant="outline" className="border-sky-700 text-sky-400 hover:bg-sky-900/30 w-full">
+              {fetchingFixtures ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Globe className="w-4 h-4 mr-2" />}
+              משוך פיקסצ׳רים מ-UEFA
+            </Button>
+            <Button onClick={handleImport} disabled={matchesJson.length === 0} className="bg-blue-600 hover:bg-blue-700 w-full">
               <Download className="w-4 h-4 mr-2" />
-              ייבא ({LEAGUE_PHASE_MATCHDAYS} מחזורים, {MATCHES_JSON.length} משחקים — מדלג על קיימים)
+              ייבא ({LEAGUE_PHASE_MATCHDAYS} מחזורים, {matchesJson.length} משחקים — מדלג על קיימים)
             </Button>
             <Button onClick={handleCleanDuplicates} variant="outline" className="border-red-700 text-red-400 hover:bg-red-900/30 w-full">
               <Trash2 className="w-4 h-4 mr-2" />
