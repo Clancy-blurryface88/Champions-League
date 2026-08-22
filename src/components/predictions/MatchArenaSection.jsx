@@ -91,9 +91,10 @@ function TeamFormRow({ logo, name, form, avgGoals, avgConceded }) {
         <div
           className="rounded-full flex items-center justify-center flex-shrink-0"
           style={{
-            width: 40, height: 40,
-            background: 'linear-gradient(rgba(255,255,255,0.06), rgba(255,255,255,0.06)) padding-box, linear-gradient(135deg, #38bdf8, #097adc) border-box',
-            border: '2px solid transparent',
+            width: 46, height: 46,
+            background: 'linear-gradient(rgba(15,23,42,0.9), rgba(15,23,42,0.9)) padding-box, linear-gradient(135deg, #38bdf8, #097adc) border-box',
+            border: '3px solid transparent',
+            boxShadow: '0 0 0 2px rgba(9,122,220,0.18), 0 2px 8px rgba(0,0,0,0.35)',
           }}
         >
           <TeamFlag logo={logo} name={name} className="w-7 h-7" animate={false} rounded="full" />
