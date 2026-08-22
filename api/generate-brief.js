@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
 import { STAGES, STAGE_LABELS } from '../src/config/tournament.js';
+import { buildUefaContext } from './_uefaContext.js';
 
 const SYSTEM_PROMPT = `אתה אנליסט כדורגל ישראלי שכותב סיכומי טרום משחק לליגת האלופות 2026.
 הסגנון: סוחף, דעתני, שיחתי — כמו ניתוח בין חברים שמבינים כדורגל, לא כתבה עיתונאית.
@@ -36,7 +37,7 @@ const SYSTEM_PROMPT = `אתה אנליסט כדורגל ישראלי שכותב 
 אם תיקו: "תוצאה משוערת: 1:1 תיקו"
 חשוב: אין להשתמש במילים "בית" או "חוץ" — תמיד שמות הקבוצות בפועל.`;
 
-function buildPrompt(match) {
+function buildPrompt(match, uefaContext) {
   const loc = match.location ? ` | ${match.location}` : '';
   let dateLabel = match.match_date || '';
   try {
@@ -47,7 +48,12 @@ function buildPrompt(match) {
     }) + ' UTC';
   } catch {}
   const stageLabel = STAGE_LABELS[match.stage] || STAGE_LABELS[STAGES.LEAGUE_PHASE];
-  return `כתוב סיכום טרום משחק עבור:\n\n${match.team_a} נגד ${match.team_b} | ${stageLabel} | ${dateLabel}${loc}\n\nהשתמש בידע שלך על שתי הקבוצות לפי המבנה שתואר.`;
+  const header = `כתוב סיכום טרום משחק עבור:\n\n${match.team_a} נגד ${match.team_b} | ${stageLabel} | ${dateLabel}${loc}`;
+
+  if (uefaContext) {
+    return `${header}\n\nנתונים אמיתיים מ-UEFA לעונה הנוכחית (התבסס עליהם, הם עדיפים על ידע כללי):\n${uefaContext}\n\nהשתמש בנתונים האלה בשילוב הידע הכללי שלך על שתי הקבוצות לפי המבנה שתואר.`;
+  }
+  return `${header}\n\nהשתמש בידע שלך על שתי הקבוצות לפי המבנה שתואר.`;
 }
 
 export default async function handler(req, res) {
@@ -84,13 +90,17 @@ export default async function handler(req, res) {
 
   if (matchErr || !match) return res.status(404).json({ error: 'Match not found' });
 
+  // נתונים אמיתיים מ-UEFA (טופס אחרון + טבלה) — null אם העונה עוד לא פתוחה
+  // או שהקבוצות לא זוהו; הפרומפט נופל אז חזרה לניסוח "ידע כללי" הישן.
+  const uefaContext = await buildUefaContext(match.team_a, match.team_b);
+
   // מייצרים ברייף עם Claude
   const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const response = await claude.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 1500,
     system: SYSTEM_PROMPT,
-    messages: [{ role: 'user', content: buildPrompt(match) }],
+    messages: [{ role: 'user', content: buildPrompt(match, uefaContext) }],
   });
 
   const brief_he = response.content[0].text.trim();
