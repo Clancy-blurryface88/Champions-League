@@ -229,6 +229,59 @@ export default function RoundInsightsTicker({ user }) {
           }
         }
 
+        // ── דירוג מצטבר + פער ממקום 1 ────────────────────────────────
+        const sortedRoundsAll = [...rounds].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        const lastIdx = sortedRoundsAll.findIndex(r => r.id === lastCompletedRound.id);
+        const prevIdx = previousCompletedRound
+          ? sortedRoundsAll.findIndex(r => r.id === previousCompletedRound.id)
+          : -1;
+
+        const calcCumScores = (upToIdx) => {
+          if (upToIdx < 0) return {};
+          const roundIds = new Set(sortedRoundsAll.slice(0, upToIdx + 1).map(r => r.id));
+          const cumMatchIds = new Set(
+            matches.filter(m => roundIds.has(m.round_id) && m.is_finished && m.is_score_calculated).map(m => m.id)
+          );
+          const latestMap = {};
+          allPredictions.forEach(p => {
+            if (!cumMatchIds.has(p.match_id)) return;
+            const k = `${p.user_id}__${p.match_id}`;
+            if (!latestMap[k] || new Date(p.created_at) > new Date(latestMap[k].created_at))
+              latestMap[k] = p;
+          });
+          const scores = {};
+          Object.values(latestMap).forEach(p => {
+            scores[p.user_id] = parseFloat(((scores[p.user_id] || 0) + (p.points_earned || 0)).toFixed(2));
+          });
+          return scores;
+        };
+
+        const cumCurrent = calcCumScores(lastIdx);
+        const cumPrev    = calcCumScores(prevIdx);
+
+        const getCumRank = (scores, uid) => {
+          const sorted = Object.entries(scores).sort(([, a], [, b]) => b - a);
+          const idx = sorted.findIndex(([id]) => id === uid);
+          return idx === -1 ? null : idx + 1;
+        };
+        const getGapWithLeader = (scores, uid) => {
+          const sorted = Object.entries(scores).sort(([, a], [, b]) => b - a);
+          if (!sorted.length) return null;
+          if (sorted[0][0] === uid) return 0;
+          return parseFloat(((sorted[0][1] || 0) - (scores[uid] || 0)).toFixed(2));
+        };
+
+        const myCumRankNow  = getCumRank(cumCurrent, user.id);
+        const myCumRankPrev = prevIdx >= 0 ? getCumRank(cumPrev, user.id) : null;
+        const rankChange    = myCumRankNow !== null && myCumRankPrev !== null
+          ? myCumRankPrev - myCumRankNow : null;
+
+        const gapNow    = myCumRankNow !== null ? getGapWithLeader(cumCurrent, user.id) : null;
+        const gapBefore = myCumRankPrev !== null ? getGapWithLeader(cumPrev, user.id) : null;
+        const gapChange = gapNow !== null && gapBefore !== null
+          ? parseFloat((gapBefore - gapNow).toFixed(2)) : null;
+        const gapErased = gapBefore !== null && gapBefore > 0 && gapNow === 0;
+
         // ── נתונים קבוצתיים ────────────────────────────────────────────
         const finishedIds = new Set(roundMatches.filter(m => m.is_finished).map(m => m.id));
 
@@ -348,6 +401,35 @@ export default function RoundInsightsTicker({ user }) {
           id: 13,
           text: <><span className="text-white">מלך הפגיעות במחזור:</span> <span className="text-sky-400 font-bold">{topExactUser.name}</span> <span className="text-slate-400 text-[13px]">({topExactUser.count} פגיעות מדויקות)</span></>,
           icon: <span className="text-[16px] leading-none">🥇</span>
+        }] : []),
+
+        // שינוי דירוג מצטבר
+        ...(rankChange !== null ? [{
+          id: 20,
+          text: rankChange === 0
+            ? <><span className="text-white">דירוג מצטבר:</span> <span className="text-slate-400 font-bold">ללא שינוי</span> <span className="text-slate-500 text-[13px]">(מקום {myCumRankNow})</span></>
+            : rankChange > 0
+              ? <><span className="text-white">דירוג מצטבר:</span> <span className="text-emerald-400 font-bold">↑{rankChange} מקומות</span> <span className="text-slate-400 text-[13px]">(כיום מקום {myCumRankNow})</span></>
+              : <><span className="text-white">דירוג מצטבר:</span> <span className="text-red-400 font-bold">↓{Math.abs(rankChange)} מקומות</span> <span className="text-slate-400 text-[13px]">(כיום מקום {myCumRankNow})</span></>,
+          icon: <span className="text-[16px] leading-none">{rankChange > 0 ? '📈' : rankChange < 0 ? '📉' : '➡️'}</span>
+        }] : []),
+
+        // פער ממקום 1
+        ...(gapNow !== null && myCumRankNow !== 1 ? [{
+          id: 21,
+          text: gapErased
+            ? <><span className="text-white">פער ממקום 1:</span> <span className="text-yellow-400 font-bold">מחקת את הפער! 🎉</span></>
+            : gapChange !== null && gapChange > 0
+              ? <><span className="text-white">פער ממקום 1:</span> <span className="text-emerald-400 font-bold">צמצמת ב-{gapChange} נק'</span> <span className="text-slate-400 text-[13px]">(נותר {gapNow} נק')</span></>
+              : gapChange !== null && gapChange < 0
+                ? <><span className="text-white">פער ממקום 1:</span> <span className="text-red-400 font-bold">גדל ב-{Math.abs(gapChange)} נק'</span> <span className="text-slate-400 text-[13px]">(פער: {gapNow} נק')</span></>
+                : <><span className="text-white">פער ממקום 1:</span> <span className="text-slate-300 font-bold">{gapNow} נק'</span></>,
+          icon: <span className="text-[16px] leading-none">{gapErased ? '🏆' : gapChange > 0 ? '🔼' : '🔽'}</span>
+        }] : []),
+        ...(myCumRankNow === 1 ? [{
+          id: 21,
+          text: <><span className="text-white">דירוג מצטבר:</span> <span className="text-yellow-400 font-bold">אתה במקום הראשון! 👑</span></>,
+          icon: <span className="text-[16px] leading-none">👑</span>
         }] : []),
         ];
 
