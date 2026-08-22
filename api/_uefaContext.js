@@ -194,3 +194,30 @@ export async function getUefaLiveMatches() {
     };
   }));
 }
+
+/**
+ * UEFA's official league-phase standings, flattened to one array
+ * (no group/round nesting — the league phase is a single 36-team table
+ * anyway) for AdminStandingsCheck.jsx to compare against the table this
+ * app computes itself from admin-entered results.
+ */
+export async function getOfficialStandings() {
+  const seasonYear = currentSeasonYear();
+  const standings = await getStandings({ competitionId: COMPETITION_ID, seasonYear });
+  return standings
+    .flatMap((s) => s.items || [])
+    .map((row) => ({
+      name: row.team?.internationalName,
+      officialName: row.team?.translations?.displayOfficialName?.EN,
+      rank: row.rank,
+      points: row.points,
+      played: row.played,
+      won: row.won,
+      drawn: row.drawn,
+      lost: row.lost,
+      gf: row.goalsFor,
+      ga: row.goalsAgainst,
+      gd: row.goalDifference,
+    }))
+    .sort((a, b) => a.rank - b.rank);
+}
