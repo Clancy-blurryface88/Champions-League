@@ -745,7 +745,7 @@ export default function Predictions() {
               const isPast   = moment(dateKey).isBefore(moment().startOf('day'));
               const dayMatches = matchesByDate[dateKey] || [];
               const count    = dayMatches.length;
-              const finishedCount = dayMatches.filter(m => m.is_finished).length;
+              const settledCount = dayMatches.filter(m => m.is_finished || isMatchLocked(m.match_date)).length;
               const hasMissing = dateHasMissingPredictions(dateKey);
               const dayName  = isToday ? 'היום' : moment(dateKey).locale('he').format('ddd');
               const dayNum   = moment(dateKey).format('D');
@@ -783,13 +783,19 @@ export default function Predictions() {
                     {dayNum}
                   </span>
                   <span className={`text-[9px] font-semibold leading-none ${isActive ? 'text-sky-300' : isPast ? 'text-slate-600' : 'text-white/40'}`}>
-                    {finishedCount}/{count}
+                    {settledCount}/{count}
                   </span>
-                  <div className="w-full h-1 rounded-full mt-0.5" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                    <div
-                      className="h-full rounded-full"
-                      style={{ width: `${count ? (finishedCount / count) * 100 : 0}%`, background: isPast ? '#64748b' : '#4ade80' }}
-                    />
+                  <div className="w-full flex gap-0.5 mt-0.5">
+                    {dayMatches.map((m, mi) => {
+                      const settled = m.is_finished || isMatchLocked(m.match_date);
+                      return (
+                        <div
+                          key={m.id ?? mi}
+                          className="flex-1 h-1 rounded-full"
+                          style={{ background: settled ? '#4ade80' : 'rgba(255,255,255,0.08)' }}
+                        />
+                      );
+                    })}
                   </div>
                 </button>
               );
