@@ -89,15 +89,14 @@ function TeamFormRow({ logo, name, form, avgGoals, avgConceded }) {
     <div className="flex items-start justify-center gap-3 flex-wrap">
       <div className="flex flex-col items-center gap-1">
         <div
-          className="rounded-full flex-shrink-0"
-          style={{ width: 40, height: 40, padding: 2, background: 'linear-gradient(135deg, #38bdf8, #097adc)' }}
+          className="rounded-full flex items-center justify-center flex-shrink-0"
+          style={{
+            width: 40, height: 40,
+            background: 'linear-gradient(rgba(255,255,255,0.06), rgba(255,255,255,0.06)) padding-box, linear-gradient(135deg, #38bdf8, #097adc) border-box',
+            border: '2px solid transparent',
+          }}
         >
-          <div
-            className="w-full h-full rounded-full flex items-center justify-center"
-            style={{ background: 'rgba(255,255,255,0.06)' }}
-          >
-            <TeamFlag logo={logo} name={name} className="w-7 h-7" animate={false} rounded="full" />
-          </div>
+          <TeamFlag logo={logo} name={name} className="w-7 h-7" animate={false} rounded="full" />
         </div>
         <AvgGoals scored={avgGoals} conceded={avgConceded} />
       </div>
