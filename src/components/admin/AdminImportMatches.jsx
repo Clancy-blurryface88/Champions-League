@@ -110,18 +110,17 @@ export default function AdminImportMatches() {
           continue; // skip duplicate
         }
 
-        // Prefer the real club crest UEFA gave us; TEAM_FLAGS is national
-        // flags only (inherited from the World Cup fork), so it's just a
-        // fallback for manually-entered fixtures without a logo URL.
-        const homeLogo = m.HomeTeamLogo || getFlagCode(m.HomeTeam) || '';
-        const awayLogo = m.AwayTeamLogo || getFlagCode(m.AwayTeam) || '';
+        // Logos are managed manually via AdminLogos.jsx, not pulled from
+        // UEFA — getFlagCode is only a fallback for national-team flags.
+        const homeFlag = getFlagCode(m.HomeTeam);
+        const awayFlag = getFlagCode(m.AwayTeam);
 
         await Match.create({
           round_id: roundId,
           team_a: m.HomeTeam,
           team_b: m.AwayTeam,
-          team_a_logo: homeLogo,
-          team_b_logo: awayLogo,
+          team_a_logo: homeFlag || '',
+          team_b_logo: awayFlag || '',
           match_date: new Date(m.DateUtc).toISOString(),
           order: m.MatchNumber,
           stage: STAGES.LEAGUE_PHASE,

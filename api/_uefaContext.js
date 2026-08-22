@@ -96,9 +96,10 @@ export async function buildUefaContext(teamAName, teamBName) {
 /**
  * Returns the 144 league-phase fixtures (36 teams x 8 matchdays) for the
  * current season, already shaped for AdminImportMatches.jsx's importer:
- * { MatchNumber, RoundNumber, DateUtc, Location, HomeTeam, AwayTeam,
- *   HomeTeamLogo, AwayTeamLogo }. Empty array if the draw hasn't been
- * published yet (nothing with matchday.type === 'MATCHDAY' exists).
+ * { MatchNumber, RoundNumber, DateUtc, Location, HomeTeam, AwayTeam }.
+ * No logo URLs — team logos are managed manually via AdminLogos.jsx, not
+ * pulled from UEFA. Empty array if the draw hasn't been published yet
+ * (nothing with matchday.type === 'MATCHDAY' exists).
  */
 export async function getLeaguePhaseFixtures() {
   const seasonYear = currentSeasonYear();
@@ -118,8 +119,6 @@ export async function getLeaguePhaseFixtures() {
         Location: m.stadium?.translations?.name?.EN || '',
         HomeTeam: m.homeTeam.internationalName,
         AwayTeam: m.awayTeam.internationalName,
-        HomeTeamLogo: m.homeTeam.logoUrl,
-        AwayTeamLogo: m.awayTeam.logoUrl,
       };
     });
 }
