@@ -248,8 +248,8 @@ function FlipBoardPicker({ rounds, value, onChange }) {
     <div className="flex flex-col items-center gap-2 w-full">
       <div className="flex items-center gap-3 w-full justify-center">
         <button onClick={() => canPrev && onChange(rounds[idx - 1].id)} disabled={!canPrev}
-          className="w-9 h-9 flex items-center justify-center rounded-full disabled:opacity-20 hover:text-emerald-400 transition-all"
-          style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(52,211,153,0.28)', color: 'rgba(52,211,153,0.75)' }}>
+          className="w-9 h-9 flex items-center justify-center rounded-full disabled:opacity-20 hover:text-green-400 transition-all"
+          style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(74,222,128,0.28)', color: 'rgba(74,222,128,0.75)' }}>
           <ChevronUp className="w-5 h-5" />
         </button>
         <AnimatePresence mode="wait">
@@ -258,27 +258,27 @@ function FlipBoardPicker({ rounds, value, onChange }) {
             animate={{ rotateX: 0, opacity: 1 }}
             exit={{ rotateX: 90, opacity: 0 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}
-            className="px-8 py-2.5 rounded-xl border border-emerald-400/30 min-w-[180px] text-center"
-            style={{ perspective: 600, background: 'linear-gradient(135deg, rgba(16,185,129,0.16) 0%, rgba(5,150,105,0.08) 100%)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)' }}>
+            className="px-8 py-2.5 rounded-xl border border-green-400/30 min-w-[180px] text-center"
+            style={{ perspective: 600, background: 'linear-gradient(135deg, rgba(74,222,128,0.16) 0%, rgba(22,163,74,0.08) 100%)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)' }}>
             <span
               className="font-bold text-base tracking-wide"
               style={{
-                backgroundImage: 'linear-gradient(135deg, #a7f3d0 0%, #34d399 100%)',
+                backgroundImage: 'linear-gradient(135deg, #bbf7d0 0%, #4ade80 100%)',
                 WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent',
               }}
             >{current?.name}</span>
           </motion.div>
         </AnimatePresence>
         <button onClick={() => canNext && onChange(rounds[idx + 1].id)} disabled={!canNext}
-          className="w-9 h-9 flex items-center justify-center rounded-full disabled:opacity-20 hover:text-emerald-400 transition-all"
-          style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(52,211,153,0.28)', color: 'rgba(52,211,153,0.75)' }}>
+          className="w-9 h-9 flex items-center justify-center rounded-full disabled:opacity-20 hover:text-green-400 transition-all"
+          style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px) saturate(140%)', WebkitBackdropFilter: 'blur(16px) saturate(140%)', border: '1px solid rgba(74,222,128,0.28)', color: 'rgba(74,222,128,0.75)' }}>
           <ChevronDown className="w-5 h-5" />
         </button>
       </div>
       <div className="flex gap-1.5">
         {rounds.map((r, i) => (
           <button key={r.id} onClick={() => onChange(r.id)}
-            className={`rounded-full transition-all duration-200 ${i === idx ? 'bg-emerald-400 w-4 h-1.5' : 'bg-slate-700 w-1.5 h-1.5 hover:bg-slate-500'}`} />
+            className={`rounded-full transition-all duration-200 ${i === idx ? 'bg-green-400 w-4 h-1.5' : 'bg-slate-700 w-1.5 h-1.5 hover:bg-slate-500'}`} />
         ))}
       </div>
     </div>
@@ -706,12 +706,12 @@ export default function PredictionsResults() {
                 background: 'rgba(255,255,255,0.10)',
                 backdropFilter: 'blur(40px) saturate(180%)',
                 WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-                border: '1px solid rgba(250,204,21,0.25)',
+                border: '1px solid rgba(74,222,128,0.25)',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)',
               }}
             >
               <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-2xl" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 100%)' }} />
-              <span className="text-base uppercase tracking-[0.16em] text-emerald-400/80 font-bold">בחר מחזור</span>
+              <span className="text-base uppercase tracking-[0.16em] font-bold" style={{ color: 'rgba(74,222,128,0.8)' }}>בחר מחזור</span>
               <FlipBoardPicker
                 rounds={availableRounds}
                 value={selectedRound}
@@ -817,14 +817,14 @@ export default function PredictionsResults() {
                               <button
                                 key={match.id}
                                 onClick={() => goToMatch(i)}
-                                className="flex-none flex items-center gap-1 px-1.5 py-1 rounded-lg text-[10px] font-bold transition-all"
+                                className="flex-none flex items-center gap-1 px-1.5 py-1 rounded-lg text-xs font-bold transition-all"
                                 style={active
                                   ? { background: 'linear-gradient(135deg, #16a34a 0%, #097adc 100%)', color: '#04150c' }
                                   : { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)', color: 'rgba(255,255,255,0.55)' }}
                               >
-                                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-2.5 h-2.5" rounded="sm" />
+                                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-[5px] h-[5px]" rounded="sm" />
                                 <span className="tabular-nums">{match.actual_score_a}-{match.actual_score_b}</span>
-                                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-2.5 h-2.5" rounded="sm" />
+                                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-[5px] h-[5px]" rounded="sm" />
                               </button>
                             );
                           })}
