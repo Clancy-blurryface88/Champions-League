@@ -1067,7 +1067,7 @@ export default function Predictions() {
                         {/* Row 2: name + label tightly stacked, top-aligned */}
                         <div style={{ gridColumn: 1, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center">
-                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)' }}>
+                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)', minHeight: '2.5em' }}>
                             {match.team_a}
                           </RevealText>
                           <span className="text-[10px] font-extrabold leading-none text-center" style={{
@@ -1080,7 +1080,7 @@ export default function Predictions() {
                         </div>
                         <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center">
-                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)' }}>
+                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)', minHeight: '2.5em' }}>
                             {match.team_b}
                           </RevealText>
                           <span className="text-[10px] font-extrabold leading-none text-center" style={{
