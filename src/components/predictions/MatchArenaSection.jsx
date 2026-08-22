@@ -55,7 +55,7 @@ function FormDots({ form }) {
             <div
               className="rounded-full flex items-center justify-center flex-shrink-0"
               style={{
-                width: 34, height: 34,
+                width: 40, height: 40,
                 background: s.bg,
                 border: `2px solid ${s.tx}`,
                 boxShadow: `0 0 0 3px ${s.bg}, 0 2px 6px rgba(0,0,0,0.25)`,
@@ -89,10 +89,15 @@ function TeamFormRow({ logo, name, form, avgGoals, avgConceded }) {
     <div className="flex items-start justify-center gap-3 flex-wrap">
       <div className="flex flex-col items-center gap-1">
         <div
-          className="rounded-full flex items-center justify-center flex-shrink-0"
-          style={{ width: 34, height: 34, background: 'rgba(255,255,255,0.06)', border: '2px solid rgba(255,255,255,0.18)' }}
+          className="rounded-full flex-shrink-0"
+          style={{ width: 40, height: 40, padding: 2, background: 'linear-gradient(135deg, #38bdf8, #097adc)' }}
         >
-          <TeamFlag logo={logo} name={name} className="w-7 h-7" animate={false} rounded="full" />
+          <div
+            className="w-full h-full rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(255,255,255,0.06)' }}
+          >
+            <TeamFlag logo={logo} name={name} className="w-7 h-7" animate={false} rounded="full" />
+          </div>
         </div>
         <AvgGoals scored={avgGoals} conceded={avgConceded} />
       </div>
