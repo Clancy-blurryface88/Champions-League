@@ -559,17 +559,10 @@ export default function PredictionsResults() {
     setCurrentMatchIndex(0);
   };
 
-  const matchTrackRef = useRef(null);
   const chipStripRef = useRef(null);
-  // Set right before setCurrentMatchIndex from the track's own scroll handler,
-  // so the sync effect below doesn't fight an in-progress swipe gesture.
-  const skipNextTrackSyncRef = useRef(false);
-  // Debounces scroll events so currentMatchIndex updates once the swipe settles,
-  // instead of on every tick — updating mid-drag flickered the chip strip/label.
-  const scrollSettleTimeoutRef = useRef(null);
 
-  // Cards/chips render newest-first (last match on the left), so the match
-  // index and its left-to-right screen position are mirror images of each other.
+  // Chips render newest-first (last match on the left), so the match index
+  // and its left-to-right screen position are mirror images of each other.
   // The mapping is its own inverse, which is why one helper covers both directions.
   const displayPos = (i) => finishedMatches.length - 1 - i;
 
@@ -577,41 +570,11 @@ export default function PredictionsResults() {
     setCurrentMatchIndex(i);
   };
 
-  // Keep the active chip visible as the current match changes (swipe or tap)
+  // Keep the active chip visible as the current match changes
   useEffect(() => {
     const chip = chipStripRef.current?.children[displayPos(currentMatchIndex)];
     chip?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   }, [currentMatchIndex]);
-
-  // Keep the swipeable track in sync whenever the active match changes
-  // for a reason other than the user's own scroll (chip tap, default-to-last, round change).
-  useEffect(() => {
-    if (skipNextTrackSyncRef.current) {
-      skipNextTrackSyncRef.current = false;
-      return;
-    }
-    const el = matchTrackRef.current;
-    if (!el) return;
-    const target = displayPos(currentMatchIndex) * el.clientWidth;
-    if (Math.abs(el.scrollLeft - target) > 4) {
-      el.scrollTo({ left: target, behavior: 'smooth' });
-    }
-  }, [currentMatchIndex, finishedMatches.length]);
-
-  const handleMatchTrackScroll = () => {
-    if (scrollSettleTimeoutRef.current) clearTimeout(scrollSettleTimeoutRef.current);
-    scrollSettleTimeoutRef.current = setTimeout(() => {
-      const el = matchTrackRef.current;
-      if (!el) return;
-      const width = el.clientWidth || 1;
-      const pos = Math.round(el.scrollLeft / width);
-      const i = displayPos(pos);
-      if (i !== currentMatchIndex && i >= 0 && i < finishedMatches.length) {
-        skipNextTrackSyncRef.current = true;
-        setCurrentMatchIndex(i);
-      }
-    }, 120);
-  };
 
   const getOutcomeStatus = (prediction, match) => {
     if (!prediction || !match.is_finished) return null;
@@ -788,28 +751,9 @@ export default function PredictionsResults() {
                         משחק {currentMatchIndex + 1} מתוך {finishedMatches.length}
                       </h3>
 
-                      {/* Swipeable match card — snaps one match per screen-width */}
-                      <div
-                        ref={matchTrackRef}
-                        onScroll={handleMatchTrackScroll}
-                        className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide"
-                        style={{ WebkitOverflowScrolling: 'touch' }}
-                      >
-                        {finishedMatches.map((match, i) => i).reverse().map((i) => {
-                          const match = finishedMatches[i];
-                          return (
-                            <div key={match.id} className="flex-none w-full snap-start flex items-center justify-center gap-3 py-1">
-                              <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-6 h-6" rounded="md" />
-                              <span className="text-white/30 text-xs font-semibold">vs</span>
-                              <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-6 h-6" rounded="md" />
-                            </div>
-                          );
-                        })}
-                      </div>
-
                       {/* Chip strip — jump straight to any match, newest first */}
                       {finishedMatches.length > 1 &&
-                        <div ref={chipStripRef} className="flex gap-1 overflow-x-auto px-0.5 scrollbar-hide">
+                        <div ref={chipStripRef} className="flex gap-1.5 overflow-x-auto px-0.5 scrollbar-hide">
                           {finishedMatches.map((match, i) => i).reverse().map((i) => {
                             const match = finishedMatches[i];
                             const active = i === currentMatchIndex;
@@ -817,14 +761,14 @@ export default function PredictionsResults() {
                               <button
                                 key={match.id}
                                 onClick={() => goToMatch(i)}
-                                className="flex-none flex items-center gap-1 px-1.5 py-1 rounded-lg text-xs font-bold transition-all"
+                                className="flex-none flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-bold transition-all"
                                 style={active
                                   ? { background: 'linear-gradient(135deg, #16a34a 0%, #097adc 100%)' }
                                   : { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)' }}
                               >
-                                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-[7px] h-[7px]" rounded="sm" />
+                                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-6 h-6" rounded="sm" />
                                 <span className="tabular-nums" style={{ color: '#22d3ee' }}>{match.actual_score_a}-{match.actual_score_b}</span>
-                                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-[7px] h-[7px]" rounded="sm" />
+                                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-6 h-6" rounded="sm" />
                               </button>
                             );
                           })}
