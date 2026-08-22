@@ -67,25 +67,13 @@ export default function MatchTickerBar({ onClick }) {
         <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-4 h-4" />
         <span className="text-white text-xs font-medium">{match.team_a}</span>
         {match.is_finished ? (
-          <span
-            className="text-xs font-bold mx-0.5"
-            style={{
-              background: 'linear-gradient(90deg, #67e8f9, #0891b2)',
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              color: 'transparent',
-            }}
-          >{match.actual_score_a ?? '-'} - {match.actual_score_b ?? '-'}</span>
+          <span className="text-xs font-bold mx-0.5" style={{ color: '#22d3ee' }}>
+            {match.actual_score_a ?? '-'} - {match.actual_score_b ?? '-'}
+          </span>
         ) : (
-          <span
-            className="text-xs font-bold mx-0.5"
-            style={{
-              background: 'linear-gradient(90deg, #6ee7b7, #059669)',
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              color: 'transparent',
-            }}
-          >{time}</span>
+          <span className="text-xs font-bold mx-0.5" style={{ color: '#4ade80' }}>
+            {time}
+          </span>
         )}
         <span className="text-white text-xs font-medium">{match.team_b}</span>
         <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-4 h-4" />
@@ -130,10 +118,7 @@ export default function MatchTickerBar({ onClick }) {
           <span
             style={{
               fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', userSelect: 'none',
-              background: 'linear-gradient(90deg, #6ee7b7, #059669)',
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              color: 'transparent',
+              color: '#4ade80',
             }}
           >{dateLabel}</span>
         </span>
