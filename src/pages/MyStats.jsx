@@ -5,7 +5,8 @@ import { Prediction } from "@/api/entities";
 import { Match } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, Calendar } from "lucide-react";
+import { ArrowLeft, Calendar, Pencil, Check, X } from "lucide-react";
+import JerseyPreview from "@/components/JerseyPreview";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -49,6 +50,11 @@ export default function MyStats() {
   const [pointsBreakdownData, setPointsBreakdownData] = useState([]);
   const [exactHitsList, setExactHitsList] = useState([]);
   const [heatmapData, setHeatmapData] = useState([]);
+  const [jerseyEditing, setJerseyEditing] = useState(false);
+  const [jerseyNameInput, setJerseyNameInput] = useState('');
+  const [jerseyNumberInput, setJerseyNumberInput] = useState('');
+  const [jerseySaving, setJerseySaving] = useState(false);
+
   const [activeTab, setActiveTab] = useState("stats");
   const [activeChartTab, setActiveChartTab] = useState("points");
   const [activeHitsTab, setActiveHitsTab] = useState("hits");
@@ -529,6 +535,30 @@ export default function MyStats() {
     loadMyStats();
   }, [loadMyStats]);
 
+  useEffect(() => {
+    if (user && !jerseyEditing) {
+      setJerseyNameInput(user.display_name || '');
+      setJerseyNumberInput(user.jersey_number != null ? String(user.jersey_number) : '');
+    }
+  }, [user, jerseyEditing]);
+
+  const handleSaveJersey = async () => {
+    if (!jerseyNameInput.trim()) return;
+    setJerseySaving(true);
+    try {
+      const updated = await User.updateMyUserData({
+        display_name: jerseyNameInput.trim(),
+        jersey_number: jerseyNumberInput ? parseInt(jerseyNumberInput, 10) : null,
+      });
+      setUser(updated);
+      setJerseyEditing(false);
+    } catch (error) {
+      console.error("Error saving jersey:", error);
+      alert("שגיאה בשמירה: " + (error?.message || JSON.stringify(error)));
+    }
+    setJerseySaving(false);
+  };
+
   // NEW: Load all players for comparison dropdown
   useEffect(() => {
     const loadPlayers = async () => {
@@ -774,6 +804,86 @@ export default function MyStats() {
              <h1 className="text-2xl font-bold text-white"></h1>
           </div>
         </div>
+
+        {/* Jersey Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="rounded-[20px] p-6 mb-6 relative overflow-hidden"
+          style={{
+            background: 'rgba(255,255,255,0.10)',
+            backdropFilter: 'blur(40px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+            border: '1px solid rgba(255,255,255,0.22)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.45)',
+          }}
+        >
+          <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)' }} />
+
+          <div className="relative flex flex-col items-center gap-4">
+            <JerseyPreview
+              name={jerseyEditing ? jerseyNameInput : (user?.display_name || '')}
+              number={jerseyEditing ? jerseyNumberInput : (user?.jersey_number ?? '')}
+              size="md"
+            />
+
+            {jerseyEditing ? (
+              <div className="w-full max-w-xs flex flex-col items-center gap-3">
+                <div className="flex gap-2.5 w-full">
+                  <input
+                    value={jerseyNumberInput}
+                    onChange={e => setJerseyNumberInput(e.target.value.replace(/[^0-9]/g, '').slice(0, 2))}
+                    placeholder="מספר"
+                    inputMode="numeric"
+                    maxLength={2}
+                    disabled={jerseySaving}
+                    dir="ltr"
+                    className="w-20 text-sm text-center text-white placeholder:text-white/25 outline-none rounded-xl"
+                    style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.16)', padding: '10px 8px' }}
+                  />
+                  <input
+                    value={jerseyNameInput}
+                    onChange={e => setJerseyNameInput(e.target.value)}
+                    placeholder="הכינוי שלך..."
+                    maxLength={20}
+                    disabled={jerseySaving}
+                    dir="rtl"
+                    className="flex-1 text-sm text-center text-white placeholder:text-white/25 outline-none rounded-xl"
+                    style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.16)', padding: '10px 16px' }}
+                  />
+                </div>
+                <div className="flex gap-2 w-full">
+                  <button
+                    onClick={handleSaveJersey}
+                    disabled={jerseySaving || !jerseyNameInput.trim()}
+                    className="flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold text-black rounded-xl py-2.5 disabled:opacity-40"
+                    style={{ background: 'white' }}
+                  >
+                    <Check className="w-4 h-4" />
+                    {jerseySaving ? 'שומר...' : 'שמור'}
+                  </button>
+                  <button
+                    onClick={() => setJerseyEditing(false)}
+                    disabled={jerseySaving}
+                    className="px-4 flex items-center justify-center rounded-xl py-2.5 text-white/70"
+                    style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)' }}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setJerseyEditing(true)}
+                className="flex items-center gap-1.5 text-sm text-white/60 hover:text-white transition-colors"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                עריכת חולצה
+              </button>
+            )}
+          </div>
+        </motion.div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList

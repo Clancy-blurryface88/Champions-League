@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import OrbitSpinner from "@/components/OrbitSpinner";
+import JerseyPreview from "@/components/JerseyPreview";
 import { motion, AnimatePresence } from "framer-motion";
 
 const BOKEH = [
@@ -12,11 +13,13 @@ const BOKEH = [
 
 export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser }) {
   const [displayName, setDisplayName] = useState('');
+  const [jerseyNumber, setJerseyNumber] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
       setDisplayName(currentUser.display_name || currentUser.full_name || '');
+      setJerseyNumber(currentUser.jersey_number != null ? String(currentUser.jersey_number) : '');
     }
   }, [currentUser]);
 
@@ -25,7 +28,10 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
     setSaving(true);
     try {
       const { User } = await import('@/api/entities');
-      await User.updateMyUserData({ display_name: displayName.trim() });
+      await User.updateMyUserData({
+        display_name: displayName.trim(),
+        jersey_number: jerseyNumber ? parseInt(jerseyNumber, 10) : null,
+      });
       setTimeout(() => {
         onSave(displayName.trim());
         setSaving(false);
@@ -132,31 +138,62 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
 
               {/* Body */}
               <div className="px-8 py-7 space-y-3.5">
-                <input
-                  value={displayName}
-                  onChange={e => setDisplayName(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="השם שלך..."
-                  maxLength={20}
-                  disabled={saving}
-                  autoFocus
-                  dir="rtl"
-                  className="w-full text-sm text-center text-white placeholder:text-white/25 outline-none transition-all duration-200"
-                  style={{
-                    background:  "rgba(255,255,255,0.04)",
-                    border:      "1px solid rgba(255,255,255,0.08)",
-                    borderRadius: "0.75rem",
-                    padding:     "12px 16px",
-                  }}
-                  onFocus={e => {
-                    e.target.style.background = "rgba(255,255,255,0.07)";
-                    e.target.style.borderColor = "rgba(255,255,255,0.15)";
-                  }}
-                  onBlur={e => {
-                    e.target.style.background = "rgba(255,255,255,0.04)";
-                    e.target.style.borderColor = "rgba(255,255,255,0.08)";
-                  }}
-                />
+                <div className="flex justify-center mb-1">
+                  <JerseyPreview name={displayName} number={jerseyNumber} size="md" />
+                </div>
+
+                <div className="flex gap-2.5">
+                  <input
+                    value={jerseyNumber}
+                    onChange={e => setJerseyNumber(e.target.value.replace(/[^0-9]/g, '').slice(0, 2))}
+                    onKeyPress={handleKeyPress}
+                    placeholder="מספר"
+                    inputMode="numeric"
+                    maxLength={2}
+                    disabled={saving}
+                    dir="ltr"
+                    className="w-20 text-sm text-center text-white placeholder:text-white/25 outline-none transition-all duration-200"
+                    style={{
+                      background:  "rgba(255,255,255,0.04)",
+                      border:      "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: "0.75rem",
+                      padding:     "12px 8px",
+                    }}
+                    onFocus={e => {
+                      e.target.style.background = "rgba(255,255,255,0.07)";
+                      e.target.style.borderColor = "rgba(255,255,255,0.15)";
+                    }}
+                    onBlur={e => {
+                      e.target.style.background = "rgba(255,255,255,0.04)";
+                      e.target.style.borderColor = "rgba(255,255,255,0.08)";
+                    }}
+                  />
+                  <input
+                    value={displayName}
+                    onChange={e => setDisplayName(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="השם שלך..."
+                    maxLength={20}
+                    disabled={saving}
+                    autoFocus
+                    dir="rtl"
+                    className="flex-1 text-sm text-center text-white placeholder:text-white/25 outline-none transition-all duration-200"
+                    style={{
+                      background:  "rgba(255,255,255,0.04)",
+                      border:      "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: "0.75rem",
+                      padding:     "12px 16px",
+                    }}
+                    onFocus={e => {
+                      e.target.style.background = "rgba(255,255,255,0.07)";
+                      e.target.style.borderColor = "rgba(255,255,255,0.15)";
+                    }}
+                    onBlur={e => {
+                      e.target.style.background = "rgba(255,255,255,0.04)";
+                      e.target.style.borderColor = "rgba(255,255,255,0.08)";
+                    }}
+                  />
+                </div>
 
                 {userEmail && (
                   <p className="text-white/25 text-[11px] text-center">{userEmail}</p>
