@@ -340,6 +340,8 @@ export default function Layout({ children, currentPageName }) {
   const [liveMatch, setLiveMatch] = useState(null);
   const [liveMatchCount, setLiveMatchCount] = useState(0);
   const [liveMatches, setLiveMatches] = useState([]);
+  const liveChipLongPressTimer = useRef(null);
+  const liveChipLongPressFired = useRef(false);
   const [showLiveIntro, setShowLiveIntro] = useState(false);
   const [showLiveLeaderboard, setShowLiveLeaderboard] = useState(false);
   const [liveUserPredictions, setLiveUserPredictions] = useState({});
@@ -1263,7 +1265,31 @@ export default function Layout({ children, currentPageName }) {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0, scale: 0.7 }}
                   transition={{ type: 'spring', stiffness: 180, damping: 26 }}
-                  onClick={() => { setShowLiveData(true); setShowLeaderboard(false); }}
+                  onClick={() => {
+                    // A long-press already opened the full matches grid below —
+                    // swallow the click the browser synthesizes right after touchend
+                    // so it doesn't also open the side panel underneath it.
+                    if (liveChipLongPressFired.current) { liveChipLongPressFired.current = false; return; }
+                    setShowLiveData(true); setShowLeaderboard(false);
+                  }}
+                  onMouseDown={() => {
+                    liveChipLongPressFired.current = false;
+                    liveChipLongPressTimer.current = setTimeout(() => {
+                      liveChipLongPressFired.current = true;
+                      setShowLiveIntro(true);
+                    }, 450);
+                  }}
+                  onMouseUp={() => clearTimeout(liveChipLongPressTimer.current)}
+                  onMouseLeave={() => clearTimeout(liveChipLongPressTimer.current)}
+                  onTouchStart={() => {
+                    liveChipLongPressFired.current = false;
+                    liveChipLongPressTimer.current = setTimeout(() => {
+                      liveChipLongPressFired.current = true;
+                      setShowLiveIntro(true);
+                    }, 450);
+                  }}
+                  onTouchEnd={() => clearTimeout(liveChipLongPressTimer.current)}
+                  onContextMenu={(e) => e.preventDefault()}
                   className="relative flex items-center gap-1.5 px-3 py-2.5 rounded-full cursor-pointer"
                   style={{
                     background: 'rgba(239,68,68,0.12)',
@@ -1313,6 +1339,7 @@ export default function Layout({ children, currentPageName }) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4 }}
+                onClick={() => setShowLiveIntro(false)}
               />
               <div className="fixed inset-0 z-[56] flex items-center justify-center pointer-events-none">
                 <LiveMatchesGrid
