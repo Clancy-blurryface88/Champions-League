@@ -129,11 +129,63 @@ function toFootballDataStatus(m) {
   return 'SCHEDULED';
 }
 
+// Reshapes one UEFA match object to look exactly like football-data.org's
+// match shape (homeTeam.name/crest, score.fullTime, status, minute, goals[])
+// — shared by getUefaLiveMatches and getUefaMatchesByDate so both fallbacks
+// hand components the same drop-in shape.
+async function reshapeUefaMatch(m) {
+  let goals = [];
+  if (m.status === 'LIVE' || m.status === 'FINISHED') {
+    try {
+      const events = await getMatchEvents(m.id);
+      goals = events
+        .filter((e) => e.type === 'GOAL')
+        .map((e) => ({
+          minute: e.time?.minute ?? null,
+          injuryTime: e.time?.injuryMinute || undefined,
+          team: { id: e.primaryActor?.team?.id },
+          scorer: {
+            name: e.primaryActor?.person?.internationalName || null,
+            shortName: e.primaryActor?.person?.internationalName || null,
+          },
+        }));
+    } catch {
+      // Event feed failing shouldn't hide the score itself.
+    }
+  }
+
+  return {
+    id: m.id,
+    utcDate: m.kickOffTime?.dateTime,
+    status: toFootballDataStatus(m),
+    minute: m.minute?.normal ?? null,
+    homeTeam: {
+      id: m.homeTeam.id,
+      name: m.homeTeam.translations?.displayOfficialName?.EN || m.homeTeam.internationalName,
+      shortName: m.homeTeam.internationalName,
+      crest: m.homeTeam.logoUrl,
+    },
+    awayTeam: {
+      id: m.awayTeam.id,
+      name: m.awayTeam.translations?.displayOfficialName?.EN || m.awayTeam.internationalName,
+      shortName: m.awayTeam.internationalName,
+      crest: m.awayTeam.logoUrl,
+    },
+    score: {
+      fullTime: {
+        home: m.score?.total?.home ?? null,
+        away: m.score?.total?.away ?? null,
+      },
+    },
+    goals,
+  };
+}
+
 /**
  * Live/near-live UEFA Champions League matches, reshaped to look exactly
- * like football-data.org's match objects (homeTeam.name/crest, score.fullTime,
- * status, minute, goals[]) so it's a drop-in fallback for /api/football —
- * no changes needed in any component that already consumes that shape.
+ * like football-data.org's match objects so it's a drop-in fallback for
+ * /api/football — no changes needed in any component that already consumes
+ * that shape.
  *
  * getLivescore() itself covers ALL UEFA competitions and doesn't say which
  * one each match belongs to, so each live match is cross-checked against
@@ -146,53 +198,26 @@ export async function getUefaLiveMatches() {
   const full = await Promise.all(live.map((l) => getMatch(l.id).catch(() => null)));
   const clMatches = full.filter((m) => m && String(m.competition?.id) === String(COMPETITION_ID));
 
-  return Promise.all(clMatches.map(async (m) => {
-    let goals = [];
-    if (m.status === 'LIVE' || m.status === 'FINISHED') {
-      try {
-        const events = await getMatchEvents(m.id);
-        goals = events
-          .filter((e) => e.type === 'GOAL')
-          .map((e) => ({
-            minute: e.time?.minute ?? null,
-            injuryTime: e.time?.injuryMinute || undefined,
-            team: { id: e.primaryActor?.team?.id },
-            scorer: {
-              name: e.primaryActor?.person?.internationalName || null,
-              shortName: e.primaryActor?.person?.internationalName || null,
-            },
-          }));
-      } catch {
-        // Event feed failing shouldn't hide the live score itself.
-      }
-    }
+  return Promise.all(clMatches.map(reshapeUefaMatch));
+}
 
-    return {
-      id: m.id,
-      utcDate: m.kickOffTime?.dateTime,
-      status: toFootballDataStatus(m),
-      minute: m.minute?.normal ?? null,
-      homeTeam: {
-        id: m.homeTeam.id,
-        name: m.homeTeam.translations?.displayOfficialName?.EN || m.homeTeam.internationalName,
-        shortName: m.homeTeam.internationalName,
-        crest: m.homeTeam.logoUrl,
-      },
-      awayTeam: {
-        id: m.awayTeam.id,
-        name: m.awayTeam.translations?.displayOfficialName?.EN || m.awayTeam.internationalName,
-        shortName: m.awayTeam.internationalName,
-        crest: m.awayTeam.logoUrl,
-      },
-      score: {
-        fullTime: {
-          home: m.score?.total?.home ?? null,
-          away: m.score?.total?.away ?? null,
-        },
-      },
-      goals,
-    };
-  }));
+/**
+ * UEFA Champions League matches (any status — scheduled/live/finished) whose
+ * kickoff falls within an inclusive UTC date range ('YYYY-MM-DD' strings),
+ * reshaped like getUefaLiveMatches. This is the same no-key UEFA fallback
+ * extended to cover /api/football's TODAY and FINISHED views, not just LIVE
+ * — those used to hard-fail with "Missing FOOTBALL_DATA_API_KEY" instead of
+ * falling back like the LIVE view already did.
+ */
+export async function getUefaMatchesByDate(dateFrom, dateTo, filter) {
+  const seasonYear = currentSeasonYear();
+  const allMatches = await getMatches({ competitionId: COMPETITION_ID, seasonYear }, undefined, 500, 0);
+  const inRange = allMatches.filter((m) => {
+    const day = (m.kickOffTime?.dateTime || '').slice(0, 10);
+    return day >= dateFrom && day <= dateTo;
+  });
+  const filtered = filter === 'FINISHED' ? inRange.filter((m) => m.status === 'FINISHED') : inRange;
+  return Promise.all(filtered.map(reshapeUefaMatch));
 }
 
 /**

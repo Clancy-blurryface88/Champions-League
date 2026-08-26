@@ -1,6 +1,6 @@
 // Vercel Serverless Function — proxies football-data.org API
 import { TOURNAMENT_CODE } from '../src/config/tournament.js';
-import { getUefaLiveMatches } from './_uefaContext.js';
+import { getUefaLiveMatches, getUefaMatchesByDate } from './_uefaContext.js';
 
 export default async function handler(req, res) {
   const { competition = TOURNAMENT_CODE, filter = 'LIVE', type } = req.query;
@@ -9,14 +9,22 @@ export default async function handler(req, res) {
   res.setHeader('Pragma', 'no-cache');
 
   const apiKey = process.env.FOOTBALL_DATA_API_KEY;
+  const { date: clientDate, dateFrom: clientDateFrom, dateTo: clientDateTo } = req.query;
+  const fallbackDate = clientDate || new Date().toISOString().split('T')[0];
+  const dateFrom = clientDateFrom || fallbackDate;
+  const dateTo   = clientDateTo   || fallbackDate;
 
-  // The LIVE view is the one place a broken/missing football-data.org key
-  // shouldn't just fail outright — UEFA's own live feed (no key needed)
-  // covers exactly this case, reshaped to match football-data.org's
-  // response so nothing on the client needs to change.
-  if (!type && filter === 'LIVE' && !apiKey) {
+  // The plain matches endpoint (LIVE/TODAY/FINISHED) is the one place a
+  // broken/missing football-data.org key shouldn't just fail outright —
+  // UEFA's own feed (no key needed) covers it, reshaped to match
+  // football-data.org's response so nothing on the client needs to change.
+  // The `type` sub-endpoints (standings/scorers/teams/match-by-id) below
+  // still need a real key — no UEFA equivalent wired up for those yet.
+  if (!type && !apiKey) {
     try {
-      const matches = await getUefaLiveMatches();
+      const matches = filter === 'LIVE'
+        ? await getUefaLiveMatches()
+        : await getUefaMatchesByDate(dateFrom, dateTo, filter);
       return res.status(200).json({ success: true, matches, source: 'uefa' });
     } catch (err) {
       return res.status(500).json({ error: err.message });
@@ -69,11 +77,6 @@ export default async function handler(req, res) {
     }
 
     // ── Matches endpoint ──────────────────────────────────────────────────────
-    const { date: clientDate, dateFrom: clientDateFrom, dateTo: clientDateTo } = req.query;
-    const fallback = clientDate || new Date().toISOString().split('T')[0];
-    const dateFrom = clientDateFrom || fallback;
-    const dateTo   = clientDateTo   || fallback;
-
     const url = `https://api.football-data.org/v4/competitions/${competition}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`;
     console.log(`[football API] filter=${filter} url=${url}`);
 
