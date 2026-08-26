@@ -159,7 +159,7 @@ function useLiveMinuteProgress(liveMatch) {
 // (out of 90), with its content flipping in on a 3D Y-axis. No layoutId here
 // — sharing it with the small corner LIVE chip made framer-motion interpolate
 // their very different border-radii and left the chip looking squared-off.
-function LiveMatchCard({ liveMatch, liveUserPrediction }) {
+function LiveMatchCard({ liveMatch, liveUserPrediction, compact = false }) {
   const { progress, settledTick } = useLiveMinuteProgress(liveMatch);
   const minute = liveMatch ? Math.floor(progress * 90) : null;
   const homeScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.home ?? 0) || 0, 0), 9);
@@ -170,10 +170,11 @@ function LiveMatchCard({ liveMatch, liveUserPrediction }) {
   const displayHomeScore = settledTick > 0 ? homeScore : 0;
   const displayAwayScore = settledTick > 0 ? awayScore : 0;
 
-  const RING_RADIUS = 20;
+  const RING_RADIUS = compact ? 13 : 20;
   const ringRef = useRef(null);
   const ringSize = useElementSize(ringRef);
   const marker = roundedRectEdgePoint(progress * 360, ringSize.width / 2, ringSize.height / 2, RING_RADIUS);
+  const digitScale = compact ? 0.36 : 0.8;
 
   return (
     <motion.div
@@ -184,14 +185,14 @@ function LiveMatchCard({ liveMatch, liveUserPrediction }) {
         scale: 0.15, x: '38vw', y: '-42vh', opacity: 0,
         transition: { duration: 0.55, ease: [0.4, 0, 0.2, 1] },
       }}
-      className="rounded-2xl"
+      className={compact ? "rounded-xl" : "rounded-2xl"}
       style={{
         position: 'relative',
-        padding: 2.5,
+        padding: compact ? 1.5 : 2.5,
         borderRadius: RING_RADIUS,
-        maxWidth: 'min(370px, 92vw)',
+        maxWidth: compact ? '100%' : 'min(370px, 92vw)',
         background: `conic-gradient(from 0deg, #ef4444 ${progress * 360}deg, rgba(255,255,255,0.08) ${progress * 360}deg 360deg)`,
-        boxShadow: '0 0 30px rgba(239,68,68,0.2)',
+        boxShadow: compact ? '0 0 14px rgba(239,68,68,0.18)' : '0 0 30px rgba(239,68,68,0.2)',
       }}
     >
       {minute != null && ringSize.width > 0 && (
@@ -204,8 +205,8 @@ function LiveMatchCard({ liveMatch, liveUserPrediction }) {
             left: ringSize.width / 2 + marker.x,
             top: ringSize.height / 2 + marker.y,
             transform: 'translate(-50%, -50%)',
-            background: '#7cadee', color: '#000', fontWeight: 900, fontSize: 11,
-            borderRadius: 999, padding: '2px 7px', whiteSpace: 'nowrap',
+            background: '#7cadee', color: '#000', fontWeight: 900, fontSize: compact ? 8 : 11,
+            borderRadius: 999, padding: compact ? '1px 4px' : '2px 7px', whiteSpace: 'nowrap',
             boxShadow: '0 2px 8px rgba(0,0,0,0.5), 0 0 0 2px #030d1a',
             zIndex: 5,
           }}
@@ -214,11 +215,11 @@ function LiveMatchCard({ liveMatch, liveUserPrediction }) {
         </motion.div>
       )}
       <div
-        className="rounded-2xl"
+        className={compact ? "rounded-xl" : "rounded-2xl"}
         style={{
           background: 'rgba(8,18,32,0.95)',
           backdropFilter: 'blur(28px)',
-          boxShadow: '0 0 60px rgba(239,68,68,0.18), 0 20px 60px rgba(0,0,0,0.7)',
+          boxShadow: compact ? '0 0 24px rgba(239,68,68,0.14), 0 8px 24px rgba(0,0,0,0.6)' : '0 0 60px rgba(239,68,68,0.18), 0 20px 60px rgba(0,0,0,0.7)',
           overflow: 'hidden',
         }}
       >
@@ -226,44 +227,44 @@ function LiveMatchCard({ liveMatch, liveUserPrediction }) {
           initial={{ opacity: 0, scale: 0.94 }}
           animate={{ opacity: 1, scale: 1, transition: { duration: 0.4, ease: 'easeOut' } }}
         >
-            <div className="px-6 py-6 flex flex-col items-center gap-4">
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full" style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)' }}>
-                <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
+            <div className={compact ? "px-2 py-2.5 flex flex-col items-center gap-1.5" : "px-6 py-6 flex flex-col items-center gap-4"}>
+              <div className={compact ? "flex items-center gap-1 px-1.5 py-0.5 rounded-full" : "flex items-center gap-2 px-3 py-1 rounded-full"} style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)' }}>
+                <span className={compact ? "relative flex h-1.5 w-1.5 flex-shrink-0" : "relative flex h-2.5 w-2.5 flex-shrink-0"}>
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+                  <span className={compact ? "relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" : "relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"} />
                 </span>
-                <span className="text-red-400 text-xs font-bold tracking-widest uppercase">Live</span>
+                <span className={compact ? "text-red-400 text-[8px] font-bold tracking-widest uppercase" : "text-red-400 text-xs font-bold tracking-widest uppercase"}>Live</span>
               </div>
               {liveMatch && (
                 <div className="flex flex-col items-center gap-1">
                   {/* Flags flank the score directly, vertically centered on the digits (the
                       team-code label is absolutely positioned so it doesn't push the flag
                       itself up relative to the shorter digit boxes) */}
-                  <div className="flex items-center gap-3" dir="ltr">
+                  <div className={compact ? "flex items-center gap-1" : "flex items-center gap-3"} dir="ltr">
                     <div className="relative flex flex-col items-center">
-                      <TeamFlag logo={liveMatch.homeTeam?.crest} name={liveMatch.homeTeam?.name} className="w-12 h-12" animate={false} />
-                      <span className="absolute top-full mt-1 text-slate-400 text-[10px] whitespace-nowrap">{liveMatch.homeTeam?.tla}</span>
+                      <TeamFlag logo={liveMatch.homeTeam?.crest} name={liveMatch.homeTeam?.name} className={compact ? "w-6 h-6" : "w-12 h-12"} animate={false} />
+                      {!compact && <span className="absolute top-full mt-1 text-slate-400 text-[10px] whitespace-nowrap">{liveMatch.homeTeam?.tla}</span>}
                     </div>
-                    <div style={{ width: 34, height: 50, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
-                      <div style={{ transform: 'scale(0.8)', transformOrigin: 'top left', width: 42, height: 64 }}>
+                    <div style={{ width: compact ? 15 : 34, height: compact ? 23 : 50, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
+                      <div style={{ transform: `scale(${digitScale})`, transformOrigin: 'top left', width: 42, height: 64 }}>
                         <OdometerDigit target={displayHomeScore} delayMs={150} />
                       </div>
                     </div>
-                    <span style={{ color: '#475569', fontSize: 34, fontWeight: 900 }}>-</span>
-                    <div style={{ width: 34, height: 50, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
-                      <div style={{ transform: 'scale(0.8)', transformOrigin: 'top left', width: 42, height: 64 }}>
+                    <span style={{ color: '#475569', fontSize: compact ? 15 : 34, fontWeight: 900 }}>-</span>
+                    <div style={{ width: compact ? 15 : 34, height: compact ? 23 : 50, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
+                      <div style={{ transform: `scale(${digitScale})`, transformOrigin: 'top left', width: 42, height: 64 }}>
                         <OdometerDigit target={displayAwayScore} delayMs={400} />
                       </div>
                     </div>
                     <div className="relative flex flex-col items-center">
-                      <TeamFlag logo={liveMatch.awayTeam?.crest} name={liveMatch.awayTeam?.name} className="w-12 h-12" animate={false} />
-                      <span className="absolute top-full mt-1 text-slate-400 text-[10px] whitespace-nowrap">{liveMatch.awayTeam?.tla}</span>
+                      <TeamFlag logo={liveMatch.awayTeam?.crest} name={liveMatch.awayTeam?.name} className={compact ? "w-6 h-6" : "w-12 h-12"} animate={false} />
+                      {!compact && <span className="absolute top-full mt-1 text-slate-400 text-[10px] whitespace-nowrap">{liveMatch.awayTeam?.tla}</span>}
                     </div>
                   </div>
                   {liveUserPrediction && (
-                    <div className="flex flex-col items-center gap-1 mt-2">
-                      <span className="text-slate-400 text-xs">הניחוש שלי</span>
-                      <span className="text-sky-400 text-sm font-bold" dir="ltr">
+                    <div className={compact ? "flex flex-col items-center gap-0.5 mt-0.5" : "flex flex-col items-center gap-1 mt-2"}>
+                      {!compact && <span className="text-slate-400 text-xs">הניחוש שלי</span>}
+                      <span className={compact ? "text-sky-400 text-[8px] font-bold" : "text-sky-400 text-sm font-bold"} dir="ltr">
                         ({liveUserPrediction.predicted_score_a} - {liveUserPrediction.predicted_score_b})
                       </span>
                     </div>
@@ -284,7 +285,7 @@ function LiveMatchCard({ liveMatch, liveUserPrediction }) {
 // in, then match 2 appears next to it, then match 3...", not an instant wall.
 const REVEAL_STEP_MS = 900;
 
-function LiveMatchesGrid({ liveMatches, liveUserPredictions }) {
+function LiveMatchesGrid({ liveMatches, liveUserPredictions, compact = false }) {
   const [visibleCount, setVisibleCount] = useState(1);
 
   useEffect(() => {
@@ -306,10 +307,9 @@ function LiveMatchesGrid({ liveMatches, liveUserPredictions }) {
   return (
     <motion.div
       layout
-      className="grid gap-4 justify-items-center"
+      className={compact ? "grid gap-2.5 justify-items-stretch" : "flex flex-col items-center gap-4"}
       style={{
-        gridTemplateColumns: liveMatches.length > 1 ? 'repeat(auto-fit, minmax(280px, 1fr))' : '1fr',
-        maxWidth: liveMatches.length > 1 ? 'min(780px, 94vw)' : undefined,
+        ...(compact ? { gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', width: 'min(560px, 94vw)' } : {}),
         maxHeight: '86vh',
         overflowY: 'auto',
         overflowX: 'hidden',
@@ -319,7 +319,7 @@ function LiveMatchesGrid({ liveMatches, liveUserPredictions }) {
     >
       <AnimatePresence>
         {liveMatches.slice(0, visibleCount).map(m => (
-          <LiveMatchCard key={m.id} liveMatch={m} liveUserPrediction={liveUserPredictions[m.id] || null} />
+          <LiveMatchCard key={m.id} liveMatch={m} liveUserPrediction={liveUserPredictions[m.id] || null} compact={compact} />
         ))}
       </AnimatePresence>
     </motion.div>
@@ -343,6 +343,7 @@ export default function Layout({ children, currentPageName }) {
   const liveChipLongPressTimer = useRef(null);
   const liveChipLongPressFired = useRef(false);
   const [showLiveIntro, setShowLiveIntro] = useState(false);
+  const [showLiveMatchesFull, setShowLiveMatchesFull] = useState(false);
   const [showLiveLeaderboard, setShowLiveLeaderboard] = useState(false);
   const [liveUserPredictions, setLiveUserPredictions] = useState({});
   const [livePredictionLoading, setLivePredictionLoading] = useState(false);
@@ -1258,7 +1259,7 @@ export default function Layout({ children, currentPageName }) {
             </DropdownMenu>
 
             <AnimatePresence>
-              {hasLiveMatch && !showLiveIntro && (location.pathname === '/' || location.pathname.includes('Dashboard')) && (
+              {hasLiveMatch && !showLiveIntro && !showLiveMatchesFull && (location.pathname === '/' || location.pathname.includes('Dashboard')) && (
                 <motion.button
                   layoutId="live-chip"
                   initial={{ opacity: 0 }}
@@ -1276,7 +1277,7 @@ export default function Layout({ children, currentPageName }) {
                     liveChipLongPressFired.current = false;
                     liveChipLongPressTimer.current = setTimeout(() => {
                       liveChipLongPressFired.current = true;
-                      setShowLiveIntro(true);
+                      setShowLiveMatchesFull(true);
                     }, 450);
                   }}
                   onMouseUp={() => clearTimeout(liveChipLongPressTimer.current)}
@@ -1285,7 +1286,7 @@ export default function Layout({ children, currentPageName }) {
                     liveChipLongPressFired.current = false;
                     liveChipLongPressTimer.current = setTimeout(() => {
                       liveChipLongPressFired.current = true;
-                      setShowLiveIntro(true);
+                      setShowLiveMatchesFull(true);
                     }, 450);
                   }}
                   onTouchEnd={() => clearTimeout(liveChipLongPressTimer.current)}
@@ -1345,6 +1346,42 @@ export default function Layout({ children, currentPageName }) {
                 <LiveMatchesGrid
                   liveMatches={liveMatches}
                   liveUserPredictions={liveUserPredictions}
+                  compact={liveMatches.length > 1}
+                />
+              </div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Long-press-triggered full matches view — same card as the single-match
+            intro, one full-size tile per live match stacked vertically (not the
+            compact grid above). Manual open, so no auto-dismiss timer — closes
+            only via the backdrop or the X button. */}
+        <AnimatePresence>
+          {showLiveMatchesFull && (
+            <>
+              <motion.div
+                key="live-full-bg"
+                className="fixed inset-0 z-[55]"
+                style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                onClick={() => setShowLiveMatchesFull(false)}
+              />
+              <div className="fixed inset-0 z-[56] flex items-center justify-center pointer-events-none">
+                <button
+                  onClick={() => setShowLiveMatchesFull(false)}
+                  className="fixed top-4 left-4 z-[57] w-9 h-9 rounded-full flex items-center justify-center pointer-events-auto"
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)' }}
+                >
+                  <X className="w-4 h-4 text-white" />
+                </button>
+                <LiveMatchesGrid
+                  liveMatches={liveMatches}
+                  liveUserPredictions={liveUserPredictions}
+                  compact={false}
                 />
               </div>
             </>
