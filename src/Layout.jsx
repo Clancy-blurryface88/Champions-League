@@ -1339,7 +1339,7 @@ export default function Layout({ children, currentPageName }) {
 
             <div style={{ position: 'relative' }}>
             <AnimatePresence>
-              {hasLiveMatch && !showLiveIntro && !showLiveMatchesList && (location.pathname === '/' || location.pathname.includes('Dashboard')) && (
+              {hasLiveMatch && !showLiveIntro && (location.pathname === '/' || location.pathname.includes('Dashboard')) && (
                 <motion.button
                   layoutId="live-chip"
                   initial={{ opacity: 0 }}
@@ -1351,6 +1351,7 @@ export default function Layout({ children, currentPageName }) {
                     // swallow the click the browser synthesizes right after touchend
                     // so it doesn't also open the side panel underneath it.
                     if (liveChipLongPressFired.current) { liveChipLongPressFired.current = false; return; }
+                    if (showLiveMatchesList) { setShowLiveMatchesList(false); return; }
                     setShowLiveData(true); setShowLeaderboard(false);
                   }}
                   onMouseDown={() => {
