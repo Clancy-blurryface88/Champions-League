@@ -1415,7 +1415,12 @@ export default function Layout({ children, currentPageName }) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-                  style={{ position: 'absolute', top: 'calc(100% + 10px)', left: '50%', transform: 'translateX(-50%)', zIndex: 60 }}
+                  // Anchored to the chip's right edge, not centered under it —
+                  // the chip sits right at the screen's own right margin
+                  // (right-4), so centering pushed half the dropdown off-screen.
+                  // Growing leftward from the same right edge keeps it fully
+                  // on-screen regardless of how wide the chip itself is.
+                  style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, zIndex: 60 }}
                 >
                   <LiveMatchesChipList liveMatches={liveMatches} />
                 </motion.div>
