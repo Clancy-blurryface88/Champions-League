@@ -159,7 +159,7 @@ function useLiveMinuteProgress(liveMatch) {
 // (out of 90), with its content flipping in on a 3D Y-axis. No layoutId here
 // — sharing it with the small corner LIVE chip made framer-motion interpolate
 // their very different border-radii and left the chip looking squared-off.
-function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
+function LiveMatchCard({ liveMatch, liveUserPrediction }) {
   const { progress, settledTick } = useLiveMinuteProgress(liveMatch);
   const minute = liveMatch ? Math.floor(progress * 90) : null;
   const homeScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.home ?? 0) || 0, 0), 9);
@@ -270,12 +270,58 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, liveMatchCount }) {
                   )}
                 </div>
               )}
-              {liveMatchCount > 1 && (
-                <span className="text-slate-400 text-xs">+{liveMatchCount - 1} משחקים נוספים</span>
-              )}
             </div>
         </motion.div>
       </div>
+    </motion.div>
+  );
+}
+
+// When several matches are live at once, each gets its own full ring+minute+
+// odometer card (same LiveMatchCard as the single-match case) laid out in a
+// grid — but they don't all pop in together. They're revealed one at a time,
+// REVEAL_STEP_MS apart, so watching the overlay open reads as "match 1 fills
+// in, then match 2 appears next to it, then match 3...", not an instant wall.
+const REVEAL_STEP_MS = 900;
+
+function LiveMatchesGrid({ liveMatches, liveUserPredictions }) {
+  const [visibleCount, setVisibleCount] = useState(1);
+
+  useEffect(() => {
+    setVisibleCount(1);
+    if (liveMatches.length <= 1) return;
+    let shown = 1;
+    const iv = setInterval(() => {
+      shown += 1;
+      setVisibleCount(shown);
+      if (shown >= liveMatches.length) clearInterval(iv);
+    }, REVEAL_STEP_MS);
+    return () => clearInterval(iv);
+  }, [liveMatches.length]);
+
+  if (liveMatches.length === 0) {
+    return <LiveMatchCard liveMatch={null} liveUserPrediction={null} />;
+  }
+
+  return (
+    <motion.div
+      layout
+      className="grid gap-4 justify-items-center"
+      style={{
+        gridTemplateColumns: liveMatches.length > 1 ? 'repeat(auto-fit, minmax(280px, 1fr))' : '1fr',
+        maxWidth: liveMatches.length > 1 ? 'min(780px, 94vw)' : undefined,
+        maxHeight: '86vh',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        pointerEvents: 'auto',
+        padding: 4,
+      }}
+    >
+      <AnimatePresence>
+        {liveMatches.slice(0, visibleCount).map(m => (
+          <LiveMatchCard key={m.id} liveMatch={m} liveUserPrediction={liveUserPredictions[m.id] || null} />
+        ))}
+      </AnimatePresence>
     </motion.div>
   );
 }
@@ -293,9 +339,10 @@ export default function Layout({ children, currentPageName }) {
   const [hasLiveMatch, setHasLiveMatch] = useState(false);
   const [liveMatch, setLiveMatch] = useState(null);
   const [liveMatchCount, setLiveMatchCount] = useState(0);
+  const [liveMatches, setLiveMatches] = useState([]);
   const [showLiveIntro, setShowLiveIntro] = useState(false);
   const [showLiveLeaderboard, setShowLiveLeaderboard] = useState(false);
-  const [liveUserPrediction, setLiveUserPrediction] = useState(null);
+  const [liveUserPredictions, setLiveUserPredictions] = useState({});
   const [livePredictionLoading, setLivePredictionLoading] = useState(false);
   const [liveCheckDone, setLiveCheckDone] = useState(false);
   const [nextMatch, setNextMatch] = useState(null);
@@ -564,6 +611,7 @@ export default function Layout({ children, currentPageName }) {
         setHasLiveMatch(live.length > 0);
         setLiveMatch(live[0] || null);
         setLiveMatchCount(live.length);
+        setLiveMatches(live);
       } catch {
         setHasLiveMatch(false);
       } finally {
@@ -609,53 +657,63 @@ export default function Layout({ children, currentPageName }) {
     return () => clearTimeout(t);
   }, [showNextMatchIntro]);
 
-  // Fetch user prediction for the live match
+  // Fetch the user's prediction for every concurrently live match (not just
+  // the first one) — keyed by the API match id so LiveMatchesGrid can look
+  // each one up per tile.
+  const liveMatchIdsKey = liveMatches.map(m => m.id).join(',');
   useEffect(() => {
-    if (!liveMatch || !user?.id) { setLivePredictionLoading(false); return; }
+    if (liveMatches.length === 0 || !user?.id) { setLivePredictionLoading(false); return; }
     let cancelled = false;
     setLivePredictionLoading(true);
-    setLiveUserPrediction(null);
-    const fetchLivePrediction = async () => {
+    setLiveUserPredictions({});
+    const fetchLivePredictions = async () => {
       try {
         const allMatches = await Match.list();
-        const apiHome = (liveMatch.homeTeam?.name || '').toLowerCase();
-        const apiAway = (liveMatch.awayTeam?.name || '').toLowerCase();
-        const supabaseMatch = allMatches.find(m => {
-          const a = (m.team_a || '').toLowerCase();
-          const b = (m.team_b || '').toLowerCase();
-          const homeMatch = apiHome.includes(a.slice(0, 4)) || a.includes(apiHome.slice(0, 4));
-          const awayMatch = apiAway.includes(b.slice(0, 4)) || b.includes(apiAway.slice(0, 4));
-          return homeMatch && awayMatch;
-        });
-        if (supabaseMatch) {
+        const entries = await Promise.all(liveMatches.map(async (lm) => {
+          const apiHome = (lm.homeTeam?.name || '').toLowerCase();
+          const apiAway = (lm.awayTeam?.name || '').toLowerCase();
+          const supabaseMatch = allMatches.find(m => {
+            const a = (m.team_a || '').toLowerCase();
+            const b = (m.team_b || '').toLowerCase();
+            const homeMatch = apiHome.includes(a.slice(0, 4)) || a.includes(apiHome.slice(0, 4));
+            const awayMatch = apiAway.includes(b.slice(0, 4)) || b.includes(apiAway.slice(0, 4));
+            return homeMatch && awayMatch;
+          });
+          if (!supabaseMatch) return null;
           const preds = await Prediction.filter({ match_id: supabaseMatch.id, user_id: user.id });
-          if (preds.length > 0 && !cancelled) setLiveUserPrediction(preds[0]);
-        }
+          return preds.length > 0 ? [lm.id, preds[0]] : null;
+        }));
+        if (!cancelled) setLiveUserPredictions(Object.fromEntries(entries.filter(Boolean)));
       } catch {
-        // no prediction to show — overlay still proceeds with just the live score
+        // no predictions to show — overlay still proceeds with just live scores
       } finally {
         if (!cancelled) setLivePredictionLoading(false);
       }
     };
-    fetchLivePrediction();
+    fetchLivePredictions();
     return () => { cancelled = true; };
-  }, [liveMatch?.homeTeam?.name, user?.id]);
+  }, [liveMatchIdsKey, user?.id]);
 
   // Auto-dismiss the live intro — but only start the countdown once we know
   // whether there's a prediction to show, so it never disappears mid-fetch.
+  // Scales with how many tiles the grid has to stagger through (see
+  // LiveMatchesGrid's own REVEAL_STEP_MS) so it never cuts the reveal off
+  // partway with several concurrent matches.
   useEffect(() => {
     if (!showLiveIntro || livePredictionLoading) return;
-    const t = setTimeout(() => setShowLiveIntro(false), 7000);
+    const revealMs = Math.max(0, liveMatches.length - 1) * 900;
+    const t = setTimeout(() => setShowLiveIntro(false), 7000 + revealMs);
     return () => clearTimeout(t);
-  }, [showLiveIntro, livePredictionLoading]);
+  }, [showLiveIntro, livePredictionLoading, liveMatches.length]);
 
   // Hard safety cap — never let the overlay block the UI indefinitely even
   // if the prediction fetch hangs.
   useEffect(() => {
     if (!showLiveIntro) return;
-    const cap = setTimeout(() => setShowLiveIntro(false), 16000);
+    const revealMs = Math.max(0, liveMatches.length - 1) * 900;
+    const cap = setTimeout(() => setShowLiveIntro(false), 16000 + revealMs);
     return () => clearTimeout(cap);
-  }, [showLiveIntro]);
+  }, [showLiveIntro, liveMatches.length]);
 
   // Once the live-match intro card closes, surface the live leaderboard so
   // its data starts loading right as the card leaves the screen instead of
@@ -1257,10 +1315,9 @@ export default function Layout({ children, currentPageName }) {
                 transition={{ duration: 0.4 }}
               />
               <div className="fixed inset-0 z-[56] flex items-center justify-center pointer-events-none">
-                <LiveMatchCard
-                  liveMatch={liveMatch}
-                  liveUserPrediction={liveUserPrediction}
-                  liveMatchCount={liveMatchCount}
+                <LiveMatchesGrid
+                  liveMatches={liveMatches}
+                  liveUserPredictions={liveUserPredictions}
                 />
               </div>
             </>
