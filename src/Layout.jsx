@@ -159,7 +159,7 @@ function useLiveMinuteProgress(liveMatch) {
 // (out of 90), with its content flipping in on a 3D Y-axis. No layoutId here
 // — sharing it with the small corner LIVE chip made framer-motion interpolate
 // their very different border-radii and left the chip looking squared-off.
-function LiveMatchCard({ liveMatch, liveUserPrediction, compact = false }) {
+function LiveMatchCard({ liveMatch, liveUserPrediction, compact = false, centeredWidth = false }) {
   const { progress, settledTick } = useLiveMinuteProgress(liveMatch);
   const minute = liveMatch ? Math.floor(progress * 90) : null;
   const homeScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.home ?? 0) || 0, 0), 9);
@@ -190,7 +190,7 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, compact = false }) {
         position: 'relative',
         padding: compact ? 1.5 : 2.5,
         borderRadius: RING_RADIUS,
-        maxWidth: compact ? '100%' : 'min(370px, 92vw)',
+        maxWidth: compact ? (centeredWidth ? 'calc(50% - 6px)' : '100%') : 'min(370px, 92vw)',
         background: `conic-gradient(from 0deg, #ef4444 ${progress * 360}deg, rgba(255,255,255,0.08) ${progress * 360}deg 360deg)`,
         boxShadow: compact ? '0 0 14px rgba(239,68,68,0.18)' : '0 0 30px rgba(239,68,68,0.2)',
       }}
@@ -311,9 +311,9 @@ function LiveMatchesGrid({ liveMatches, liveUserPredictions, compact = false }) 
   return (
     <motion.div
       layout
-      className={compact ? "grid gap-2.5 justify-items-stretch" : "flex flex-col items-center gap-4"}
+      className={compact ? "grid gap-3 justify-items-stretch" : "flex flex-col items-center gap-4"}
       style={{
-        ...(compact ? { gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', width: 'min(560px, 94vw)' } : {}),
+        ...(compact ? { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', width: 'min(560px, 94vw)' } : {}),
         maxHeight: '86vh',
         overflowY: 'auto',
         // The minute chip rides ON the ring's edge (half poking outside the
@@ -328,9 +328,18 @@ function LiveMatchesGrid({ liveMatches, liveUserPredictions, compact = false }) 
       }}
     >
       <AnimatePresence>
-        {liveMatches.slice(0, visibleCount).map(m => (
-          <LiveMatchCard key={m.id} liveMatch={m} liveUserPrediction={liveUserPredictions[m.id] || null} compact={compact} />
-        ))}
+        {liveMatches.slice(0, visibleCount).map((m, idx) => {
+          // An odd match count leaves a lone card on the final row — instead
+          // of it stretching to the row's full width, span both columns and
+          // center it at a normal single-column width so it reads as a
+          // deliberate centered card, not a stray half-empty row.
+          const isLastOdd = compact && liveMatches.length % 2 === 1 && idx === liveMatches.length - 1;
+          return (
+            <div key={m.id} style={isLastOdd ? { gridColumn: '1 / -1', display: 'flex', justifyContent: 'center' } : undefined}>
+              <LiveMatchCard liveMatch={m} liveUserPrediction={liveUserPredictions[m.id] || null} compact={compact} centeredWidth={isLastOdd} />
+            </div>
+          );
+        })}
       </AnimatePresence>
     </motion.div>
   );
@@ -1328,6 +1337,7 @@ export default function Layout({ children, currentPageName }) {
               </DropdownMenuContent>
             </DropdownMenu>
 
+            <div style={{ position: 'relative' }}>
             <AnimatePresence>
               {hasLiveMatch && !showLiveIntro && !showLiveMatchesList && (location.pathname === '/' || location.pathname.includes('Dashboard')) && (
                 <motion.button
@@ -1395,8 +1405,34 @@ export default function Layout({ children, currentPageName }) {
                 </motion.button>
               )}
             </AnimatePresence>
+
+            {/* Long-press list — anchored right under the chip itself (same
+                position as the chip that opened it), not a centered modal. */}
+            <AnimatePresence>
+              {showLiveMatchesList && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+                  style={{ position: 'absolute', top: 'calc(100% + 10px)', left: '50%', transform: 'translateX(-50%)', zIndex: 60 }}
+                >
+                  <LiveMatchesChipList liveMatches={liveMatches} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+            </div>
           </div>
         }
+
+        {/* Invisible click-catcher — closes the long-press list on any tap
+            outside it, without darkening the screen like a modal. Sits just
+            below the header's own z-40 stacking context so the chip/dropdown
+            (nested inside that context) stay on top and still receive their
+            own clicks; everywhere else on screen hits this and closes it. */}
+        {showLiveMatchesList && (
+          <div className="fixed inset-0 z-[39]" onClick={() => setShowLiveMatchesList(false)} />
+        )}
 
         {/* Live Intro Overlay */}
         <AnimatePresence>
@@ -1418,37 +1454,6 @@ export default function Layout({ children, currentPageName }) {
                   liveUserPredictions={liveUserPredictions}
                   compact={liveMatches.length > 1}
                 />
-              </div>
-            </>
-          )}
-        </AnimatePresence>
-
-        {/* Long-press-triggered matches list — every live match as its own
-            small chip, identical to the corner "LIVE" badge itself, stacked
-            vertically with a quick staggered pop-in. Manual open, so no
-            auto-dismiss timer — closes only via the backdrop or the X button. */}
-        <AnimatePresence>
-          {showLiveMatchesList && (
-            <>
-              <motion.div
-                key="live-list-bg"
-                className="fixed inset-0 z-[55]"
-                style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)' }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                onClick={() => setShowLiveMatchesList(false)}
-              />
-              <div className="fixed inset-0 z-[56] flex items-center justify-center pointer-events-none">
-                <button
-                  onClick={() => setShowLiveMatchesList(false)}
-                  className="fixed top-4 left-4 z-[57] w-9 h-9 rounded-full flex items-center justify-center pointer-events-auto"
-                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)' }}
-                >
-                  <X className="w-4 h-4 text-white" />
-                </button>
-                <LiveMatchesChipList liveMatches={liveMatches} />
               </div>
             </>
           )}
