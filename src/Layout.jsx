@@ -279,11 +279,15 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, compact = false }) {
 }
 
 // When several matches are live at once, each gets its own full ring+minute+
-// odometer card (same LiveMatchCard as the single-match case) laid out in a
-// grid — but they don't all pop in together. They're revealed one at a time,
-// REVEAL_STEP_MS apart, so watching the overlay open reads as "match 1 fills
-// in, then match 2 appears next to it, then match 3...", not an instant wall.
-const REVEAL_STEP_MS = 900;
+// odometer card (same LiveMatchCard as the single-match case) — but they
+// don't all pop in together. Each is only revealed once the previous one's
+// own minute-ring + score reveal has fully played out, so it reads as
+// "match 1 finishes filling in, then match 2 appears, then match 3...".
+// This mirrors LiveMatchCard/useLiveMinuteProgress's own reveal choreography:
+// the ring fills over 2200ms, then settledTick flips and the score digits
+// start rolling — the later one (away, delayMs=400) finishes 400ms + the
+// 1.4s roll (see OdometerDigit) after that. ~4000ms covers the full sequence.
+const REVEAL_STEP_MS = 4000;
 
 function LiveMatchesGrid({ liveMatches, liveUserPredictions, compact = false }) {
   const [visibleCount, setVisibleCount] = useState(1);
@@ -704,7 +708,7 @@ export default function Layout({ children, currentPageName }) {
   // partway with several concurrent matches.
   useEffect(() => {
     if (!showLiveIntro || livePredictionLoading) return;
-    const revealMs = Math.max(0, liveMatches.length - 1) * 900;
+    const revealMs = Math.max(0, liveMatches.length - 1) * REVEAL_STEP_MS;
     const t = setTimeout(() => setShowLiveIntro(false), 7000 + revealMs);
     return () => clearTimeout(t);
   }, [showLiveIntro, livePredictionLoading, liveMatches.length]);
@@ -713,7 +717,7 @@ export default function Layout({ children, currentPageName }) {
   // if the prediction fetch hangs.
   useEffect(() => {
     if (!showLiveIntro) return;
-    const revealMs = Math.max(0, liveMatches.length - 1) * 900;
+    const revealMs = Math.max(0, liveMatches.length - 1) * REVEAL_STEP_MS;
     const cap = setTimeout(() => setShowLiveIntro(false), 16000 + revealMs);
     return () => clearTimeout(cap);
   }, [showLiveIntro, liveMatches.length]);
