@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MatchOddsBar from './MatchOddsBar';
+import MatchLineups from './MatchLineups';
 import CrowdWisdomStats from './CrowdWisdomStats';
 import TeamFlag from '@/components/TeamFlag';
 
@@ -179,6 +180,9 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Lineups — appears on its own the moment UEFA publishes them, right below the score chips */}
+        <MatchLineups teamA={match.team_a} teamB={match.team_b} />
 
         {/* Crowd Wisdom — only when locked, unchanged design */}
         {isLocked && showOdds && (

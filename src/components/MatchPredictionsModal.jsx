@@ -7,6 +7,7 @@ import { PublicProfile } from "@/api/entities";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock } from "lucide-react";
 import { useModalBackButton } from "@/hooks/useModalBackButton";
+import { PREDICTION_LOCK_MINUTES } from "@/config/tournament";
 
 // ── Slot digit ────────────────────────────────────────────────────────────────
 function SlotDigit({ target, delay = 0 }) {
@@ -106,7 +107,7 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
 
   if (!match) return null;
 
-  const lockTime  = new Date(new Date(match.match_date).getTime() - 15 * 60 * 1000);
+  const lockTime  = new Date(new Date(match.match_date).getTime() - PREDICTION_LOCK_MINUTES * 60 * 1000);
   const isLocked  = new Date() >= lockTime || match.is_finished;
   const grouped   = getGrouped();
 

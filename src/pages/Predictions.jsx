@@ -28,6 +28,7 @@ import MatchArenaSection from "../components/predictions/MatchArenaSection";
 import { RevealText } from "@/components/magicui/reveal-text";
 import TeamFlag from "@/components/TeamFlag";
 import LeagueTableModal from "@/components/LeagueTableModal";
+import { PREDICTION_LOCK_MINUTES } from "@/config/tournament";
 import TeamInfoModal from "@/components/TeamInfoModal";
 import { ShineBorder } from "@/components/magicui/shine-border";
 import { loadLeagueTableOverride, applyOverride } from '@/utils/standingsOverride';
@@ -192,11 +193,11 @@ export default function Predictions() {
     return () => clearInterval(interval);
   }, []);
 
-  // Helper function to check if a match is locked (15 minutes before start)
+  // Helper function to check if a match is locked (PREDICTION_LOCK_MINUTES before start)
   const isMatchLocked = (matchDate) => {
     const now = new Date();
     const matchTime = new Date(matchDate);
-    const lockTime = new Date(matchTime.getTime() - 15 * 60 * 1000);
+    const lockTime = new Date(matchTime.getTime() - PREDICTION_LOCK_MINUTES * 60 * 1000);
     return now >= lockTime;
   };
 
@@ -236,7 +237,7 @@ export default function Predictions() {
   const getTimeUntilLock = (matchDate) => {
     const now = currentTime;
     const matchTime = new Date(matchDate);
-    const lockTime = new Date(matchTime.getTime() - 15 * 60 * 1000);
+    const lockTime = new Date(matchTime.getTime() - PREDICTION_LOCK_MINUTES * 60 * 1000);
 
     let days = 0;
     let hours = 0;

@@ -2,7 +2,7 @@
 // Pulls real recent-form + standings data for two teams directly from
 // UEFA's own backend (uefa-api package, no key required) so the AI brief
 // can be grounded in real numbers instead of Claude's general knowledge.
-import { getTeams, getMatches, getStandings, getLivescore, getMatch, getMatchEvents } from 'uefa-api';
+import { getTeams, getMatches, getStandings, getLivescore, getMatch, getMatchEvents, getLineups } from 'uefa-api';
 
 export const COMPETITION_ID = 1; // UEFA Champions League
 
@@ -133,12 +133,15 @@ function toFootballDataStatus(m) {
 // match shape (homeTeam.name/crest, score.fullTime, status, minute, goals[])
 // — shared by getUefaLiveMatches and getUefaMatchesByDate so both fallbacks
 // hand components the same drop-in shape.
+const CARD_AND_SUB_TYPES = ['YELLOW_CARD', 'RED_CARD', 'SUBSTITUTION'];
+
 async function reshapeUefaMatch(m) {
   let goals = [];
+  let events = []; // cards + substitutions — goals stay in `goals` above for backward compat
   if (m.status === 'LIVE' || m.status === 'FINISHED') {
     try {
-      const events = await getMatchEvents(m.id);
-      goals = events
+      const rawEvents = await getMatchEvents(m.id);
+      goals = rawEvents
         .filter((e) => e.type === 'GOAL')
         .map((e) => ({
           minute: e.time?.minute ?? null,
@@ -148,6 +151,16 @@ async function reshapeUefaMatch(m) {
             name: e.primaryActor?.person?.internationalName || null,
             shortName: e.primaryActor?.person?.internationalName || null,
           },
+        }));
+      events = rawEvents
+        .filter((e) => CARD_AND_SUB_TYPES.includes(e.type))
+        .map((e) => ({
+          type: e.type,
+          minute: e.time?.minute ?? null,
+          injuryTime: e.time?.injuryMinute || undefined,
+          team: { id: e.primaryActor?.team?.id },
+          player: e.primaryActor?.person?.internationalName || null,
+          playerIn: e.secondaryActor?.person?.internationalName || null, // substitutions only
         }));
     } catch {
       // Event feed failing shouldn't hide the score itself.
@@ -178,6 +191,7 @@ async function reshapeUefaMatch(m) {
       },
     },
     goals,
+    events,
   };
 }
 
@@ -245,6 +259,37 @@ export async function getOfficialStandings() {
       gd: row.goalDifference,
     }))
     .sort((a, b) => a.rank - b.rank);
+}
+
+/**
+ * Official starting lineups for one of our matches, resolved by team name
+ * (our `matches` table has no stored UEFA match id) against the current
+ * season's full match list, using the same tolerant name matching as
+ * resolveTeam/findOfficial elsewhere in this file. Returns null — never
+ * throws — when the match can't be resolved, or when UEFA hasn't published
+ * the lineup yet (lineupStatus !== 'AVAILABLE', which is normal until
+ * roughly 45-60 minutes before kickoff).
+ */
+export async function getLineupsForMatch(homeTeamName, awayTeamName) {
+  try {
+    const seasonYear = currentSeasonYear();
+    const allMatches = await getMatches({ competitionId: COMPETITION_ID, seasonYear }, undefined, 500, 0);
+    const found = allMatches.find(
+      (m) => teamNames(m.homeTeam).some((x) => matchesName(homeTeamName, x))
+          && teamNames(m.awayTeam).some((x) => matchesName(awayTeamName, x))
+    );
+    if (!found) return null;
+
+    const lineups = await getLineups(found.id);
+    return lineups?.lineupStatus === 'AVAILABLE' ? lineups : null;
+  } catch {
+    return null;
+  }
+}
+
+function matchesName(wanted, candidate) {
+  const w = wanted.trim().toLowerCase();
+  return candidate === w || candidate.startsWith(w) || w.startsWith(candidate) || candidate.includes(w);
 }
 
 /**

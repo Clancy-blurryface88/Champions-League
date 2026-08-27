@@ -7,6 +7,9 @@ export const TOURNAMENT_CODE = 'CL';
 export const TEAMS_COUNT = 36;
 export const LEAGUE_PHASE_MATCHDAYS = 8;
 
+// Predictions close this many minutes before kickoff.
+export const PREDICTION_LOCK_MINUTES = 10;
+
 // League-phase standings cutoffs (UEFA Champions League format, Article 17).
 export const DIRECT_R16_CUTOFF = 8;   // positions 1-8 go straight to the round of 16
 export const PLAYOFF_CUTOFF = 24;     // positions 9-24 go to the knockout phase play-offs

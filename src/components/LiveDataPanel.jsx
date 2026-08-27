@@ -151,35 +151,40 @@ function MatchCard({ match, index }) {
           </div>
         </div>
 
-        {/* Goal scorers */}
-        {match.goals && match.goals.length > 0 && (() => {
-          const sorted = [...match.goals].sort((a, b) => (a.minute || 0) - (b.minute || 0));
-          const homeGoals = sorted.filter(g => g.team?.id === match.homeTeam?.id);
-          const awayGoals = sorted.filter(g => g.team?.id === match.awayTeam?.id);
-          const rows = Math.max(homeGoals.length, awayGoals.length);
+        {/* Goals + cards + substitutions, merged into one timeline per side */}
+        {((match.goals && match.goals.length > 0) || (match.events && match.events.length > 0)) && (() => {
+          const goalItems = (match.goals || []).map(g => ({
+            minute: g.minute, injuryTime: g.injuryTime, teamId: g.team?.id,
+            icon: '⚽', name: g.scorer?.shortName || g.scorer?.name || '?', isOG: g.type === 'OWN_GOAL',
+          }));
+          const eventItems = (match.events || []).map(e => ({
+            minute: e.minute, injuryTime: e.injuryTime, teamId: e.team?.id,
+            icon: e.type === 'YELLOW_CARD' ? '🟨' : e.type === 'RED_CARD' ? '🟥' : '🔄',
+            name: e.type === 'SUBSTITUTION' ? `${e.playerIn || '?'} ⇄ ${e.player || '?'}` : (e.player || '?'),
+            isOG: false,
+          }));
+          const sorted = [...goalItems, ...eventItems].sort((a, b) => (a.minute || 0) - (b.minute || 0));
+          const homeItems = sorted.filter(g => g.teamId === match.homeTeam?.id);
+          const awayItems = sorted.filter(g => g.teamId === match.awayTeam?.id);
+          const rows = Math.max(homeItems.length, awayItems.length);
           return (
             <div className="mt-2.5 pt-2.5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
               {Array.from({ length: rows }).map((_, i) => {
-                const hg = homeGoals[i];
-                const ag = awayGoals[i];
-                const fmtGoal = g => {
-                  const min = g.minute ? `${g.minute}${g.injuryTime ? `+${g.injuryTime}` : ''}'` : '';
-                  const name = g.scorer?.shortName || g.scorer?.name || '?';
-                  const isOG = g.type === 'OWN_GOAL';
-                  return { min, name, isOG };
-                };
+                const h = homeItems[i];
+                const a = awayItems[i];
+                const fmt = it => `${it.minute ? `${it.minute}${it.injuryTime ? `+${it.injuryTime}` : ''}'` : ''}`;
                 return (
                   <div key={i} className="flex items-center justify-between gap-2 py-0.5">
-                    {hg ? (() => { const { min, name, isOG } = fmtGoal(hg); return (
-                      <span className="text-[10px] flex items-center gap-1" style={{ color: isOG ? 'rgba(248,113,113,0.7)' : 'rgba(255,255,255,0.45)' }}>
-                        <span>⚽</span><span>{min}</span><span className="truncate max-w-[70px]">{name}{isOG ? ' (og)' : ''}</span>
+                    {h ? (
+                      <span className="text-[10px] flex items-center gap-1" style={{ color: h.isOG ? 'rgba(248,113,113,0.7)' : 'rgba(255,255,255,0.45)' }}>
+                        <span>{h.icon}</span><span>{fmt(h)}</span><span className="truncate max-w-[70px]">{h.name}{h.isOG ? ' (og)' : ''}</span>
                       </span>
-                    ); })() : <span className="flex-1" />}
-                    {ag ? (() => { const { min, name, isOG } = fmtGoal(ag); return (
-                      <span className="text-[10px] flex items-center gap-1 justify-end" style={{ color: isOG ? 'rgba(248,113,113,0.7)' : 'rgba(255,255,255,0.45)' }}>
-                        <span className="truncate max-w-[70px] text-right">{name}{isOG ? ' (og)' : ''}</span><span>{min}</span><span>⚽</span>
+                    ) : <span className="flex-1" />}
+                    {a ? (
+                      <span className="text-[10px] flex items-center gap-1 justify-end" style={{ color: a.isOG ? 'rgba(248,113,113,0.7)' : 'rgba(255,255,255,0.45)' }}>
+                        <span className="truncate max-w-[70px] text-right">{a.name}{a.isOG ? ' (og)' : ''}</span><span>{fmt(a)}</span><span>{a.icon}</span>
                       </span>
-                    ); })() : <span className="flex-1" />}
+                    ) : <span className="flex-1" />}
                   </div>
                 );
               })}
