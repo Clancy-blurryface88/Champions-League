@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, TrendingUp, TrendingDown, Minus, WifiOff } from "lucide-react";
+import { Clock, TrendingUp, TrendingDown, Minus, WifiOff, X } from "lucide-react";
 import { ShineBorder } from "@/components/magicui/shine-border";
 import ScoreCounter from "@/components/ScoreCounter";
 import TeamFlag from "@/components/TeamFlag";
@@ -74,18 +74,36 @@ function DeltaIcon({ delta }) {
   );
 }
 
-function RankCard({ row, index, total, isInitial }) {
+function PredictionBadge({ matchPredictions }) {
+  if (!matchPredictions || matchPredictions.length === 0) return <span className="flex-shrink-0" style={{ minWidth: 38 }} />;
+  const exactCount = matchPredictions.filter(mp => mp.isExact).length;
+  const hitCount   = matchPredictions.filter(mp => mp.isHit && !mp.isExact).length;
+  if (exactCount === 0 && hitCount === 0) return <span className="flex-shrink-0" style={{ minWidth: 38 }} />;
+  return (
+    <div className="flex items-center gap-0.5 flex-shrink-0 flex-wrap justify-end" style={{ maxWidth: 64 }}>
+      {Array.from({ length: exactCount }).map((_, i) => <span key={`e${i}`} style={{ fontSize: 10, lineHeight: 1 }}>🎯</span>)}
+      {Array.from({ length: hitCount }).map((_, i) => <span key={`h${i}`} style={{ fontSize: 10, lineHeight: 1 }}>✅</span>)}
+    </div>
+  );
+}
+
+function RankCard({ row, index, total, isInitial, onLongPress }) {
   const delta = row.officialRank - row.liveRank;
   const rankFromBottom = total - 1 - index;
   const cardDelay   = isInitial ? Math.pow(rankFromBottom, 1.4) * 0.13 + (row.liveRank === 1 ? 0.2 : 0) : 0;
   const scoreDur    = isInitial ? 0.7 : 2.8;
   const scoreDelay  = isInitial ? cardDelay + 0.2 : 0;
+  const holdTimer = useRef(null);
+  const startHold = () => { holdTimer.current = setTimeout(() => onLongPress?.(), 380); };
+  const cancelHold = () => clearTimeout(holdTimer.current);
   return (
     <motion.div layout layoutId={`lb-${row.userId}`}
       initial={isInitial ? { opacity: 0, y: 14 } : false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ layout: { type: 'spring', stiffness: 9, damping: 20 }, ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}) }}
-      className="relative mb-1">
+      onMouseDown={startHold} onMouseUp={cancelHold} onMouseLeave={cancelHold}
+      onTouchStart={startHold} onTouchEnd={cancelHold}
+      className="relative mb-1 cursor-pointer select-none">
       <div style={{ transform: 'skewX(-6deg)', borderRadius: 8, overflow: 'hidden', border: `2px solid ${RANK_BORDER(row.liveRank)}`, background: RANK_BG(row.liveRank), transition: 'border-color .5s ease, background .5s ease', position: 'relative' }}>
         <ShineBorder
           borderRadius={8}
@@ -113,25 +131,7 @@ function RankCard({ row, index, total, isInitial }) {
             <div className="flex-shrink-0 w-8 flex justify-end">
               <DeltaIcon delta={delta} />
             </div>
-            {row.matchPredictions && row.matchPredictions.length > 0 ? (
-              <div className="flex flex-col gap-0.5 flex-shrink-0 items-end" style={{ minWidth: 38 }}>
-                {row.matchPredictions.map((mp, i) => (
-                  <div key={i} className="flex items-center gap-0.5 flex-shrink-0">
-                    <TeamFlag logo={mp.homeLogo} name={mp.home} size={9} className="flex-shrink-0" rounded="sm" />
-                    <span className="text-[11px] font-mono font-bold tabular-nums leading-none"
-                      style={{ color: '#7cadee' }}>
-                      {mp.predicted}
-                    </span>
-                    <TeamFlag logo={mp.awayLogo} name={mp.away} size={9} className="flex-shrink-0" rounded="sm" />
-                    <span style={{ width: 14, marginLeft: 4, display: 'inline-flex', justifyContent: 'center', flexShrink: 0 }}>
-                      {mp.isExact ? <span style={{ fontSize: 10, lineHeight: 1 }}>🎯</span> : null}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <span className="flex-shrink-0" style={{ minWidth: 38 }} />
-            )}
+            <PredictionBadge matchPredictions={row.matchPredictions} />
           </div>
         </div>
       </div>
@@ -145,6 +145,7 @@ export default function LiveLeaderboard() {
   const [liveInfo, setLiveInfo]           = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [lastUpdate, setLastUpdate]       = useState(null);
+  const [openPlayer, setOpenPlayer]       = useState(null);
   const hasShownInitial  = useRef(false);
   const officialRankMap  = useRef({}); // userId → officialRank, set once from Phase 1
   const dbRef            = useRef(null);
@@ -313,10 +314,50 @@ export default function LiveLeaderboard() {
       <div style={{ maxWidth: 262, margin: '0 auto' }}>
         <AnimatePresence>
           {rows.map((row, idx) => (
-            <RankCard key={row.userId} row={row} index={idx} total={rows.length} isInitial={isInitialLoad} />
+            <RankCard key={row.userId} row={row} index={idx} total={rows.length} isInitial={isInitialLoad}
+              onLongPress={() => setOpenPlayer(row.userId)} />
           ))}
         </AnimatePresence>
       </div>
+
+      <AnimatePresence>
+        {openPlayer && (() => {
+          const player = rows.find(r => r.userId === openPlayer);
+          if (!player) return null;
+          return (
+            <motion.div key="prediction-modal" className="fixed inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.6)' }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpenPlayer(null)}>
+              <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+                onClick={e => e.stopPropagation()}
+                className="rounded-2xl p-5 w-full max-w-xs" style={{ background: '#0b1a2e', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-white font-bold text-sm">הניחושים החיים של {player.name}</h4>
+                  <button onClick={() => setOpenPlayer(null)}><X className="w-4 h-4 text-slate-400" /></button>
+                </div>
+                <div className="space-y-2">
+                  {(!player.matchPredictions || player.matchPredictions.length === 0) ? (
+                    <p className="text-slate-500 text-xs text-center py-4">אין ניחושים למשחקים החיים כרגע</p>
+                  ) : player.matchPredictions.map((mp, i) => {
+                    const status = mp.isExact ? { icon: '🎯', color: '#34d399' }
+                                 : mp.isHit   ? { icon: '✅', color: '#7cadee' }
+                                 :              { icon: '✕',  color: '#64748b' };
+                    return (
+                      <div key={i} className="flex items-center justify-between gap-2 text-[12px]">
+                        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                          <TeamFlag logo={mp.homeLogo} name={mp.home} size={14} rounded="sm" />
+                          <span className="text-slate-400 truncate">{mp.home} - {mp.away}</span>
+                          <TeamFlag logo={mp.awayLogo} name={mp.away} size={14} rounded="sm" />
+                        </div>
+                        <span className="font-mono font-bold flex-shrink-0" style={{ color: status.color }}>{status.icon} {mp.predicted}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
 
       {lastUpdate && (
         <p className="text-center text-slate-700 text-[10px] mt-3 flex items-center justify-center gap-1">
