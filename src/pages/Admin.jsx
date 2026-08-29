@@ -22,6 +22,7 @@ import AdminStandingsCheck from "../components/admin/AdminStandingsCheck";
 import AdminLiveMatchExplorer from "../components/admin/AdminLiveMatchExplorer";
 import AdminPredictionDisplayOptions from "../components/admin/AdminPredictionDisplayOptions";
 import AdminGeneralQuestions from "../components/admin/AdminGeneralQuestions";
+import AdminGeneralTableDesigns from "../components/admin/AdminGeneralTableDesigns";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -86,6 +87,7 @@ export default function Admin() {
       case 'live-explorer': return <AdminLiveMatchExplorer />;
       case 'prediction-display-options': return <AdminPredictionDisplayOptions />;
       case 'general-questions': return <AdminGeneralQuestions />;
+      case 'general-table-designs': return <AdminGeneralTableDesigns />;
       default: return <AdminRounds />;
     }
   };
@@ -106,6 +108,7 @@ export default function Admin() {
     { id: 'live-explorer',     label: '📡 הרכבים + אירועים',      icon: Radio },
     { id: 'prediction-display-options', label: '🎨 15 אפשרויות תצוגת ניחושים', icon: LayoutGrid },
     { id: 'general-questions', label: '🎯 ניחושים כלליים', icon: Sparkles },
+    { id: 'general-table-designs', label: '🎨 25 עיצובי טבלה', icon: LayoutGrid },
   ];
 
   return (

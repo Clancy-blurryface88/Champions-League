@@ -88,7 +88,7 @@ export default function GeneralPredictionsBoard() {
         <>
           {singleTeamQuestions.length > 0 && (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-white border-collapse">
+              <table className="w-full text-sm text-white border-separate border-spacing-0">
                 <thead>
                   <tr className="border-b border-slate-700">
                     <th className="text-right py-2 px-3 sticky right-0 bg-slate-900">משתמש</th>
@@ -139,7 +139,7 @@ export default function GeneralPredictionsBoard() {
               </button>
               {isExpanded && (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm text-white border-collapse">
+                <table className="w-full text-sm text-white border-separate border-spacing-0">
                   <thead>
                     <tr className="border-b border-slate-700">
                       <th className="text-right py-2 px-3 sticky right-0 bg-slate-900 w-28">משתמש</th>
