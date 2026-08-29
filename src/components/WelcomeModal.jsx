@@ -160,21 +160,25 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                   disabled={!displayName.trim() || saving}
                   className="w-full text-[13px] font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
                   style={{
-                    background:   "white",
-                    color:        "black",
+                    background: "linear-gradient(rgba(255,255,255,0.08), rgba(255,255,255,0.08)) padding-box, linear-gradient(90deg, #16a34a, #4ade80) border-box",
+                    backdropFilter: "blur(16px)",
+                    WebkitBackdropFilter: "blur(16px)",
+                    border: "1.5px solid transparent",
                     borderRadius: "0.75rem",
-                    padding:      "12px 16px",
+                    padding: "12px 16px",
                   }}
                   whileTap={{ scale: 0.98 }}
-                  whileHover={{ background: "rgba(240,240,240,1)" }}
+                  whileHover={{ background: "linear-gradient(rgba(255,255,255,0.14), rgba(255,255,255,0.14)) padding-box, linear-gradient(90deg, #16a34a, #4ade80) border-box" }}
                 >
                   {saving ? (
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-center gap-2" style={{ color: "#4ade80" }}>
                       <OrbitSpinner size={18} />
                       <span>שומר...</span>
                     </div>
                   ) : (
-                    "התחל לשחק"
+                    <span style={{ background: "linear-gradient(90deg, #16a34a, #4ade80)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                      התחל לשחק
+                    </span>
                   )}
                 </motion.button>
               </div>
