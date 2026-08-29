@@ -135,67 +135,74 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                 <style>{`
                   .wc-name-input::placeholder { color: rgba(255,255,255,0.25); -webkit-text-fill-color: rgba(255,255,255,0.25); }
                 `}</style>
-                <div
-                  style={{
-                    borderRadius: "0.75rem",
-                    border: "1.5px solid transparent",
-                    background: "linear-gradient(rgba(255,255,255,0.04), rgba(255,255,255,0.04)) padding-box, linear-gradient(135deg, #38bdf8, #097adc) border-box",
-                    backdropFilter: "blur(12px)",
-                    WebkitBackdropFilter: "blur(12px)",
-                  }}
-                >
-                  <input
-                    value={displayName}
-                    onChange={e => setDisplayName(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="השם שלך..."
-                    maxLength={20}
-                    disabled={saving}
-                    autoFocus
-                    dir="rtl"
-                    className="wc-name-input w-full text-sm font-bold text-center outline-none transition-all duration-200"
+                {/* Gradient "border" via nested divs (padding = border thickness) —
+                    no background-clip/box-layering tricks, so nothing can render
+                    as a solid fill by accident. */}
+                <div style={{ padding: "1.5px", borderRadius: "0.75rem", background: "linear-gradient(135deg, #38bdf8, #097adc)" }}>
+                  <div
                     style={{
-                      background: "transparent",
-                      border: "none",
-                      padding: "12px 16px",
-                      backgroundImage: "linear-gradient(135deg, #38bdf8, #097adc)",
-                      backgroundClip: "text",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      color: "transparent",
+                      borderRadius: "calc(0.75rem - 1.5px)",
+                      background: "rgba(255,255,255,0.04)",
+                      backdropFilter: "blur(12px)",
+                      WebkitBackdropFilter: "blur(12px)",
                     }}
-                  />
+                  >
+                    <input
+                      value={displayName}
+                      onChange={e => setDisplayName(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="השם שלך..."
+                      maxLength={20}
+                      disabled={saving}
+                      autoFocus
+                      dir="rtl"
+                      className="wc-name-input w-full text-sm font-bold text-center outline-none transition-all duration-200"
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        padding: "12px 16px",
+                        borderRadius: "calc(0.75rem - 1.5px)",
+                        backgroundImage: "linear-gradient(135deg, #38bdf8, #097adc)",
+                        backgroundClip: "text",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        color: "transparent",
+                      }}
+                    />
+                  </div>
                 </div>
 
                 {userEmail && (
                   <p className="text-white/25 text-[11px] text-center">{userEmail}</p>
                 )}
 
-                <motion.button
-                  onClick={handleSave}
-                  disabled={!displayName.trim() || saving}
-                  className="w-full text-[13px] font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed hover:brightness-125"
-                  style={{
-                    background: "linear-gradient(rgba(255,255,255,0.06), rgba(255,255,255,0.06)) padding-box, linear-gradient(90deg, #16a34a, #4ade80) border-box",
-                    backdropFilter: "blur(16px)",
-                    WebkitBackdropFilter: "blur(16px)",
-                    border: "1.5px solid transparent",
-                    borderRadius: "0.75rem",
-                    padding: "12px 16px",
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {saving ? (
-                    <div className="flex items-center justify-center gap-2" style={{ color: "#4ade80" }}>
-                      <OrbitSpinner size={18} />
-                      <span>שומר...</span>
-                    </div>
-                  ) : (
-                    <span style={{ background: "linear-gradient(90deg, #16a34a, #4ade80)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                      התחל לשחק
-                    </span>
-                  )}
-                </motion.button>
+                <div style={{ padding: "1.5px", borderRadius: "0.75rem", background: "linear-gradient(90deg, #16a34a, #4ade80)" }}>
+                  <motion.button
+                    onClick={handleSave}
+                    disabled={!displayName.trim() || saving}
+                    className="w-full text-[13px] font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed hover:brightness-125"
+                    style={{
+                      background: "rgba(255,255,255,0.06)",
+                      backdropFilter: "blur(16px)",
+                      WebkitBackdropFilter: "blur(16px)",
+                      border: "none",
+                      borderRadius: "calc(0.75rem - 1.5px)",
+                      padding: "12px 16px",
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {saving ? (
+                      <div className="flex items-center justify-center gap-2" style={{ color: "#4ade80" }}>
+                        <OrbitSpinner size={18} />
+                        <span>שומר...</span>
+                      </div>
+                    ) : (
+                      <span style={{ background: "linear-gradient(90deg, #16a34a, #4ade80)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                        התחל לשחק
+                      </span>
+                    )}
+                  </motion.button>
+                </div>
               </div>
             </div>
           </motion.div>
