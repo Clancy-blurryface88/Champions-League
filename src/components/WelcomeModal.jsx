@@ -168,13 +168,14 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                   disabled={!displayName.trim() || saving}
                   className="w-full text-[13px] font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
                   style={{
-                    background:   "white",
-                    color:        "black",
+                    background:   "transparent",
+                    color:        "white",
+                    border:       "1px solid rgba(255,255,255,0.25)",
                     borderRadius: "0.75rem",
                     padding:      "12px 16px",
                   }}
                   whileTap={{ scale: 0.98 }}
-                  whileHover={{ background: "rgba(240,240,240,1)" }}
+                  whileHover={{ background: "rgba(255,255,255,0.08)" }}
                 >
                   {saving ? (
                     <div className="flex items-center justify-center gap-2">
