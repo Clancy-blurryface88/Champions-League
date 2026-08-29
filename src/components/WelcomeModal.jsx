@@ -144,18 +144,16 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                   className="w-full text-sm font-bold text-center placeholder:text-white/25 outline-none transition-all duration-200"
                   style={{
                     background:  "rgba(255,255,255,0.04)",
-                    border:      "1px solid rgba(255,255,255,0.08)",
+                    border:      "1px solid #22c55e",
                     borderRadius: "0.75rem",
                     padding:     "12px 16px",
-                    color:       "#38bdf8",
+                    color:       "#22c55e",
                   }}
                   onFocus={e => {
                     e.target.style.background = "rgba(255,255,255,0.07)";
-                    e.target.style.borderColor = "rgba(255,255,255,0.15)";
                   }}
                   onBlur={e => {
                     e.target.style.background = "rgba(255,255,255,0.04)";
-                    e.target.style.borderColor = "rgba(255,255,255,0.08)";
                   }}
                 />
 
