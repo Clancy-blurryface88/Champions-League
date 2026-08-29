@@ -220,6 +220,18 @@ function QuestionCard({ question, logos, onChanged }) {
               .from("user_stats")
               .update({ total_points: parseFloat((stats.total_points + delta).toFixed(2)) })
               .eq("id", stats.id);
+          } else {
+            // No user_stats row yet (e.g. this user hasn't had any match-round
+            // scoring run for them) — create one instead of silently dropping
+            // their general-prediction points.
+            await adminSupabase
+              .from("user_stats")
+              .insert({
+                user_id: p.user_id,
+                total_points: parseFloat(delta.toFixed(2)),
+                exact_hits_count: 0,
+                total_predictions_count: 0,
+              });
           }
           affectedCount++;
         }
