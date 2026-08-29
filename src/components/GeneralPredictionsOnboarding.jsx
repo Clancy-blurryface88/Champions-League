@@ -211,15 +211,32 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
                         <button
                           onClick={() => setSelected(team.name)}
                           disabled={saving}
-                          className="w-full flex flex-col items-center gap-1 p-2 rounded-xl transition-all"
+                          className="relative w-full flex flex-col items-center gap-1 p-2 rounded-xl transition-all overflow-hidden"
                           style={{
                             background: isSelected ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.03)",
                             border: isSelected ? "1.5px solid rgba(255,255,255,0.6)" : "1px solid rgba(255,255,255,0.06)",
                           }}
                         >
-                          <TeamFlag logo={team.logo_url} name={team.name} className="w-8 h-8" animate={false} />
-                          <span className="text-white/85 text-[9px] text-center leading-tight truncate w-full">{team.name}</span>
-                          {odds != null && <span className="text-yellow-400/80 text-[8px]">{odds}</span>}
+                          {/* Oversized, faded logo as a decorative background "shadow" */}
+                          <img
+                            src={team.logo_url}
+                            alt=""
+                            aria-hidden="true"
+                            className="absolute pointer-events-none select-none"
+                            style={{
+                              width: "160%",
+                              height: "160%",
+                              top: "50%",
+                              left: "50%",
+                              transform: "translate(-50%, -50%)",
+                              objectFit: "contain",
+                              opacity: 0.12,
+                              filter: "blur(1px)",
+                            }}
+                          />
+                          <TeamFlag logo={team.logo_url} name={team.name} className="relative z-10 w-8 h-8" animate={false} />
+                          <span className="relative z-10 text-white/85 text-[9px] text-center leading-tight truncate w-full">{team.name}</span>
+                          {odds != null && <span className="relative z-10 text-yellow-400/80 text-[8px]">{odds}</span>}
                         </button>
                       </div>
                     );
