@@ -17,23 +17,33 @@ function parseMultiAnswer(raw) {
   }
 }
 
-// Plain CSS Grid instead of an HTML <table> — on mobile WebKit, a <table>
-// combined with a sticky column and horizontal touch-scroll is a known
-// source of compositing glitches (content briefly rendering outside its
-// cell mid-scroll, e.g. a logo floating over the text below it). Grid with
-// `overflow: hidden` per cell avoids that whole class of bug.
-function Cell({ children, sticky, header, className = "" }) {
+const NAME_COL_WIDTH = 100;
+const ROW_H = 68; // fixed row height shared by both panels so they line up
+
+// Frozen name column as a genuinely separate, non-scrolling panel next to an
+// independently horizontally-scrolling picks panel — deliberately NOT using
+// `position: sticky`. Sticky-inside-a-scroll-container combined with
+// dir="rtl" is inconsistent across mobile browsers (confirmed broken here:
+// the name column scrolled away with everything else instead of staying
+// put). Two physically separate panels can't have that failure mode.
+function FrozenNamesPanel({ headerLabel, rows }) {
   return (
-    <div
-      className={`flex items-center justify-center py-2 px-2 border-b border-slate-800 overflow-hidden ${className}`}
-      style={{
-        position: sticky ? "sticky" : "static",
-        right: sticky ? 0 : undefined,
-        background: header ? "#0f172a" : sticky ? "#0f172a" : "transparent",
-        zIndex: sticky ? 1 : undefined,
-      }}
-    >
-      {children}
+    <div className="flex-shrink-0 text-white" style={{ width: NAME_COL_WIDTH }}>
+      <div
+        className="flex items-center justify-end px-2 font-medium text-sm bg-slate-900 border-b border-slate-700"
+        style={{ height: ROW_H }}
+      >
+        {headerLabel}
+      </div>
+      {rows.map((row) => (
+        <div
+          key={row.userId}
+          className="flex items-center justify-end px-2 font-medium text-sm border-b border-slate-800 bg-slate-900"
+          style={{ height: ROW_H }}
+        >
+          {row.displayName}
+        </div>
+      ))}
     </div>
   );
 }
@@ -108,39 +118,38 @@ export default function GeneralPredictionsBoard() {
       ) : (
         <>
           {singleTeamQuestions.length > 0 && (
-            <div className="overflow-x-auto text-sm text-white">
-              <div
-                className="grid"
-                style={{ gridTemplateColumns: `112px repeat(${singleTeamQuestions.length}, minmax(130px, 1fr))` }}
-              >
-                <Cell sticky header className="justify-end font-medium">משתמש</Cell>
-                {singleTeamQuestions.map((q) => (
-                  <Cell key={q.id} header>{q.question_text}</Cell>
-                ))}
-
-                {rows.map((row) => (
-                  <React.Fragment key={row.userId}>
-                    <Cell sticky className="justify-end font-medium">{row.displayName}</Cell>
-                    {singleTeamQuestions.map((q) => {
-                      const answer = row.answers[q.id];
-                      return (
-                        <Cell key={q.id}>
-                          {answer ? (
-                            <div className="flex flex-col items-center gap-1">
-                              <TeamFlag logo={logosByName[answer.team]} name={answer.team} className="w-6 h-6" animate={false} />
-                              <span dir="ltr" className="text-xs text-slate-300 truncate max-w-[110px]">{answer.team}</span>
-                              {answer.points != null && (
-                                <span className="text-[10px] text-green-400">+{answer.points}</span>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-slate-600">—</span>
-                          )}
-                        </Cell>
-                      );
-                    })}
-                  </React.Fragment>
-                ))}
+            <div className="flex text-white">
+              <FrozenNamesPanel headerLabel="משתמש" rows={rows} />
+              <div className="overflow-x-auto flex-1">
+                <div className="grid" style={{ gridTemplateColumns: `repeat(${singleTeamQuestions.length}, minmax(130px, 1fr))` }}>
+                  {singleTeamQuestions.map((q) => (
+                    <div key={q.id} className="flex items-center justify-center px-2 text-sm bg-slate-900 border-b border-slate-700" style={{ height: ROW_H }}>
+                      {q.question_text}
+                    </div>
+                  ))}
+                  {rows.map((row) => (
+                    <React.Fragment key={row.userId}>
+                      {singleTeamQuestions.map((q) => {
+                        const answer = row.answers[q.id];
+                        return (
+                          <div key={q.id} className="flex items-center justify-center px-2 border-b border-slate-800 overflow-hidden" style={{ height: ROW_H }}>
+                            {answer ? (
+                              <div className="flex flex-col items-center gap-1">
+                                <TeamFlag logo={logosByName[answer.team]} name={answer.team} className="w-6 h-6" animate={false} />
+                                <span dir="ltr" className="text-xs text-slate-300 truncate max-w-[110px]">{answer.team}</span>
+                                {answer.points != null && (
+                                  <span className="text-[10px] text-green-400">+{answer.points}</span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-slate-600">—</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </React.Fragment>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -157,48 +166,48 @@ export default function GeneralPredictionsBoard() {
                   <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                 </button>
                 {isExpanded && (
-                  <div className="overflow-x-auto text-sm text-white">
-                    <div
-                      className="grid"
-                      style={{ gridTemplateColumns: `112px repeat(8, minmax(64px, 1fr)) 56px` }}
-                    >
-                      <Cell sticky header className="justify-end font-medium">משתמש</Cell>
-                      {Array.from({ length: 8 }, (_, i) => (
-                        <Cell key={i} header className="text-xs">בחירה {i + 1}</Cell>
-                      ))}
-                      <Cell header className="text-xs">נק'</Cell>
+                  <div className="flex text-white">
+                    <FrozenNamesPanel headerLabel="משתמש" rows={rows} />
+                    <div className="overflow-x-auto flex-1">
+                      <div className="grid" style={{ gridTemplateColumns: `repeat(8, minmax(64px, 1fr)) 56px` }}>
+                        {Array.from({ length: 8 }, (_, i) => (
+                          <div key={i} className="flex items-center justify-center px-1 text-xs bg-slate-900 border-b border-slate-700" style={{ height: ROW_H }}>
+                            בחירה {i + 1}
+                          </div>
+                        ))}
+                        <div className="flex items-center justify-center px-1 text-xs bg-slate-900 border-b border-slate-700" style={{ height: ROW_H }}>נק'</div>
 
-                      {rows.map((row) => {
-                        const answer = row.answers[q.id];
-                        const teams = answer ? parseMultiAnswer(answer.team) : [];
-                        return (
-                          <React.Fragment key={row.userId}>
-                            <Cell sticky className="justify-end font-medium">{row.displayName}</Cell>
-                            {Array.from({ length: 8 }, (_, i) => {
-                              const team = teams[i];
-                              return (
-                                <Cell key={i} className="border-r border-slate-800/60">
-                                  {team ? (
-                                    <div className="flex flex-col items-center gap-0.5" title={team}>
-                                      <TeamFlag logo={logosByName[team]} name={team} className="w-6 h-6" animate={false} />
-                                      <span dir="ltr" className="text-[8px] text-slate-400 max-w-[56px] truncate">{team}</span>
-                                    </div>
-                                  ) : (
-                                    <span className="text-slate-700">—</span>
-                                  )}
-                                </Cell>
-                              );
-                            })}
-                            <Cell>
-                              {answer?.points != null ? (
-                                <span className="text-green-400 text-xs">+{answer.points}</span>
-                              ) : (
-                                <span className="text-slate-600">—</span>
-                              )}
-                            </Cell>
-                          </React.Fragment>
-                        );
-                      })}
+                        {rows.map((row) => {
+                          const answer = row.answers[q.id];
+                          const teams = answer ? parseMultiAnswer(answer.team) : [];
+                          return (
+                            <React.Fragment key={row.userId}>
+                              {Array.from({ length: 8 }, (_, i) => {
+                                const team = teams[i];
+                                return (
+                                  <div key={i} className="flex items-center justify-center px-1 border-b border-slate-800 border-r border-slate-800/60 overflow-hidden" style={{ height: ROW_H }}>
+                                    {team ? (
+                                      <div className="flex flex-col items-center gap-0.5" title={team}>
+                                        <TeamFlag logo={logosByName[team]} name={team} className="w-6 h-6" animate={false} />
+                                        <span dir="ltr" className="text-[8px] text-slate-400 max-w-[56px] truncate">{team}</span>
+                                      </div>
+                                    ) : (
+                                      <span className="text-slate-700">—</span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                              <div className="flex items-center justify-center px-1 border-b border-slate-800" style={{ height: ROW_H }}>
+                                {answer?.points != null ? (
+                                  <span className="text-green-400 text-xs">+{answer.points}</span>
+                                ) : (
+                                  <span className="text-slate-600">—</span>
+                                )}
+                              </div>
+                            </React.Fragment>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 )}
