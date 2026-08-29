@@ -65,7 +65,7 @@ export default function GeneralPredictionsBoard() {
   const [questions, setQuestions] = useState([]);
   const [rows, setRows] = useState([]); // [{ userId, displayName, answers: {questionId: {team, points}} }]
   const [logosByName, setLogosByName] = useState({});
-  const [expandedMulti, setExpandedMulti] = useState({}); // { [questionId]: boolean } — hidden until clicked
+  const [expandedMulti, setExpandedMulti] = useState({}); // { [questionId]: boolean } — open by default, collapsible
 
   useEffect(() => {
     const load = async () => {
@@ -163,7 +163,7 @@ export default function GeneralPredictionsBoard() {
           )}
 
           {multiTeamQuestions.map((q) => {
-            const isExpanded = !!expandedMulti[q.id];
+            const isExpanded = expandedMulti[q.id] !== false;
             return (
               <div key={q.id}>
                 <button
