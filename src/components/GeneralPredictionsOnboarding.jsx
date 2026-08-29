@@ -259,7 +259,7 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
                           />
                           <TeamFlag logo={team.logo_url} name={team.name} className="relative z-10 w-8 h-8" animate={false} />
                           <span className="relative z-10 text-white/85 text-[9px] text-center leading-tight truncate w-full">{team.name}</span>
-                          {odds != null && <span className="relative z-10 text-yellow-400/80 text-[8px]">{odds}</span>}
+                          {odds != null && <span className="relative z-10 text-yellow-400/80 text-[8px] font-bold">{odds}</span>}
                         </button>
                       </div>
                     );
