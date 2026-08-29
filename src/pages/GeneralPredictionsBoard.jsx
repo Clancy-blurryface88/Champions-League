@@ -1,55 +1,43 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Lock, Trophy } from "lucide-react";
+import { ArrowLeft, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TeamFlag from "@/components/TeamFlag";
-import { GeneralQuestion, GeneralPrediction, PublicProfile, TeamLogo, Match } from "@/api/entities";
+import { GeneralQuestion, GeneralPrediction, PublicProfile, TeamLogo } from "@/api/entities";
 import CircleLoader from "@/components/CircleLoader";
 
+// No lock gate here: the onboarding flow already blocks a user from reaching
+// any other page — including this one — until they've submitted their own
+// answers, so there's no way to see others' picks before making your own.
 export default function GeneralPredictionsBoard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [isLocked, setIsLocked] = useState(false);
   const [questions, setQuestions] = useState([]);
   const [rows, setRows] = useState([]); // [{ userId, displayName, answers: {questionId: {team, points}} }]
   const [logosByName, setLogosByName] = useState({});
 
   useEffect(() => {
     const load = async () => {
-      const [activeQuestions, allMatches] = await Promise.all([
+      const [activeQuestions, predictions, profiles, logos] = await Promise.all([
         GeneralQuestion.filter({ is_active: true }),
-        Match.filter({ stage: "league_phase" }),
+        GeneralPrediction.list(),
+        PublicProfile.list(),
+        TeamLogo.list("name"),
       ]);
 
-      const earliestKickoff = allMatches.reduce((min, m) => {
-        const t = new Date(m.match_date).getTime();
-        return min === null || t < min ? t : min;
-      }, null);
-      const locked = earliestKickoff !== null && Date.now() >= earliestKickoff;
-      setIsLocked(locked);
       setQuestions(activeQuestions);
+      setLogosByName(Object.fromEntries(logos.map((l) => [l.name, l.logo_url])));
 
-      if (locked) {
-        const [predictions, profiles, logos] = await Promise.all([
-          GeneralPrediction.list(),
-          PublicProfile.list(),
-          TeamLogo.list("name"),
-        ]);
-
-        const logoMap = Object.fromEntries(logos.map((l) => [l.name, l.logo_url]));
-        setLogosByName(logoMap);
-
-        const nameByUserId = Object.fromEntries(profiles.map((p) => [p.user_id, p.display_name]));
-        const byUser = {};
-        predictions.forEach((p) => {
-          if (!byUser[p.user_id]) {
-            byUser[p.user_id] = { userId: p.user_id, displayName: nameByUserId[p.user_id] || "משתמש", answers: {} };
-          }
-          byUser[p.user_id].answers[p.question_id] = { team: p.answer, points: p.points_earned };
-        });
-        setRows(Object.values(byUser).sort((a, b) => a.displayName.localeCompare(b.displayName, "he")));
-      }
+      const nameByUserId = Object.fromEntries(profiles.map((p) => [p.user_id, p.display_name]));
+      const byUser = {};
+      predictions.forEach((p) => {
+        if (!byUser[p.user_id]) {
+          byUser[p.user_id] = { userId: p.user_id, displayName: nameByUserId[p.user_id] || "משתמש", answers: {} };
+        }
+        byUser[p.user_id].answers[p.question_id] = { team: p.answer, points: p.points_earned };
+      });
+      setRows(Object.values(byUser).sort((a, b) => a.displayName.localeCompare(b.displayName, "he")));
 
       setLoading(false);
     };
@@ -76,12 +64,7 @@ export default function GeneralPredictionsBoard() {
         </h1>
       </div>
 
-      {!isLocked ? (
-        <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
-          <Lock className="w-10 h-10 text-slate-500" />
-          <p className="text-slate-400">הניחושים ננעלים לפני משחק 1 של מחזור 1 — יוצגו כאן לאחר מכן.</p>
-        </div>
-      ) : rows.length === 0 ? (
+      {rows.length === 0 ? (
         <p className="text-slate-500 text-center py-20">עדיין אין ניחושים כלליים שהוגשו.</p>
       ) : (
         <div className="overflow-x-auto">

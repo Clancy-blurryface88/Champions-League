@@ -581,11 +581,15 @@ export default function Layout({ children, currentPageName }) {
 
         setUser(userWithStats);
 
-        // פלואו אונבורדינג: WelcomeModal → דשבורד
+        // פלואו אונבורדינג: WelcomeModal → שאלות כלליות (אם יש כאלה שטרם נענו) → דשבורד
         if (currentUser) {
           const hasCompletedWelcome = localStorage.getItem('welcome_completed_' + currentUser.id) === 'true';
           if (!hasCompletedWelcome) {
             setShowWelcomeModal(true);
+          } else {
+            // משתמש ותיק שכבר עבר את ה-Welcome — עדיין בודקים בכל טעינה אם יש
+            // שאלה כללית חדשה שהתווספה מאז ועוד לא נענתה, לא רק בהרשמה הראשונה.
+            checkPendingGeneralQuestions(currentUser.id);
           }
         }
 
@@ -967,18 +971,14 @@ export default function Layout({ children, currentPageName }) {
     await maybeShowGeneralPredictionsOnboarding(user?.id);
   };
 
-  // Checks whether the user still has active general-prediction questions
-  // (e.g. "who wins the tournament") they haven't answered yet, and shows the
-  // onboarding modal for those instead of navigating straight to Dashboard.
-  // Checking "missing an answer row" (not a boolean flag) means adding a new
-  // question later needs no code change — existing users get prompted for it
-  // automatically next time they load the app. Skips entirely once the
-  // league phase has already kicked off (predictions closed for latecomers).
-  const maybeShowGeneralPredictionsOnboarding = async (userId) => {
-    if (!userId) {
-      navigate(createPageUrl("Dashboard"));
-      return;
-    }
+  // Returns active general-prediction questions (e.g. "who wins the
+  // tournament") this user hasn't answered yet — [] once league-phase
+  // matchday 1 has kicked off (predictions closed for latecomers) or on any
+  // fetch error. Checking "missing an answer row" (not a boolean flag) means
+  // a newly-added question reaches already-registered users automatically,
+  // without needing its own migration/flag.
+  const getUnansweredGeneralQuestions = async (userId) => {
+    if (!userId) return [];
     try {
       const [activeQuestions, myAnswers, allMatches] = await Promise.all([
         GeneralQuestion.filter({ is_active: true }),
@@ -991,19 +991,38 @@ export default function Layout({ children, currentPageName }) {
         return min === null || t < min ? t : min;
       }, null);
       const isLocked = earliestKickoff !== null && Date.now() >= earliestKickoff;
+      if (isLocked) return [];
 
       const answeredIds = new Set(myAnswers.map((a) => a.question_id));
-      const unanswered = activeQuestions.filter((q) => !answeredIds.has(q.id));
-
-      if (!isLocked && unanswered.length > 0) {
-        setPendingGeneralQuestions(unanswered);
-        setShowGeneralPredictionsOnboarding(true);
-        return;
-      }
+      return activeQuestions.filter((q) => !answeredIds.has(q.id));
     } catch (err) {
-      console.warn("General predictions onboarding check failed (non-critical):", err?.message);
+      console.warn("General predictions check failed (non-critical):", err?.message);
+      return [];
+    }
+  };
+
+  // Called once, right after WelcomeModal closes — shows the onboarding
+  // modal if there's anything unanswered, otherwise goes straight to
+  // Dashboard exactly like before this feature existed.
+  const maybeShowGeneralPredictionsOnboarding = async (userId) => {
+    const unanswered = await getUnansweredGeneralQuestions(userId);
+    if (unanswered.length > 0) {
+      setPendingGeneralQuestions(unanswered);
+      setShowGeneralPredictionsOnboarding(true);
+      return;
     }
     navigate(createPageUrl("Dashboard"));
+  };
+
+  // Called on every app load for returning users (who already passed
+  // WelcomeModal in a past session) — same check, but never force-navigates,
+  // since the user may already be headed anywhere in the app.
+  const checkPendingGeneralQuestions = async (userId) => {
+    const unanswered = await getUnansweredGeneralQuestions(userId);
+    if (unanswered.length > 0) {
+      setPendingGeneralQuestions(unanswered);
+      setShowGeneralPredictionsOnboarding(true);
+    }
   };
 
   const handleGeneralPredictionsOnboardingDone = () => {
