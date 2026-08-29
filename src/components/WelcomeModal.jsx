@@ -141,12 +141,13 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                   disabled={saving}
                   autoFocus
                   dir="rtl"
-                  className="w-full text-sm text-center text-white placeholder:text-white/25 outline-none transition-all duration-200"
+                  className="w-full text-sm font-bold text-center placeholder:text-white/25 outline-none transition-all duration-200"
                   style={{
                     background:  "rgba(255,255,255,0.04)",
                     border:      "1px solid rgba(255,255,255,0.08)",
                     borderRadius: "0.75rem",
                     padding:     "12px 16px",
+                    color:       "#38bdf8",
                   }}
                   onFocus={e => {
                     e.target.style.background = "rgba(255,255,255,0.07)";
