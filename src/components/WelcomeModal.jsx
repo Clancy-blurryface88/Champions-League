@@ -132,24 +132,40 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
 
               {/* Body */}
               <div className="px-8 py-7 space-y-3.5">
-                <input
-                  value={displayName}
-                  onChange={e => setDisplayName(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="השם שלך..."
-                  maxLength={20}
-                  disabled={saving}
-                  autoFocus
-                  dir="rtl"
-                  className="w-full text-sm font-bold text-center placeholder:text-white/25 placeholder:font-normal outline-none transition-all duration-200"
+                <style>{`
+                  .wc-name-input::placeholder { color: rgba(255,255,255,0.25); -webkit-text-fill-color: rgba(255,255,255,0.25); }
+                `}</style>
+                <div
                   style={{
-                    border: "1.5px solid transparent",
                     borderRadius: "0.75rem",
-                    padding: "12px 16px",
-                    color: "#7cadee",
-                    backgroundImage: "linear-gradient(rgba(20,30,48,0.55), rgba(20,30,48,0.55)) padding-box, linear-gradient(135deg, #38bdf8, #097adc) border-box",
+                    border: "1.5px solid transparent",
+                    background: "linear-gradient(rgba(255,255,255,0.04), rgba(255,255,255,0.04)) padding-box, linear-gradient(135deg, #38bdf8, #097adc) border-box",
+                    backdropFilter: "blur(12px)",
+                    WebkitBackdropFilter: "blur(12px)",
                   }}
-                />
+                >
+                  <input
+                    value={displayName}
+                    onChange={e => setDisplayName(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="השם שלך..."
+                    maxLength={20}
+                    disabled={saving}
+                    autoFocus
+                    dir="rtl"
+                    className="wc-name-input w-full text-sm font-bold text-center outline-none transition-all duration-200"
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      padding: "12px 16px",
+                      backgroundImage: "linear-gradient(135deg, #38bdf8, #097adc)",
+                      backgroundClip: "text",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      color: "transparent",
+                    }}
+                  />
+                </div>
 
                 {userEmail && (
                   <p className="text-white/25 text-[11px] text-center">{userEmail}</p>
@@ -158,9 +174,9 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                 <motion.button
                   onClick={handleSave}
                   disabled={!displayName.trim() || saving}
-                  className="w-full text-[13px] font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="w-full text-[13px] font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed hover:brightness-125"
                   style={{
-                    background: "linear-gradient(rgba(255,255,255,0.08), rgba(255,255,255,0.08)) padding-box, linear-gradient(90deg, #16a34a, #4ade80) border-box",
+                    background: "linear-gradient(rgba(255,255,255,0.06), rgba(255,255,255,0.06)) padding-box, linear-gradient(90deg, #16a34a, #4ade80) border-box",
                     backdropFilter: "blur(16px)",
                     WebkitBackdropFilter: "blur(16px)",
                     border: "1.5px solid transparent",
@@ -168,7 +184,6 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                     padding: "12px 16px",
                   }}
                   whileTap={{ scale: 0.98 }}
-                  whileHover={{ background: "linear-gradient(rgba(255,255,255,0.14), rgba(255,255,255,0.14)) padding-box, linear-gradient(90deg, #16a34a, #4ade80) border-box" }}
                 >
                   {saving ? (
                     <div className="flex items-center justify-center gap-2" style={{ color: "#4ade80" }}>
