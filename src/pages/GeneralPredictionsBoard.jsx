@@ -143,8 +143,10 @@ export default function GeneralPredictionsBoard() {
                   <thead>
                     <tr className="border-b border-slate-700">
                       <th className="text-right py-2 px-3 sticky right-0 bg-slate-900 w-28">משתמש</th>
-                      <th className="text-center py-2 px-3">8 הבחירות</th>
-                      <th className="text-center py-2 px-3 w-20">נק'</th>
+                      {Array.from({ length: 8 }, (_, i) => (
+                        <th key={i} className="text-center py-2 px-2 min-w-[70px]">בחירה {i + 1}</th>
+                      ))}
+                      <th className="text-center py-2 px-3 w-16">נק'</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -154,20 +156,21 @@ export default function GeneralPredictionsBoard() {
                       return (
                         <tr key={row.userId} className="border-b border-slate-800">
                           <td className="py-2 px-3 font-medium sticky right-0 bg-slate-900">{row.displayName}</td>
-                          <td className="py-2 px-3">
-                            {teams.length > 0 ? (
-                              <div className="flex flex-wrap items-center justify-center gap-2">
-                                {teams.map((team) => (
-                                  <div key={team} className="flex flex-col items-center gap-0.5" title={team}>
+                          {Array.from({ length: 8 }, (_, i) => {
+                            const team = teams[i];
+                            return (
+                              <td key={i} className="text-center py-2 px-2 border-r border-slate-800/60">
+                                {team ? (
+                                  <div className="flex flex-col items-center gap-0.5" title={team}>
                                     <TeamFlag logo={logosByName[team]} name={team} className="w-6 h-6" animate={false} />
-                                    <span className="text-[8px] text-slate-400 max-w-[52px] truncate">{team}</span>
+                                    <span className="text-[8px] text-slate-400 max-w-[64px] truncate">{team}</span>
                                   </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <span className="text-slate-600 block text-center">—</span>
-                            )}
-                          </td>
+                                ) : (
+                                  <span className="text-slate-700">—</span>
+                                )}
+                              </td>
+                            );
+                          })}
                           <td className="text-center py-2 px-3">
                             {answer?.points != null ? (
                               <span className="text-green-400 text-xs">+{answer.points}</span>
