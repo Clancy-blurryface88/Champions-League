@@ -18,7 +18,6 @@ export default function IntroVideoModal({ isOpen, onDone }) {
 
   useEffect(() => {
     if (isOpen && videoRef.current) {
-      videoRef.current.currentTime = 0;
       videoRef.current.play().catch(() => {});
     }
   }, [isOpen]);
@@ -39,6 +38,7 @@ export default function IntroVideoModal({ isOpen, onDone }) {
             autoPlay
             muted={muted}
             playsInline
+            preload="auto"
             onEnded={onDone}
             className="w-full h-full"
             style={{ objectFit: "cover", objectPosition: "center" }}

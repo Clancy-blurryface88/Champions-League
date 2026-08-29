@@ -1772,9 +1772,11 @@ export default function Layout({ children, currentPageName }) {
 
         <MatchesByDateSheet isOpen={showDateSheet} onClose={() => setShowDateSheet(false)} />
 
-        {/* Push Notification Banner */}
+        {/* Push Notification Banner — held back until the full onboarding
+            chain (welcome name, general questions, intro video) is done,
+            same reasoning as the live/next-match intro overlays below. */}
         <AnimatePresence>
-          {showPushBanner && (() => {
+          {showPushBanner && !showWelcomeModal && !showGeneralPredictionsOnboarding && !showIntroVideo && (() => {
             const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
             const isStandalone = window.navigator.standalone === true;
             const isIOSBrowser = isIOS && !isStandalone;
