@@ -132,18 +132,6 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
 
               {/* Body */}
               <div className="px-8 py-7 space-y-3.5">
-                <style>{`
-                  .wc-name-input::placeholder { color: rgba(255,255,255,0.25); -webkit-text-fill-color: rgba(255,255,255,0.25); }
-                `}</style>
-                {/* Border-only gradient, same technique already proven elsewhere
-                    in the app (PredictionSummary.jsx): a single element with a
-                    two-layer background — transparent fill on the padding-box,
-                    gradient on the border-box — clipped to just the border ring.
-                    NOTE: gradient *text* via background-clip:text does not work
-                    on <input> elements in most browsers (it silently falls back
-                    to painting the gradient as a real fill instead of clipping
-                    to the glyphs) — that's what caused every earlier "solid
-                    fill" attempt. Typed text stays a plain solid blue instead. */}
                 <input
                   value={displayName}
                   onChange={e => setDisplayName(e.target.value)}
@@ -153,13 +141,20 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                   disabled={saving}
                   autoFocus
                   dir="rtl"
-                  className="wc-name-input w-full text-sm font-bold text-center outline-none transition-all duration-200"
+                  className="w-full text-sm text-center text-white placeholder:text-white/25 outline-none transition-all duration-200"
                   style={{
-                    background: "linear-gradient(rgba(255,255,255,0), rgba(255,255,255,0)) padding-box, linear-gradient(135deg, #38bdf8, #097adc) border-box",
-                    border: "1.5px solid transparent",
-                    padding: "12px 16px",
+                    background:  "rgba(255,255,255,0.04)",
+                    border:      "1px solid rgba(255,255,255,0.08)",
                     borderRadius: "0.75rem",
-                    color: "#7dd3fc",
+                    padding:     "12px 16px",
+                  }}
+                  onFocus={e => {
+                    e.target.style.background = "rgba(255,255,255,0.07)";
+                    e.target.style.borderColor = "rgba(255,255,255,0.15)";
+                  }}
+                  onBlur={e => {
+                    e.target.style.background = "rgba(255,255,255,0.04)";
+                    e.target.style.borderColor = "rgba(255,255,255,0.08)";
                   }}
                 />
 
@@ -170,24 +165,23 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                 <motion.button
                   onClick={handleSave}
                   disabled={!displayName.trim() || saving}
-                  className="w-full text-[13px] font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed hover:brightness-125"
+                  className="w-full text-[13px] font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
                   style={{
-                    background: "linear-gradient(rgba(255,255,255,0), rgba(255,255,255,0)) padding-box, linear-gradient(90deg, #16a34a, #4ade80) border-box",
-                    border: "1.5px solid transparent",
+                    background:   "white",
+                    color:        "black",
                     borderRadius: "0.75rem",
-                    padding: "12px 16px",
+                    padding:      "12px 16px",
                   }}
                   whileTap={{ scale: 0.98 }}
+                  whileHover={{ background: "rgba(240,240,240,1)" }}
                 >
                   {saving ? (
-                    <div className="flex items-center justify-center gap-2" style={{ color: "#4ade80" }}>
+                    <div className="flex items-center justify-center gap-2">
                       <OrbitSpinner size={18} />
                       <span>שומר...</span>
                     </div>
                   ) : (
-                    <span style={{ background: "linear-gradient(90deg, #16a34a, #4ade80)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                      התחל לשחק
-                    </span>
+                    "התחל לשחק"
                   )}
                 </motion.button>
               </div>
