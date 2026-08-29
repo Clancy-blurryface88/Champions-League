@@ -1,26 +1,105 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Info, X, Home, Plane } from "lucide-react";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import TeamFlag from "@/components/TeamFlag";
-import { GeneralPrediction, TeamLogo } from "@/api/entities";
+import { GeneralPrediction, TeamLogo, Match } from "@/api/entities";
+
+// Shows one team's 8 league-phase fixtures in matchday order, home/away
+// marked with a house/plane icon — helps the user judge schedule strength
+// before picking them for a schedule-sensitive question (e.g. "who tops the
+// league phase"). Opened via the info icon, independent of picking a team.
+function TeamFixturesModal({ team, allMatches, logosByName, onClose }) {
+  const fixtures = useMemo(() => {
+    return allMatches
+      .filter((m) => m.team_a === team.name || m.team_b === team.name)
+      .sort((a, b) => new Date(a.match_date) - new Date(b.match_date))
+      .map((m, i) => {
+        const isHome = m.team_a === team.name;
+        const opponent = isHome ? m.team_b : m.team_a;
+        return { matchday: i + 1, isHome, opponent, opponentLogo: logosByName[opponent] };
+      });
+  }, [team, allMatches, logosByName]);
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.7)" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="w-full max-w-sm rounded-2xl p-5"
+        style={{ background: "rgba(15,20,35,0.97)", border: "1px solid rgba(255,255,255,0.1)" }}
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        dir="rtl"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <TeamFlag logo={team.logo_url} name={team.name} className="w-7 h-7" animate={false} />
+            <span className="text-white font-semibold text-sm">{team.name} — לוח שלב הליגה</span>
+          </div>
+          <button onClick={onClose} className="text-white/50 hover:text-white">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {fixtures.length === 0 ? (
+          <p className="text-white/40 text-xs text-center py-6">לוח המשחקים עדיין לא ידוע.</p>
+        ) : (
+          <div className="grid grid-cols-4 gap-2">
+            {fixtures.map((f) => (
+              <div
+                key={f.matchday}
+                className="flex flex-col items-center gap-1 p-2 rounded-lg"
+                style={{ background: "rgba(255,255,255,0.04)" }}
+              >
+                <span className="text-white/40 text-[9px]">מחזור {f.matchday}</span>
+                <TeamFlag logo={f.opponentLogo} name={f.opponent} className="w-6 h-6" animate={false} />
+                <span className="text-white/80 text-[8px] text-center leading-tight truncate w-full">{f.opponent}</span>
+                {f.isHome ? (
+                  <Home className="w-3 h-3 text-green-400" />
+                ) : (
+                  <Plane className="w-3 h-3 text-sky-400" />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+}
 
 // One-time, pre-tournament "general prediction" questions (e.g. "who wins the
 // tournament") — shown right after WelcomeModal closes, once per unanswered
 // active question. Visual language cloned from WelcomeModal.jsx.
 export default function GeneralPredictionsOnboarding({ isOpen, questions, userId, onDone }) {
   const [logos, setLogos] = useState([]);
+  const [leaguePhaseMatches, setLeaguePhaseMatches] = useState([]);
   const [step, setStep] = useState(0);
   const [selected, setSelected] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [fixturesTeam, setFixturesTeam] = useState(null);
 
   useEffect(() => {
-    if (isOpen) TeamLogo.list("name").then(setLogos);
+    if (isOpen) {
+      TeamLogo.list("name").then(setLogos);
+      Match.filter({ stage: "league_phase" }).then(setLeaguePhaseMatches);
+    }
   }, [isOpen]);
 
   useEffect(() => {
     setStep(0);
     setSelected(null);
   }, [isOpen]);
+
+  const logosByName = useMemo(() => Object.fromEntries(logos.map((l) => [l.name, l.logo_url])), [logos]);
 
   if (!isOpen || questions.length === 0) return null;
 
@@ -106,20 +185,32 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
                 <div className="grid grid-cols-4 gap-2.5" dir="rtl">
                   {logos.map((team) => {
                     const isSelected = selected === team.name;
+                    const odds = question.odds_table?.[team.name];
                     return (
-                      <button
-                        key={team.id}
-                        onClick={() => setSelected(team.name)}
-                        disabled={saving}
-                        className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all"
-                        style={{
-                          background: isSelected ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.03)",
-                          border: isSelected ? "1.5px solid rgba(255,255,255,0.6)" : "1px solid rgba(255,255,255,0.06)",
-                        }}
-                      >
-                        <TeamFlag logo={team.logo_url} name={team.name} className="w-8 h-8" animate={false} />
-                        <span className="text-white/85 text-[9px] text-center leading-tight truncate w-full">{team.name}</span>
-                      </button>
+                      <div key={team.id} className="relative">
+                        {question.show_fixtures_helper && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setFixturesTeam(team); }}
+                            className="absolute -top-1 -left-1 z-10 bg-slate-700 hover:bg-slate-600 rounded-full p-1"
+                            title="לוח משחקים"
+                          >
+                            <Info className="w-3 h-3 text-white/80" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setSelected(team.name)}
+                          disabled={saving}
+                          className="w-full flex flex-col items-center gap-1 p-2 rounded-xl transition-all"
+                          style={{
+                            background: isSelected ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.03)",
+                            border: isSelected ? "1.5px solid rgba(255,255,255,0.6)" : "1px solid rgba(255,255,255,0.06)",
+                          }}
+                        >
+                          <TeamFlag logo={team.logo_url} name={team.name} className="w-8 h-8" animate={false} />
+                          <span className="text-white/85 text-[9px] text-center leading-tight truncate w-full">{team.name}</span>
+                          {odds != null && <span className="text-yellow-400/80 text-[8px]">{odds}</span>}
+                        </button>
+                      </div>
                     );
                   })}
                 </div>
@@ -143,6 +234,15 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
               </div>
             </div>
           </motion.div>
+
+          {fixturesTeam && (
+            <TeamFixturesModal
+              team={fixturesTeam}
+              allMatches={leaguePhaseMatches}
+              logosByName={logosByName}
+              onClose={() => setFixturesTeam(null)}
+            />
+          )}
         </>
       )}
     </AnimatePresence>

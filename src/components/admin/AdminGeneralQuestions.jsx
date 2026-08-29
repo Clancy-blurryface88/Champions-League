@@ -196,10 +196,39 @@ function QuestionCard({ question, logos, onChanged }) {
 
   const mappedCount = question.odds_table ? Object.keys(question.odds_table).length : 0;
 
+  const [editingText, setEditingText] = useState(false);
+  const [textDraft, setTextDraft] = useState(question.question_text);
+
+  const handleSaveText = async () => {
+    if (!textDraft.trim()) { setTextDraft(question.question_text); setEditingText(false); return; }
+    await GeneralQuestion.update(question.id, { question_text: textDraft.trim() });
+    setEditingText(false);
+    onChanged();
+  };
+
   return (
     <Card className="bg-slate-800/60 border-slate-700">
       <CardHeader>
-        <CardTitle className="text-white text-base">{question.question_text}</CardTitle>
+        {editingText ? (
+          <div className="flex items-center gap-2">
+            <Input
+              value={textDraft}
+              onChange={(e) => setTextDraft(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSaveText()}
+              className="bg-slate-700 border-slate-600 text-white text-sm h-8"
+              autoFocus
+            />
+            <Button size="sm" className="h-8 bg-green-600 hover:bg-green-500" onClick={handleSaveText}>שמור</Button>
+          </div>
+        ) : (
+          <CardTitle
+            className="text-white text-base cursor-pointer hover:text-blue-300"
+            onClick={() => { setTextDraft(question.question_text); setEditingText(true); }}
+            title="לחץ לעריכה"
+          >
+            {question.question_text} <span className="text-xs text-slate-500">✏️</span>
+          </CardTitle>
+        )}
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex items-center gap-2">
@@ -232,6 +261,14 @@ function QuestionCard({ question, logos, onChanged }) {
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Switch
+            checked={!!question.show_fixtures_helper}
+            onCheckedChange={async (checked) => { await GeneralQuestion.update(question.id, { show_fixtures_helper: checked }); onChanged(); }}
+          />
+          <Label className="text-xs text-slate-300">הצג עזרת משחקי בית/חוץ באונבורדינג</Label>
         </div>
 
         <div className="flex items-center gap-2">
