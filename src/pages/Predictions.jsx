@@ -30,6 +30,7 @@ import TeamFlag from "@/components/TeamFlag";
 import LeagueTableModal from "@/components/LeagueTableModal";
 import { PREDICTION_LOCK_MINUTES } from "@/config/tournament";
 import TeamInfoModal from "@/components/TeamInfoModal";
+import TeamFixturesModal from "@/components/TeamFixturesModal";
 import { ShineBorder } from "@/components/magicui/shine-border";
 import { loadLeagueTableOverride, applyOverride } from '@/utils/standingsOverride';
 import { calcStandings } from '@/utils/standings';
@@ -146,6 +147,9 @@ export default function Predictions() {
   const [showLeagueTable, setShowLeagueTable] = useState(false);
   const [leagueTableHighlight, setLeagueTableHighlight] = useState({});
   const [selectedTeam, setSelectedTeam] = useState(null);
+  const [fixturesTeam, setFixturesTeam] = useState(null); // { name, logo_url } — opens TeamFixturesModal
+  const [fixturesLeagueMatches, setFixturesLeagueMatches] = useState([]);
+  const [fixturesLogosByName, setFixturesLogosByName] = useState({});
   const [selectedMatchForPredictions, setSelectedMatchForPredictions] = useState(null);
   const [briefs, setBriefs] = useState({});
   const [selectedMatchForBrief, setSelectedMatchForBrief] = useState(null);
@@ -637,6 +641,24 @@ export default function Predictions() {
     setSelectedMatchForPredictions(null);
   };
 
+  // Opens TeamFixturesModal for the clicked team's logo — fetches league-phase
+  // matches fresh each time (small dataset, keeps it simple and always current).
+  const handleTeamLogoClick = async (teamName, teamLogo) => {
+    try {
+      const leagueMatches = await Match.filter({ stage: STAGES.LEAGUE_PHASE });
+      const logosByName = {};
+      leagueMatches.forEach((m) => {
+        logosByName[m.team_a] = m.team_a_logo;
+        logosByName[m.team_b] = m.team_b_logo;
+      });
+      setFixturesLeagueMatches(leagueMatches);
+      setFixturesLogosByName(logosByName);
+      setFixturesTeam({ name: teamName, logo_url: teamLogo });
+    } catch (error) {
+      console.error("Error loading team fixtures:", error);
+    }
+  };
+
 
 
   if (loading) return <LoadingScreen />;
@@ -1001,6 +1023,8 @@ export default function Predictions() {
                         <div className="flex justify-center items-center pt-14"
                              style={{ gridColumn: 1, gridRow: 1 }}>
                           <motion.div
+                            onClick={() => handleTeamLogoClick(match.team_a, match.team_a_logo)}
+                            className="cursor-pointer"
                             animate={{ filter: [
                               'drop-shadow(0 4px 10px rgba(0,0,0,0.5))',
                               'drop-shadow(0 0 18px rgba(255,255,255,0.75)) drop-shadow(0 8px 20px rgba(0,0,0,0.8))',
@@ -1060,6 +1084,8 @@ export default function Predictions() {
                         <div className="flex justify-center items-center pt-14"
                              style={{ gridColumn: 3, gridRow: 1 }}>
                           <motion.div
+                            onClick={() => handleTeamLogoClick(match.team_b, match.team_b_logo)}
+                            className="cursor-pointer"
                             animate={{ filter: [
                               'drop-shadow(0 4px 10px rgba(0,0,0,0.5))',
                               'drop-shadow(0 0 18px rgba(255,255,255,0.75)) drop-shadow(0 8px 20px rgba(0,0,0,0.8))',
@@ -1320,6 +1346,14 @@ export default function Predictions() {
             teamName={selectedTeam.name}
             teamLogo={selectedTeam.logo}
             onClose={() => setSelectedTeam(null)} />
+        )}
+
+        {fixturesTeam && (
+          <TeamFixturesModal
+            team={fixturesTeam}
+            allMatches={fixturesLeagueMatches}
+            logosByName={fixturesLogosByName}
+            onClose={() => setFixturesTeam(null)} />
         )}
 
         {selectedMatchForBrief && (
