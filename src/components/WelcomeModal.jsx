@@ -16,7 +16,7 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
 
   useEffect(() => {
     if (currentUser) {
-      setDisplayName(currentUser.display_name || currentUser.full_name || '');
+      setDisplayName(currentUser.display_name || '');
     }
   }, [currentUser]);
 
