@@ -167,7 +167,7 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                   className="w-full text-[13px] font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
                   style={{
                     background:   "transparent",
-                    color:        "#22c55e",
+                    color:        displayName.trim() ? "#4ade80" : "#22c55e",
                     border:       "1px solid #22c55e",
                     borderRadius: "0.75rem",
                     padding:      "12px 16px",
