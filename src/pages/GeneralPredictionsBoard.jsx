@@ -164,6 +164,7 @@ export default function GeneralPredictionsBoard() {
 
           {multiTeamQuestions.map((q) => {
             const isExpanded = expandedMulti[q.id] !== false;
+            const correctSet = new Set(parseMultiAnswer(q.correct_answer));
             return (
               <div key={q.id}>
                 <button
@@ -192,12 +193,17 @@ export default function GeneralPredictionsBoard() {
                             <React.Fragment key={row.userId}>
                               {Array.from({ length: 8 }, (_, i) => {
                                 const team = teams[i];
+                                const isHit = team && correctSet.has(team);
                                 return (
-                                  <div key={i} className="flex items-center justify-center px-1 border-b border-slate-800 border-r border-slate-800/60 overflow-hidden" style={{ height: ROW_H }}>
+                                  <div
+                                    key={i}
+                                    className="flex items-center justify-center px-1 border-b border-slate-800 border-r border-slate-800/60 overflow-hidden"
+                                    style={{ height: ROW_H, background: isHit ? "rgba(74,222,128,0.18)" : undefined }}
+                                  >
                                     {team ? (
                                       <div className="flex flex-col items-center gap-0.5" title={team}>
                                         <TeamFlag logo={logosByName[team]} name={team} className="w-6 h-6" animate={false} />
-                                        <span dir="ltr" className="text-[8px] text-slate-400 max-w-[56px] truncate">{team}</span>
+                                        <span dir="ltr" className={`text-[8px] max-w-[56px] truncate ${isHit ? "text-green-400 font-bold" : "text-slate-400"}`}>{team}</span>
                                       </div>
                                     ) : (
                                       <span className="text-slate-700">—</span>
