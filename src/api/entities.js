@@ -511,3 +511,100 @@ export const AiBrief = {
     return data;
   },
 };
+
+// ============================================
+// GENERAL QUESTIONS ENTITY (pre-tournament onboarding predictions)
+// ============================================
+export const GeneralQuestion = {
+  list: async (orderBy = 'order') => {
+    const { column, ascending } = parseOrder(orderBy);
+    const { data, error } = await supabase
+      .from('general_questions')
+      .select('*')
+      .order(column, { ascending });
+    if (error) throw error;
+    return data;
+  },
+
+  filter: async (filters) => {
+    let query = supabase.from('general_questions').select('*');
+    Object.entries(filters).forEach(([key, value]) => {
+      query = query.eq(key, value);
+    });
+    const { data, error } = await query.order('order', { ascending: true });
+    if (error) throw error;
+    return data;
+  },
+
+  create: async (questionData) => {
+    const { data, error } = await supabase
+      .from('general_questions')
+      .insert(questionData)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  update: async (id, updates) => {
+    const { data, error } = await supabase
+      .from('general_questions')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  delete: async (id) => {
+    const { error } = await supabase.from('general_questions').delete().eq('id', id);
+    if (error) throw error;
+  },
+};
+
+// ============================================
+// GENERAL PREDICTIONS ENTITY (one answer per user per general question)
+// ============================================
+export const GeneralPrediction = {
+  list: async (orderBy = '-created_at') => {
+    const { column, ascending } = parseOrder(orderBy);
+    const { data, error } = await supabase
+      .from('general_predictions')
+      .select('*')
+      .order(column, { ascending });
+    if (error) throw error;
+    return data;
+  },
+
+  filter: async (filters) => {
+    let query = supabase.from('general_predictions').select('*');
+    Object.entries(filters).forEach(([key, value]) => {
+      query = query.eq(key, value);
+    });
+    const { data, error } = await query.order('created_at', { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+
+  create: async (predictionData) => {
+    const { data, error } = await supabase
+      .from('general_predictions')
+      .insert(predictionData)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  update: async (id, updates) => {
+    const { data, error } = await supabase
+      .from('general_predictions')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+};

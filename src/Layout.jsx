@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
-import { User, UserStats, Match, Prediction } from "@/api/entities";
+import { User, UserStats, Match, Prediction, GeneralQuestion, GeneralPrediction } from "@/api/entities";
 import { Settings, LogOut, PlayCircle, Bell, BellOff, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MatchesByDateSheet from "./components/MatchesByDateSheet";
@@ -13,6 +13,7 @@ import {
 "@/components/ui/dropdown-menu";
 import LeaderboardPanel from "./components/LeaderboardPanel";
 import WelcomeModal from "./components/WelcomeModal";
+import GeneralPredictionsOnboarding from "./components/GeneralPredictionsOnboarding";
 import ExactHitsPanel from "./components/ExactHitsPanel";
 // This import is kept as per outline
 import { createPageUrl } from "@/utils";
@@ -409,6 +410,8 @@ export default function Layout({ children, currentPageName }) {
   const [user, setUser] = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [showGeneralPredictionsOnboarding, setShowGeneralPredictionsOnboarding] = useState(false);
+  const [pendingGeneralQuestions, setPendingGeneralQuestions] = useState([]);
   const [authLoading, setAuthLoading] = useState(true);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
@@ -716,7 +719,7 @@ export default function Layout({ children, currentPageName }) {
   // per continuous visit even if hasLiveMatch/nextMatch change mid-session.
   useEffect(() => {
     if (authLoading || !liveCheckDone || !nextMatchChecked) return;
-    if (showWelcomeModal) return;
+    if (showWelcomeModal || showGeneralPredictionsOnboarding) return;
     if (hasLiveMatch && livePredictionLoading) return; // wait so the card appears complete, prediction included
     if (introShownRef.current) return;
     introShownRef.current = true;
@@ -727,7 +730,7 @@ export default function Layout({ children, currentPageName }) {
     } else if (nextMatch) {
       setShowNextMatchIntro(true);
     }
-  }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading, showWelcomeModal, tournamentEnded]);
+  }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading, showWelcomeModal, showGeneralPredictionsOnboarding, tournamentEnded]);
 
   // "משחקי היום" shows the day's matches as a typewriter-revealed list right
   // away — no solo "המשחק הקרוב" screen first (the ticker bar already covers
@@ -961,6 +964,51 @@ export default function Layout({ children, currentPageName }) {
     setUser((prev) => ({ ...prev, display_name: displayName }));
     try { localStorage.setItem('welcome_completed_' + (user?.id ?? ''), 'true'); } catch {}
     setShowWelcomeModal(false);
+    await maybeShowGeneralPredictionsOnboarding(user?.id);
+  };
+
+  // Checks whether the user still has active general-prediction questions
+  // (e.g. "who wins the tournament") they haven't answered yet, and shows the
+  // onboarding modal for those instead of navigating straight to Dashboard.
+  // Checking "missing an answer row" (not a boolean flag) means adding a new
+  // question later needs no code change — existing users get prompted for it
+  // automatically next time they load the app. Skips entirely once the
+  // league phase has already kicked off (predictions closed for latecomers).
+  const maybeShowGeneralPredictionsOnboarding = async (userId) => {
+    if (!userId) {
+      navigate(createPageUrl("Dashboard"));
+      return;
+    }
+    try {
+      const [activeQuestions, myAnswers, allMatches] = await Promise.all([
+        GeneralQuestion.filter({ is_active: true }),
+        GeneralPrediction.filter({ user_id: userId }),
+        Match.filter({ stage: 'league_phase' }),
+      ]);
+
+      const earliestKickoff = allMatches.reduce((min, m) => {
+        const t = new Date(m.match_date).getTime();
+        return min === null || t < min ? t : min;
+      }, null);
+      const isLocked = earliestKickoff !== null && Date.now() >= earliestKickoff;
+
+      const answeredIds = new Set(myAnswers.map((a) => a.question_id));
+      const unanswered = activeQuestions.filter((q) => !answeredIds.has(q.id));
+
+      if (!isLocked && unanswered.length > 0) {
+        setPendingGeneralQuestions(unanswered);
+        setShowGeneralPredictionsOnboarding(true);
+        return;
+      }
+    } catch (err) {
+      console.warn("General predictions onboarding check failed (non-critical):", err?.message);
+    }
+    navigate(createPageUrl("Dashboard"));
+  };
+
+  const handleGeneralPredictionsOnboardingDone = () => {
+    setShowGeneralPredictionsOnboarding(false);
+    setPendingGeneralQuestions([]);
     navigate(createPageUrl("Dashboard"));
   };
 
@@ -1236,6 +1284,25 @@ export default function Layout({ children, currentPageName }) {
                     <div className="flex-1 flex items-start justify-center">
                       <h3 className="text-white text-base font-semibold leading-tight">ניחושים ותוצאות</h3>
                     </div>
+                  </motion.div>
+
+                  {/* General Predictions Board Card - קלף חמישי, שורה מלאה מתחת לגריד 2x2 */}
+                  <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{
+                    duration: 0.3,
+                    ease: "easeOut",
+                    delay: 0.25
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(createPageUrl("GeneralPredictionsBoard"));
+                    setShowSidebar(false);
+                  }}
+                  className="col-span-2 inline-flex animate-shine items-center justify-center rounded-xl text-sm border border-neutral-800 bg-[linear-gradient(110deg,rgba(0,1,3,0.7),45%,rgba(30,38,49,0.9),55%,rgba(0,1,3,0.7))] bg-[length:200%_100%] p-4 font-medium text-neutral-400 transition-colors cursor-pointer hover:scale-105">
+                    <h3 className="text-white text-base font-semibold leading-tight">🎯 ניחושים כלליים</h3>
                   </motion.div>
 
                 </div>
@@ -1612,6 +1679,12 @@ export default function Layout({ children, currentPageName }) {
           onSave={handleProfileSaved}
           userEmail={user?.email}
           currentUser={user} />
+
+        <GeneralPredictionsOnboarding
+          isOpen={showGeneralPredictionsOnboarding}
+          questions={pendingGeneralQuestions}
+          userId={user?.id}
+          onDone={handleGeneralPredictionsOnboardingDone} />
 
         <AnimatePresence>
           {showLeaderboard &&

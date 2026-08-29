@@ -4,6 +4,7 @@ import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { User } from "@/api/entities";
 import { UserStats } from "@/api/entities";
+import { GeneralPrediction } from "@/api/entities";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -142,6 +143,19 @@ export default function AdminScoring({ onUpdateComplete }) {
     };
   };
 
+  // Folds resolved general-prediction points (e.g. "who wins the tournament") into the
+  // same per-user totals used for match predictions, so user_stats.total_points — and
+  // therefore LiveLeaderboard — reflects both without any separate leaderboard logic.
+  const addGeneralPredictionPoints = async (userTotalPoints) => {
+    const generalPredictions = await GeneralPrediction.list();
+    generalPredictions.forEach((gp) => {
+      if (!gp.points_earned) return;
+      const uid = gp.user_id;
+      if (!userTotalPoints.hasOwnProperty(uid)) userTotalPoints[uid] = 0;
+      userTotalPoints[uid] = parseFloat((userTotalPoints[uid] + gp.points_earned).toFixed(2));
+    });
+  };
+
   const handleForceRecalculation = async () => {
     if (!window.confirm('⚠️ Force Recalculate יחשב מחדש את כל הניחושים לכל המשחקים שהסתיימו — כולל כאלה שכבר חושבו. להמשיך?')) return;
     setForceLoading(true);
@@ -242,6 +256,8 @@ export default function AdminScoring({ onUpdateComplete }) {
           userExactHits[uid]++;
         }
       });
+
+      await addGeneralPredictionPoints(userTotalPoints);
 
       let updatedUsersCount = 0;
       for (const [userId, totalPoints] of Object.entries(userTotalPoints)) {
@@ -414,6 +430,8 @@ export default function AdminScoring({ onUpdateComplete }) {
       });
 
       console.log("Aggregated all user totals (including existing + new):", userTotalPoints);
+
+      await addGeneralPredictionPoints(userTotalPoints);
 
       // Update user stats using service-role client to bypass RLS
       // (regular user can only write their own row; admin needs to update all users)
