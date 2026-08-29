@@ -132,9 +132,6 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
 
               {/* Body */}
               <div className="px-8 py-7 space-y-3.5">
-                <style>{`
-                  .wc-name-input::placeholder { color: rgba(255,255,255,0.25); -webkit-text-fill-color: rgba(255,255,255,0.25); }
-                `}</style>
                 <input
                   value={displayName}
                   onChange={e => setDisplayName(e.target.value)}
@@ -144,16 +141,13 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                   disabled={saving}
                   autoFocus
                   dir="rtl"
-                  className="wc-name-input w-full text-sm font-bold text-center outline-none transition-all duration-200"
+                  className="w-full text-sm font-bold text-center placeholder:text-white/25 placeholder:font-normal outline-none transition-all duration-200"
                   style={{
                     border: "1.5px solid transparent",
                     borderRadius: "0.75rem",
                     padding: "12px 16px",
-                    backgroundImage: "linear-gradient(rgba(20,30,48,0.55), rgba(20,30,48,0.55)) padding-box, linear-gradient(135deg, #38bdf8, #097adc) border-box, linear-gradient(135deg, #38bdf8, #097adc)",
-                    backgroundClip: "padding-box, border-box, text",
-                    WebkitBackgroundClip: "padding-box, border-box, text",
-                    WebkitTextFillColor: "transparent",
-                    color: "transparent",
+                    color: "#7cadee",
+                    backgroundImage: "linear-gradient(rgba(20,30,48,0.55), rgba(20,30,48,0.55)) padding-box, linear-gradient(135deg, #38bdf8, #097adc) border-box",
                   }}
                 />
 
