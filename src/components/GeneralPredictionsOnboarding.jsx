@@ -106,6 +106,17 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
   const question = questions[step];
   const isLast = step === questions.length - 1;
 
+  // Sorted low-to-high by odds (= potential points) so the favorites — the
+  // most likely, lowest-payout picks — show first.
+  const sortedLogos = [...logos].sort((a, b) => {
+    const oddsA = question.odds_table?.[a.name];
+    const oddsB = question.odds_table?.[b.name];
+    if (oddsA == null && oddsB == null) return 0;
+    if (oddsA == null) return 1;
+    if (oddsB == null) return -1;
+    return oddsA - oddsB;
+  });
+
   const handleNext = async () => {
     if (!selected) return;
     setSaving(true);
@@ -183,7 +194,7 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
 
               <div className="relative px-6 py-5 overflow-y-auto flex-1">
                 <div className="grid grid-cols-4 gap-2.5" dir="rtl">
-                  {logos.map((team) => {
+                  {sortedLogos.map((team) => {
                     const isSelected = selected === team.name;
                     const odds = question.odds_table?.[team.name];
                     return (
