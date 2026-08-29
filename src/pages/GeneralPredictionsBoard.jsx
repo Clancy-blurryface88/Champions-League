@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Trophy, ChevronDown } from "lucide-react";
+import { ArrowLeft, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TeamFlag from "@/components/TeamFlag";
 import { GeneralQuestion, GeneralPrediction, PublicProfile, TeamLogo } from "@/api/entities";
@@ -15,38 +15,6 @@ function parseMultiAnswer(raw) {
   } catch {
     return [];
   }
-}
-
-// multi_team answers (e.g. "pick 8 teams") show as a dropdown — 8 logos
-// inline would be too noisy in a table cell.
-function MultiAnswerDropdown({ teams, logosByName, oddsTable, totalPoints }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="relative inline-block">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 text-xs text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-lg px-2 py-1"
-      >
-        {teams.length} קבוצות
-        <ChevronDown className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-      {totalPoints != null && <div className="text-[10px] text-green-400 mt-0.5">+{totalPoints}</div>}
-      {open && (
-        <>
-          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="absolute z-40 top-full mt-1 right-0 bg-slate-800 border border-slate-600 rounded-lg p-2 min-w-[160px] shadow-xl">
-            {teams.map((team) => (
-              <div key={team} className="flex items-center gap-2 py-1 text-xs text-white whitespace-nowrap">
-                <TeamFlag logo={logosByName[team]} name={team} className="w-4 h-4" animate={false} />
-                <span className="flex-1">{team}</span>
-                {oddsTable?.[team] != null && <span className="text-yellow-400/70 text-[10px]">{oddsTable[team]}</span>}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
 }
 
 // No lock gate here: the onboarding flow already blocks a user from reaching
@@ -94,9 +62,16 @@ export default function GeneralPredictionsBoard() {
     );
   }
 
+  // Single-pick and 8-pick questions render as two different table shapes —
+  // cramming an 8-team list into a generic matrix cell was hard to read, so
+  // each multi_team question gets its own dedicated, easy-to-scan table.
+  const singleTeamQuestions = questions.filter((q) => q.type !== "multi_team");
+  const multiTeamQuestions = questions.filter((q) => q.type === "multi_team");
+  const usersWithAnyAnswer = rows.filter((r) => Object.keys(r.answers).length > 0);
+
   return (
-    <div className="min-h-screen px-4 py-6" dir="rtl">
-      <div className="flex items-center gap-3 mb-6">
+    <div className="min-h-screen px-4 py-6 space-y-8" dir="rtl">
+      <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate(createPageUrl("Dashboard"))}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
@@ -106,62 +81,99 @@ export default function GeneralPredictionsBoard() {
         </h1>
       </div>
 
-      {rows.length === 0 ? (
+      {usersWithAnyAnswer.length === 0 ? (
         <p className="text-slate-500 text-center py-20">עדיין אין ניחושים כלליים שהוגשו.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-white border-collapse">
-            <thead>
-              <tr className="border-b border-slate-700">
-                <th className="text-right py-2 px-3 sticky right-0 bg-slate-900">משתמש</th>
-                {questions.map((q) => (
-                  <th key={q.id} className="text-center py-2 px-3 min-w-[140px]">{q.question_text}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.userId} className="border-b border-slate-800">
-                  <td className="py-2 px-3 font-medium sticky right-0 bg-slate-900">{row.displayName}</td>
-                  {questions.map((q) => {
-                    const answer = row.answers[q.id];
-                    if (!answer) {
+        <>
+          {singleTeamQuestions.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-white border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-700">
+                    <th className="text-right py-2 px-3 sticky right-0 bg-slate-900">משתמש</th>
+                    {singleTeamQuestions.map((q) => (
+                      <th key={q.id} className="text-center py-2 px-3 min-w-[140px]">{q.question_text}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row) => (
+                    <tr key={row.userId} className="border-b border-slate-800">
+                      <td className="py-2 px-3 font-medium sticky right-0 bg-slate-900">{row.displayName}</td>
+                      {singleTeamQuestions.map((q) => {
+                        const answer = row.answers[q.id];
+                        return (
+                          <td key={q.id} className="text-center py-2 px-3">
+                            {answer ? (
+                              <div className="flex flex-col items-center gap-1">
+                                <TeamFlag logo={logosByName[answer.team]} name={answer.team} className="w-6 h-6" animate={false} />
+                                <span className="text-xs text-slate-300">{answer.team}</span>
+                                {answer.points != null && (
+                                  <span className="text-[10px] text-green-400">+{answer.points}</span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-slate-600">—</span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {multiTeamQuestions.map((q) => (
+            <div key={q.id}>
+              <h2 className="text-white font-semibold text-base mb-3 text-center">{q.question_text}</h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-white border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-700">
+                      <th className="text-right py-2 px-3 sticky right-0 bg-slate-900 w-28">משתמש</th>
+                      <th className="text-center py-2 px-3">8 הבחירות</th>
+                      <th className="text-center py-2 px-3 w-20">נק'</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row) => {
+                      const answer = row.answers[q.id];
+                      const teams = answer ? parseMultiAnswer(answer.team) : [];
                       return (
-                        <td key={q.id} className="text-center py-2 px-3">
-                          <span className="text-slate-600">—</span>
-                        </td>
+                        <tr key={row.userId} className="border-b border-slate-800">
+                          <td className="py-2 px-3 font-medium sticky right-0 bg-slate-900">{row.displayName}</td>
+                          <td className="py-2 px-3">
+                            {teams.length > 0 ? (
+                              <div className="flex flex-wrap items-center justify-center gap-2">
+                                {teams.map((team) => (
+                                  <div key={team} className="flex flex-col items-center gap-0.5" title={team}>
+                                    <TeamFlag logo={logosByName[team]} name={team} className="w-6 h-6" animate={false} />
+                                    <span className="text-[8px] text-slate-400 max-w-[52px] truncate">{team}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-slate-600 block text-center">—</span>
+                            )}
+                          </td>
+                          <td className="text-center py-2 px-3">
+                            {answer?.points != null ? (
+                              <span className="text-green-400 text-xs">+{answer.points}</span>
+                            ) : (
+                              <span className="text-slate-600">—</span>
+                            )}
+                          </td>
+                        </tr>
                       );
-                    }
-                    if (q.type === "multi_team") {
-                      const teams = parseMultiAnswer(answer.team);
-                      return (
-                        <td key={q.id} className="text-center py-2 px-3">
-                          <MultiAnswerDropdown
-                            teams={teams}
-                            logosByName={logosByName}
-                            oddsTable={q.odds_table}
-                            totalPoints={answer.points}
-                          />
-                        </td>
-                      );
-                    }
-                    return (
-                      <td key={q.id} className="text-center py-2 px-3">
-                        <div className="flex flex-col items-center gap-1">
-                          <TeamFlag logo={logosByName[answer.team]} name={answer.team} className="w-6 h-6" animate={false} />
-                          <span className="text-xs text-slate-300">{answer.team}</span>
-                          {answer.points != null && (
-                            <span className="text-[10px] text-green-400">+{answer.points}</span>
-                          )}
-                        </div>
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
+        </>
       )}
     </div>
   );
