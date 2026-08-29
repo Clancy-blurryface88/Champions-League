@@ -23,20 +23,17 @@ function useCountUp(target, delay = 0) {
   return count;
 }
 
-function calculateProbabilities(scoreOdds) {
-  if (!scoreOdds || typeof scoreOdds !== 'object') return null;
-  let home = 0, draw = 0, away = 0;
-  for (const [score, odds] of Object.entries(scoreOdds)) {
-    if (score === 'other' || !odds || odds <= 0) continue;
-    const prob = 1 / odds;
-    const [h, a] = score.split(':').map(Number);
-    if (isNaN(h) || isNaN(a)) continue;
-    if (h > a) home += prob;
-    else if (h < a) away += prob;
-    else draw += prob;
-  }
+// W/D/L favorite % — computed straight from the match's own
+// home_win_points / draw_points / away_win_points. These double as both the
+// scoring reward (lower points = more likely outcome, same convention as
+// real betting odds) and, via the standard implied-probability formula
+// (1/value, normalized to 100%), the favorite indicator here. Admin edits
+// these per match to reflect the real matchup — no separate odds field.
+function calculateProbabilities(homePts, drawPts, awayPts) {
+  const nums = [homePts, drawPts, awayPts];
+  if (nums.some((v) => !v || v <= 0)) return null;
+  const [home, draw, away] = nums.map((v) => 1 / v);
   const total = home + draw + away;
-  if (total === 0) return null;
   const homePct = Math.round((home / total) * 100);
   const drawPct = Math.round((draw / total) * 100);
   return { home: homePct, draw: drawPct, away: 100 - homePct - drawPct };
@@ -135,16 +132,20 @@ function ScoreRow({ topScores }) {
   );
 }
 
-export default function MatchOddsBar({ scoreOdds, teamA, teamB }) {
-  const probs     = useMemo(() => calculateProbabilities(scoreOdds), [scoreOdds]);
+export default function MatchOddsBar({ scoreOdds, homeWinPoints, drawPoints, awayWinPoints, teamA, teamB }) {
+  const probs = useMemo(
+    () => calculateProbabilities(homeWinPoints, drawPoints, awayWinPoints),
+    [homeWinPoints, drawPoints, awayWinPoints]
+  );
+  // 5 score chips stay independent — driven by the exact-score odds table, not the W/D/L points.
   const topScores = useMemo(() => getTopScores(scoreOdds, 5), [scoreOdds]);
 
-  if (!probs) return null;
+  if (!probs && topScores.length === 0) return null;
 
   return (
     <div className="mt-6 flex flex-col items-center gap-2">
       <span className="text-[10px] font-semibold tracking-wide text-yellow-400">תחזית המשחק</span>
-      <WinRow teamA={teamA} teamB={teamB} probs={probs} />
+      {probs && <WinRow teamA={teamA} teamB={teamB} probs={probs} />}
       {topScores.length > 0 && <ScoreRow topScores={topScores} />}
     </div>
   );

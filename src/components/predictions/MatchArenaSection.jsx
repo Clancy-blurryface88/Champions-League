@@ -165,7 +165,7 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
 
         {/* Odds Bar — fades in after form section, no y-jump */}
         <AnimatePresence>
-          {showOdds && match.score_odds && (
+          {showOdds && (match.score_odds || (match.home_win_points > 0 && match.draw_points > 0 && match.away_win_points > 0)) && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -174,6 +174,9 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
             >
               <MatchOddsBar
                 scoreOdds={match.score_odds}
+                homeWinPoints={match.home_win_points}
+                drawPoints={match.draw_points}
+                awayWinPoints={match.away_win_points}
                 teamA={match.team_a}
                 teamB={match.team_b}
               />
