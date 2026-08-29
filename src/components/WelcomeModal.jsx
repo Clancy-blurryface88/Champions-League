@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -14,11 +14,12 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
   const [displayName, setDisplayName] = useState('');
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (currentUser) {
-      setDisplayName(currentUser.display_name || '');
-    }
-  }, [currentUser]);
+  // This modal only ever shows once, to a brand-new participant, so the
+  // field always starts empty for them to fill in themselves -- it must
+  // NOT sync from currentUser.display_name (that's pre-seeded server-side
+  // from the Google/email name at account creation), since re-syncing on
+  // every currentUser reference change was also wiping out anything the
+  // participant had already typed.
 
   const handleSave = async () => {
     if (!displayName.trim()) return;
