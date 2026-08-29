@@ -49,6 +49,7 @@
  */
 import Admin from './pages/Admin';
 import Dashboard from './pages/Dashboard';
+import GeneralPredictionsBoard from './pages/GeneralPredictionsBoard';
 import KnockoutBracket from './pages/KnockoutBracket';
 import MyStats from './pages/MyStats';
 import Predictions from './pages/Predictions';
@@ -60,6 +61,7 @@ import __Layout from './Layout.jsx';
 export const PAGES = {
     "Admin": Admin,
     "Dashboard": Dashboard,
+    "GeneralPredictionsBoard": GeneralPredictionsBoard,
     "KnockoutBracket": KnockoutBracket,
     "MyStats": MyStats,
     "Predictions": Predictions,
