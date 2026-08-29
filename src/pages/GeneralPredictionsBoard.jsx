@@ -128,7 +128,7 @@ export default function GeneralPredictionsBoard() {
                           {answer ? (
                             <div className="flex flex-col items-center gap-1">
                               <TeamFlag logo={logosByName[answer.team]} name={answer.team} className="w-6 h-6" animate={false} />
-                              <span className="text-xs text-slate-300 truncate max-w-[110px]">{answer.team}</span>
+                              <span dir="ltr" className="text-xs text-slate-300 truncate max-w-[110px]">{answer.team}</span>
                               {answer.points != null && (
                                 <span className="text-[10px] text-green-400">+{answer.points}</span>
                               )}
@@ -181,7 +181,7 @@ export default function GeneralPredictionsBoard() {
                                   {team ? (
                                     <div className="flex flex-col items-center gap-0.5" title={team}>
                                       <TeamFlag logo={logosByName[team]} name={team} className="w-6 h-6" animate={false} />
-                                      <span className="text-[8px] text-slate-400 max-w-[56px] truncate">{team}</span>
+                                      <span dir="ltr" className="text-[8px] text-slate-400 max-w-[56px] truncate">{team}</span>
                                     </div>
                                   ) : (
                                     <span className="text-slate-700">—</span>

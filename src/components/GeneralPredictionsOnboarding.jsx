@@ -63,7 +63,7 @@ function TeamFixturesModal({ team, allMatches, logosByName, onClose }) {
               >
                 <span className="text-white/40 text-[9px]">מחזור {f.matchday}</span>
                 <TeamFlag logo={f.opponentLogo} name={f.opponent} className="w-6 h-6" animate={false} />
-                <span className="text-white/80 text-[8px] text-center leading-tight truncate w-full">{f.opponent}</span>
+                <span dir="ltr" className="text-white/80 text-[8px] text-center leading-tight truncate w-full">{f.opponent}</span>
                 {f.isHome ? (
                   <Home className="w-3 h-3 text-green-400" />
                 ) : (
@@ -258,7 +258,7 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
                             }}
                           />
                           <TeamFlag logo={team.logo_url} name={team.name} className="relative z-10 w-8 h-8" animate={false} />
-                          <span className="relative z-10 text-white/85 text-[9px] text-center leading-tight truncate w-full">{team.name}</span>
+                          <span dir="ltr" className="relative z-10 text-white/85 text-[9px] text-center leading-tight truncate w-full">{team.name}</span>
                           {odds != null && <span className="relative z-10 text-yellow-400/80 text-[8px] font-bold">{odds}</span>}
                         </button>
                       </div>
