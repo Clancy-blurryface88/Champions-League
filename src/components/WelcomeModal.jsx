@@ -170,12 +170,12 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                   style={{
                     background:   "transparent",
                     color:        "white",
-                    border:       "1px solid rgba(255,255,255,0.25)",
+                    border:       "1px solid #22c55e",
                     borderRadius: "0.75rem",
                     padding:      "12px 16px",
                   }}
                   whileTap={{ scale: 0.98 }}
-                  whileHover={{ background: "rgba(255,255,255,0.08)" }}
+                  whileHover={{ background: "rgba(34,197,94,0.08)" }}
                 >
                   {saving ? (
                     <div className="flex items-center justify-center gap-2">
