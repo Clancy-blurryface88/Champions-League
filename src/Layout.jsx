@@ -14,6 +14,7 @@ import {
 import LeaderboardPanel from "./components/LeaderboardPanel";
 import WelcomeModal from "./components/WelcomeModal";
 import GeneralPredictionsOnboarding from "./components/GeneralPredictionsOnboarding";
+import IntroVideoModal from "./components/IntroVideoModal";
 import ExactHitsPanel from "./components/ExactHitsPanel";
 // This import is kept as per outline
 import { createPageUrl } from "@/utils";
@@ -411,6 +412,7 @@ export default function Layout({ children, currentPageName }) {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showGeneralPredictionsOnboarding, setShowGeneralPredictionsOnboarding] = useState(false);
+  const [showIntroVideo, setShowIntroVideo] = useState(false);
   const [pendingGeneralQuestions, setPendingGeneralQuestions] = useState([]);
   const [authLoading, setAuthLoading] = useState(true);
   const [touchStart, setTouchStart] = useState(null);
@@ -723,7 +725,7 @@ export default function Layout({ children, currentPageName }) {
   // per continuous visit even if hasLiveMatch/nextMatch change mid-session.
   useEffect(() => {
     if (authLoading || !liveCheckDone || !nextMatchChecked) return;
-    if (showWelcomeModal || showGeneralPredictionsOnboarding) return;
+    if (showWelcomeModal || showGeneralPredictionsOnboarding || showIntroVideo) return;
     if (hasLiveMatch && livePredictionLoading) return; // wait so the card appears complete, prediction included
     if (introShownRef.current) return;
     introShownRef.current = true;
@@ -734,7 +736,7 @@ export default function Layout({ children, currentPageName }) {
     } else if (nextMatch) {
       setShowNextMatchIntro(true);
     }
-  }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading, showWelcomeModal, showGeneralPredictionsOnboarding, tournamentEnded]);
+  }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading, showWelcomeModal, showGeneralPredictionsOnboarding, showIntroVideo, tournamentEnded]);
 
   // "משחקי היום" shows the day's matches as a typewriter-revealed list right
   // away — no solo "המשחק הקרוב" screen first (the ticker bar already covers
@@ -1011,7 +1013,7 @@ export default function Layout({ children, currentPageName }) {
       setShowGeneralPredictionsOnboarding(true);
       return;
     }
-    navigate(createPageUrl("Dashboard"));
+    finishNewUserOnboarding(userId);
   };
 
   // Called on every app load for returning users (who already passed
@@ -1028,6 +1030,26 @@ export default function Layout({ children, currentPageName }) {
   const handleGeneralPredictionsOnboardingDone = () => {
     setShowGeneralPredictionsOnboarding(false);
     setPendingGeneralQuestions([]);
+    finishNewUserOnboarding(user?.id);
+  };
+
+  // End of the new-user onboarding chain (WelcomeModal → general questions,
+  // if any). Shows the one-time intro video exactly once per user, then
+  // navigates to Dashboard exactly like before this video existed — never
+  // shown again once marked seen, and never shown to returning users at all
+  // since this is only reachable from the two call sites above.
+  const finishNewUserOnboarding = (userId) => {
+    const seen = (() => { try { return localStorage.getItem('intro_video_seen_' + (userId ?? '')) === 'true'; } catch { return true; } })();
+    if (!seen) {
+      setShowIntroVideo(true);
+      return;
+    }
+    navigate(createPageUrl("Dashboard"));
+  };
+
+  const handleIntroVideoDone = () => {
+    try { localStorage.setItem('intro_video_seen_' + (user?.id ?? ''), 'true'); } catch {}
+    setShowIntroVideo(false);
     navigate(createPageUrl("Dashboard"));
   };
 
@@ -1704,6 +1726,10 @@ export default function Layout({ children, currentPageName }) {
           questions={pendingGeneralQuestions}
           userId={user?.id}
           onDone={handleGeneralPredictionsOnboardingDone} />
+
+        <IntroVideoModal
+          isOpen={showIntroVideo}
+          onDone={handleIntroVideoDone} />
 
         <AnimatePresence>
           {showLeaderboard &&
