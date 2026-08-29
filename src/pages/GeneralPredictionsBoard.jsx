@@ -17,6 +17,27 @@ function parseMultiAnswer(raw) {
   }
 }
 
+// Plain CSS Grid instead of an HTML <table> — on mobile WebKit, a <table>
+// combined with a sticky column and horizontal touch-scroll is a known
+// source of compositing glitches (content briefly rendering outside its
+// cell mid-scroll, e.g. a logo floating over the text below it). Grid with
+// `overflow: hidden` per cell avoids that whole class of bug.
+function Cell({ children, sticky, header, className = "" }) {
+  return (
+    <div
+      className={`flex items-center justify-center py-2 px-2 border-b border-slate-800 overflow-hidden ${className}`}
+      style={{
+        position: sticky ? "sticky" : "static",
+        right: sticky ? 0 : undefined,
+        background: header ? "#0f172a" : sticky ? "#0f172a" : "transparent",
+        zIndex: sticky ? 1 : undefined,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 // No lock gate here: the onboarding flow already blocks a user from reaching
 // any other page — including this one — until they've submitted their own
 // answers, so there's no way to see others' picks before making your own.
@@ -63,9 +84,9 @@ export default function GeneralPredictionsBoard() {
     );
   }
 
-  // Single-pick and 8-pick questions render as two different table shapes —
+  // Single-pick and 8-pick questions render as two different grid shapes —
   // cramming an 8-team list into a generic matrix cell was hard to read, so
-  // each multi_team question gets its own dedicated, easy-to-scan table.
+  // each multi_team question gets its own dedicated, easy-to-scan grid.
   const singleTeamQuestions = questions.filter((q) => q.type !== "multi_team");
   const multiTeamQuestions = questions.filter((q) => q.type === "multi_team");
   const usersWithAnyAnswer = rows.filter((r) => Object.keys(r.answers).length > 0);
@@ -87,105 +108,101 @@ export default function GeneralPredictionsBoard() {
       ) : (
         <>
           {singleTeamQuestions.length > 0 && (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-white border-separate border-spacing-0">
-                <thead>
-                  <tr className="border-b border-slate-700">
-                    <th className="text-right py-2 px-3 sticky right-0 bg-slate-900">משתמש</th>
-                    {singleTeamQuestions.map((q) => (
-                      <th key={q.id} className="text-center py-2 px-3 min-w-[140px]">{q.question_text}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row) => (
-                    <tr key={row.userId} className="border-b border-slate-800">
-                      <td className="py-2 px-3 font-medium sticky right-0 bg-slate-900">{row.displayName}</td>
-                      {singleTeamQuestions.map((q) => {
-                        const answer = row.answers[q.id];
-                        return (
-                          <td key={q.id} className="text-center py-2 px-3">
-                            {answer ? (
-                              <div className="flex flex-col items-center gap-1">
-                                <TeamFlag logo={logosByName[answer.team]} name={answer.team} className="w-6 h-6" animate={false} />
-                                <span className="text-xs text-slate-300">{answer.team}</span>
-                                {answer.points != null && (
-                                  <span className="text-[10px] text-green-400">+{answer.points}</span>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="text-slate-600">—</span>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="overflow-x-auto text-sm text-white">
+              <div
+                className="grid"
+                style={{ gridTemplateColumns: `112px repeat(${singleTeamQuestions.length}, minmax(130px, 1fr))` }}
+              >
+                <Cell sticky header className="justify-end font-medium">משתמש</Cell>
+                {singleTeamQuestions.map((q) => (
+                  <Cell key={q.id} header>{q.question_text}</Cell>
+                ))}
+
+                {rows.map((row) => (
+                  <React.Fragment key={row.userId}>
+                    <Cell sticky className="justify-end font-medium">{row.displayName}</Cell>
+                    {singleTeamQuestions.map((q) => {
+                      const answer = row.answers[q.id];
+                      return (
+                        <Cell key={q.id}>
+                          {answer ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <TeamFlag logo={logosByName[answer.team]} name={answer.team} className="w-6 h-6" animate={false} />
+                              <span className="text-xs text-slate-300 truncate max-w-[110px]">{answer.team}</span>
+                              {answer.points != null && (
+                                <span className="text-[10px] text-green-400">+{answer.points}</span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-slate-600">—</span>
+                          )}
+                        </Cell>
+                      );
+                    })}
+                  </React.Fragment>
+                ))}
+              </div>
             </div>
           )}
 
           {multiTeamQuestions.map((q) => {
             const isExpanded = !!expandedMulti[q.id];
             return (
-            <div key={q.id}>
-              <button
-                onClick={() => setExpandedMulti((prev) => ({ ...prev, [q.id]: !prev[q.id] }))}
-                className="w-full flex items-center justify-center gap-2 text-white font-semibold text-base mb-3 py-2 rounded-lg hover:bg-white/5"
-              >
-                {q.question_text}
-                <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-              </button>
-              {isExpanded && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-white border-separate border-spacing-0">
-                  <thead>
-                    <tr className="border-b border-slate-700">
-                      <th className="text-right py-2 px-3 sticky right-0 bg-slate-900 w-28">משתמש</th>
+              <div key={q.id}>
+                <button
+                  onClick={() => setExpandedMulti((prev) => ({ ...prev, [q.id]: !prev[q.id] }))}
+                  className="w-full flex items-center justify-center gap-2 text-white font-semibold text-base mb-3 py-2 rounded-lg hover:bg-white/5"
+                >
+                  {q.question_text}
+                  <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                </button>
+                {isExpanded && (
+                  <div className="overflow-x-auto text-sm text-white">
+                    <div
+                      className="grid"
+                      style={{ gridTemplateColumns: `112px repeat(8, minmax(64px, 1fr)) 56px` }}
+                    >
+                      <Cell sticky header className="justify-end font-medium">משתמש</Cell>
                       {Array.from({ length: 8 }, (_, i) => (
-                        <th key={i} className="text-center py-2 px-2 min-w-[70px]">בחירה {i + 1}</th>
+                        <Cell key={i} header className="text-xs">בחירה {i + 1}</Cell>
                       ))}
-                      <th className="text-center py-2 px-3 w-16">נק'</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((row) => {
-                      const answer = row.answers[q.id];
-                      const teams = answer ? parseMultiAnswer(answer.team) : [];
-                      return (
-                        <tr key={row.userId} className="border-b border-slate-800">
-                          <td className="py-2 px-3 font-medium sticky right-0 bg-slate-900">{row.displayName}</td>
-                          {Array.from({ length: 8 }, (_, i) => {
-                            const team = teams[i];
-                            return (
-                              <td key={i} className="text-center py-2 px-2 border-r border-slate-800/60">
-                                {team ? (
-                                  <div className="flex flex-col items-center gap-0.5" title={team}>
-                                    <TeamFlag logo={logosByName[team]} name={team} className="w-6 h-6" animate={false} />
-                                    <span className="text-[8px] text-slate-400 max-w-[64px] truncate">{team}</span>
-                                  </div>
-                                ) : (
-                                  <span className="text-slate-700">—</span>
-                                )}
-                              </td>
-                            );
-                          })}
-                          <td className="text-center py-2 px-3">
-                            {answer?.points != null ? (
-                              <span className="text-green-400 text-xs">+{answer.points}</span>
-                            ) : (
-                              <span className="text-slate-600">—</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                      <Cell header className="text-xs">נק'</Cell>
+
+                      {rows.map((row) => {
+                        const answer = row.answers[q.id];
+                        const teams = answer ? parseMultiAnswer(answer.team) : [];
+                        return (
+                          <React.Fragment key={row.userId}>
+                            <Cell sticky className="justify-end font-medium">{row.displayName}</Cell>
+                            {Array.from({ length: 8 }, (_, i) => {
+                              const team = teams[i];
+                              return (
+                                <Cell key={i} className="border-r border-slate-800/60">
+                                  {team ? (
+                                    <div className="flex flex-col items-center gap-0.5" title={team}>
+                                      <TeamFlag logo={logosByName[team]} name={team} className="w-6 h-6" animate={false} />
+                                      <span className="text-[8px] text-slate-400 max-w-[56px] truncate">{team}</span>
+                                    </div>
+                                  ) : (
+                                    <span className="text-slate-700">—</span>
+                                  )}
+                                </Cell>
+                              );
+                            })}
+                            <Cell>
+                              {answer?.points != null ? (
+                                <span className="text-green-400 text-xs">+{answer.points}</span>
+                              ) : (
+                                <span className="text-slate-600">—</span>
+                              )}
+                            </Cell>
+                          </React.Fragment>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
-              )}
-            </div>
             );
           })}
         </>
