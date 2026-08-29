@@ -11,6 +11,21 @@ import { Loader2, Sparkles, Upload, Plus, Calculator, Trash2 } from "lucide-reac
 import TeamFlag from "@/components/TeamFlag";
 import { createClient } from "@supabase/supabase-js";
 
+const MULTI_TEAM_PICK_COUNT = 8;
+
+// correct_answer is a plain team name (text) for single_team questions, and a
+// JSON-stringified array of team names for multi_team ones — same column,
+// different encoding, so no schema change was needed for the new type.
+function parseMultiAnswer(raw) {
+  if (!raw) return [];
+  try {
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
 // Service client bypasses RLS — needed to write other users' user_stats (same
 // pattern as AdminScoring.jsx).
 const _svcKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -153,20 +168,42 @@ function QuestionCard({ question, logos, onChanged }) {
     onChanged();
   };
 
+  const isMulti = question.type === "multi_team";
+
   const handleSetCorrectAnswer = async (teamName) => {
     await GeneralQuestion.update(question.id, { correct_answer: teamName });
     onChanged();
   };
 
+  const correctMultiSet = new Set(parseMultiAnswer(question.correct_answer));
+  const handleToggleCorrectMulti = async (teamName) => {
+    const current = parseMultiAnswer(question.correct_answer);
+    const next = current.includes(teamName)
+      ? current.filter((t) => t !== teamName)
+      : current.length < MULTI_TEAM_PICK_COUNT ? [...current, teamName] : current;
+    await GeneralQuestion.update(question.id, { correct_answer: JSON.stringify(next) });
+    onChanged();
+  };
+
   const handleCalculatePoints = async () => {
-    if (!question.is_resolved || !question.correct_answer) return;
+    const hasCorrectAnswer = isMulti
+      ? parseMultiAnswer(question.correct_answer).length === MULTI_TEAM_PICK_COUNT
+      : !!question.correct_answer;
+    if (!question.is_resolved || !hasCorrectAnswer) return;
     setCalculating(true);
     setCalcStatus("");
     try {
       const preds = await GeneralPrediction.filter({ question_id: question.id });
       let affectedCount = 0;
+      const correctSet = isMulti ? new Set(parseMultiAnswer(question.correct_answer)) : null;
       for (const p of preds) {
-        const points = p.answer === question.correct_answer ? (question.odds_table?.[p.answer] || 0) : 0;
+        let points;
+        if (isMulti) {
+          const picks = parseMultiAnswer(p.answer);
+          points = picks.reduce((sum, team) => sum + (correctSet.has(team) ? (question.odds_table?.[team] || 0) : 0), 0);
+        } else {
+          points = p.answer === question.correct_answer ? (question.odds_table?.[p.answer] || 0) : 0;
+        }
         const delta = points - (p.points_earned || 0);
         await GeneralPrediction.update(p.id, { points_earned: points });
         if (delta !== 0) {
@@ -244,24 +281,53 @@ function QuestionCard({ question, logos, onChanged }) {
           {analyzeError && <span className="text-xs text-red-400">{analyzeError}</span>}
         </div>
 
-        <div>
-          <Label className="text-xs text-slate-400">תוצאה נכונה</Label>
-          <Select value={question.correct_answer || ""} onValueChange={handleSetCorrectAnswer}>
-            <SelectTrigger className="bg-slate-700 border-slate-600 h-8 text-xs">
-              <SelectValue placeholder="בחר קבוצה..." />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-800 text-white border-slate-600">
-              {logos.map((l) => (
-                <SelectItem key={l.id} value={l.name}>
-                  <div className="flex items-center gap-2">
+        {isMulti ? (
+          <div>
+            <Label className="text-xs text-slate-400">
+              8 הקבוצות הנכונות ({correctMultiSet.size}/{MULTI_TEAM_PICK_COUNT})
+            </Label>
+            <div className="grid grid-cols-6 gap-1.5 mt-1">
+              {logos.map((l) => {
+                const isPicked = correctMultiSet.has(l.name);
+                return (
+                  <button
+                    key={l.id}
+                    type="button"
+                    onClick={() => handleToggleCorrectMulti(l.name)}
+                    disabled={!isPicked && correctMultiSet.size >= MULTI_TEAM_PICK_COUNT}
+                    className="flex flex-col items-center p-1 rounded-lg disabled:opacity-30"
+                    style={{
+                      background: isPicked ? "rgba(34,197,94,0.2)" : "rgba(255,255,255,0.04)",
+                      border: isPicked ? "1px solid rgba(34,197,94,0.6)" : "1px solid rgba(255,255,255,0.08)",
+                    }}
+                    title={l.name}
+                  >
                     <TeamFlag logo={l.logo_url} name={l.name} className="w-4 h-4" animate={false} />
-                    <span>{l.name}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <div>
+            <Label className="text-xs text-slate-400">תוצאה נכונה</Label>
+            <Select value={question.correct_answer || ""} onValueChange={handleSetCorrectAnswer}>
+              <SelectTrigger className="bg-slate-700 border-slate-600 h-8 text-xs">
+                <SelectValue placeholder="בחר קבוצה..." />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-800 text-white border-slate-600">
+                {logos.map((l) => (
+                  <SelectItem key={l.id} value={l.name}>
+                    <div className="flex items-center gap-2">
+                      <TeamFlag logo={l.logo_url} name={l.name} className="w-4 h-4" animate={false} />
+                      <span>{l.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         <div className="flex items-center gap-2">
           <Switch
@@ -277,7 +343,7 @@ function QuestionCard({ question, logos, onChanged }) {
         </div>
 
         <Button size="sm" onClick={handleCalculatePoints}
-          disabled={!question.is_resolved || !question.correct_answer || calculating}
+          disabled={!question.is_resolved || (isMulti ? correctMultiSet.size !== MULTI_TEAM_PICK_COUNT : !question.correct_answer) || calculating}
           className="bg-blue-600 hover:bg-blue-700 w-full gap-1">
           {calculating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Calculator className="w-3 h-3" />}
           חשב נקודות לשאלה זו
@@ -295,6 +361,7 @@ export default function AdminGeneralQuestions() {
   const [logos, setLogos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newQuestionText, setNewQuestionText] = useState("");
+  const [newQuestionType, setNewQuestionType] = useState("single_team");
 
   const loadData = async () => {
     const [q, l] = await Promise.all([GeneralQuestion.list("order"), TeamLogo.list("name")]);
@@ -309,12 +376,13 @@ export default function AdminGeneralQuestions() {
     if (!newQuestionText.trim()) return;
     await GeneralQuestion.create({
       question_text: newQuestionText.trim(),
-      type: "single_team",
+      type: newQuestionType,
       order: questions.length + 1,
       is_active: true,
       is_resolved: false,
     });
     setNewQuestionText("");
+    setNewQuestionType("single_team");
     loadData();
   };
 
@@ -340,6 +408,15 @@ export default function AdminGeneralQuestions() {
           placeholder="טקסט שאלה חדשה, למשל: מי תנצח את הטורניר?"
           className="bg-slate-800 border-slate-600 text-white"
         />
+        <Select value={newQuestionType} onValueChange={setNewQuestionType}>
+          <SelectTrigger className="bg-slate-800 border-slate-600 text-white w-44 shrink-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-slate-800 text-white border-slate-600">
+            <SelectItem value="single_team">בחירת קבוצה אחת</SelectItem>
+            <SelectItem value="multi_team">בחירת 8 קבוצות</SelectItem>
+          </SelectContent>
+        </Select>
         <Button onClick={handleAddQuestion} className="bg-blue-600 hover:bg-blue-700 gap-1 shrink-0">
           <Plus className="w-4 h-4" /> הוסף שאלה
         </Button>

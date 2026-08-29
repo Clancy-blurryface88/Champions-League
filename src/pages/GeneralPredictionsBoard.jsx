@@ -1,11 +1,53 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Trophy } from "lucide-react";
+import { ArrowLeft, Trophy, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TeamFlag from "@/components/TeamFlag";
 import { GeneralQuestion, GeneralPrediction, PublicProfile, TeamLogo } from "@/api/entities";
 import CircleLoader from "@/components/CircleLoader";
+
+function parseMultiAnswer(raw) {
+  if (!raw) return [];
+  try {
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+// multi_team answers (e.g. "pick 8 teams") show as a dropdown — 8 logos
+// inline would be too noisy in a table cell.
+function MultiAnswerDropdown({ teams, logosByName, oddsTable, totalPoints }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative inline-block">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1 text-xs text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-lg px-2 py-1"
+      >
+        {teams.length} קבוצות
+        <ChevronDown className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {totalPoints != null && <div className="text-[10px] text-green-400 mt-0.5">+{totalPoints}</div>}
+      {open && (
+        <>
+          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
+          <div className="absolute z-40 top-full mt-1 right-0 bg-slate-800 border border-slate-600 rounded-lg p-2 min-w-[160px] shadow-xl">
+            {teams.map((team) => (
+              <div key={team} className="flex items-center gap-2 py-1 text-xs text-white whitespace-nowrap">
+                <TeamFlag logo={logosByName[team]} name={team} className="w-4 h-4" animate={false} />
+                <span className="flex-1">{team}</span>
+                {oddsTable?.[team] != null && <span className="text-yellow-400/70 text-[10px]">{oddsTable[team]}</span>}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 // No lock gate here: the onboarding flow already blocks a user from reaching
 // any other page — including this one — until they've submitted their own
@@ -83,19 +125,35 @@ export default function GeneralPredictionsBoard() {
                   <td className="py-2 px-3 font-medium sticky right-0 bg-slate-900">{row.displayName}</td>
                   {questions.map((q) => {
                     const answer = row.answers[q.id];
+                    if (!answer) {
+                      return (
+                        <td key={q.id} className="text-center py-2 px-3">
+                          <span className="text-slate-600">—</span>
+                        </td>
+                      );
+                    }
+                    if (q.type === "multi_team") {
+                      const teams = parseMultiAnswer(answer.team);
+                      return (
+                        <td key={q.id} className="text-center py-2 px-3">
+                          <MultiAnswerDropdown
+                            teams={teams}
+                            logosByName={logosByName}
+                            oddsTable={q.odds_table}
+                            totalPoints={answer.points}
+                          />
+                        </td>
+                      );
+                    }
                     return (
                       <td key={q.id} className="text-center py-2 px-3">
-                        {answer ? (
-                          <div className="flex flex-col items-center gap-1">
-                            <TeamFlag logo={logosByName[answer.team]} name={answer.team} className="w-6 h-6" animate={false} />
-                            <span className="text-xs text-slate-300">{answer.team}</span>
-                            {answer.points != null && (
-                              <span className="text-[10px] text-green-400">+{answer.points}</span>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-slate-600">—</span>
-                        )}
+                        <div className="flex flex-col items-center gap-1">
+                          <TeamFlag logo={logosByName[answer.team]} name={answer.team} className="w-6 h-6" animate={false} />
+                          <span className="text-xs text-slate-300">{answer.team}</span>
+                          {answer.points != null && (
+                            <span className="text-[10px] text-green-400">+{answer.points}</span>
+                          )}
+                        </div>
                       </td>
                     );
                   })}

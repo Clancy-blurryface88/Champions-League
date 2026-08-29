@@ -5,6 +5,8 @@ import OrbitSpinner from "@/components/OrbitSpinner";
 import TeamFlag from "@/components/TeamFlag";
 import { GeneralPrediction, TeamLogo, Match } from "@/api/entities";
 
+const MULTI_TEAM_PICK_COUNT = 8;
+
 // Shows one team's 8 league-phase fixtures in matchday order, home/away
 // marked with a house/plane icon — helps the user judge schedule strength
 // before picking them for a schedule-sensitive question (e.g. "who tops the
@@ -105,6 +107,9 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
 
   const question = questions[step];
   const isLast = step === questions.length - 1;
+  const isMulti = question.type === "multi_team";
+  const selectedArray = Array.isArray(selected) ? selected : [];
+  const isValidSelection = isMulti ? selectedArray.length === MULTI_TEAM_PICK_COUNT : !!selected;
 
   // Sorted low-to-high by odds (= potential points) so the favorites — the
   // most likely, lowest-payout picks — show first.
@@ -117,14 +122,26 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
     return oddsA - oddsB;
   });
 
+  const handleTeamClick = (teamName) => {
+    if (!isMulti) {
+      setSelected(teamName);
+      return;
+    }
+    if (selectedArray.includes(teamName)) {
+      setSelected(selectedArray.filter((t) => t !== teamName));
+    } else if (selectedArray.length < MULTI_TEAM_PICK_COUNT) {
+      setSelected([...selectedArray, teamName]);
+    }
+  };
+
   const handleNext = async () => {
-    if (!selected) return;
+    if (!isValidSelection) return;
     setSaving(true);
     try {
       await GeneralPrediction.create({
         user_id: userId,
         question_id: question.id,
-        answer: selected,
+        answer: isMulti ? JSON.stringify(selectedArray) : selected,
       });
       if (isLast) {
         onDone();
@@ -190,13 +207,19 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
                 <h2 className="text-white text-[17px] font-semibold tracking-tight mt-1.5">
                   {question.question_text}
                 </h2>
+                {isMulti && (
+                  <span className="text-yellow-400/80 text-[11px] block mt-1">
+                    {selectedArray.length}/{MULTI_TEAM_PICK_COUNT} נבחרו
+                  </span>
+                )}
               </div>
 
               <div className="relative px-6 py-5 overflow-y-auto flex-1">
                 <div className="grid grid-cols-4 gap-2.5" dir="rtl">
                   {sortedLogos.map((team) => {
-                    const isSelected = selected === team.name;
+                    const isSelected = isMulti ? selectedArray.includes(team.name) : selected === team.name;
                     const odds = question.odds_table?.[team.name];
+                    const multiDisabled = isMulti && !isSelected && selectedArray.length >= MULTI_TEAM_PICK_COUNT;
                     return (
                       <div key={team.id} className="relative">
                         {question.show_fixtures_helper && (
@@ -209,9 +232,9 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
                           </button>
                         )}
                         <button
-                          onClick={() => setSelected(team.name)}
-                          disabled={saving}
-                          className="relative w-full flex flex-col items-center gap-1 p-2 rounded-xl transition-all overflow-hidden"
+                          onClick={() => handleTeamClick(team.name)}
+                          disabled={saving || multiDisabled}
+                          className="relative w-full flex flex-col items-center gap-1 p-2 rounded-xl transition-all overflow-hidden disabled:opacity-30"
                           style={{
                             background: isSelected ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.03)",
                             border: isSelected ? "1.5px solid rgba(255,255,255,0.6)" : "1px solid rgba(255,255,255,0.06)",
@@ -247,7 +270,7 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
               <div className="relative px-8 py-6 flex-shrink-0" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
                 <motion.button
                   onClick={handleNext}
-                  disabled={!selected || saving}
+                  disabled={!isValidSelection || saving}
                   className="w-full text-[13px] font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
                   style={{ background: "white", color: "black", borderRadius: "0.75rem", padding: "12px 16px" }}
                   whileTap={{ scale: 0.98 }}
