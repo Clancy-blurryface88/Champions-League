@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Trophy } from "lucide-react";
+import { ArrowLeft, Trophy, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TeamFlag from "@/components/TeamFlag";
 import { GeneralQuestion, GeneralPrediction, PublicProfile, TeamLogo } from "@/api/entities";
@@ -26,6 +26,7 @@ export default function GeneralPredictionsBoard() {
   const [questions, setQuestions] = useState([]);
   const [rows, setRows] = useState([]); // [{ userId, displayName, answers: {questionId: {team, points}} }]
   const [logosByName, setLogosByName] = useState({});
+  const [expandedMulti, setExpandedMulti] = useState({}); // { [questionId]: boolean } — hidden until clicked
 
   useEffect(() => {
     const load = async () => {
@@ -125,9 +126,18 @@ export default function GeneralPredictionsBoard() {
             </div>
           )}
 
-          {multiTeamQuestions.map((q) => (
+          {multiTeamQuestions.map((q) => {
+            const isExpanded = !!expandedMulti[q.id];
+            return (
             <div key={q.id}>
-              <h2 className="text-white font-semibold text-base mb-3 text-center">{q.question_text}</h2>
+              <button
+                onClick={() => setExpandedMulti((prev) => ({ ...prev, [q.id]: !prev[q.id] }))}
+                className="w-full flex items-center justify-center gap-2 text-white font-semibold text-base mb-3 py-2 rounded-lg hover:bg-white/5"
+              >
+                {q.question_text}
+                <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+              </button>
+              {isExpanded && (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-white border-collapse">
                   <thead>
@@ -171,8 +181,10 @@ export default function GeneralPredictionsBoard() {
                   </tbody>
                 </table>
               </div>
+              )}
             </div>
-          ))}
+            );
+          })}
         </>
       )}
     </div>
