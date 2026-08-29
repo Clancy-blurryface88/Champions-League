@@ -60,20 +60,37 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
   };
 
   const saveOddsTable = async () => {
+    // שמירה מיידית ל-DB אם זהו משחק קיים — עם בדיקת שגיאה/RLS אמיתית, כי
+    // update() בלי select() מחזיר "הצלחה" גם אם 0 שורות התעדכנו בפועל.
+    if (match?.id) {
+      const { data, error } = await supabase
+        .from('matches')
+        .update({ score_odds: oddsTable })
+        .eq('id', match.id)
+        .select();
+      if (error || !data?.length) {
+        alert('שגיאה בשמירת טבלת האודס: ' + (error?.message || 'לא עודכנה אף שורה (ייתכן חסימת הרשאות)'));
+        return;
+      }
+    }
     setFormData(prev => ({ ...prev, score_odds: oddsTable }));
     setShowOddsPopup(false);
-    // שמירה מיידית ל-DB אם זהו משחק קיים
-    if (match?.id) {
-      await supabase.from('matches').update({ score_odds: oddsTable }).eq('id', match.id);
-    }
   };
 
   const deleteOddsTable = async () => {
+    if (match?.id) {
+      const { data, error } = await supabase
+        .from('matches')
+        .update({ score_odds: null })
+        .eq('id', match.id)
+        .select();
+      if (error || !data?.length) {
+        alert('שגיאה במחיקת טבלת האודס: ' + (error?.message || 'לא עודכנה אף שורה (ייתכן חסימת הרשאות)'));
+        return;
+      }
+    }
     setFormData(prev => ({ ...prev, score_odds: null }));
     setOddsTable(null);
-    if (match?.id) {
-      await supabase.from('matches').update({ score_odds: null }).eq('id', match.id);
-    }
   };
 
   // Helper function to format date to "YYYY-MM-DDTHH:mm" in local timezone
