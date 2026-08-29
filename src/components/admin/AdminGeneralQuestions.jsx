@@ -243,6 +243,15 @@ function QuestionCard({ question, logos, onChanged }) {
     onChanged();
   };
 
+  const [editingDescription, setEditingDescription] = useState(false);
+  const [descriptionDraft, setDescriptionDraft] = useState(question.description || "");
+
+  const handleSaveDescription = async () => {
+    await GeneralQuestion.update(question.id, { description: descriptionDraft.trim() || null });
+    setEditingDescription(false);
+    onChanged();
+  };
+
   return (
     <Card className="bg-slate-800/60 border-slate-700">
       <CardHeader>
@@ -265,6 +274,28 @@ function QuestionCard({ question, logos, onChanged }) {
           >
             {question.question_text} <span className="text-xs text-slate-500">✏️</span>
           </CardTitle>
+        )}
+
+        {editingDescription ? (
+          <div className="flex items-center gap-2 mt-1">
+            <Input
+              value={descriptionDraft}
+              onChange={(e) => setDescriptionDraft(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSaveDescription()}
+              placeholder="תיאור (כותרת משנה) — יוצג רק באונבורדינג, לא בטבלת מה כולם ניחשו"
+              className="bg-slate-700 border-slate-600 text-white text-xs h-7"
+              autoFocus
+            />
+            <Button size="sm" className="h-7 bg-green-600 hover:bg-green-500" onClick={handleSaveDescription}>שמור</Button>
+          </div>
+        ) : (
+          <p
+            className="text-slate-400 text-xs cursor-pointer hover:text-blue-300 mt-1"
+            onClick={() => { setDescriptionDraft(question.description || ""); setEditingDescription(true); }}
+            title="לחץ לעריכה"
+          >
+            {question.description || "+ הוסף תיאור (כותרת משנה, מוצג רק באונבורדינג)"} <span className="text-slate-600">✏️</span>
+          </p>
         )}
       </CardHeader>
       <CardContent className="space-y-3">
@@ -361,6 +392,7 @@ export default function AdminGeneralQuestions() {
   const [logos, setLogos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newQuestionText, setNewQuestionText] = useState("");
+  const [newQuestionDescription, setNewQuestionDescription] = useState("");
   const [newQuestionType, setNewQuestionType] = useState("single_team");
 
   const loadData = async () => {
@@ -376,12 +408,14 @@ export default function AdminGeneralQuestions() {
     if (!newQuestionText.trim()) return;
     await GeneralQuestion.create({
       question_text: newQuestionText.trim(),
+      description: newQuestionDescription.trim() || null,
       type: newQuestionType,
       order: questions.length + 1,
       is_active: true,
       is_resolved: false,
     });
     setNewQuestionText("");
+    setNewQuestionDescription("");
     setNewQuestionType("single_team");
     loadData();
   };
@@ -406,6 +440,12 @@ export default function AdminGeneralQuestions() {
           value={newQuestionText}
           onChange={(e) => setNewQuestionText(e.target.value)}
           placeholder="טקסט שאלה חדשה, למשל: מי תנצח את הטורניר?"
+          className="bg-slate-800 border-slate-600 text-white"
+        />
+        <Input
+          value={newQuestionDescription}
+          onChange={(e) => setNewQuestionDescription(e.target.value)}
+          placeholder="תיאור (אופציונלי, כותרת משנה באונבורדינג)"
           className="bg-slate-800 border-slate-600 text-white"
         />
         <Select value={newQuestionType} onValueChange={setNewQuestionType}>

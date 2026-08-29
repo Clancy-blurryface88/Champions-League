@@ -207,6 +207,9 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
                 <h2 className="text-white text-[17px] font-semibold tracking-tight mt-1.5">
                   {question.question_text}
                 </h2>
+                {question.description && (
+                  <p className="text-white/45 text-[12px] mt-1">{question.description}</p>
+                )}
                 {isMulti && (
                   <span className="text-yellow-400/80 text-[11px] block mt-1">
                     {selectedArray.length}/{MULTI_TEAM_PICK_COUNT} נבחרו

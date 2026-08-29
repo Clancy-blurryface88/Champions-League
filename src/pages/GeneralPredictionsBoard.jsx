@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Trophy, ChevronDown } from "lucide-react";
+import { ArrowLeft, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TeamFlag from "@/components/TeamFlag";
 import { GeneralQuestion, GeneralPrediction, PublicProfile, TeamLogo } from "@/api/entities";
@@ -20,6 +20,14 @@ function parseMultiAnswer(raw) {
 const NAME_COL_WIDTH = 100;
 const ROW_H = 68; // fixed row height shared by both panels so they line up
 
+// Glass/dark-blue treatment for header cells and username cells, replacing
+// the flat black background per feedback.
+const GLASS_BG = {
+  background: "rgba(30,58,138,0.28)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+};
+
 // Frozen name column as a genuinely separate, non-scrolling panel next to an
 // independently horizontally-scrolling picks panel — deliberately NOT using
 // `position: sticky`. Sticky-inside-a-scroll-container combined with
@@ -30,16 +38,16 @@ function FrozenNamesPanel({ headerLabel, rows }) {
   return (
     <div className="flex-shrink-0 text-white" style={{ width: NAME_COL_WIDTH }}>
       <div
-        className="flex items-center justify-end px-2 font-medium text-sm bg-slate-900 border-b border-slate-700"
-        style={{ height: ROW_H }}
+        className="flex items-center justify-end px-2 font-medium text-sm border-b border-slate-700"
+        style={{ height: ROW_H, ...GLASS_BG }}
       >
         {headerLabel}
       </div>
       {rows.map((row) => (
         <div
           key={row.userId}
-          className="flex items-center justify-end px-2 font-medium text-sm border-b border-slate-800 bg-slate-900"
-          style={{ height: ROW_H }}
+          className="flex items-center justify-end px-2 font-medium text-sm border-b border-slate-800"
+          style={{ height: ROW_H, ...GLASS_BG }}
         >
           {row.displayName}
         </div>
@@ -108,7 +116,7 @@ export default function GeneralPredictionsBoard() {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <h1 className="text-xl font-bold text-white flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-yellow-400" />
+          <img src="/champions/trophy-marquee.png" alt="" className="h-6 w-auto object-contain" />
           ניחושים כלליים — מה כולם ניחשו
         </h1>
       </div>
@@ -123,7 +131,7 @@ export default function GeneralPredictionsBoard() {
               <div className="overflow-x-auto flex-1">
                 <div className="grid" style={{ gridTemplateColumns: `repeat(${singleTeamQuestions.length}, minmax(130px, 1fr))` }}>
                   {singleTeamQuestions.map((q) => (
-                    <div key={q.id} className="flex items-center justify-center px-2 text-sm bg-slate-900 border-b border-slate-700" style={{ height: ROW_H }}>
+                    <div key={q.id} className="flex items-center justify-center px-2 text-sm border-b border-slate-700" style={{ height: ROW_H, ...GLASS_BG }}>
                       {q.question_text}
                     </div>
                   ))}
@@ -171,11 +179,11 @@ export default function GeneralPredictionsBoard() {
                     <div className="overflow-x-auto flex-1">
                       <div className="grid" style={{ gridTemplateColumns: `repeat(8, minmax(64px, 1fr)) 56px` }}>
                         {Array.from({ length: 8 }, (_, i) => (
-                          <div key={i} className="flex items-center justify-center px-1 text-xs bg-slate-900 border-b border-slate-700" style={{ height: ROW_H }}>
+                          <div key={i} className="flex items-center justify-center px-1 text-xs border-b border-slate-700" style={{ height: ROW_H, ...GLASS_BG }}>
                             בחירה {i + 1}
                           </div>
                         ))}
-                        <div className="flex items-center justify-center px-1 text-xs bg-slate-900 border-b border-slate-700" style={{ height: ROW_H }}>נק'</div>
+                        <div className="flex items-center justify-center px-1 text-xs border-b border-slate-700" style={{ height: ROW_H, ...GLASS_BG }}>נק'</div>
 
                         {rows.map((row) => {
                           const answer = row.answers[q.id];
