@@ -146,7 +146,7 @@ export default function GeneralPredictionsBoard() {
                                 <TeamFlag logo={logosByName[answer.team]} name={answer.team} className="w-6 h-6" animate={false} />
                                 <span dir="ltr" className="text-xs text-slate-300 truncate max-w-[110px]">{answer.team}</span>
                                 {answer.points != null && (
-                                  <span className="text-[10px] text-green-400">+{answer.points}</span>
+                                  <span className="text-[10px] text-green-400">+{Number(answer.points).toFixed(2)}</span>
                                 )}
                               </div>
                             ) : (
@@ -213,7 +213,7 @@ export default function GeneralPredictionsBoard() {
                               })}
                               <div className="flex items-center justify-center px-1 border-b border-slate-800" style={{ height: ROW_H }}>
                                 {answer?.points != null ? (
-                                  <span className="text-green-400 text-xs">+{answer.points}</span>
+                                  <span className="text-green-400 text-xs">+{Number(answer.points).toFixed(2)}</span>
                                 ) : (
                                   <span className="text-slate-600">—</span>
                                 )}
