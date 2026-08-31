@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { motion } from "framer-motion";
+import React, { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { X, Home, Plane } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
 import { calcStandings } from "@/utils/standings";
@@ -11,6 +11,74 @@ const predictedPositionColor = (pos) =>
   pos <= DIRECT_R16_CUTOFF ? "#4ade80" : pos <= PLAYOFF_CUTOFF ? "#facc15" : "#f87171";
 
 const OUTCOME_COLOR = { W: "#4ade80", D: "#facc15", L: "#f87171" };
+
+// Single animated segmented bar for wins/draws/losses — fills in on mount,
+// tapping a segment reveals its exact count + share below the bar. Keeps
+// all 3 outcomes in one row instead of 3 separate stat boxes.
+function WdlBar({ wins, draws, losses }) {
+  const [active, setActive] = useState(null);
+  const total = wins + draws + losses || 1;
+  const segments = [
+    { key: "wins", label: "ניצחונות", value: wins, color: "#4ade80" },
+    { key: "draws", label: "תיקו", value: draws, color: "#facc15" },
+    { key: "losses", label: "הפסדים", value: losses, color: "#f87171" },
+  ];
+  const activeSeg = segments.find((s) => s.key === active);
+
+  return (
+    <div>
+      <div className="flex h-8 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
+        {segments.map((seg, i) => (
+          <motion.button
+            key={seg.key}
+            onClick={() => setActive(active === seg.key ? null : seg.key)}
+            initial={{ flexGrow: 0 }}
+            animate={{ flexGrow: seg.value }}
+            transition={{ duration: 0.7, ease: "easeOut", delay: i * 0.08 }}
+            style={{
+              background: seg.color,
+              flexBasis: 0,
+              filter: active && active !== seg.key ? "brightness(0.55)" : "none",
+              transition: "filter 0.2s",
+            }}
+            className="h-full flex items-center justify-center min-w-0"
+          >
+            {seg.value / total > 0.14 && (
+              <span className="text-black text-[11px] font-black">{seg.value}</span>
+            )}
+          </motion.button>
+        ))}
+      </div>
+
+      <div className="flex items-center justify-center gap-3 mt-1.5">
+        {segments.map((seg) => (
+          <button
+            key={seg.key}
+            onClick={() => setActive(active === seg.key ? null : seg.key)}
+            className="flex items-center gap-1"
+          >
+            <span className="w-2 h-2 rounded-full" style={{ background: seg.color }} />
+            <span className="text-white/50 text-[9px]">{seg.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <AnimatePresence>
+        {activeSeg && (
+          <motion.p
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="text-center text-[10px] font-semibold mt-1 overflow-hidden"
+            style={{ color: activeSeg.color }}
+          >
+            {activeSeg.label}: {activeSeg.value} מתוך {total} ({Math.round((activeSeg.value / total) * 100)}%)
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 // Shows one team's 8 league-phase fixtures in matchday order — home/away
 // marked with a house/plane icon, results colored for finished matches —
@@ -79,32 +147,25 @@ export default function TeamFixturesModal({ team, allMatches, logosByName, onClo
             <span className="text-amber-300 text-[10px] font-bold uppercase tracking-wide block text-center mb-2">
               היסטוריה כל-הזמנים בליגת האלופות
             </span>
-            <div className="grid grid-cols-3 gap-2">
+
+            <div className="flex items-center justify-center gap-4 mb-3">
               <div className="text-center">
                 <div className="text-white/40 text-[9px]">משחקים</div>
                 <div className="text-white font-bold text-sm">{history.matches}</div>
               </div>
-              <div className="text-center">
-                <div className="text-white/40 text-[9px]">ניצחונות</div>
-                <div className="font-bold text-sm" style={{ color: "#4ade80" }}>{history.wins}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-white/40 text-[9px]">תיקו</div>
-                <div className="font-bold text-sm" style={{ color: "#facc15" }}>{history.draws}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-white/40 text-[9px]">הפסדים</div>
-                <div className="font-bold text-sm" style={{ color: "#f87171" }}>{history.losses}</div>
-              </div>
+              <div className="w-px h-6" style={{ background: "rgba(255,255,255,0.1)" }} />
               <div className="text-center">
                 <div className="text-white/40 text-[9px]">שערים למשחק</div>
                 <div className="text-white font-bold text-sm">{history.goalsPerMatch.toFixed(2)}</div>
               </div>
+              <div className="w-px h-6" style={{ background: "rgba(255,255,255,0.1)" }} />
               <div className="text-center">
                 <div className="text-white/40 text-[9px]">ספיגות למשחק</div>
                 <div className="text-white font-bold text-sm">{history.concededPerMatch.toFixed(2)}</div>
               </div>
             </div>
+
+            <WdlBar wins={history.wins} draws={history.draws} losses={history.losses} />
           </div>
         )}
 
