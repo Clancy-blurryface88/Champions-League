@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { X, Home, Plane } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
 import { calcStandings } from "@/utils/standings";
+import { getPredictedEntry, PREDICTED_TABLE_SUMMARY } from "@/data/predictedLeagueTable2026";
 
 const OUTCOME_COLOR = { W: "#4ade80", D: "#facc15", L: "#f87171" };
 
@@ -34,6 +35,7 @@ export default function TeamFixturesModal({ team, allMatches, logosByName, onClo
   const standings = useMemo(() => calcStandings(allMatches), [allMatches]);
   const standingIndex = standings.findIndex((s) => s.name === team.name);
   const standing = standingIndex >= 0 ? standings[standingIndex] : null;
+  const predicted = getPredictedEntry(team.name);
 
   return (
     <motion.div
@@ -62,6 +64,31 @@ export default function TeamFixturesModal({ team, allMatches, logosByName, onClo
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {predicted && (
+          <div
+            className="rounded-xl p-3 mb-4"
+            style={{ background: "rgba(96,165,250,0.08)", border: "1px solid rgba(96,165,250,0.25)" }}
+          >
+            <span className="text-blue-300 text-[10px] font-bold uppercase tracking-wide block mb-2">
+              תחזית סופרקומפיוטר לשלב הליגה
+            </span>
+            <div className="flex items-center justify-center gap-6 mb-2">
+              <div className="text-center">
+                <div className="text-white/40 text-[9px]">מקום צפוי</div>
+                <div className="text-white font-bold text-sm">{predicted.position}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-white/40 text-[9px]">נק' צפויות</div>
+                <div className="text-white font-bold text-sm">{predicted.points.toFixed(1)}</div>
+              </div>
+            </div>
+            {predicted.note && (
+              <p className="text-white/70 text-[10px] leading-relaxed mb-1.5">"{predicted.note}"</p>
+            )}
+            <p className="text-white/40 text-[9px] leading-relaxed">{PREDICTED_TABLE_SUMMARY}</p>
+          </div>
+        )}
 
         {fixtures.length === 0 ? (
           <p className="text-white/40 text-xs text-center py-6">לוח המשחקים עדיין לא ידוע.</p>
