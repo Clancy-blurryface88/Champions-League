@@ -565,12 +565,6 @@ export default function PredictionsResults() {
     setCurrentMatchIndex(i);
   };
 
-  // Fires exactly once per visit to this screen — scrolls down so the last
-  // (lowest-ranked) participant is in view, matching where the reveal
-  // cascade starts. Nothing after this touches scroll position: switching
-  // rounds, matches, or tabs must never move the page.
-  const initialScrollDoneRef = useRef(false);
-
   const getOutcomeStatus = (prediction, match) => {
     if (!prediction || !match.is_finished) return null;
 
@@ -800,8 +794,7 @@ export default function PredictionsResults() {
                       predictions={getMatchPredictions(finishedMatches[currentMatchIndex].id)}
                       getUserDisplayName={getUserDisplayName}
                       getOutcomeStatus={getOutcomeStatus}
-                      onAllRevealed={() => setRevealComplete(true)}
-                      initialScrollDoneRef={initialScrollDoneRef} />
+                      onAllRevealed={() => setRevealComplete(true)} />
                   }
 
                   {viewMode === 'my_predictions' &&
@@ -1143,7 +1136,7 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
 }
 
 // רכיב נפרד לרשימת הניחושים עם פירוט הניקוד מתוקן
-function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeStatus, onAllRevealed, initialScrollDoneRef }) {
+function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeStatus, onAllRevealed }) {
   const [expandedPrediction, setExpandedPrediction] = useState(null);
   const [shockwaveActive, setShockwaveActive] = useState(false);
   // Tracks which rows have actually finished their own opacity/blur reveal —
@@ -1162,11 +1155,11 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
     setShockwaveActive(false);
     setRevealedIds(new Set());
     if (sortedPredictions.length === 0) { onAllRevealed?.(); return; }
-    // גלילה בודדת בלבד, פעם אחת לכל ביקור במסך — לא בכל מעבר משחק/מחזור
-    if (initialScrollDoneRef && !initialScrollDoneRef.current) {
-      initialScrollDoneRef.current = true;
-      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 100);
-    }
+    // גלול לתחתית כך שהמשתמש רואה את החשיפה הראשונה (הנמוך) ומעלה למנצח.
+    // חייב לקרות בכל מעבר משחק/מחזור (לא רק פעם ראשונה) — אחרת אורך
+    // הרשימה משתנה מתחת לגלילה הקיימת וזה גורם ל"קפיצה" של הדפדפן עצמו
+    // (scroll anchoring), במקום גלילה יזומה וצפויה אחת.
+    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 100);
     const lastRevealTime = (sortedPredictions.length - 1) * REVEAL_DELAY + 0.5;
     // הפעל shockwave 300ms אחרי שהמוביל נחשף
     const shockTimer = setTimeout(() => setShockwaveActive(true), lastRevealTime * 1000 + 300);
