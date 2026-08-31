@@ -4,6 +4,7 @@ import { X, Home, Plane } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
 import { calcStandings } from "@/utils/standings";
 import { getPredictedEntry } from "@/data/predictedLeagueTable2026";
+import { getUclAllTimeHistory } from "@/data/uclAllTimeHistory";
 import { DIRECT_R16_CUTOFF, PLAYOFF_CUTOFF } from "@/config/tournament";
 
 const predictedPositionColor = (pos) =>
@@ -40,6 +41,7 @@ export default function TeamFixturesModal({ team, allMatches, logosByName, onClo
   const standingIndex = standings.findIndex((s) => s.name === team.name);
   const standing = standingIndex >= 0 ? standings[standingIndex] : null;
   const predicted = getPredictedEntry(team.name);
+  const history = getUclAllTimeHistory(team.name);
 
   return (
     <motion.div
@@ -68,6 +70,43 @@ export default function TeamFixturesModal({ team, allMatches, logosByName, onClo
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {history && (
+          <div
+            className="rounded-xl p-3 mb-4"
+            style={{ background: "rgba(245,197,24,0.08)", border: "1px solid rgba(245,197,24,0.25)" }}
+          >
+            <span className="text-amber-300 text-[10px] font-bold uppercase tracking-wide block text-center mb-2">
+              היסטוריה כל-הזמנים בליגת האלופות
+            </span>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="text-center">
+                <div className="text-white/40 text-[9px]">משחקים</div>
+                <div className="text-white font-bold text-sm">{history.matches}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-white/40 text-[9px]">ניצחונות</div>
+                <div className="font-bold text-sm" style={{ color: "#4ade80" }}>{history.wins}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-white/40 text-[9px]">תיקו</div>
+                <div className="font-bold text-sm" style={{ color: "#facc15" }}>{history.draws}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-white/40 text-[9px]">הפסדים</div>
+                <div className="font-bold text-sm" style={{ color: "#f87171" }}>{history.losses}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-white/40 text-[9px]">שערים למשחק</div>
+                <div className="text-white font-bold text-sm">{history.goalsPerMatch.toFixed(2)}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-white/40 text-[9px]">ספיגות למשחק</div>
+                <div className="text-white font-bold text-sm">{history.concededPerMatch.toFixed(2)}</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {predicted && (
           <div
