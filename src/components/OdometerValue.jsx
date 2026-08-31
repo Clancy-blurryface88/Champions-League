@@ -63,10 +63,10 @@ function OdometerDigit({ digit, delay = 0, height = 16, width = 8, trigger }) {
   );
 }
 
-export default function OdometerValue({ target, height = 16, width = 8, trigger }) {
+export default function OdometerValue({ target, height = 16, width = 8, trigger, decimals = 2 }) {
   const [ref, autoInView] = useInViewOnce();
   const active = trigger !== undefined ? trigger : autoInView;
-  const str = (target || 0).toFixed(2);
+  const str = (target || 0).toFixed(decimals);
   return (
     <span ref={trigger === undefined ? ref : undefined} style={{ display: 'inline-flex' }}>
       {str.split('').map((c, i) =>

@@ -152,7 +152,9 @@ export default function TeamFixturesModal({ team, allMatches, logosByName, onClo
             <div className="flex items-center justify-center gap-4 mb-3">
               <div className="text-center">
                 <div className="text-white text-[9px]">משחקים</div>
-                <div className="font-bold text-sm" style={{ color: "#60a5fa" }}>{history.matches}</div>
+                <div className="font-bold text-sm" style={{ color: "#60a5fa" }} dir="ltr">
+                  <OdometerValue target={history.matches} decimals={0} height={14} width={8} />
+                </div>
               </div>
               <div className="w-px h-6" style={{ background: "rgba(255,255,255,0.1)" }} />
               <div className="text-center">
