@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, ShieldCheck, Radio, LayoutGrid, Sparkles } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, ShieldCheck, Radio, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
@@ -20,8 +20,6 @@ import AdminLeagueOverride from "../components/admin/AdminLeagueOverride";
 import AdminPlayoffOverride from "../components/admin/AdminPlayoffOverride";
 import AdminStandingsCheck from "../components/admin/AdminStandingsCheck";
 import AdminLiveMatchExplorer from "../components/admin/AdminLiveMatchExplorer";
-import AdminPredictionDisplayOptions from "../components/admin/AdminPredictionDisplayOptions";
-import AdminMenuDisplayOptions from "../components/admin/AdminMenuDisplayOptions";
 import AdminGeneralQuestions from "../components/admin/AdminGeneralQuestions";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
@@ -85,8 +83,6 @@ export default function Admin() {
       case 'playoff-override': return <AdminPlayoffOverride />;
       case 'standings-check': return <AdminStandingsCheck />;
       case 'live-explorer': return <AdminLiveMatchExplorer />;
-      case 'prediction-display-options': return <AdminPredictionDisplayOptions />;
-      case 'menu-display-options': return <AdminMenuDisplayOptions />;
       case 'general-questions': return <AdminGeneralQuestions />;
       default: return <AdminRounds />;
     }
@@ -106,8 +102,6 @@ export default function Admin() {
     { id: 'playoff-override',  label: '🏆 פלייאוף',              icon: Trophy },
     { id: 'standings-check',   label: '✅ אימות טבלה מול UEFA',    icon: ShieldCheck },
     { id: 'live-explorer',     label: '📡 הרכבים + אירועים',      icon: Radio },
-    { id: 'prediction-display-options', label: '🎨 15 אפשרויות תצוגת ניחושים', icon: LayoutGrid },
-    { id: 'menu-display-options', label: '🧭 25 אפשרויות תצוגת תפריט', icon: LayoutGrid },
     { id: 'general-questions', label: '🎯 ניחושים כלליים', icon: Sparkles },
   ];
 
