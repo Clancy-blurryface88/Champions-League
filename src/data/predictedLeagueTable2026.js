@@ -1,20 +1,17 @@
-// תחזית "סופרקומפיוטר" לטבלת שלב הליגה 2026/27 — Football Ranked, דרך
-// GiveMeSport (https://www.givemesport.com/champions-league-supercomputer-predicts-final-league-phase-table-football/).
+// תחזית לטבלת שלב הליגה 2026/27 — Football Ranked, דרך GiveMeSport
+// (https://www.givemesport.com/champions-league-supercomputer-predicts-final-league-phase-table-football/).
 // מבוססת על סטטיסטיקות, קושי לוח משחקים ואלפי סימולציות — לא נתונים אמיתיים.
 // מפתחות = שמות קבוצות מ-team_logos אחרי trim (בטבלה יש רווחים/כתיב לא אחיד).
-export const PREDICTED_TABLE_SUMMARY =
-  "אנליסטים של Football Ranked ניתחו סטטיסטיקות וקושי לוח משחקים, והריצו אלפי סימולציות כדי לחזות את טבלת שלב הליגה הסופית של ליגת האלופות 2026/27.";
-
 const RAW_TABLE = {
-  "Bayern Munich":     { position: 1,  points: 18.9, note: "באיירן מינכן מנסה לתרגם את הדומיננטיות המקומית שלה לעליונות אירופית." },
-  "Arsenal":           { position: 2,  points: 17.7, note: "ארסנל הובילה בעונה הקודמת והגיעה לגמר בעקבות כך." },
+  "Bayern Munich":     { position: 1,  points: 18.9 },
+  "Arsenal":           { position: 2,  points: 17.7 },
   "Paris":             { position: 3,  points: 17.1 },
   "Manchaster City":   { position: 4,  points: 16.9 },
   "Real Madrid":       { position: 5,  points: 16.5 },
   "Inter":             { position: 6,  points: 16.2 },
   "Liverpool":         { position: 7,  points: 15.4 },
   "Barcelona":         { position: 8,  points: 14.8 },
-  "Manchester United": { position: 9,  points: 14.1, note: "מיקום תשיעי מחמיץ עלייה אוטומטית לשלב הנוקאאוט — יונייטד תצטרך לעבור דרך הפלייאוף." },
+  "Manchester United": { position: 9,  points: 14.1 },
   "Aston villa":       { position: 10, points: 14.0 },
   "Stuttgart":         { position: 11, points: 13.3 },
   "Dortmund":          { position: 12, points: 13.2 },
@@ -24,7 +21,7 @@ const RAW_TABLE = {
   "PSV":               { position: 16, points: 11.3 },
   "Porto":             { position: 17, points: 11.0 },
   "Como":              { position: 18, points: 11.0 },
-  "Atletico Madrid":   { position: 19, points: 10.9, note: "אמנם הגיעה לחצי הגמר בעונה שעברה, אבל הפעם לא צפוי לה מעבר קל." },
+  "Atletico Madrid":   { position: 19, points: 10.9 },
   "Fenerbahce":        { position: 20, points: 10.8 },
   "Leipzig":           { position: 21, points: 10.6 },
   "Bodø/Glimt":        { position: 22, points: 10.0 },
@@ -41,7 +38,7 @@ const RAW_TABLE = {
   "Lask":              { position: 33, points: 5.6 },
   "Shakhtar Donetsk":  { position: 34, points: 4.9 },
   "Slovan Bratislava": { position: 35, points: 3.7 },
-  "Sabah FC":          { position: 36, points: 2.9, note: "אין ממש מקום להתלונן על המיקום האחרון הצפוי — זו ההשתתפות הראשונה שלה אי פעם, מול לוח המשחקים הקשה ביותר בתחרות." },
+  "Sabah FC":          { position: 36, points: 2.9 },
 };
 
 export function getPredictedEntry(teamName) {
