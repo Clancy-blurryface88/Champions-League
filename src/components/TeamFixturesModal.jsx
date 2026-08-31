@@ -4,6 +4,10 @@ import { X, Home, Plane } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
 import { calcStandings } from "@/utils/standings";
 import { getPredictedEntry } from "@/data/predictedLeagueTable2026";
+import { DIRECT_R16_CUTOFF, PLAYOFF_CUTOFF } from "@/config/tournament";
+
+const predictedPositionColor = (pos) =>
+  pos <= DIRECT_R16_CUTOFF ? "#4ade80" : pos <= PLAYOFF_CUTOFF ? "#facc15" : "#f87171";
 
 const OUTCOME_COLOR = { W: "#4ade80", D: "#facc15", L: "#f87171" };
 
@@ -70,17 +74,19 @@ export default function TeamFixturesModal({ team, allMatches, logosByName, onClo
             className="rounded-xl p-3 mb-4"
             style={{ background: "rgba(96,165,250,0.08)", border: "1px solid rgba(96,165,250,0.25)" }}
           >
-            <span className="text-blue-300 text-[10px] font-bold uppercase tracking-wide block mb-2">
+            <span className="text-blue-300 text-[10px] font-bold uppercase tracking-wide block text-center mb-2">
               תחזית שלב הליגה
             </span>
             <div className="flex items-center justify-center gap-6">
               <div className="text-center">
                 <div className="text-white/40 text-[9px]">מקום צפוי</div>
-                <div className="text-white font-bold text-sm">{predicted.position}</div>
+                <div className="font-bold text-sm" style={{ color: predictedPositionColor(predicted.position) }}>
+                  {predicted.position}
+                </div>
               </div>
               <div className="text-center">
                 <div className="text-white/40 text-[9px]">נק' צפויות</div>
-                <div className="text-white font-bold text-sm">{predicted.points.toFixed(1)}</div>
+                <div className="text-blue-400 font-bold text-sm">{predicted.points.toFixed(1)}</div>
               </div>
             </div>
           </div>
