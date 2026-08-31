@@ -561,20 +561,15 @@ export default function PredictionsResults() {
 
   const chipStripRef = useRef(null);
 
-  // Chips render newest-first (last match on the left), so the match index
-  // and its left-to-right screen position are mirror images of each other.
-  // The mapping is its own inverse, which is why one helper covers both directions.
-  const displayPos = (i) => finishedMatches.length - 1 - i;
-
   const goToMatch = (i) => {
     setCurrentMatchIndex(i);
   };
 
-  // Keep the active chip visible as the current match changes
-  useEffect(() => {
-    const chip = chipStripRef.current?.children[displayPos(currentMatchIndex)];
-    chip?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-  }, [currentMatchIndex]);
+  // Fires exactly once per visit to this screen — scrolls down so the last
+  // (lowest-ranked) participant is in view, matching where the reveal
+  // cascade starts. Nothing after this touches scroll position: switching
+  // rounds, matches, or tabs must never move the page.
+  const initialScrollDoneRef = useRef(false);
 
   const getOutcomeStatus = (prediction, match) => {
     if (!prediction || !match.is_finished) return null;
@@ -805,7 +800,8 @@ export default function PredictionsResults() {
                       predictions={getMatchPredictions(finishedMatches[currentMatchIndex].id)}
                       getUserDisplayName={getUserDisplayName}
                       getOutcomeStatus={getOutcomeStatus}
-                      onAllRevealed={() => setRevealComplete(true)} />
+                      onAllRevealed={() => setRevealComplete(true)}
+                      initialScrollDoneRef={initialScrollDoneRef} />
                   }
 
                   {viewMode === 'my_predictions' &&
@@ -1146,17 +1142,8 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
 
 }
 
-// גולל לאלמנט רק אם הוא באמת לא נראה במלואו כרגע — מונע "קפיצות" מסך
-// מיותרות כשכל הרשימה כבר נכנסת בתצוגה (למשל מחזור עם מעט משתתפים).
-function scrollIntoViewIfNeeded(el, opts) {
-  if (!el) return;
-  const rect = el.getBoundingClientRect();
-  const fullyVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
-  if (!fullyVisible) el.scrollIntoView(opts);
-}
-
 // רכיב נפרד לרשימת הניחושים עם פירוט הניקוד מתוקן
-function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeStatus, onAllRevealed }) {
+function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeStatus, onAllRevealed, initialScrollDoneRef }) {
   const [expandedPrediction, setExpandedPrediction] = useState(null);
   const [shockwaveActive, setShockwaveActive] = useState(false);
   // Tracks which rows have actually finished their own opacity/blur reveal —
@@ -1170,18 +1157,16 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
   const sortedPredictions = [...predictions].sort((a, b) => (b.points_earned || 0) - (a.points_earned || 0));
 
   const bottomRef = useRef(null);
-  // One row per prediction id, so each reveal can scroll itself into view as
-  // the cascade climbs from last place back up to the winner — with enough
-  // participants that the list is taller than the screen, only the initial
-  // scroll-to-bottom isn't enough to keep the higher reveals on screen.
-  const rowRefs = useRef(new Map());
 
   useEffect(() => {
     setShockwaveActive(false);
     setRevealedIds(new Set());
     if (sortedPredictions.length === 0) { onAllRevealed?.(); return; }
-    // גלול לתחתית כך שהמשתמש רואה את החשיפה הראשונה (הנמוך) ומעלה למנצח
-    setTimeout(() => scrollIntoViewIfNeeded(bottomRef.current, { behavior: 'smooth', block: 'end' }), 100);
+    // גלילה בודדת בלבד, פעם אחת לכל ביקור במסך — לא בכל מעבר משחק/מחזור
+    if (initialScrollDoneRef && !initialScrollDoneRef.current) {
+      initialScrollDoneRef.current = true;
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 100);
+    }
     const lastRevealTime = (sortedPredictions.length - 1) * REVEAL_DELAY + 0.5;
     // הפעל shockwave 300ms אחרי שהמוביל נחשף
     const shockTimer = setTimeout(() => setShockwaveActive(true), lastRevealTime * 1000 + 300);
@@ -1228,13 +1213,11 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
         return (
           <motion.div
             key={prediction.id}
-            ref={(el) => { if (el) rowRefs.current.set(prediction.id, el); }}
             initial={{ opacity: 0, filter: 'blur(16px)', scale: 0.85 }}
             animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
             transition={{ delay: revealDelay, duration: 0.45, ease: 'easeOut' }}
             onAnimationComplete={() => {
               setRevealedIds(prev => prev.has(prediction.id) ? prev : new Set(prev).add(prediction.id));
-              scrollIntoViewIfNeeded(rowRefs.current.get(prediction.id), { behavior: 'smooth', block: 'center' });
             }}
             className="relative rounded-xl overflow-hidden"
             style={verdictStyle}>
