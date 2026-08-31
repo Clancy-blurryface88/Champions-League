@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Home, Plane } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
+import OdometerValue from "@/components/OdometerValue";
 import { calcStandings } from "@/utils/standings";
 import { getPredictedEntry } from "@/data/predictedLeagueTable2026";
 import { getUclAllTimeHistory } from "@/data/uclAllTimeHistory";
@@ -58,7 +59,7 @@ function WdlBar({ wins, draws, losses }) {
             className="flex items-center gap-1"
           >
             <span className="w-2 h-2 rounded-full" style={{ background: seg.color }} />
-            <span className="text-white/50 text-[9px]">{seg.label}</span>
+            <span className="text-white text-[9px]">{seg.label}</span>
           </button>
         ))}
       </div>
@@ -150,18 +151,22 @@ export default function TeamFixturesModal({ team, allMatches, logosByName, onClo
 
             <div className="flex items-center justify-center gap-4 mb-3">
               <div className="text-center">
-                <div className="text-white/40 text-[9px]">משחקים</div>
-                <div className="text-white font-bold text-sm">{history.matches}</div>
+                <div className="text-white text-[9px]">משחקים</div>
+                <div className="font-bold text-sm" style={{ color: "#60a5fa" }}>{history.matches}</div>
               </div>
               <div className="w-px h-6" style={{ background: "rgba(255,255,255,0.1)" }} />
               <div className="text-center">
-                <div className="text-white/40 text-[9px]">שערים למשחק</div>
-                <div className="text-white font-bold text-sm">{history.goalsPerMatch.toFixed(2)}</div>
+                <div className="text-white text-[9px]">שערים למשחק</div>
+                <div className="font-bold text-sm" style={{ color: "#4ade80" }} dir="ltr">
+                  <OdometerValue target={history.goalsPerMatch} height={14} width={8} />
+                </div>
               </div>
               <div className="w-px h-6" style={{ background: "rgba(255,255,255,0.1)" }} />
               <div className="text-center">
-                <div className="text-white/40 text-[9px]">ספיגות למשחק</div>
-                <div className="text-white font-bold text-sm">{history.concededPerMatch.toFixed(2)}</div>
+                <div className="text-white text-[9px]">ספיגות למשחק</div>
+                <div className="font-bold text-sm" style={{ color: "#f87171" }} dir="ltr">
+                  <OdometerValue target={history.concededPerMatch} height={14} width={8} />
+                </div>
               </div>
             </div>
 
