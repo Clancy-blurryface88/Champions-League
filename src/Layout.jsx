@@ -1445,6 +1445,43 @@ export default function Layout({ children, currentPageName }) {
               </DropdownMenuContent>
             </DropdownMenu>
 
+            {/* Notification Bell — manual fallback in case the auto-request
+                (push banner on first login) failed or was dismissed. */}
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              onClick={async () => {
+                const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+                const isStandalone = window.navigator.standalone === true;
+                if (isIOS && !isStandalone) {
+                  setShowPushBanner(true);
+                  return;
+                }
+                if (notifPermission !== 'granted' && window.OneSignal) {
+                  try {
+                    await window.OneSignal.Notifications.requestPermission();
+                    if (typeof Notification !== 'undefined') {
+                      setNotifPermission(Notification.permission);
+                    }
+                  } catch (e) {}
+                }
+              }}
+              className="flex items-center justify-center rounded-full w-9 h-9 transition-all duration-200"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(8,20,50,0.55) 100%)',
+                border: `1px solid ${notifPermission === 'granted' ? 'rgba(9,122,220,0.6)' : 'rgba(255,255,255,0.15)'}`,
+                backdropFilter: 'blur(28px) saturate(1.6)',
+                WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
+                boxShadow: notifPermission === 'granted'
+                  ? 'inset 0 1px 0 rgba(255,255,255,0.25), 0 0 10px rgba(9,122,220,0.35)'
+                  : 'inset 0 1px 0 rgba(255,255,255,0.15)',
+              }}
+            >
+              {notifPermission === 'granted'
+                ? <Bell className="w-4 h-4" style={{ color: '#097adc' }} />
+                : <BellOff className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.45)' }} />
+              }
+            </motion.button>
+
             <div style={{ position: 'relative' }}>
             <AnimatePresence>
               {hasLiveMatch && !showLiveIntro && (location.pathname === '/' || location.pathname.includes('Dashboard')) && (
