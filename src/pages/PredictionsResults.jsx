@@ -1146,6 +1146,15 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
 
 }
 
+// גולל לאלמנט רק אם הוא באמת לא נראה במלואו כרגע — מונע "קפיצות" מסך
+// מיותרות כשכל הרשימה כבר נכנסת בתצוגה (למשל מחזור עם מעט משתתפים).
+function scrollIntoViewIfNeeded(el, opts) {
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+  const fullyVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
+  if (!fullyVisible) el.scrollIntoView(opts);
+}
+
 // רכיב נפרד לרשימת הניחושים עם פירוט הניקוד מתוקן
 function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeStatus, onAllRevealed }) {
   const [expandedPrediction, setExpandedPrediction] = useState(null);
@@ -1172,7 +1181,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
     setRevealedIds(new Set());
     if (sortedPredictions.length === 0) { onAllRevealed?.(); return; }
     // גלול לתחתית כך שהמשתמש רואה את החשיפה הראשונה (הנמוך) ומעלה למנצח
-    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 100);
+    setTimeout(() => scrollIntoViewIfNeeded(bottomRef.current, { behavior: 'smooth', block: 'end' }), 100);
     const lastRevealTime = (sortedPredictions.length - 1) * REVEAL_DELAY + 0.5;
     // הפעל shockwave 300ms אחרי שהמוביל נחשף
     const shockTimer = setTimeout(() => setShockwaveActive(true), lastRevealTime * 1000 + 300);
@@ -1225,7 +1234,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
             transition={{ delay: revealDelay, duration: 0.45, ease: 'easeOut' }}
             onAnimationComplete={() => {
               setRevealedIds(prev => prev.has(prediction.id) ? prev : new Set(prev).add(prediction.id));
-              rowRefs.current.get(prediction.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              scrollIntoViewIfNeeded(rowRefs.current.get(prediction.id), { behavior: 'smooth', block: 'center' });
             }}
             className="relative rounded-xl overflow-hidden"
             style={verdictStyle}>
