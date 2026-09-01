@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Info, Pencil } from "lucide-react";
+import { Info, Pencil, CheckCircle2 } from "lucide-react";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import TeamFlag from "@/components/TeamFlag";
 import { GeneralPrediction, TeamLogo, Match } from "@/api/entities";
@@ -255,17 +255,34 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
 
                   <div className="relative px-6 py-5 overflow-y-auto flex-1">
                     {priorMultiAnswers.length > 0 && (
-                      <div className="space-y-1.5 mb-4" dir="rtl">
-                        {priorMultiAnswers.map((pq) => (
-                          <div key={pq.id} className="flex items-center gap-2 flex-wrap rounded-lg px-2.5 py-2" style={{ background: "rgba(255,255,255,0.04)" }}>
-                            <span className="text-white/40 text-[10px] shrink-0">{pq.question_text}:</span>
-                            <div className="flex gap-1 flex-wrap">
-                              {answers[pq.id].map((name) => (
-                                <TeamFlag key={name} logo={logosByName[name]} name={name} className="w-5 h-5" animate={false} />
-                              ))}
+                      <div className="mb-5" dir="rtl">
+                        <div className="space-y-2">
+                          {priorMultiAnswers.map((pq) => (
+                            <div
+                              key={pq.id}
+                              className="rounded-xl px-3.5 py-3"
+                              style={{
+                                background: "linear-gradient(135deg, rgba(245,197,24,0.16) 0%, rgba(245,197,24,0.05) 100%)",
+                                border: "1.5px solid rgba(245,197,24,0.45)",
+                              }}
+                            >
+                              <div className="flex items-center gap-1.5 mb-2">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
+                                <span className="text-yellow-400 text-[11px] font-semibold">כבר נבחרו ב״{pq.question_text}״</span>
+                              </div>
+                              <div className="flex gap-1.5 flex-wrap">
+                                {answers[pq.id].map((name) => (
+                                  <TeamFlag key={name} logo={logosByName[name]} name={name} className="w-6 h-6" animate={false} />
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-2 mt-4 mb-0.5">
+                          <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.15)" }} />
+                          <span className="text-white/35 text-[10px] font-medium shrink-0">בחר קבוצות אחרות למטה</span>
+                          <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.15)" }} />
+                        </div>
                       </div>
                     )}
 
