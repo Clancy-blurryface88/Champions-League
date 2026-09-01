@@ -7,7 +7,10 @@
 // excluded rather than used as a fallback weight for made-up combinations.
 export function pickWeightedScore(scoreOdds) {
   const candidates = Object.entries(scoreOdds || {})
-    .filter(([key]) => key !== 'other' && /^\d+:\d+$/.test(key))
+    // odds <= 0 is invalid data (e.g. an OCR misread from the AI image
+    // analysis) — 1/0 is Infinity and would deterministically dominate
+    // every other candidate, so treat it as excluded rather than weighted.
+    .filter(([key, odds]) => key !== 'other' && /^\d+:\d+$/.test(key) && odds > 0)
     .map(([key, odds]) => {
       const [h, a] = key.split(':').map(Number);
       return { h, a, weight: 1 / odds };
