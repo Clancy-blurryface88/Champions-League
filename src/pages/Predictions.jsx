@@ -1100,11 +1100,11 @@ export default function Predictions() {
                         {/* Row 2: name + label tightly stacked, top-aligned */}
                         <div style={{ gridColumn: 1, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center">
-                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)', minHeight: '2.5em' }}>
+                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-300 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)', minHeight: '2.5em' }}>
                             {match.team_a}
                           </RevealText>
                           <span className="text-[10px] font-extrabold leading-none text-center" style={{
-                            backgroundImage: 'linear-gradient(135deg, #a7f3d0 0%, #34d399 100%)',
+                            backgroundImage: 'linear-gradient(135deg, #d1fae5 0%, #6ee7b7 100%)',
                             WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent',
                           }}>(Home)</span>
                           {teamPositions[match.team_a] && (
@@ -1113,11 +1113,11 @@ export default function Predictions() {
                         </div>
                         <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center">
-                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)', minHeight: '2.5em' }}>
+                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-300 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)', minHeight: '2.5em' }}>
                             {match.team_b}
                           </RevealText>
                           <span className="text-[10px] font-extrabold leading-none text-center" style={{
-                            backgroundImage: 'linear-gradient(135deg, #b1defb 0%, #097adc 100%)',
+                            backgroundImage: 'linear-gradient(135deg, #dbeafe 0%, #7dd3fc 100%)',
                             WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent',
                           }}>(Away)</span>
                           {teamPositions[match.team_b] && (
@@ -1138,7 +1138,7 @@ export default function Predictions() {
                             handlePredictionChange(match.id, 'predicted_score_b', a);
                           }}
                           className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full"
-                          style={{ color: '#6ee7b7', background: 'linear-gradient(135deg, rgba(16,185,129,0.20) 0%, rgba(5,150,105,0.10) 100%)', border: '1px solid rgba(52,211,153,0.35)' }}
+                          style={{ color: '#a7f3d0', background: 'linear-gradient(135deg, rgba(16,185,129,0.32) 0%, rgba(5,150,105,0.18) 100%)', border: '1px solid rgba(110,231,183,0.55)' }}
                         >
                           <Dices className="w-3.5 h-3.5" />
                           בחר עבורי
@@ -1161,7 +1161,7 @@ export default function Predictions() {
                       <div className="h-px mb-2" style={{ background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)' }} />
                       <div className="flex items-center justify-center gap-1.5 text-xs text-white">
                         <span className="text-sm">🗓️</span>
-                        <span className="font-extrabold">{moment(match.match_date).format('DD/MM/YYYY')} · {moment(match.match_date).format('HH:mm')}</span>
+                        <span className="font-extrabold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)' }}>{moment(match.match_date).format('DD/MM/YYYY')} · {moment(match.match_date).format('HH:mm')}</span>
                       </div>
                       {match.location && (
                         <div className="flex items-center justify-center gap-1 text-xs text-slate-400">
