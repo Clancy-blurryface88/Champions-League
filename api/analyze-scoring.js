@@ -42,7 +42,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-opus-4-6',
-        max_tokens: 512,
+        max_tokens: 2048,
         messages: [
           {
             role: 'user',
@@ -76,7 +76,10 @@ export default async function handler(req, res) {
     // Parse JSON from response
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      return res.status(422).json({ error: 'Could not parse JSON from response', raw: text });
+      const reason = data.stop_reason === 'max_tokens'
+        ? 'התשובה מ-Claude נקטעה (יותר מדי תוצאות בטבלה) — נסה שוב או צלם טבלה עם פחות שורות'
+        : 'Could not parse JSON from response';
+      return res.status(422).json({ error: reason, raw: text });
     }
 
     const scoring = JSON.parse(jsonMatch[0]);
