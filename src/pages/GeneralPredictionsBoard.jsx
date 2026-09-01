@@ -38,7 +38,7 @@ function FrozenNamesPanel({ headerLabel, rows }) {
   return (
     <div className="flex-shrink-0 text-white" style={{ width: NAME_COL_WIDTH }}>
       <div
-        className="flex items-center justify-end px-2 font-medium text-sm border-b border-slate-700"
+        className="flex items-center justify-center px-2 font-medium text-sm border-b border-slate-700"
         style={{ height: ROW_H, ...GLASS_BG }}
       >
         {headerLabel}
@@ -46,7 +46,7 @@ function FrozenNamesPanel({ headerLabel, rows }) {
       {rows.map((row) => (
         <div
           key={row.userId}
-          className="flex items-center justify-end px-2 font-medium text-sm border-b border-slate-800"
+          className="flex items-center justify-center px-2 font-medium text-sm border-b border-slate-800"
           style={{ height: ROW_H, ...GLASS_BG }}
         >
           {row.displayName}
@@ -111,16 +111,19 @@ export default function GeneralPredictionsBoard() {
 
   return (
     <div className="min-h-screen px-4 py-6 space-y-8" dir="rtl">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate(createPageUrl("Dashboard"))}>
+      <div className="relative flex items-center justify-center" style={{ minHeight: 40 }}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate(createPageUrl("Dashboard"))}
+          style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)" }}
+        >
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <div className="flex-1">
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            <img src="/champions/trophy-marquee.png" alt="" className="h-6 w-auto object-contain" />
-            ניחושים כלליים
-          </h1>
-        </div>
+        <h1 className="text-xl font-bold text-white flex items-center gap-2">
+          <img src="/champions/ch-trophy.png" alt="" className="h-6 w-auto object-contain" />
+          ניחושים כלליים
+        </h1>
       </div>
 
       {usersWithAnyAnswer.length === 0 ? (
