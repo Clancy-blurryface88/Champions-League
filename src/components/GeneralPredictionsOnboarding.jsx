@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Info } from "lucide-react";
+import { Info, Pencil } from "lucide-react";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import TeamFlag from "@/components/TeamFlag";
 import { GeneralPrediction, TeamLogo, Match } from "@/api/entities";
@@ -11,11 +11,17 @@ const MULTI_TEAM_PICK_COUNT = 8;
 // One-time, pre-tournament "general prediction" questions (e.g. "who wins the
 // tournament") — shown right after WelcomeModal closes, once per unanswered
 // active question. Visual language cloned from WelcomeModal.jsx.
+//
+// All answers are kept in local state and only written to the DB once, from
+// the review screen at the end (step === questions.length) — mirrors the
+// round-predictions flow in Predictions.jsx, so a participant can go back and
+// change an earlier answer before anything is actually saved.
 export default function GeneralPredictionsOnboarding({ isOpen, questions, userId, onDone }) {
   const [logos, setLogos] = useState([]);
   const [leaguePhaseMatches, setLeaguePhaseMatches] = useState([]);
   const [step, setStep] = useState(0);
-  const [selected, setSelected] = useState(null);
+  const [answers, setAnswers] = useState({}); // { [questionId]: teamName | teamName[] }
+  const [cameFromReview, setCameFromReview] = useState(false);
   const [saving, setSaving] = useState(false);
   const [fixturesTeam, setFixturesTeam] = useState(null);
 
@@ -28,60 +34,95 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
 
   useEffect(() => {
     setStep(0);
-    setSelected(null);
+    setAnswers({});
+    setCameFromReview(false);
   }, [isOpen]);
 
   const logosByName = useMemo(() => Object.fromEntries(logos.map((l) => [l.name, l.logo_url])), [logos]);
 
   if (!isOpen || questions.length === 0) return null;
 
-  const question = questions[step];
+  const isReview = step === questions.length;
+  const question = isReview ? null : questions[step];
   const isLast = step === questions.length - 1;
-  const isMulti = question.type === "multi_team";
-  const selectedArray = Array.isArray(selected) ? selected : [];
-  const isValidSelection = isMulti ? selectedArray.length === MULTI_TEAM_PICK_COUNT : !!selected;
+  const isMulti = question?.type === "multi_team";
+  const currentAnswer = question ? answers[question.id] : undefined;
+  const selectedArray = Array.isArray(currentAnswer) ? currentAnswer : [];
+  const isValidSelection = question ? (isMulti ? selectedArray.length === MULTI_TEAM_PICK_COUNT : !!currentAnswer) : false;
+  const allAnswered = questions.every((q) => {
+    const a = answers[q.id];
+    return q.type === "multi_team" ? Array.isArray(a) && a.length === MULTI_TEAM_PICK_COUNT : !!a;
+  });
 
   // Sorted low-to-high by odds (= potential points) so the favorites — the
   // most likely, lowest-payout picks — show first.
-  const sortedLogos = [...logos].sort((a, b) => {
-    const oddsA = question.odds_table?.[a.name];
-    const oddsB = question.odds_table?.[b.name];
-    if (oddsA == null && oddsB == null) return 0;
-    if (oddsA == null) return 1;
-    if (oddsB == null) return -1;
-    return oddsA - oddsB;
-  });
+  const sortedLogos = question
+    ? [...logos].sort((a, b) => {
+        const oddsA = question.odds_table?.[a.name];
+        const oddsB = question.odds_table?.[b.name];
+        if (oddsA == null && oddsB == null) return 0;
+        if (oddsA == null) return 1;
+        if (oddsB == null) return -1;
+        return oddsA - oddsB;
+      })
+    : [];
+
+  // Earlier multi-team questions already answered in this session — shown as
+  // a reference above the grid so the participant can see who they already
+  // used before picking again for a different bucket (e.g. the 8 teams
+  // picked for "8 המעפילות" while now picking "מקומות 9-24").
+  const priorMultiAnswers = isMulti
+    ? questions.slice(0, step).filter((q) => q.type === "multi_team" && answers[q.id]?.length > 0)
+    : [];
 
   const handleTeamClick = (teamName) => {
+    if (!question) return;
     if (!isMulti) {
-      setSelected(teamName);
+      setAnswers((prev) => ({ ...prev, [question.id]: teamName }));
       return;
     }
-    if (selectedArray.includes(teamName)) {
-      setSelected(selectedArray.filter((t) => t !== teamName));
-    } else if (selectedArray.length < MULTI_TEAM_PICK_COUNT) {
-      setSelected([...selectedArray, teamName]);
+    const current = Array.isArray(answers[question.id]) ? answers[question.id] : [];
+    const next = current.includes(teamName)
+      ? current.filter((t) => t !== teamName)
+      : current.length < MULTI_TEAM_PICK_COUNT ? [...current, teamName] : current;
+    setAnswers((prev) => ({ ...prev, [question.id]: next }));
+  };
+
+  const handleNext = () => {
+    if (!isValidSelection) return;
+    if (cameFromReview) {
+      setCameFromReview(false);
+      setStep(questions.length);
+      return;
+    }
+    if (isLast) {
+      setStep(questions.length);
+    } else {
+      setStep((s) => s + 1);
     }
   };
 
-  const handleNext = async () => {
-    if (!isValidSelection) return;
+  const handleEditFromReview = (idx) => {
+    setCameFromReview(true);
+    setStep(idx);
+  };
+
+  const handleConfirmAll = async () => {
     setSaving(true);
     try {
-      await GeneralPrediction.create({
-        user_id: userId,
-        question_id: question.id,
-        answer: isMulti ? JSON.stringify(selectedArray) : selected,
-      });
-      if (isLast) {
-        onDone();
-      } else {
-        setStep((s) => s + 1);
-        setSelected(null);
-      }
+      await Promise.all(
+        questions.map((q) =>
+          GeneralPrediction.create({
+            user_id: userId,
+            question_id: q.id,
+            answer: q.type === "multi_team" ? JSON.stringify(answers[q.id] || []) : answers[q.id],
+          })
+        )
+      );
+      onDone();
     } catch (error) {
-      console.error("Error saving general prediction:", error);
-      alert("שגיאה בשמירת הניחוש: " + (error?.message || JSON.stringify(error)));
+      console.error("Error saving general predictions:", error);
+      alert("שגיאה בשמירת הניחושים: " + (error?.message || JSON.stringify(error)));
     } finally {
       setSaving(false);
     }
@@ -132,90 +173,167 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
                 }}
               />
 
-              <div className="relative px-8 pt-9 pb-5 text-center flex-shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                <span className="text-white/35 text-[11px]">שאלה {step + 1} מתוך {questions.length}</span>
-                <h2 className="text-white text-[17px] font-semibold tracking-tight mt-1.5">
-                  {question.question_text}
-                </h2>
-                {question.description && (
-                  <p className="text-white/45 text-[12px] mt-1">{question.description}</p>
-                )}
-                {isMulti && (
-                  <span className="text-yellow-400/80 text-[11px] block mt-1">
-                    {selectedArray.length}/{MULTI_TEAM_PICK_COUNT} נבחרו
-                  </span>
-                )}
-              </div>
+              {isReview ? (
+                <>
+                  <div className="relative px-8 pt-9 pb-5 text-center flex-shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                    <span className="text-white/35 text-[11px]">סקירה לפני שמירה</span>
+                    <h2 className="text-white text-[17px] font-semibold tracking-tight mt-1.5">בדוק את התשובות שלך</h2>
+                    <p className="text-white/45 text-[12px] mt-1">אפשר ללחוץ על כל שאלה כדי לשנות את הבחירה</p>
+                  </div>
 
-              <div className="relative px-6 py-5 overflow-y-auto flex-1">
-                <div className="grid grid-cols-4 gap-2.5" dir="rtl">
-                  {sortedLogos.map((team) => {
-                    const isSelected = isMulti ? selectedArray.includes(team.name) : selected === team.name;
-                    const odds = question.odds_table?.[team.name];
-                    const multiDisabled = isMulti && !isSelected && selectedArray.length >= MULTI_TEAM_PICK_COUNT;
-                    return (
-                      <div key={team.id} className="relative">
-                        {question.show_fixtures_helper && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setFixturesTeam(team); }}
-                            className="absolute -top-1 -left-1 z-10 bg-slate-700 hover:bg-slate-600 rounded-full p-1"
-                            title="לוח משחקים"
-                          >
-                            <Info className="w-3 h-3 text-white/80" />
-                          </button>
-                        )}
+                  <div className="relative px-6 py-5 overflow-y-auto flex-1 space-y-2" dir="rtl">
+                    {questions.map((q, idx) => {
+                      const a = answers[q.id];
+                      const isM = q.type === "multi_team";
+                      return (
                         <button
-                          onClick={() => handleTeamClick(team.name)}
-                          disabled={saving || multiDisabled}
-                          className="relative w-full flex flex-col items-center gap-1 p-2 rounded-xl transition-all overflow-hidden disabled:opacity-30"
-                          style={{
-                            background: isSelected ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.03)",
-                            border: isSelected ? "1.5px solid rgba(255,255,255,0.6)" : "1px solid rgba(255,255,255,0.06)",
-                          }}
+                          key={q.id}
+                          type="button"
+                          onClick={() => handleEditFromReview(idx)}
+                          disabled={saving}
+                          className="w-full text-right p-3 rounded-xl transition-colors hover:bg-white/[0.06] disabled:opacity-50"
+                          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
                         >
-                          {/* Oversized, faded logo as a decorative background "shadow" */}
-                          <img
-                            src={team.logo_url}
-                            alt=""
-                            aria-hidden="true"
-                            className="absolute pointer-events-none select-none"
-                            style={{
-                              width: "160%",
-                              height: "160%",
-                              top: "50%",
-                              left: "50%",
-                              transform: "translate(-50%, -50%)",
-                              objectFit: "contain",
-                              opacity: 0.12,
-                              filter: "blur(1px)",
-                            }}
-                          />
-                          <TeamFlag logo={team.logo_url} name={team.name} className="relative z-10 w-8 h-8" animate={false} />
-                          <span dir="ltr" className="relative z-10 text-white/85 text-[9px] text-center leading-tight truncate w-full">{team.name}</span>
-                          {odds != null && <span className="relative z-10 text-yellow-400/80 text-[8px] font-bold">{odds}</span>}
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-white/85 text-[13px] font-medium">{q.question_text}</span>
+                            <Pencil className="w-3.5 h-3.5 text-white/35 shrink-0" />
+                          </div>
+                          <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+                            {isM ? (
+                              (Array.isArray(a) ? a : []).map((name) => (
+                                <TeamFlag key={name} logo={logosByName[name]} name={name} className="w-6 h-6" animate={false} />
+                              ))
+                            ) : a ? (
+                              <>
+                                <TeamFlag logo={logosByName[a]} name={a} className="w-6 h-6" animate={false} />
+                                <span dir="ltr" className="text-white/60 text-[11px]">{a}</span>
+                              </>
+                            ) : (
+                              <span className="text-red-400/80 text-[11px]">לא נענה</span>
+                            )}
+                          </div>
                         </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+                      );
+                    })}
+                  </div>
 
-              <div className="relative px-8 py-6 flex-shrink-0" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-                <motion.button
-                  onClick={handleNext}
-                  disabled={!isValidSelection || saving}
-                  className="w-full text-[13px] font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
-                  style={{ background: "white", color: "black", borderRadius: "0.75rem", padding: "12px 16px" }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {saving ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <OrbitSpinner size={18} />
-                      <span>שומר...</span>
+                  <div className="relative px-8 py-6 flex-shrink-0" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                    <motion.button
+                      onClick={handleConfirmAll}
+                      disabled={!allAnswered || saving}
+                      className="w-full text-[13px] font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                      style={{ background: "white", color: "black", borderRadius: "0.75rem", padding: "12px 16px" }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      {saving ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <OrbitSpinner size={18} />
+                          <span>שומר...</span>
+                        </div>
+                      ) : "אשר ושמור"}
+                    </motion.button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="relative px-8 pt-9 pb-5 text-center flex-shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                    <span className="text-white/35 text-[11px]">
+                      {cameFromReview ? "עריכת תשובה" : `שאלה ${step + 1} מתוך ${questions.length}`}
+                    </span>
+                    <h2 className="text-white text-[17px] font-semibold tracking-tight mt-1.5">
+                      {question.question_text}
+                    </h2>
+                    {question.description && (
+                      <p className="text-white/45 text-[12px] mt-1">{question.description}</p>
+                    )}
+                    {isMulti && (
+                      <span className="text-yellow-400/80 text-[11px] block mt-1">
+                        {selectedArray.length}/{MULTI_TEAM_PICK_COUNT} נבחרו
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="relative px-6 py-5 overflow-y-auto flex-1">
+                    {priorMultiAnswers.length > 0 && (
+                      <div className="space-y-1.5 mb-4" dir="rtl">
+                        {priorMultiAnswers.map((pq) => (
+                          <div key={pq.id} className="flex items-center gap-2 flex-wrap rounded-lg px-2.5 py-2" style={{ background: "rgba(255,255,255,0.04)" }}>
+                            <span className="text-white/40 text-[10px] shrink-0">{pq.question_text}:</span>
+                            <div className="flex gap-1 flex-wrap">
+                              {answers[pq.id].map((name) => (
+                                <TeamFlag key={name} logo={logosByName[name]} name={name} className="w-5 h-5" animate={false} />
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-4 gap-2.5" dir="rtl">
+                      {sortedLogos.map((team) => {
+                        const isSelected = isMulti ? selectedArray.includes(team.name) : currentAnswer === team.name;
+                        const odds = question.odds_table?.[team.name];
+                        const multiDisabled = isMulti && !isSelected && selectedArray.length >= MULTI_TEAM_PICK_COUNT;
+                        return (
+                          <div key={team.id} className="relative">
+                            {question.show_fixtures_helper && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setFixturesTeam(team); }}
+                                className="absolute -top-1 -left-1 z-10 bg-slate-700 hover:bg-slate-600 rounded-full p-1"
+                                title="לוח משחקים"
+                              >
+                                <Info className="w-3 h-3 text-white/80" />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleTeamClick(team.name)}
+                              disabled={multiDisabled}
+                              className="relative w-full flex flex-col items-center gap-1 p-2 rounded-xl transition-all overflow-hidden disabled:opacity-30"
+                              style={{
+                                background: isSelected ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.03)",
+                                border: isSelected ? "1.5px solid rgba(255,255,255,0.6)" : "1px solid rgba(255,255,255,0.06)",
+                              }}
+                            >
+                              {/* Oversized, faded logo as a decorative background "shadow" */}
+                              <img
+                                src={team.logo_url}
+                                alt=""
+                                aria-hidden="true"
+                                className="absolute pointer-events-none select-none"
+                                style={{
+                                  width: "160%",
+                                  height: "160%",
+                                  top: "50%",
+                                  left: "50%",
+                                  transform: "translate(-50%, -50%)",
+                                  objectFit: "contain",
+                                  opacity: 0.12,
+                                  filter: "blur(1px)",
+                                }}
+                              />
+                              <TeamFlag logo={team.logo_url} name={team.name} className="relative z-10 w-8 h-8" animate={false} />
+                              <span dir="ltr" className="relative z-10 text-white/85 text-[9px] text-center leading-tight truncate w-full">{team.name}</span>
+                              {odds != null && <span className="relative z-10 text-yellow-400/80 text-[8px] font-bold">{odds}</span>}
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
-                  ) : isLast ? "סיום" : "הבא"}
-                </motion.button>
-              </div>
+                  </div>
+
+                  <div className="relative px-8 py-6 flex-shrink-0" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                    <motion.button
+                      onClick={handleNext}
+                      disabled={!isValidSelection}
+                      className="w-full text-[13px] font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                      style={{ background: "white", color: "black", borderRadius: "0.75rem", padding: "12px 16px" }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      {cameFromReview ? "עדכן וחזרה לסקירה" : isLast ? "לסקירה" : "הבא"}
+                    </motion.button>
+                  </div>
+                </>
+              )}
             </div>
           </motion.div>
 
