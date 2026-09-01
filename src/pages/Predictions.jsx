@@ -938,10 +938,11 @@ export default function Predictions() {
                     background: isLocked ? 'rgba(10,18,35,0.45)' : 'rgba(5,10,18,0.75)',
                   }}
                 >
-                  {/* Champions League starball background art */}
+                  {/* Champions League starball background art — alternates between two
+                      variants by card position so a grid of matches isn't visually flat */}
                   <div className="absolute inset-0 pointer-events-none"
                     style={{
-                      backgroundImage: 'url(/champions/match-card-bg.png)',
+                      backgroundImage: `url(/champions/${index % 2 === 0 ? 'match-card-bg-2.png' : 'match-card-bg-3.png'})`,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       opacity: 0.3,
