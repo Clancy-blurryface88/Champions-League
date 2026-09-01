@@ -115,10 +115,12 @@ export default function GeneralPredictionsBoard() {
         <Button variant="ghost" size="icon" onClick={() => navigate(createPageUrl("Dashboard"))}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <h1 className="text-xl font-bold text-white flex items-center gap-2">
-          <img src="/champions/trophy-marquee.png" alt="" className="h-6 w-auto object-contain" />
-          ניחושים כלליים — מה כולם ניחשו
-        </h1>
+        <div className="flex-1">
+          <h1 className="text-xl font-bold text-white flex items-center gap-2">
+            <img src="/champions/trophy-marquee.png" alt="" className="h-6 w-auto object-contain" />
+            ניחושים כלליים
+          </h1>
+        </div>
       </div>
 
       {usersWithAnyAnswer.length === 0 ? (
@@ -131,8 +133,8 @@ export default function GeneralPredictionsBoard() {
               <div className="overflow-x-auto flex-1">
                 <div className="grid" style={{ gridTemplateColumns: `repeat(${singleTeamQuestions.length}, minmax(130px, 1fr))` }}>
                   {singleTeamQuestions.map((q) => (
-                    <div key={q.id} className="flex items-center justify-center px-2 text-sm border-b border-slate-700" style={{ height: ROW_H, ...GLASS_BG }}>
-                      {q.question_text}
+                    <div key={q.id} className="flex items-center justify-center px-2 text-sm text-center border-b border-slate-700" style={{ height: ROW_H, whiteSpace: 'pre-line', ...GLASS_BG }}>
+                      {q.question_text.replace(/\s+(עונת)/, '\n$1')}
                     </div>
                   ))}
                   {rows.map((row) => (
