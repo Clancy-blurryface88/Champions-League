@@ -945,7 +945,7 @@ export default function Predictions() {
                       backgroundImage: `url(/champions/${index % 2 === 0 ? 'match-card-bg-2.png' : 'match-card-bg-3.png'})`,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
-                      opacity: 0.3,
+                      opacity: 0.5,
                     }} />
 
                   {/* Noise texture overlay */}
