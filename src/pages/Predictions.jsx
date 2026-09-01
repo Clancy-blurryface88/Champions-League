@@ -1100,7 +1100,7 @@ export default function Predictions() {
                         {/* Row 2: name + label tightly stacked, top-aligned */}
                         <div style={{ gridColumn: 1, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center">
-                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)', minHeight: '2.5em' }}>
+                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)', filter: 'drop-shadow(0 0 6px rgba(250,204,21,0.8))', minHeight: '2.5em' }}>
                             {match.team_a}
                           </RevealText>
                           <span className="text-[10px] font-extrabold leading-none text-center" style={{
@@ -1113,7 +1113,7 @@ export default function Predictions() {
                         </div>
                         <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center">
-                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)', minHeight: '2.5em' }}>
+                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)', filter: 'drop-shadow(0 0 6px rgba(250,204,21,0.8))', minHeight: '2.5em' }}>
                             {match.team_b}
                           </RevealText>
                           <span className="text-[10px] font-extrabold leading-none text-center" style={{
@@ -1138,10 +1138,20 @@ export default function Predictions() {
                             handlePredictionChange(match.id, 'predicted_score_b', a);
                           }}
                           className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full"
-                          style={{ color: '#bbf7d0', background: 'linear-gradient(135deg, rgba(74,222,128,0.30) 0%, rgba(74,222,128,0.14) 100%)', border: '1px solid rgba(74,222,128,0.55)' }}
+                          style={{
+                            background: 'rgba(255,255,255,0.08)',
+                            backdropFilter: 'blur(16px) saturate(140%)',
+                            WebkitBackdropFilter: 'blur(16px) saturate(140%)',
+                            border: '1px solid rgba(74,222,128,0.45)',
+                            boxShadow: '0 4px 16px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.20)',
+                          }}
                         >
-                          <Dices className="w-3.5 h-3.5" />
-                          בחר עבורי
+                          <Dices className="w-3.5 h-3.5" style={{ color: '#4ade80', filter: 'drop-shadow(0 0 5px rgba(74,222,128,0.85))' }} />
+                          <span style={{
+                            backgroundImage: 'linear-gradient(135deg, #bbf7d0 0%, #4ade80 100%)',
+                            WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent',
+                            filter: 'drop-shadow(0 0 5px rgba(74,222,128,0.6))',
+                          }}>בחר עבורי</span>
                         </motion.button>
                       </div>
                     )}
