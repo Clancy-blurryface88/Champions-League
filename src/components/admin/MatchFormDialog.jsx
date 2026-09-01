@@ -56,12 +56,17 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
   };
 
   const saveOddsTable = async () => {
+    // 'other' ריק (המשתמש לא מילא אותו ידנית) — לא לשמור מפתח עם מחרוזת ריקה,
+    // כי חישוב הניקוד עושה score_odds.other ?? 0 ומחרוזת ריקה "עוקפת" את ה-??.
+    const cleanOddsTable = { ...oddsTable };
+    if (cleanOddsTable.other === '') delete cleanOddsTable.other;
+
     // שמירה מיידית ל-DB אם זהו משחק קיים — עם בדיקת שגיאה/RLS אמיתית, כי
     // update() בלי select() מחזיר "הצלחה" גם אם 0 שורות התעדכנו בפועל.
     if (match?.id) {
       const { data, error } = await supabase
         .from('matches')
-        .update({ score_odds: oddsTable })
+        .update({ score_odds: cleanOddsTable })
         .eq('id', match.id)
         .select();
       if (error || !data?.length) {
@@ -69,7 +74,7 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
         return;
       }
     }
-    setFormData(prev => ({ ...prev, score_odds: oddsTable }));
+    setFormData(prev => ({ ...prev, score_odds: cleanOddsTable }));
     setShowOddsPopup(false);
   };
 
@@ -440,14 +445,13 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
                   </div>
                 </div>
 
-                {'other' in oddsTable && (
-                  <div className="flex justify-between items-center bg-slate-700 rounded px-3 py-2 mb-4">
-                    <span className="text-slate-300 text-sm font-mono">אחר (Any other score)</span>
-                    <input type="number" step="0.5" value={oddsTable['other']}
-                      onChange={e => setOddsTable(prev => ({ ...prev, other: parseFloat(e.target.value) || 0 }))}
-                      className="w-14 text-right bg-slate-600 text-yellow-400 font-bold rounded px-1 py-0.5 text-sm" />
-                  </div>
-                )}
+                <div className="flex justify-between items-center bg-slate-700 rounded px-3 py-2 mb-4">
+                  <span className="text-slate-300 text-sm font-mono">אחר (Any other score)</span>
+                  <input type="number" step="0.5" value={oddsTable['other'] ?? ''}
+                    placeholder="הזן ידנית"
+                    onChange={e => setOddsTable(prev => ({ ...prev, other: e.target.value === '' ? '' : parseFloat(e.target.value) || 0 }))}
+                    className="w-20 text-right bg-slate-600 text-yellow-400 font-bold rounded px-1 py-0.5 text-sm placeholder:text-slate-400 placeholder:text-xs" />
+                </div>
               </>
             )}
 
