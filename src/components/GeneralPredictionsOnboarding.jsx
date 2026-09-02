@@ -5,8 +5,7 @@ import OrbitSpinner from "@/components/OrbitSpinner";
 import TeamFlag from "@/components/TeamFlag";
 import { GeneralPrediction, TeamLogo, Match } from "@/api/entities";
 import TeamFixturesModal from "@/components/TeamFixturesModal";
-
-const MULTI_TEAM_PICK_COUNT = 8;
+import { isMultiType, getPickCount } from "@/utils/generalQuestionTypes";
 
 // One-time, pre-tournament "general prediction" questions (e.g. "who wins the
 // tournament") — shown right after WelcomeModal closes, once per unanswered
@@ -45,13 +44,14 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
   const isReview = step === questions.length;
   const question = isReview ? null : questions[step];
   const isLast = step === questions.length - 1;
-  const isMulti = question?.type === "multi_team";
+  const isMulti = isMultiType(question?.type);
+  const pickCount = getPickCount(question?.type);
   const currentAnswer = question ? answers[question.id] : undefined;
   const selectedArray = Array.isArray(currentAnswer) ? currentAnswer : [];
-  const isValidSelection = question ? (isMulti ? selectedArray.length === MULTI_TEAM_PICK_COUNT : !!currentAnswer) : false;
+  const isValidSelection = question ? (isMulti ? selectedArray.length === pickCount : !!currentAnswer) : false;
   const allAnswered = questions.every((q) => {
     const a = answers[q.id];
-    return q.type === "multi_team" ? Array.isArray(a) && a.length === MULTI_TEAM_PICK_COUNT : !!a;
+    return isMultiType(q.type) ? Array.isArray(a) && a.length === getPickCount(q.type) : !!a;
   });
 
   // Sorted low-to-high by odds (= potential points) so the favorites — the
@@ -72,7 +72,7 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
   // used before picking again for a different bucket (e.g. the 8 teams
   // picked for "8 המעפילות" while now picking "מקומות 9-24").
   const priorMultiAnswers = isMulti
-    ? questions.slice(0, step).filter((q) => q.type === "multi_team" && answers[q.id]?.length > 0)
+    ? questions.slice(0, step).filter((q) => isMultiType(q.type) && answers[q.id]?.length > 0)
     : [];
 
   const handleTeamClick = (teamName) => {
@@ -84,7 +84,7 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
     const current = Array.isArray(answers[question.id]) ? answers[question.id] : [];
     const next = current.includes(teamName)
       ? current.filter((t) => t !== teamName)
-      : current.length < MULTI_TEAM_PICK_COUNT ? [...current, teamName] : current;
+      : current.length < pickCount ? [...current, teamName] : current;
     setAnswers((prev) => ({ ...prev, [question.id]: next }));
   };
 
@@ -115,7 +115,7 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
           GeneralPrediction.create({
             user_id: userId,
             question_id: q.id,
-            answer: q.type === "multi_team" ? JSON.stringify(answers[q.id] || []) : answers[q.id],
+            answer: isMultiType(q.type) ? JSON.stringify(answers[q.id] || []) : answers[q.id],
           })
         )
       );
@@ -184,7 +184,7 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
                   <div className="relative px-6 py-5 overflow-y-auto flex-1 space-y-2" dir="rtl">
                     {questions.map((q, idx) => {
                       const a = answers[q.id];
-                      const isM = q.type === "multi_team";
+                      const isM = isMultiType(q.type);
                       return (
                         <button
                           key={q.id}
@@ -248,7 +248,7 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
                     )}
                     {isMulti && (
                       <span className="text-yellow-400/80 text-[11px] block mt-1">
-                        {selectedArray.length}/{MULTI_TEAM_PICK_COUNT} נבחרו
+                        {selectedArray.length}/{pickCount} נבחרו
                       </span>
                     )}
                   </div>
@@ -290,7 +290,7 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
                       {sortedLogos.map((team) => {
                         const isSelected = isMulti ? selectedArray.includes(team.name) : currentAnswer === team.name;
                         const odds = question.odds_table?.[team.name];
-                        const multiDisabled = isMulti && !isSelected && selectedArray.length >= MULTI_TEAM_PICK_COUNT;
+                        const multiDisabled = isMulti && !isSelected && selectedArray.length >= pickCount;
                         return (
                           <div key={team.id} className="relative">
                             {question.show_fixtures_helper && (

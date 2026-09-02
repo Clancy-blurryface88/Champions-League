@@ -7,11 +7,10 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Sparkles, Upload, Plus, Calculator, Trash2 } from "lucide-react";
+import { Loader2, Sparkles, Upload, Plus, Calculator, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
 import { createClient } from "@supabase/supabase-js";
-
-const MULTI_TEAM_PICK_COUNT = 8;
+import { isMultiType, getPickCount, QUESTION_TYPE_OPTIONS } from "@/utils/generalQuestionTypes";
 
 // correct_answer is a plain team name (text) for single_team questions, and a
 // JSON-stringified array of team names for multi_team ones — same column,
@@ -168,7 +167,8 @@ function QuestionCard({ question, logos, onChanged }) {
     onChanged();
   };
 
-  const isMulti = question.type === "multi_team";
+  const isMulti = isMultiType(question.type);
+  const pickCount = getPickCount(question.type);
 
   const handleSetCorrectAnswer = async (teamName) => {
     await GeneralQuestion.update(question.id, { correct_answer: teamName });
@@ -180,14 +180,14 @@ function QuestionCard({ question, logos, onChanged }) {
     const current = parseMultiAnswer(question.correct_answer);
     const next = current.includes(teamName)
       ? current.filter((t) => t !== teamName)
-      : current.length < MULTI_TEAM_PICK_COUNT ? [...current, teamName] : current;
+      : current.length < pickCount ? [...current, teamName] : current;
     await GeneralQuestion.update(question.id, { correct_answer: JSON.stringify(next) });
     onChanged();
   };
 
   const handleCalculatePoints = async () => {
     const hasCorrectAnswer = isMulti
-      ? parseMultiAnswer(question.correct_answer).length === MULTI_TEAM_PICK_COUNT
+      ? parseMultiAnswer(question.correct_answer).length === pickCount
       : !!question.correct_answer;
     if (!question.is_resolved || !hasCorrectAnswer) return;
     setCalculating(true);
@@ -327,7 +327,7 @@ function QuestionCard({ question, logos, onChanged }) {
         {isMulti ? (
           <div>
             <Label className="text-xs text-slate-400">
-              8 הקבוצות הנכונות ({correctMultiSet.size}/{MULTI_TEAM_PICK_COUNT})
+              {pickCount} הקבוצות הנכונות ({correctMultiSet.size}/{pickCount})
             </Label>
             <div className="grid grid-cols-6 gap-1.5 mt-1">
               {logos.map((l) => {
@@ -337,7 +337,7 @@ function QuestionCard({ question, logos, onChanged }) {
                     key={l.id}
                     type="button"
                     onClick={() => handleToggleCorrectMulti(l.name)}
-                    disabled={!isPicked && correctMultiSet.size >= MULTI_TEAM_PICK_COUNT}
+                    disabled={!isPicked && correctMultiSet.size >= pickCount}
                     className="flex flex-col items-center p-1 rounded-lg disabled:opacity-30"
                     style={{
                       background: isPicked ? "rgba(34,197,94,0.2)" : "rgba(255,255,255,0.04)",
@@ -386,7 +386,7 @@ function QuestionCard({ question, logos, onChanged }) {
         </div>
 
         <Button size="sm" onClick={handleCalculatePoints}
-          disabled={!question.is_resolved || (isMulti ? correctMultiSet.size !== MULTI_TEAM_PICK_COUNT : !question.correct_answer) || calculating}
+          disabled={!question.is_resolved || (isMulti ? correctMultiSet.size !== pickCount : !question.correct_answer) || calculating}
           className="bg-blue-600 hover:bg-blue-700 w-full gap-1">
           {calculating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Calculator className="w-3 h-3" />}
           חשב נקודות לשאלה זו
@@ -438,6 +438,22 @@ export default function AdminGeneralQuestions() {
     loadData();
   };
 
+  // `questions` is already sorted by `order` (loadData uses GeneralQuestion.list("order")),
+  // so swapping with the adjacent array item — not the adjacent `order` value —
+  // stays correct even if `order` has gaps or ties.
+  const handleMoveQuestion = async (id, direction) => {
+    const idx = questions.findIndex((q) => q.id === id);
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (idx === -1 || swapIdx < 0 || swapIdx >= questions.length) return;
+    const a = questions[idx];
+    const b = questions[swapIdx];
+    await Promise.all([
+      GeneralQuestion.update(a.id, { order: b.order }),
+      GeneralQuestion.update(b.id, { order: a.order }),
+    ]);
+    loadData();
+  };
+
   if (loading) return <div className="text-slate-400 text-sm">טוען...</div>;
 
   return (
@@ -465,8 +481,9 @@ export default function AdminGeneralQuestions() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 text-white border-slate-600">
-            <SelectItem value="single_team">בחירת קבוצה אחת</SelectItem>
-            <SelectItem value="multi_team">בחירת 8 קבוצות</SelectItem>
+            {QUESTION_TYPE_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Button onClick={handleAddQuestion} className="bg-blue-600 hover:bg-blue-700 gap-1 shrink-0">
@@ -475,7 +492,7 @@ export default function AdminGeneralQuestions() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {questions.map((q) => (
+        {questions.map((q, idx) => (
           <div key={q.id} className="relative">
             <button
               onClick={() => handleDeleteQuestion(q.id)}
@@ -484,6 +501,24 @@ export default function AdminGeneralQuestions() {
             >
               <Trash2 className="w-3 h-3 text-white" />
             </button>
+            <div className="absolute -top-2 -right-2 z-10 flex items-center gap-1">
+              <button
+                onClick={() => handleMoveQuestion(q.id, "up")}
+                disabled={idx === 0}
+                className="bg-slate-700 hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed rounded-full p-1"
+                title="הזז למעלה בסדר ההצגה"
+              >
+                <ArrowUp className="w-3 h-3 text-white" />
+              </button>
+              <button
+                onClick={() => handleMoveQuestion(q.id, "down")}
+                disabled={idx === questions.length - 1}
+                className="bg-slate-700 hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed rounded-full p-1"
+                title="הזז למטה בסדר ההצגה"
+              >
+                <ArrowDown className="w-3 h-3 text-white" />
+              </button>
+            </div>
             <QuestionCard question={q} logos={logos} onChanged={loadData} />
           </div>
         ))}

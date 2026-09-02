@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import TeamFlag from "@/components/TeamFlag";
 import { GeneralQuestion, GeneralPrediction, PublicProfile, TeamLogo } from "@/api/entities";
 import CircleLoader from "@/components/CircleLoader";
+import { isMultiType, getPickCount } from "@/utils/generalQuestionTypes";
 
 function parseMultiAnswer(raw) {
   if (!raw) return [];
@@ -105,8 +106,8 @@ export default function GeneralPredictionsBoard() {
   // Single-pick and 8-pick questions render as two different grid shapes —
   // cramming an 8-team list into a generic matrix cell was hard to read, so
   // each multi_team question gets its own dedicated, easy-to-scan grid.
-  const singleTeamQuestions = questions.filter((q) => q.type !== "multi_team");
-  const multiTeamQuestions = questions.filter((q) => q.type === "multi_team");
+  const singleTeamQuestions = questions.filter((q) => !isMultiType(q.type));
+  const multiTeamQuestions = questions.filter((q) => isMultiType(q.type));
   const usersWithAnyAnswer = rows.filter((r) => Object.keys(r.answers).length > 0);
 
   return (
@@ -170,6 +171,7 @@ export default function GeneralPredictionsBoard() {
           {multiTeamQuestions.map((q) => {
             const isExpanded = expandedMulti[q.id] !== false;
             const correctSet = new Set(parseMultiAnswer(q.correct_answer));
+            const pickCount = getPickCount(q.type);
             return (
               <div key={q.id}>
                 <button
@@ -183,8 +185,8 @@ export default function GeneralPredictionsBoard() {
                   <div className="flex text-white">
                     <FrozenNamesPanel headerLabel="משתמש" rows={rows} />
                     <div className="overflow-x-auto flex-1">
-                      <div className="grid" style={{ gridTemplateColumns: `repeat(8, minmax(64px, 1fr)) 56px` }}>
-                        {Array.from({ length: 8 }, (_, i) => (
+                      <div className="grid" style={{ gridTemplateColumns: `repeat(${pickCount}, minmax(64px, 1fr)) 56px` }}>
+                        {Array.from({ length: pickCount }, (_, i) => (
                           <div key={i} className="flex items-center justify-center px-1 text-xs border-b border-slate-700" style={{ height: ROW_H, ...GLASS_BG }}>
                             בחירה {i + 1}
                           </div>
@@ -196,7 +198,7 @@ export default function GeneralPredictionsBoard() {
                           const teams = answer ? parseMultiAnswer(answer.team) : [];
                           return (
                             <React.Fragment key={row.userId}>
-                              {Array.from({ length: 8 }, (_, i) => {
+                              {Array.from({ length: pickCount }, (_, i) => {
                                 const team = teams[i];
                                 const isHit = team && correctSet.has(team);
                                 return (
