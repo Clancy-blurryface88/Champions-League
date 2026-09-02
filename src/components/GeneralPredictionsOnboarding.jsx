@@ -70,9 +70,12 @@ export default function GeneralPredictionsOnboarding({ isOpen, questions, userId
   // Earlier multi-team questions already answered in this session — shown as
   // a reference above the grid so the participant can see who they already
   // used before picking again for a different bucket (e.g. the 8 teams
-  // picked for "8 המעפילות" while now picking "מקומות 9-24").
+  // picked for "8 המעפילות" while now picking "מקומות 9-24"). Scoped to
+  // questions with the same pick count as the current one — e.g. the 2-team
+  // "גמר האלופות" question has nothing to do with the 8-team buckets, so it
+  // shouldn't show up as a reference there (or vice versa).
   const priorMultiAnswers = isMulti
-    ? questions.slice(0, step).filter((q) => isMultiType(q.type) && answers[q.id]?.length > 0)
+    ? questions.slice(0, step).filter((q) => getPickCount(q.type) === pickCount && answers[q.id]?.length > 0)
     : [];
 
   const handleTeamClick = (teamName) => {
