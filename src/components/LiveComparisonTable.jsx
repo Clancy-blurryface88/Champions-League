@@ -36,22 +36,24 @@ function findDbMatch(apiMatch, dbMatches) {
   return dbMatches.find(m => (teamsMatch(h, m.team_a) || teamsMatch(hS, m.team_a)) && (teamsMatch(a, m.team_b) || teamsMatch(aS, m.team_b))) || null;
 }
 
+// No icon — a solid fill communicates the result instead, so the predicted
+// score gets the cell's full width and never wraps to a second line on
+// narrow (mobile) screens the way score+icon side by side used to.
 function StatusCell({ cell }) {
   if (!cell) return <span className="text-slate-700 text-xs">–</span>;
   const status = cell.isExact
-    ? { icon: '🎯', color: '#34d399', bg: 'rgba(52,211,153,0.12)' }
+    ? { bg: 'rgba(52,211,153,0.32)', border: 'rgba(52,211,153,0.6)', color: '#ffffff' }
     : cell.isHit
-      ? { icon: '✅', color: '#7cadee', bg: 'rgba(124,173,238,0.10)' }
-      : { icon: '✕', color: '#64748b', bg: 'transparent' };
+      ? { bg: 'rgba(234,179,8,0.32)', border: 'rgba(234,179,8,0.6)', color: '#ffffff' }
+      : { bg: 'transparent', border: 'transparent', color: '#64748b' };
   return (
     <div
-      className="flex items-center justify-center gap-1 rounded-lg py-1.5"
-      style={{ background: status.bg }}
+      className="flex items-center justify-center rounded-lg py-1.5"
+      style={{ background: status.bg, border: `1px solid ${status.border}` }}
     >
-      <span className="font-mono font-bold text-[13px] tabular-nums" style={{ color: status.color }} dir="ltr">
+      <span className="font-mono font-bold text-[13px] tabular-nums whitespace-nowrap" style={{ color: status.color }} dir="ltr">
         {cell.predicted}
       </span>
-      <span style={{ fontSize: 10 }}>{status.icon}</span>
     </div>
   );
 }
@@ -162,12 +164,24 @@ export default function LiveComparisonTable({ onClose }) {
           style={{ background: '#0b1a2e', border: '1px solid rgba(239,68,68,0.25)' }}
         >
           <div className="flex items-center justify-between px-5 py-3 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <span className="relative flex h-2 w-2 flex-shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
               </span>
-              <h2 className="text-white font-bold text-base">השוואת ניחושים חיה</h2>
+              <h2 className="text-white font-bold text-base">השוואת ניחושים LIVE</h2>
+
+              {/* Legend for StatusCell's fill colors */}
+              <div className="flex items-center gap-2.5">
+                <span className="flex items-center gap-1">
+                  <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: 'rgba(52,211,153,0.7)' }} />
+                  <span className="text-[10px] text-slate-400">פגיעה</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: 'rgba(234,179,8,0.7)' }} />
+                  <span className="text-[10px] text-slate-400">כיוון</span>
+                </span>
+              </div>
             </div>
             <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
               <X className="w-5 h-5" />
