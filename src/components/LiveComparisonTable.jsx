@@ -36,24 +36,25 @@ function findDbMatch(apiMatch, dbMatches) {
   return dbMatches.find(m => (teamsMatch(h, m.team_a) || teamsMatch(hS, m.team_a)) && (teamsMatch(a, m.team_b) || teamsMatch(aS, m.team_b))) || null;
 }
 
-// No icon — a solid fill communicates the result instead, so the predicted
-// score gets the cell's full width and never wraps to a second line on
-// narrow (mobile) screens the way score+icon side by side used to.
+// Icon goes BELOW the score (stacked, not side by side) so the score keeps
+// the cell's full width on one line — the fill color is still the primary
+// signal, the icon underneath is a secondary confirmation.
 function StatusCell({ cell }) {
   if (!cell) return <span className="text-slate-700 text-xs">–</span>;
   const status = cell.isExact
-    ? { bg: 'rgba(52,211,153,0.32)', border: 'rgba(52,211,153,0.6)', color: '#ffffff' }
+    ? { icon: '🎯', bg: 'rgba(52,211,153,0.32)', border: 'rgba(52,211,153,0.6)', color: '#ffffff' }
     : cell.isHit
-      ? { bg: 'rgba(234,179,8,0.32)', border: 'rgba(234,179,8,0.6)', color: '#ffffff' }
-      : { bg: 'transparent', border: 'transparent', color: '#64748b' };
+      ? { icon: '✅', bg: 'rgba(234,179,8,0.32)', border: 'rgba(234,179,8,0.6)', color: '#ffffff' }
+      : { icon: '✕', bg: 'transparent', border: 'transparent', color: '#64748b' };
   return (
     <div
-      className="flex items-center justify-center rounded-lg py-1.5"
+      className="flex flex-col items-center justify-center gap-0.5 rounded-lg py-1.5"
       style={{ background: status.bg, border: `1px solid ${status.border}` }}
     >
       <span className="font-mono font-bold text-[13px] tabular-nums whitespace-nowrap" style={{ color: status.color }} dir="ltr">
         {cell.predicted}
       </span>
+      <span style={{ fontSize: 10, lineHeight: 1 }}>{status.icon}</span>
     </div>
   );
 }
@@ -208,11 +209,9 @@ export default function LiveComparisonTable({ onClose }) {
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
                     <th
-                      className="sticky right-0 z-10 text-right px-3 py-2 text-slate-400 text-xs font-semibold"
-                      style={{ background: '#0f1f38', minWidth: 96 }}
-                    >
-                      משחק
-                    </th>
+                      className="sticky right-0 z-10"
+                      style={{ background: '#0f1f38' }}
+                    />
                     {participants.map((p) => (
                       <th
                         key={p.userId}
