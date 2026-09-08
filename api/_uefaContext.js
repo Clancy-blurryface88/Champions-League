@@ -196,7 +196,7 @@ async function reshapeUefaMatch(m) {
 }
 
 /**
- * Live/near-live UEFA Champions League matches, reshaped to look exactly
+ * Currently-live UEFA Champions League matches, reshaped to look exactly
  * like football-data.org's match objects so it's a drop-in fallback for
  * /api/football — no changes needed in any component that already consumes
  * that shape.
@@ -204,13 +204,17 @@ async function reshapeUefaMatch(m) {
  * getLivescore() itself covers ALL UEFA competitions and doesn't say which
  * one each match belongs to, so each live match is cross-checked against
  * its full detail (getMatch) and non-Champions-League ones are dropped.
+ * It also isn't a strict "currently IN_PLAY" feed — observed live: matches
+ * still SCHEDULED (kicking off shortly) come back in the same list — so
+ * status is re-checked here too, on the fresh getMatch() data rather than
+ * trusting getLivescore()'s inclusion alone.
  */
 export async function getUefaLiveMatches() {
   const live = await getLivescore();
   if (live.length === 0) return [];
 
   const full = await Promise.all(live.map((l) => getMatch(l.id).catch(() => null)));
-  const clMatches = full.filter((m) => m && String(m.competition?.id) === String(COMPETITION_ID));
+  const clMatches = full.filter((m) => m && m.status === 'LIVE' && String(m.competition?.id) === String(COMPETITION_ID));
 
   return Promise.all(clMatches.map(reshapeUefaMatch));
 }
