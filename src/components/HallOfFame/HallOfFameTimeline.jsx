@@ -8,30 +8,28 @@ import HallOfFameEmptyState from "./HallOfFameEmptyState";
 const STEP = 0.09;
 const delayFor = (idx) => Math.min(idx, 12) * STEP;
 
-// Alternate view — a vertical gold line with a node per entry, in the same
-// order the admin arranged them in.
+// Alternate view — a horizontal gold line running right-to-left, with a
+// node per entry, in the same order the admin arranged them in.
 export default function HallOfFameTimeline({ entries }) {
   if (!entries.length) return <HallOfFameEmptyState />;
 
   return (
-    <div className="relative pr-6 max-h-[480px] overflow-y-auto" style={{ scrollbarWidth: "thin" }}>
-      <div className="absolute top-1 bottom-1 right-2 w-px" style={{ background: "linear-gradient(to bottom, rgba(245,197,24,0.6), rgba(245,197,24,0.08))" }} />
-      <div className="space-y-6 py-1">
+    <div dir="rtl" className="overflow-x-auto pb-2" style={{ scrollbarWidth: "thin" }}>
+      <div className="relative flex items-start gap-7 px-2 pt-1" style={{ minWidth: "max-content" }}>
+        <div className="absolute right-0 left-0 h-px" style={{ top: 10, background: "linear-gradient(to left, rgba(245,197,24,0.65), rgba(245,197,24,0.1))" }} />
         {entries.map((entry, idx) => (
           <motion.div
             key={entry.id}
-            initial={{ opacity: 0, x: 14 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: delayFor(idx), ease: "easeOut" }}
-            className="relative flex items-start"
+            className="relative flex flex-col items-center flex-shrink-0"
+            style={{ width: 132 }}
           >
-            <span
-              className="absolute right-2 translate-x-1/2 top-3 w-2.5 h-2.5 rounded-full flex-shrink-0"
-              style={{ background: "#f5c518", boxShadow: "0 0 10px rgba(245,197,24,0.7)" }}
-            />
-            <div className="pr-6">
-              <HallOfFameEntryCard entry={entry} align="start" />
+            <div className="h-5 flex items-center justify-center mb-1.5">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#f5c518", boxShadow: "0 0 10px rgba(245,197,24,0.7)" }} />
             </div>
+            <HallOfFameEntryCard entry={entry} />
           </motion.div>
         ))}
       </div>
