@@ -569,8 +569,10 @@ export default function Layout({ children, currentPageName }) {
         setUser(userWithStats);
 
         // פלואו אונבורדינג: WelcomeModal → שאלות כלליות (אם יש כאלה שטרם נענו) → דשבורד
+        // hasCompletedWelcome נגזר מה-DB (profiles.welcome_completed), לא מ-localStorage —
+        // כך משתמש שכבר נרשם לא רואה שוב את מסך בחירת השם ממכשיר/דפדפן אחר.
         if (currentUser) {
-          const hasCompletedWelcome = localStorage.getItem('welcome_completed_' + currentUser.id) === 'true';
+          const hasCompletedWelcome = currentUser.welcome_completed === true;
           if (!hasCompletedWelcome) {
             setShowWelcomeModal(true);
           } else {
@@ -949,8 +951,7 @@ export default function Layout({ children, currentPageName }) {
       }
     }
 
-    setUser((prev) => ({ ...prev, display_name: displayName }));
-    try { localStorage.setItem('welcome_completed_' + (user?.id ?? ''), 'true'); } catch {}
+    setUser((prev) => ({ ...prev, display_name: displayName, welcome_completed: true }));
     setShowWelcomeModal(false);
     await maybeShowGeneralPredictionsOnboarding(user?.id);
   };

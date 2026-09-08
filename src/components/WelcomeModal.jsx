@@ -26,7 +26,7 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
     setSaving(true);
     try {
       const { User } = await import('@/api/entities');
-      await User.updateMyUserData({ display_name: displayName.trim() });
+      await User.updateMyUserData({ display_name: displayName.trim(), welcome_completed: true });
       setTimeout(() => {
         onSave(displayName.trim());
         setSaving(false);

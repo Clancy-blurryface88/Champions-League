@@ -73,11 +73,6 @@ export const User = {
       const display_name = authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email?.split('@')[0];
       const avatar_url = authUser.user_metadata?.avatar_url;
 
-      // ניקוי localStorage כדי לאפס את זרימת האונבורדינג
-      try {
-        localStorage.removeItem('welcome_completed_' + authUser.id);
-      } catch {}
-
       const { data: newProfile, error: insertError } = await supabase
         .from('profiles')
         .insert({ id: authUser.id, email: authUser.email, display_name, avatar_url })
@@ -92,6 +87,7 @@ export const User = {
           avatar_url,
           is_admin: false,
           has_seen_intro_video: false,
+          welcome_completed: false,
         };
       }
       await syncPublicProfile(authUser.id, display_name, avatar_url);
