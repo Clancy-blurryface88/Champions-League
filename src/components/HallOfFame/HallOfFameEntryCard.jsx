@@ -13,6 +13,7 @@ export default function HallOfFameEntryCard({ entry, size = "md", align = "cente
         style={{
           width: wrap,
           height: wrap,
+          background: "radial-gradient(circle at 35% 30%, rgba(15,23,42,0.9), rgba(15,23,42,0.75))",
           border: "1px solid rgba(245,197,24,0.4)",
           boxShadow: "0 6px 18px rgba(0,0,0,0.35)",
         }}
