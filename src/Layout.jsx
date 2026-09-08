@@ -1485,18 +1485,18 @@ export default function Layout({ children, currentPageName }) {
                   exit={{ opacity: 0, scale: 0.7 }}
                   transition={{ type: 'spring', stiffness: 180, damping: 26 }}
                   onClick={() => {
-                    // A long-press already opened the side panel below —
-                    // swallow the click the browser synthesizes right after
-                    // touchend so it doesn't also toggle the matches list.
+                    // A long-press already opened the full matches grid below —
+                    // swallow the click the browser synthesizes right after touchend
+                    // so it doesn't also open the side panel underneath it.
                     if (liveChipLongPressFired.current) { liveChipLongPressFired.current = false; return; }
-                    setShowLiveMatchesList((v) => !v);
+                    if (showLiveMatchesList) { setShowLiveMatchesList(false); return; }
+                    setShowLiveData(true); setShowLeaderboard(false);
                   }}
                   onMouseDown={() => {
                     liveChipLongPressFired.current = false;
                     liveChipLongPressTimer.current = setTimeout(() => {
                       liveChipLongPressFired.current = true;
-                      setShowLiveMatchesList(false);
-                      setShowLiveData(true); setShowLeaderboard(false);
+                      setShowLiveMatchesList(true);
                     }, 450);
                   }}
                   onMouseUp={() => clearTimeout(liveChipLongPressTimer.current)}
@@ -1505,8 +1505,7 @@ export default function Layout({ children, currentPageName }) {
                     liveChipLongPressFired.current = false;
                     liveChipLongPressTimer.current = setTimeout(() => {
                       liveChipLongPressFired.current = true;
-                      setShowLiveMatchesList(false);
-                      setShowLiveData(true); setShowLeaderboard(false);
+                      setShowLiveMatchesList(true);
                     }, 450);
                   }}
                   onTouchEnd={() => clearTimeout(liveChipLongPressTimer.current)}
