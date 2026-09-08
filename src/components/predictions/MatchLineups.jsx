@@ -77,13 +77,13 @@ function TeamHeader({ team, coach }) {
         <img
           src={team.logoUrl}
           alt=""
-          className="w-8 h-8 flex-shrink-0"
+          className="w-7 h-7 flex-shrink-0"
           onError={(e) => { e.currentTarget.style.display = 'none'; }}
         />
       )}
       <div className="text-center">
-        <p className="text-[14px] font-bold text-white leading-tight">{team?.internationalName}</p>
-        {coach && <p className="text-[10.5px] text-slate-400 leading-tight">מאמן: {coach}</p>}
+        <p className="text-[13px] font-bold text-white leading-tight">{team?.internationalName}</p>
+        {coach && <p className="text-[9.5px] text-slate-400 leading-tight">מאמן: {coach}</p>}
       </div>
     </div>
   );
@@ -101,8 +101,8 @@ function Jersey({ color, number, isCaptain, countryCode }) {
   const dark = isLightColor(color);
   const flagCode = COUNTRY_FLAG_CODE[countryCode];
   return (
-    <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: 34, height: 34 }}>
-      <svg viewBox="0 0 100 100" width="34" height="34">
+    <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: 30, height: 30 }}>
+      <svg viewBox="0 0 100 100" width="30" height="30">
         <polygon
           points="35,10 50,20 65,10 80,10 95,25 95,40 78,32 78,90 22,90 22,32 5,40 5,25 20,10"
           fill={color || '#64748b'}
@@ -112,14 +112,14 @@ function Jersey({ color, number, isCaptain, countryCode }) {
       </svg>
       <span
         className="absolute font-black tabular-nums"
-        style={{ fontSize: 13, color: dark ? '#111827' : '#fff', top: '48%', transform: 'translateY(-50%)' }}
+        style={{ fontSize: 11, color: dark ? '#111827' : '#fff', top: '48%', transform: 'translateY(-50%)' }}
       >
         {number}
       </span>
       {isCaptain && (
         <span
           className="absolute flex items-center justify-center rounded-full bg-white text-black font-black"
-          style={{ width: 14, height: 14, fontSize: 10, top: -2, right: -2, lineHeight: 1 }}
+          style={{ width: 12, height: 12, fontSize: 8.5, top: -1.5, right: -1.5, lineHeight: 1 }}
         >
           C
         </span>
@@ -129,7 +129,7 @@ function Jersey({ color, number, isCaptain, countryCode }) {
           src={`https://flagcdn.com/${flagCode}.svg`}
           alt=""
           className="absolute rounded-sm"
-          style={{ width: 14, height: 11, bottom: -2, left: -2, boxShadow: '0 0 0 1px rgba(0,0,0,0.5)', objectFit: 'cover' }}
+          style={{ width: 12, height: 9.5, bottom: -1.5, left: -1.5, boxShadow: '0 0 0 1px rgba(0,0,0,0.5)', objectFit: 'cover' }}
           onError={(e) => { e.currentTarget.style.display = 'none'; }}
         />
       )}
@@ -144,7 +144,7 @@ function PlayerMarker({ entry, shirtColor, topPct, leftPct }) {
   return (
     <div
       className="absolute flex flex-col items-center gap-0.5"
-      style={{ top: `${topPct}%`, left: `${leftPct}%`, transform: 'translate(-50%, -50%)', width: 62 }}
+      style={{ top: `${topPct}%`, left: `${leftPct}%`, transform: 'translate(-50%, -50%)', width: 55 }}
     >
       <Jersey
         color={shirtColor}
@@ -153,7 +153,7 @@ function PlayerMarker({ entry, shirtColor, topPct, leftPct }) {
         countryCode={entry.player?.countryCode}
       />
       <span
-        className="text-[10.5px] font-semibold text-white text-center leading-tight truncate w-full"
+        className="text-[9.5px] font-semibold text-white text-center leading-tight truncate w-full"
         style={{ textShadow: '0 1px 2px rgba(0,0,0,0.9)' }}
       >
         {surname(entry.player)}
