@@ -367,7 +367,7 @@ function MiniLiveMatchChip({ match }) {
 // already-known live score).
 function LiveMatchesChipList({ liveMatches }) {
   return (
-    <div className="flex flex-col items-stretch gap-2" style={{ maxHeight: '80vh', overflowY: 'auto', overflowX: 'visible', pointerEvents: 'auto', padding: 12 }}>
+    <div className="flex flex-col items-stretch gap-2" style={{ maxHeight: '80vh', width: 'max-content', overflowY: 'auto', overflowX: 'visible', pointerEvents: 'auto', padding: 12 }}>
       <AnimatePresence>
         {liveMatches.map((m, i) => (
           <motion.div
