@@ -8,11 +8,12 @@ const SIZES = {
 
 // The one visual unit every Hall of Fame layout is built from — always
 // stacked top-to-bottom in this exact order: trophy image, text, name.
-export default function HallOfFameEntryCard({ entry, size = "md" }) {
+export default function HallOfFameEntryCard({ entry, size = "md", align = "center" }) {
   const cfg = SIZES[size] || SIZES.md;
+  const isCenter = align === "center";
 
   return (
-    <div className={`flex flex-col items-center text-center ${cfg.gap}`} style={{ maxWidth: cfg.maxWidth }}>
+    <div className={`flex flex-col ${isCenter ? "items-center text-center" : "items-start text-right"} ${cfg.gap}`} style={{ maxWidth: cfg.maxWidth }}>
       <img
         src={entry.trophy_image}
         alt={entry.name}
