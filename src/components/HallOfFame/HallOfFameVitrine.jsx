@@ -5,7 +5,7 @@ import HallOfFameEmptyState from "./HallOfFameEmptyState";
 
 // Staggered reveal step — capped index so a long list doesn't push the last
 // entries' entrance out several seconds.
-const STEP = 0.09;
+const STEP = 0.13;
 const delayFor = (idx) => Math.min(idx, 12) * STEP;
 
 function chunk3(arr) {
@@ -62,7 +62,7 @@ export default function HallOfFameVitrine({ entries }) {
                   key={entry.id}
                   initial={{ opacity: 0, y: 14, scale: 0.9 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.4, delay: delayFor(globalIdx), ease: "easeOut" }}
+                  transition={{ duration: 0.5, delay: delayFor(globalIdx), ease: "easeOut" }}
                 >
                   <HallOfFameEntryCard entry={entry} size="sm" />
                 </motion.div>

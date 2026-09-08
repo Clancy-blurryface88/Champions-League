@@ -61,7 +61,7 @@ function EntryRow({ entry, index, total, onChanged, onMove, onDelete }) {
         <div className="flex items-start gap-2">
           <div className="flex-1 space-y-2">
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="שם" className="bg-slate-700 border-slate-600 text-white h-8 text-sm" />
-            <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="טקסט (אופציונלי)" className="bg-slate-700 border-slate-600 text-white h-8 text-sm" />
+            <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="טקסט / שנה (אופציונלי — מוצג גם על ציר הזמן)" className="bg-slate-700 border-slate-600 text-white h-8 text-sm" />
           </div>
           <div className="flex flex-col gap-1 flex-shrink-0">
             <button onClick={() => onMove("up")} disabled={index === 0} className="bg-slate-700 hover:bg-slate-600 disabled:opacity-30 rounded-full p-1">
@@ -152,7 +152,7 @@ export default function AdminHallOfFame() {
       <div>
         <h2 className="text-xl font-bold text-white">👑 היכל התהילה</h2>
         <p className="text-slate-400 text-sm mt-1">
-          עמוד ראשוני — כרגע נגיש רק מהאדמין. כשהתצוגה תאושר נשלב אותה באפליקציה עצמה.
+          ניהול הרשומות שמוצגות בעמוד "היכל התהילה" באפליקציה (נגיש למשתמשים מתפריט המשתמש).
         </p>
       </div>
 
@@ -166,7 +166,7 @@ export default function AdminHallOfFame() {
         <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
           <div className="grid grid-cols-2 gap-2">
             <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="שם" className="bg-slate-800 border-slate-600 text-white" />
-            <Input value={newText} onChange={(e) => setNewText(e.target.value)} placeholder="טקסט (אופציונלי)" className="bg-slate-800 border-slate-600 text-white" />
+            <Input value={newText} onChange={(e) => setNewText(e.target.value)} placeholder="טקסט / שנה (אופציונלי — מוצג גם על ציר הזמן)" className="bg-slate-800 border-slate-600 text-white" />
           </div>
           <div>
             <Label className="text-xs text-slate-400 mb-1.5 block">תמונת גביע</Label>

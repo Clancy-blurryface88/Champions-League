@@ -50,6 +50,7 @@
 import Admin from './pages/Admin';
 import Dashboard from './pages/Dashboard';
 import GeneralPredictionsBoard from './pages/GeneralPredictionsBoard';
+import HallOfFame from './pages/HallOfFame';
 import KnockoutBracket from './pages/KnockoutBracket';
 import MyStats from './pages/MyStats';
 import Predictions from './pages/Predictions';
@@ -62,6 +63,7 @@ export const PAGES = {
     "Admin": Admin,
     "Dashboard": Dashboard,
     "GeneralPredictionsBoard": GeneralPredictionsBoard,
+    "HallOfFame": HallOfFame,
     "KnockoutBracket": KnockoutBracket,
     "MyStats": MyStats,
     "Predictions": Predictions,

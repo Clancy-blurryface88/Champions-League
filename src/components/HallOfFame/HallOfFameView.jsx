@@ -7,11 +7,12 @@ const VIEWS = [
   { id: "timeline", label: "🕰️ ציר זמן" },
 ];
 
-// The real Hall of Fame page — default view is the vitrine shelf, with a
-// pill toggle on the right (dir="rtl", so the first child sits on the right)
-// to switch to the vertical timeline. This is the component that will move
-// into the live app once the admin is happy with it.
-export default function HallOfFameView({ entries, title = "היכל התהילה", defaultView = "vitrine" }) {
+// The real Hall of Fame view — default is the vitrine cabinet, with a pill
+// toggle on the right (dir="rtl", so the first child sits on the right) to
+// switch to the horizontal timeline. Used both by the live app page (which
+// has its own hero title, so passes showTitle={false}) and the admin's live
+// preview (which keeps the inline title for context).
+export default function HallOfFameView({ entries, title = "היכל התהילה", defaultView = "vitrine", showTitle = true }) {
   const [view, setView] = useState(defaultView);
 
   return (
@@ -30,7 +31,7 @@ export default function HallOfFameView({ entries, title = "היכל התהילה
             </button>
           ))}
         </div>
-        <h2 className="text-white font-black text-lg truncate" style={{ fontFamily: "'Syne', sans-serif" }}>{title}</h2>
+        {showTitle && <h2 className="text-white font-black text-lg truncate" style={{ fontFamily: "'Syne', sans-serif" }}>{title}</h2>}
       </div>
 
       {view === "vitrine" ? <HallOfFameVitrine entries={entries} /> : <HallOfFameTimeline entries={entries} />}

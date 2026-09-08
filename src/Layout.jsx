@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { User, UserStats, Match, Prediction, GeneralQuestion, GeneralPrediction } from "@/api/entities";
-import { Settings, LogOut, PlayCircle, Bell, BellOff, X } from "lucide-react";
+import { Settings, LogOut, PlayCircle, Bell, BellOff, X, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MatchesByDateSheet from "./components/MatchesByDateSheet";
 import {
@@ -1468,6 +1468,20 @@ export default function Layout({ children, currentPageName }) {
                 }
                   <motion.div
                   custom={1}
+                  variants={itemVariants}
+                  initial="hidden"
+                  animate="visible">
+
+                      <DropdownMenuItem
+                    onClick={() => navigate(createPageUrl("HallOfFame"))}
+                    className="cursor-pointer text-white hover:text-yellow-300 hover:bg-slate-700/60 focus:bg-slate-700/60 focus:text-yellow-300 rounded-md px-3 py-2 flex items-center gap-3 transition-all duration-300 font-medium">
+
+                        <Trophy className="w-4 h-4" />
+                        <span>היכל התהילה</span>
+                      </DropdownMenuItem>
+                    </motion.div>
+                  <motion.div
+                  custom={2}
                   variants={itemVariants}
                   initial="hidden"
                   animate="visible">
