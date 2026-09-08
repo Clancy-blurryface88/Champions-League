@@ -5,7 +5,7 @@ import { Match } from "@/api/entities";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
-import { calcStandings } from "@/utils/standings";
+import { calcStandings, calcSplitStandings } from "@/utils/standings";
 import { loadLeagueTableOverride, applyOverride } from "@/utils/standingsOverride";
 import { STAGES, DIRECT_R16_CUTOFF, PLAYOFF_CUTOFF } from "@/config/tournament";
 
@@ -13,6 +13,7 @@ export default function LeagueTableModal({ onClose, highlightTeams = {} }) {
   const [matches, setMatches] = useState([]);
   const [override, setOverride] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState('total'); // 'total' | 'home' | 'away'
   const highlightRowRef = useRef(null);
 
   useModalBackButtonOnMount(onClose);
@@ -42,8 +43,10 @@ export default function LeagueTableModal({ onClose, highlightTeams = {} }) {
     }
   }, [loading, highlightTeams]);
 
-  const standings = applyOverride(calcStandings(matches), override);
-  const hasOverride = override.length > 0;
+  const standings = view === 'total'
+    ? applyOverride(calcStandings(matches), override)
+    : calcSplitStandings(matches, view);
+  const hasOverride = override.length > 0 && view === 'total';
   let highlightRowAssigned = false;
 
   const rowClass = (pos) =>
@@ -93,8 +96,23 @@ export default function LeagueTableModal({ onClose, highlightTeams = {} }) {
               </div>
             ) : (
               <div>
+                <div className="flex gap-1.5 bg-slate-800/60 rounded-lg p-1 mb-3">
+                  {[{ key: 'total', label: 'מצטבר' }, { key: 'home', label: 'בית' }, { key: 'away', label: 'חוץ' }].map((t) => (
+                    <button
+                      key={t.key}
+                      onClick={() => setView(t.key)}
+                      className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                        view === t.key ? 'bg-sky-500/80 text-white' : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
                 <p className="text-slate-500 text-[10px] text-center mb-3">
-                  מיון לפי נקודות ← הפרש שערים ← שערים ← שערי חוץ ← ניצחונות ← ניצחוני חוץ
+                  {view === 'total'
+                    ? 'מיון לפי נקודות ← הפרש שערים ← שערים ← שערי חוץ ← ניצחונות ← ניצחוני חוץ'
+                    : 'מיון לפי נקודות ← הפרש שערים ← שערים'}
                 </p>
                 <div className="overflow-x-auto rounded-xl border border-slate-700">
                   <table className="w-full text-sm">
@@ -124,14 +142,14 @@ export default function LeagueTableModal({ onClose, highlightTeams = {} }) {
                           <tr
                             key={team.name}
                             ref={assignRef ? highlightRowRef : null}
-                            className={`border-t border-slate-700/50 ${rowClass(pos)}`}
+                            className={`border-t border-slate-700/50 ${view === 'total' ? rowClass(pos) : ''}`}
                             style={isHighlighted ? {
                               boxShadow: `inset 0 0 0 2px ${highlightColor}`,
                               background: highlightBg,
                             } : undefined}
                           >
                             <td className="px-1.5 py-2.5 text-xs">
-                              <span className={`font-bold ${posClass(pos)}`}>{pos}</span>
+                              <span className={`font-bold ${view === 'total' ? posClass(pos) : 'text-slate-400'}`}>{pos}</span>
                             </td>
                             <td className="px-1.5 py-2.5">
                               <div className="flex items-center gap-2">
@@ -151,11 +169,13 @@ export default function LeagueTableModal({ onClose, highlightTeams = {} }) {
                     </tbody>
                   </table>
                 </div>
-                <div className="flex gap-3 mt-2 px-1 text-[10px] flex-wrap">
-                  <span className="text-green-400">🟢 עולה ישירות ל-16 הגמר (1-8)</span>
-                  <span className="text-yellow-400">🟡 פלייאוף (9-24)</span>
-                  <span className="text-red-400">🔴 מודחת (25-36)</span>
-                </div>
+                {view === 'total' && (
+                  <div className="flex gap-3 mt-2 px-1 text-[10px] flex-wrap">
+                    <span className="text-green-400">🟢 עולה ישירות ל-16 הגמר (1-8)</span>
+                    <span className="text-yellow-400">🟡 פלייאוף (9-24)</span>
+                    <span className="text-red-400">🔴 מודחת (25-36)</span>
+                  </div>
+                )}
               </div>
             )}
           </div>

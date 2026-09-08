@@ -2,7 +2,7 @@
 // Pulls real recent-form + standings data for two teams directly from
 // UEFA's own backend (uefa-api package, no key required) so the AI brief
 // can be grounded in real numbers instead of Claude's general knowledge.
-import { getTeams, getMatches, getStandings, getLivescore, getMatch, getMatchEvents, getLineups } from 'uefa-api';
+import { getTeams, getMatches, getStandings, getLivescore, getMatch, getMatchEvents, getLineups, getMatchStats } from 'uefa-api';
 
 export const COMPETITION_ID = 1; // UEFA Champions League
 
@@ -317,4 +317,39 @@ export async function getRecentFinishedMatches(limit = 12) {
       awayTeam: m.awayTeam.internationalName,
       score: { home: m.score?.total?.home ?? null, away: m.score?.total?.away ?? null },
     }));
+}
+
+/**
+ * Match-statistics summary (shots, corners, cards, fouls...) for one of our
+ * matches, resolved by team name like getLineupsForMatch. Returns null —
+ * never throws — when the match can't be resolved, or UEFA has nothing yet
+ * (normal before kickoff / in the opening minutes).
+ */
+export async function getMatchStatsForMatch(homeTeamName, awayTeamName) {
+  try {
+    const seasonYear = currentSeasonYear();
+    const allMatches = await getMatches({ competitionId: COMPETITION_ID, seasonYear }, undefined, 500, 0);
+    const found = allMatches.find(
+      (m) => teamNames(m.homeTeam).some((x) => matchesName(homeTeamName, x))
+          && teamNames(m.awayTeam).some((x) => matchesName(awayTeamName, x))
+    );
+    if (!found) return null;
+
+    const raw = await getMatchStats(found.id);
+    if (!raw || raw.length === 0) return null;
+
+    const byTeam = (teamId) => {
+      const entry = raw.find((s) => String(s.teamId) === String(teamId));
+      if (!entry) return null;
+      const out = {};
+      entry.statistics.forEach((s) => { out[s.name] = Number(s.value); });
+      return out;
+    };
+
+    const home = byTeam(found.homeTeam.id);
+    const away = byTeam(found.awayTeam.id);
+    return home && away ? { home, away } : null;
+  } catch {
+    return null;
+  }
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, RefreshCw, Wifi, WifiOff, Clock } from "lucide-react";
+import { X, RefreshCw, Wifi, WifiOff, Clock, Info } from "lucide-react";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import TeamFlag from "@/components/TeamFlag";
 import LiveLeaderboard from "@/components/LiveLeaderboard";
@@ -35,7 +35,56 @@ function StatusBadge({ status, minute }) {
   );
 }
 
+const STAT_ROWS = [
+  { key: 'attempts', label: 'בעיטות' },
+  { key: 'attempts_on_target', label: 'לשער' },
+  { key: 'corners', label: 'קרנות' },
+  { key: 'fouls_committed', label: 'עבירות' },
+  { key: 'offsides', label: 'נבדלות' },
+  { key: 'yellow_cards', label: 'כרטיס צהוב' },
+  { key: 'red_cards', label: 'כרטיס אדום' },
+];
+
+function MatchStatsPanel({ loading, stats }) {
+  if (loading) {
+    return <p className="text-center text-[10px] text-slate-500 py-3">טוען סטטיסטיקה...</p>;
+  }
+  if (!stats) {
+    return <p className="text-center text-[10px] text-slate-500 py-3">סטטיסטיקה עדיין לא זמינה</p>;
+  }
+  return (
+    <div className="py-2 space-y-1.5">
+      {STAT_ROWS.map(({ key, label }) => (
+        <div key={key} className="flex items-center justify-between">
+          <span className="text-[11px] font-bold text-white w-7 text-center tabular-nums">{stats.home[key] ?? 0}</span>
+          <span className="text-[10px] text-slate-500 flex-1 text-center">{label}</span>
+          <span className="text-[11px] font-bold text-white w-7 text-center tabular-nums">{stats.away[key] ?? 0}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function MatchCard({ match, index }) {
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [stats, setStats] = useState(null);
+
+  const toggleStats = (e) => {
+    e.stopPropagation();
+    if (!statsOpen && !stats) {
+      setStatsLoading(true);
+      const home = match.homeTeam?.shortName || match.homeTeam?.name;
+      const away = match.awayTeam?.shortName || match.awayTeam?.name;
+      fetch(`/api/uefa-match-stats?homeTeam=${encodeURIComponent(home)}&awayTeam=${encodeURIComponent(away)}`)
+        .then((r) => r.json())
+        .then((d) => { if (d.success) setStats(d.stats); })
+        .catch(() => {})
+        .finally(() => setStatsLoading(false));
+    }
+    setStatsOpen((o) => !o);
+  };
+
   const home = match.homeTeam?.shortName || match.homeTeam?.name || '?';
   const away = match.awayTeam?.shortName || match.awayTeam?.name || '?';
   const homeCrest = match.homeTeam?.crest;
@@ -71,7 +120,21 @@ function MatchCard({ match, index }) {
       <div className="px-4 py-3.5">
         {/* Status row */}
         <div className="flex items-center justify-between mb-3">
-          <StatusBadge status={match.status} minute={match.minute} />
+          <div className="flex items-center gap-2">
+            <StatusBadge status={match.status} minute={match.minute} />
+            {isLive && (
+              <button
+                onClick={toggleStats}
+                className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
+                style={{
+                  background: statsOpen ? 'rgba(16,185,129,0.25)' : 'rgba(255,255,255,0.08)',
+                  color: statsOpen ? '#34d399' : 'rgba(255,255,255,0.5)',
+                }}
+              >
+                <Info className="w-2.5 h-2.5" />
+              </button>
+            )}
+          </div>
           {match.utcDate && !isLive && (
             <span className="text-[10px] text-slate-500">
               {new Date(match.utcDate).toLocaleString('he-IL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
@@ -191,6 +254,22 @@ function MatchCard({ match, index }) {
             </div>
           );
         })()}
+
+        {/* Match statistics — fetched lazily on first "i" tap */}
+        <AnimatePresence>
+          {statsOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="overflow-hidden"
+              style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+            >
+              <MatchStatsPanel loading={statsLoading} stats={stats} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );

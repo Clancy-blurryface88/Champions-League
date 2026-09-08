@@ -31,3 +31,32 @@ export function calcStandings(matches) {
     a.name.localeCompare(b.name)
   );
 }
+
+// Home-only or away-only mini table — each team's stats from just their
+// home (team_a) or just their away (team_b) league-phase matches, so e.g.
+// "8 GP total" becomes "4 GP home" / "4 GP away". A separate ranking from
+// calcStandings, not a filter on it — a team's home and away games are two
+// disjoint match subsets, not one match subset re-scored.
+export function calcSplitStandings(matches, side) {
+  const teams = {};
+  const ensure = (name, logo) => {
+    if (!teams[name]) teams[name] = { name, logo, P: 0, W: 0, D: 0, L: 0, GF: 0, GA: 0, GD: 0, Pts: 0 };
+    return teams[name];
+  };
+  matches.forEach(m => { ensure(m.team_a, m.team_a_logo); ensure(m.team_b, m.team_b_logo); });
+  matches.forEach(m => {
+    if (!m.is_finished || m.actual_score_a == null || m.actual_score_b == null) return;
+    const sa = m.actual_score_a, sb = m.actual_score_b;
+    const t = side === 'home' ? teams[m.team_a] : teams[m.team_b];
+    const gf = side === 'home' ? sa : sb;
+    const ga = side === 'home' ? sb : sa;
+    t.P++; t.GF += gf; t.GA += ga;
+    if (gf > ga) { t.W++; t.Pts += 3; }
+    else if (gf < ga) { t.L++; }
+    else { t.D++; t.Pts++; }
+  });
+  Object.values(teams).forEach(t => { t.GD = t.GF - t.GA; });
+  return Object.values(teams)
+    .filter(t => t.P > 0)
+    .sort((a, b) => (b.Pts - a.Pts) || (b.GD - a.GD) || (b.GF - a.GF) || a.name.localeCompare(b.name));
+}
