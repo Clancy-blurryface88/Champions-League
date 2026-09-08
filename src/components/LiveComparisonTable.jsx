@@ -19,6 +19,11 @@ const TEAM_ALIASES = {
   "dprkorea":          "northkorea",
   "koreadpr":          "northkorea",
   "korearepublic":     "southkorea",
+  // "Manchaster City" is how this club's name is spelled throughout the DB
+  // (a long-standing typo baked into imported fixtures/logos) — the live API
+  // always returns the correct "Manchester City", so without this alias that
+  // match silently drops out of every live view that matches by team name.
+  "manchastercity":    "manchestercity",
 };
 function normTeam(n = '') {
   const base = n.toLowerCase().replace(/[^a-z0-9א-ת]/g, '');

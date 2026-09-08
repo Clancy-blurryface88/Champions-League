@@ -66,8 +66,14 @@ function calculateScore(prediction, match) {
   };
 }
 
+// "Manchaster City" is how this club's name is spelled throughout the DB (a
+// long-standing typo baked into imported fixtures/logos) — the live API
+// always returns the correct "Manchester City", so without this alias that
+// match silently drops out of the live view.
+const TEAM_ALIASES = { "manchastercity": "manchestercity" };
 function normalizeName(name = '') {
-  return name.toLowerCase().replace(/[^a-z0-9֐-׿]/g, '');
+  const base = name.toLowerCase().replace(/[^a-z0-9֐-׿]/g, '');
+  return TEAM_ALIASES[base] ?? base;
 }
 function matchTeams(apiName, dbName) {
   const a = normalizeName(apiName);
