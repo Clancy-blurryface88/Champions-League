@@ -728,7 +728,7 @@ export default function Layout({ children, currentPageName }) {
   // "משחקי היום" shows the day's matches as a typewriter-revealed list right
   // away — no solo "המשחק הקרוב" screen first (the ticker bar already covers
   // that). Auto-dismisses after LIST_MS, closable anytime before that.
-  const LIST_MS = 10000;
+  const LIST_MS = 3500;
   useEffect(() => {
     if (!showNextMatchIntro) return;
     const t = setTimeout(() => setShowNextMatchIntro(false), LIST_MS);
@@ -778,7 +778,7 @@ export default function Layout({ children, currentPageName }) {
   // no longer needs to scale with match count.
   useEffect(() => {
     if (!showLiveIntro || livePredictionLoading) return;
-    const t = setTimeout(() => setShowLiveIntro(false), 7000);
+    const t = setTimeout(() => setShowLiveIntro(false), 3500);
     return () => clearTimeout(t);
   }, [showLiveIntro, livePredictionLoading]);
 
@@ -786,7 +786,7 @@ export default function Layout({ children, currentPageName }) {
   // if the prediction fetch hangs.
   useEffect(() => {
     if (!showLiveIntro) return;
-    const cap = setTimeout(() => setShowLiveIntro(false), 16000);
+    const cap = setTimeout(() => setShowLiveIntro(false), 8000);
     return () => clearTimeout(cap);
   }, [showLiveIntro]);
 
