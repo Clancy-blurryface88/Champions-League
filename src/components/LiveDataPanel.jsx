@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, RefreshCw, Wifi, WifiOff, Clock, Info } from "lucide-react";
+import { X, RefreshCw, Wifi, WifiOff, Clock, Info, Rows3 } from "lucide-react";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import TeamFlag from "@/components/TeamFlag";
 import LiveLeaderboard from "@/components/LiveLeaderboard";
+import LiveComparisonTable from "@/components/LiveComparisonTable";
 import { TOURNAMENT_CODE } from "@/config/tournament";
 
 const FILTERS = [
@@ -281,6 +282,7 @@ export default function LiveDataPanel({ onClose }) {
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [filter, setFilter] = useState('LIVE');
+  const [showComparison, setShowComparison] = useState(false);
 
   const load = useCallback(async () => {
     if (filter === 'LB') return;
@@ -417,6 +419,18 @@ export default function LiveDataPanel({ onClose }) {
               </div>
             )}
           </div>
+
+          {/* Compare everyone's live predictions — only worth showing once there's actually something live to compare */}
+          {filter === 'LIVE' && matches.length > 0 && (
+            <button
+              onClick={() => setShowComparison(true)}
+              className="w-full mt-3 flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-semibold text-red-300 transition-colors hover:text-white"
+              style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)' }}
+            >
+              <Rows3 className="w-3.5 h-3.5" />
+              השוואת ניחושים בין כולם
+            </button>
+          )}
         </div>
 
         {/* Divider */}
@@ -471,6 +485,8 @@ export default function LiveDataPanel({ onClose }) {
         {/* Bottom gold line */}
         <div className="h-px bg-gradient-to-r from-transparent via-sky-400/30 to-transparent flex-shrink-0" />
       </motion.div>
+
+      {showComparison && <LiveComparisonTable onClose={() => setShowComparison(false)} />}
     </>
   );
 }
