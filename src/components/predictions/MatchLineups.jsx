@@ -71,8 +71,8 @@ function TeamHeader({ team, coach }) {
 function Jersey({ color, number, isCaptain }) {
   const dark = isLightColor(color);
   return (
-    <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: 26, height: 26 }}>
-      <svg viewBox="0 0 100 100" width="26" height="26">
+    <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: 21, height: 21 }}>
+      <svg viewBox="0 0 100 100" width="21" height="21">
         <polygon
           points="35,10 50,20 65,10 80,10 95,25 95,40 78,32 78,90 22,90 22,32 5,40 5,25 20,10"
           fill={color || '#64748b'}
@@ -82,14 +82,14 @@ function Jersey({ color, number, isCaptain }) {
       </svg>
       <span
         className="absolute font-black tabular-nums"
-        style={{ fontSize: 10, color: dark ? '#111827' : '#fff', top: '48%', transform: 'translateY(-50%)' }}
+        style={{ fontSize: 8, color: dark ? '#111827' : '#fff', top: '48%', transform: 'translateY(-50%)' }}
       >
         {number}
       </span>
       {isCaptain && (
         <span
           className="absolute flex items-center justify-center rounded-full bg-white text-black font-black"
-          style={{ width: 10, height: 10, fontSize: 7, top: -2, right: -2, lineHeight: 1 }}
+          style={{ width: 8, height: 8, fontSize: 6, top: -1, right: -1, lineHeight: 1 }}
         >
           C
         </span>
@@ -98,15 +98,18 @@ function Jersey({ color, number, isCaptain }) {
   );
 }
 
+// Kept narrow (well under the tightest real row spacing — 5-across
+// defensive lines sit ~20% of pitch width apart) so a marker's jersey/name
+// never reaches into its neighbor's slot.
 function PlayerMarker({ entry, shirtColor, topPct, leftPct }) {
   return (
     <div
       className="absolute flex flex-col items-center gap-0.5"
-      style={{ top: `${topPct}%`, left: `${leftPct}%`, transform: 'translate(-50%, -50%)', width: 58 }}
+      style={{ top: `${topPct}%`, left: `${leftPct}%`, transform: 'translate(-50%, -50%)', width: 42 }}
     >
       <Jersey color={shirtColor} number={entry.jerseyNumber} isCaptain={entry.type === 'CAPTAIN'} />
       <span
-        className="text-[8px] text-white text-center leading-tight truncate w-full"
+        className="text-[7px] text-white text-center leading-tight truncate w-full"
         style={{ textShadow: '0 1px 2px rgba(0,0,0,0.9)' }}
       >
         {entry.player?.internationalName}
