@@ -373,9 +373,9 @@ function MiniLiveMatchChip({ match }) {
 // list-opening animation (not the multi-second ring/score reveal the big
 // card does — these chips have nothing to "reveal", they just show the
 // already-known live score).
-function LiveMatchesChipList({ liveMatches, width }) {
+function LiveMatchesChipList({ liveMatches }) {
   return (
-    <div className="flex flex-col items-stretch gap-2" style={{ maxHeight: '80vh', width: width || 'max-content', overflowY: 'auto', overflowX: 'visible', pointerEvents: 'auto', padding: 12 }}>
+    <div className="flex flex-col items-stretch gap-2" style={{ maxHeight: '80vh', width: '100%', boxSizing: 'border-box', overflowY: 'auto', overflowX: 'visible', pointerEvents: 'auto', padding: 12 }}>
       <AnimatePresence>
         {liveMatches.map((m, i) => (
           <motion.div
@@ -409,23 +409,6 @@ export default function Layout({ children, currentPageName }) {
   const [showLiveData, setShowLiveData] = useState(false); // Added: New state for LiveDataPanel
   const [hasLiveMatch, setHasLiveMatch] = useState(false);
   const [liveMatches, setLiveMatches] = useState([]);
-  // Measured live so the LIVE chip (and the dropdown list under it) always
-  // match the name pill's actual rendered width exactly, instead of an
-  // eyeballed constant that drifts whenever the display name's length
-  // changes the pill's width.
-  const namePillRef = useRef(null);
-  const [namePillWidth, setNamePillWidth] = useState(null);
-  useEffect(() => {
-    const el = namePillRef.current;
-    if (!el) return;
-    // getBoundingClientRect (not ResizeObserver's contentRect, which excludes
-    // padding/border) — the LIVE chip and list below are sized with their
-    // own padding, so matching the pill's true rendered outer width is what
-    // actually lines their edges up with it.
-    const ro = new ResizeObserver(() => setNamePillWidth(el.getBoundingClientRect().width));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [user]);
   const liveChipLongPressTimer = useRef(null);
   const liveChipLongPressFired = useRef(false);
   const [showLiveIntro, setShowLiveIntro] = useState(false);
@@ -1364,9 +1347,7 @@ export default function Layout({ children, currentPageName }) {
 
         {/* User Info & Admin Button */}
         {user &&
-        <div className="fixed top-[44px] right-4 z-40 flex flex-col items-end gap-5">
-
-            <div className="flex items-center gap-2">
+        <div className="fixed top-[44px] right-4 z-40 flex items-start gap-2">
 
             {/* Notification Bell — manual fallback in case the auto-request
                 (push banner on first login) failed or was dismissed. */}
@@ -1405,6 +1386,12 @@ export default function Layout({ children, currentPageName }) {
               }
             </motion.button>
 
+            {/* Name pill + LIVE chip share a CSS grid column so they stretch
+                to the exact same width (grid's default justify-items is
+                stretch) — no JS measurement, so there's no timing/box-model
+                gap between them regardless of how long the display name is. */}
+            <div className="grid gap-5">
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <motion.button
@@ -1413,7 +1400,6 @@ export default function Layout({ children, currentPageName }) {
 
                   {/* Replaced AnimatedBorderButton with a simple div as per outline */}
                   <div
-                    ref={namePillRef}
                     className="flex items-center gap-2.5 rounded-full px-3 py-1.5 transition-all duration-200"
                     style={{
                       background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(8,20,50,0.55) 100%)',
@@ -1497,8 +1483,6 @@ export default function Layout({ children, currentPageName }) {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            </div>
-
             <div style={{ position: 'relative' }}>
             <AnimatePresence>
               {hasLiveMatch && !showLiveIntro && (location.pathname === '/' || location.pathname.includes('Dashboard')) && (
@@ -1541,7 +1525,7 @@ export default function Layout({ children, currentPageName }) {
                     backdropFilter: 'blur(28px) saturate(1.6)',
                     WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
                     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 20px rgba(0,0,0,0.5)',
-                    width: namePillWidth || undefined,
+                    width: '100%',
                   }}
                 >
                   <span className="relative flex h-2 w-2 flex-shrink-0">
@@ -1562,17 +1546,19 @@ export default function Layout({ children, currentPageName }) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-                  // Anchored to the chip's right edge, not centered under it —
-                  // the chip sits right at the screen's own right margin
-                  // (right-4), so centering pushed half the dropdown off-screen.
-                  // Growing leftward from the same right edge keeps it fully
-                  // on-screen regardless of how wide the chip itself is.
-                  style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, zIndex: 60 }}
+                  // left:0 AND right:0 (not just right:0) forces the browser
+                  // to size this to exactly the positioning parent's width —
+                  // the relative wrapper below, itself grid-stretched to the
+                  // name pill's width — rather than shrink-to-fit, which
+                  // can't resolve a 100%-width child correctly on its own.
+                  style={{ position: 'absolute', top: 'calc(100% + 10px)', left: 0, right: 0, zIndex: 60 }}
                 >
-                  <LiveMatchesChipList liveMatches={liveMatches} width={namePillWidth} />
+                  <LiveMatchesChipList liveMatches={liveMatches} />
                 </motion.div>
               )}
             </AnimatePresence>
+            </div>
+
             </div>
           </div>
         }
