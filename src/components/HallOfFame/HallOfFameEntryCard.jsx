@@ -21,7 +21,7 @@ export default function HallOfFameEntryCard({ entry, size = "md", align = "cente
           src={entry.trophy_image}
           alt={entry.name}
           className="w-full h-full"
-          style={{ objectFit: "cover" }}
+          style={{ objectFit: "contain" }}
         />
       </div>
       {entry.text && <p className="text-slate-300 text-[11px] leading-snug">{entry.text}</p>}
