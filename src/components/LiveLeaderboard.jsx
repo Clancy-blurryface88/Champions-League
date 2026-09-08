@@ -157,6 +157,15 @@ export default function LiveLeaderboard() {
 
   const load = useCallback(async () => {
     try {
+      // Kicked off immediately, in parallel with the Supabase load and the
+      // reveal-wait below — it doesn't depend on either, so on first load
+      // its round trip overlaps with them instead of only starting once
+      // both are done (which used to stack all three delays in sequence).
+      const now2 = new Date();
+      const localDate = now2.toLocaleDateString('sv-SE');
+      const prevLocalDate = new Date(now2 - 864e5).toLocaleDateString('sv-SE');
+      const liveFetchPromise = fetch(`/api/football?competition=${TOURNAMENT_CODE}&filter=LIVE&dateFrom=${prevLocalDate}&dateTo=${localDate}`);
+
       // ── Phase 1: load Supabase once, show official scores with reveal animation ──
       if (!dbRef.current) {
         const [matches, profiles, userStats, predictions] = await Promise.all([
@@ -189,11 +198,8 @@ export default function LiveLeaderboard() {
         await new Promise(resolve => setTimeout(resolve, revealWait * 1000));
       }
 
-      // ── Phase 2: fetch live API and smoothly reorder ──────────────────────────
-      const now2 = new Date();
-      const localDate = now2.toLocaleDateString('sv-SE');
-      const prevLocalDate = new Date(now2 - 864e5).toLocaleDateString('sv-SE');
-      const res  = await fetch(`/api/football?competition=${TOURNAMENT_CODE}&filter=LIVE&dateFrom=${prevLocalDate}&dateTo=${localDate}`);
+      // ── Phase 2: use the live API result kicked off above, and reorder ────────
+      const res  = await liveFetchPromise;
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
       const liveMatches = json.matches || [];
