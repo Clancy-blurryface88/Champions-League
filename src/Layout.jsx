@@ -345,6 +345,8 @@ function MiniLiveMatchChip({ match }) {
         backdropFilter: 'blur(28px) saturate(1.6)',
         WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 20px rgba(0,0,0,0.5)',
+        width: '100%',
+        boxSizing: 'border-box',
       }}
     >
       <span className="relative flex h-2 w-2 flex-shrink-0">
@@ -378,6 +380,7 @@ function LiveMatchesChipList({ liveMatches, width }) {
         {liveMatches.map((m, i) => (
           <motion.div
             key={m.id}
+            style={{ width: '100%' }}
             initial={{ opacity: 0, y: -10, scale: 0.92 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.92 }}
