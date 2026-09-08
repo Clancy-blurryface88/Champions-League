@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, TrendingUp, TrendingDown, Minus, WifiOff, X } from "lucide-react";
+import { Clock, TrendingUp, TrendingDown, Minus, WifiOff } from "lucide-react";
 import { ShineBorder } from "@/components/magicui/shine-border";
 import ScoreCounter from "@/components/ScoreCounter";
 import TeamFlag from "@/components/TeamFlag";
@@ -330,10 +330,7 @@ export default function LiveLeaderboard() {
               <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
                 onClick={e => e.stopPropagation()}
                 className="rounded-2xl p-5 w-full max-w-xs" style={{ background: '#0b1a2e', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-white font-bold text-sm">הניחושים החיים של {player.name}</h4>
-                  <button onClick={() => setOpenPlayer(null)}><X className="w-4 h-4 text-slate-400" /></button>
-                </div>
+                <h4 className="text-white font-bold text-sm text-center mb-3">הניחושים של {player.name}</h4>
                 <div className="space-y-2">
                   {(!player.matchPredictions || player.matchPredictions.length === 0) ? (
                     <p className="text-slate-500 text-xs text-center py-4">אין ניחושים למשחקים החיים כרגע</p>
@@ -353,6 +350,13 @@ export default function LiveLeaderboard() {
                     );
                   })}
                 </div>
+                <button
+                  onClick={() => setOpenPlayer(null)}
+                  className="w-full mt-4 py-2 rounded-lg text-slate-300 text-xs font-semibold"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+                >
+                  סגור
+                </button>
               </motion.div>
             </motion.div>
           );
