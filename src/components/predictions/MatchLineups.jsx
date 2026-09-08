@@ -49,6 +49,27 @@ function coachName(team) {
   return team?.coaches?.[0]?.person?.translations?.name?.EN || null;
 }
 
+// UEFA's player.countryCode is a football-specific 3-letter code (FIFA/UEFA
+// style — England/Scotland/Wales/N.Ireland split out, several trigrams
+// differ from ISO 3166-1), so it can't be fed to a standard flag CDN
+// as-is. Mapped to flagcdn.com codes — verified against every nationality
+// that actually appears in this season's competition player pool.
+const COUNTRY_FLAG_CODE = {
+  ALB: 'al', ALG: 'dz', AND: 'ad', ANG: 'ao', ARG: 'ar', ARM: 'am', AUS: 'au', AUT: 'at', AZE: 'az',
+  BEL: 'be', BFA: 'bf', BIH: 'ba', BLR: 'by', BRA: 'br', BUL: 'bg', CAN: 'ca', CGO: 'cg', CHI: 'cl',
+  CIV: 'ci', CMR: 'cm', COD: 'cd', COL: 'co', CPV: 'cv', CRC: 'cr', CRO: 'hr', CUW: 'cw', CYP: 'cy',
+  CZE: 'cz', DEN: 'dk', DOM: 'do', ECU: 'ec', EGY: 'eg', ENG: 'gb-eng', EQG: 'gq', ESP: 'es', EST: 'ee',
+  FIN: 'fi', FRA: 'fr', FRO: 'fo', GAB: 'ga', GAM: 'gm', GEO: 'ge', GER: 'de', GHA: 'gh', GIB: 'gi',
+  GLP: 'gp', GNB: 'gw', GRE: 'gr', GUI: 'gn', HON: 'hn', HUN: 'hu', IDN: 'id', IRL: 'ie', IRN: 'ir',
+  IRQ: 'iq', ISL: 'is', ISR: 'il', ITA: 'it', JAM: 'jm', JPN: 'jp', KAZ: 'kz', KEN: 'ke', KOR: 'kr',
+  KOS: 'xk', KSA: 'sa', LBY: 'ly', LTU: 'lt', LUX: 'lu', LVA: 'lv', MAR: 'ma', MDA: 'md', MEX: 'mx',
+  MKD: 'mk', MLI: 'ml', MLT: 'mt', MNE: 'me', MOZ: 'mz', MTN: 'mr', MWI: 'mw', NED: 'nl', NGA: 'ng',
+  NIR: 'gb-nir', NOR: 'no', NZL: 'nz', PAN: 'pa', PAR: 'py', PER: 'pe', PHI: 'ph', PLE: 'ps', POL: 'pl',
+  POR: 'pt', ROU: 'ro', RSA: 'za', RUS: 'ru', RWA: 'rw', SCO: 'gb-sct', SEN: 'sn', SMR: 'sm', SRB: 'rs',
+  SUI: 'ch', SUR: 'sr', SVK: 'sk', SVN: 'si', SWE: 'se', TUN: 'tn', TUR: 'tr', UGA: 'ug', UKR: 'ua',
+  URU: 'uy', USA: 'us', UZB: 'uz', VEN: 've', WAL: 'gb-wls', ZAM: 'zm',
+};
+
 function TeamHeader({ team, coach }) {
   return (
     <div className="flex items-center justify-center gap-2 py-0.5">
@@ -68,8 +89,9 @@ function TeamHeader({ team, coach }) {
   );
 }
 
-function Jersey({ color, number, isCaptain }) {
+function Jersey({ color, number, isCaptain, countryCode }) {
   const dark = isLightColor(color);
+  const flagCode = COUNTRY_FLAG_CODE[countryCode];
   return (
     <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: 21, height: 21 }}>
       <svg viewBox="0 0 100 100" width="21" height="21">
@@ -94,6 +116,15 @@ function Jersey({ color, number, isCaptain }) {
           C
         </span>
       )}
+      {flagCode && (
+        <img
+          src={`https://flagcdn.com/${flagCode}.svg`}
+          alt=""
+          className="absolute rounded-sm"
+          style={{ width: 8, height: 6, bottom: -1, left: -1, boxShadow: '0 0 0 1px rgba(0,0,0,0.5)', objectFit: 'cover' }}
+          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+        />
+      )}
     </div>
   );
 }
@@ -107,7 +138,12 @@ function PlayerMarker({ entry, shirtColor, topPct, leftPct }) {
       className="absolute flex flex-col items-center gap-0.5"
       style={{ top: `${topPct}%`, left: `${leftPct}%`, transform: 'translate(-50%, -50%)', width: 42 }}
     >
-      <Jersey color={shirtColor} number={entry.jerseyNumber} isCaptain={entry.type === 'CAPTAIN'} />
+      <Jersey
+        color={shirtColor}
+        number={entry.jerseyNumber}
+        isCaptain={entry.type === 'CAPTAIN'}
+        countryCode={entry.player?.countryCode}
+      />
       <span
         className="text-[7px] text-white text-center leading-tight truncate w-full"
         style={{ textShadow: '0 1px 2px rgba(0,0,0,0.9)' }}
