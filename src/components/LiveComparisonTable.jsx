@@ -37,20 +37,16 @@ function findDbMatch(apiMatch, dbMatches) {
 }
 
 // Icon goes BELOW the score (stacked, not side by side) so the score keeps
-// the cell's full width on one line — the fill color is still the primary
-// signal, the icon underneath is a secondary confirmation.
+// the cell's full width on one line instead of wrapping.
 function StatusCell({ cell }) {
   if (!cell) return <span className="text-slate-700 text-xs">–</span>;
   const status = cell.isExact
-    ? { icon: '🎯', bg: 'rgba(52,211,153,0.32)', border: 'rgba(52,211,153,0.6)', color: '#ffffff' }
+    ? { icon: '🎯', color: '#34d399' }
     : cell.isHit
-      ? { icon: '✅', bg: 'rgba(234,179,8,0.32)', border: 'rgba(234,179,8,0.6)', color: '#ffffff' }
-      : { icon: '✕', bg: 'transparent', border: 'transparent', color: '#64748b' };
+      ? { icon: '✅', color: '#eab308' }
+      : { icon: '✕', color: '#64748b' };
   return (
-    <div
-      className="flex flex-col items-center justify-center gap-0.5 rounded-lg py-1.5"
-      style={{ background: status.bg, border: `1px solid ${status.border}` }}
-    >
+    <div className="flex flex-col items-center justify-center gap-0.5 rounded-lg py-1.5">
       <span className="font-mono font-bold text-[13px] tabular-nums whitespace-nowrap" style={{ color: status.color }} dir="ltr">
         {cell.predicted}
       </span>
