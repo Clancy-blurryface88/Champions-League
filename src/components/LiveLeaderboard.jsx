@@ -87,22 +87,18 @@ function PredictionBadge({ matchPredictions }) {
   );
 }
 
-function RankCard({ row, index, total, isInitial, onLongPress }) {
+function RankCard({ row, index, total, isInitial, onOpen }) {
   const delta = row.officialRank - row.liveRank;
   const rankFromBottom = total - 1 - index;
   const cardDelay   = isInitial ? Math.pow(rankFromBottom, 1.4) * 0.13 + (row.liveRank === 1 ? 0.2 : 0) : 0;
   const scoreDur    = isInitial ? 0.7 : 2.8;
   const scoreDelay  = isInitial ? cardDelay + 0.2 : 0;
-  const holdTimer = useRef(null);
-  const startHold = () => { holdTimer.current = setTimeout(() => onLongPress?.(), 380); };
-  const cancelHold = () => clearTimeout(holdTimer.current);
   return (
     <motion.div layout layoutId={`lb-${row.userId}`}
       initial={isInitial ? { opacity: 0, y: 14 } : false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ layout: { type: 'spring', stiffness: 9, damping: 20 }, ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}) }}
-      onMouseDown={startHold} onMouseUp={cancelHold} onMouseLeave={cancelHold}
-      onTouchStart={startHold} onTouchEnd={cancelHold}
+      onClick={() => onOpen?.()}
       className="relative mb-1 cursor-pointer select-none">
       <div style={{ transform: 'skewX(-6deg)', borderRadius: 8, overflow: 'hidden', border: `2px solid ${RANK_BORDER(row.liveRank)}`, background: RANK_BG(row.liveRank), transition: 'border-color .5s ease, background .5s ease', position: 'relative' }}>
         <ShineBorder
@@ -321,7 +317,7 @@ export default function LiveLeaderboard() {
         <AnimatePresence>
           {rows.map((row, idx) => (
             <RankCard key={row.userId} row={row} index={idx} total={rows.length} isInitial={isInitialLoad}
-              onLongPress={() => setOpenPlayer(row.userId)} />
+              onOpen={() => setOpenPlayer(row.userId)} />
           ))}
         </AnimatePresence>
       </div>
