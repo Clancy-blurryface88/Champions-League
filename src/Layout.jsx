@@ -372,9 +372,9 @@ function MiniLiveMatchChip({ match }) {
 // list-opening animation (not the multi-second ring/score reveal the big
 // card does — these chips have nothing to "reveal", they just show the
 // already-known live score).
-function LiveMatchesChipList({ liveMatches }) {
+function LiveMatchesChipList({ liveMatches, width }) {
   return (
-    <div className="flex flex-col items-stretch gap-2" style={{ maxHeight: '80vh', width: 'max-content', overflowY: 'auto', overflowX: 'visible', pointerEvents: 'auto', padding: 12 }}>
+    <div className="flex flex-col items-stretch gap-2" style={{ maxHeight: '80vh', width: width || 'max-content', overflowY: 'auto', overflowX: 'visible', pointerEvents: 'auto', padding: 12 }}>
       <AnimatePresence>
         {liveMatches.map((m, i) => (
           <motion.div
@@ -407,6 +407,19 @@ export default function Layout({ children, currentPageName }) {
   const [showLiveData, setShowLiveData] = useState(false); // Added: New state for LiveDataPanel
   const [hasLiveMatch, setHasLiveMatch] = useState(false);
   const [liveMatches, setLiveMatches] = useState([]);
+  // Measured live so the LIVE chip (and the dropdown list under it) always
+  // match the name pill's actual rendered width exactly, instead of an
+  // eyeballed constant that drifts whenever the display name's length
+  // changes the pill's width.
+  const namePillRef = useRef(null);
+  const [namePillWidth, setNamePillWidth] = useState(null);
+  useEffect(() => {
+    const el = namePillRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => setNamePillWidth(entries[0].contentRect.width));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [user]);
   const liveChipLongPressTimer = useRef(null);
   const liveChipLongPressFired = useRef(false);
   const [showLiveIntro, setShowLiveIntro] = useState(false);
@@ -1394,6 +1407,7 @@ export default function Layout({ children, currentPageName }) {
 
                   {/* Replaced AnimatedBorderButton with a simple div as per outline */}
                   <div
+                    ref={namePillRef}
                     className="flex items-center gap-2.5 rounded-full px-3 py-1.5 transition-all duration-200"
                     style={{
                       background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(8,20,50,0.55) 100%)',
@@ -1514,13 +1528,14 @@ export default function Layout({ children, currentPageName }) {
                   }}
                   onTouchEnd={() => clearTimeout(liveChipLongPressTimer.current)}
                   onContextMenu={(e) => e.preventDefault()}
-                  className="relative flex items-center gap-1.5 px-3 py-2.5 rounded-full cursor-pointer"
+                  className="relative flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full cursor-pointer"
                   style={{
                     background: 'rgba(239,68,68,0.12)',
                     border: '1px solid rgba(239,68,68,0.45)',
                     backdropFilter: 'blur(28px) saturate(1.6)',
                     WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
                     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 20px rgba(0,0,0,0.5)',
+                    width: namePillWidth || undefined,
                   }}
                 >
                   <span className="relative flex h-2 w-2 flex-shrink-0">
@@ -1548,7 +1563,7 @@ export default function Layout({ children, currentPageName }) {
                   // on-screen regardless of how wide the chip itself is.
                   style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, zIndex: 60 }}
                 >
-                  <LiveMatchesChipList liveMatches={liveMatches} />
+                  <LiveMatchesChipList liveMatches={liveMatches} width={namePillWidth} />
                 </motion.div>
               )}
             </AnimatePresence>
