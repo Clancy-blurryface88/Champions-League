@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, ShieldCheck, Radio, Sparkles, Crown } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, ShieldCheck, Radio, Sparkles, Crown, Award } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
@@ -23,6 +23,7 @@ import AdminLiveMatchExplorer from "../components/admin/AdminLiveMatchExplorer";
 import AdminGeneralQuestions from "../components/admin/AdminGeneralQuestions";
 import AdminHallOfFameOptions from "../components/admin/AdminHallOfFameOptions";
 import AdminHallOfFameOptionsExtra from "../components/admin/AdminHallOfFameOptionsExtra";
+import AdminHallOfFame from "../components/admin/AdminHallOfFame";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -88,6 +89,7 @@ export default function Admin() {
       case 'general-questions': return <AdminGeneralQuestions />;
       case 'hall-of-fame-options': return <AdminHallOfFameOptions />;
       case 'hall-of-fame-options-extra': return <AdminHallOfFameOptionsExtra />;
+      case 'hall-of-fame': return <AdminHallOfFame />;
       default: return <AdminRounds />;
     }
   };
@@ -107,8 +109,9 @@ export default function Admin() {
     { id: 'standings-check',   label: '✅ אימות טבלה מול UEFA',    icon: ShieldCheck },
     { id: 'live-explorer',     label: '📡 הרכבים + אירועים',      icon: Radio },
     { id: 'general-questions', label: '🎯 ניחושים כלליים', icon: Sparkles },
-    { id: 'hall-of-fame-options', label: '👑 10 אפשרויות היכל תהילה', icon: Crown },
-    { id: 'hall-of-fame-options-extra', label: '👑 20 אפשרויות נוספות', icon: Crown },
+    { id: 'hall-of-fame', label: '👑 היכל התהילה', icon: Award },
+    { id: 'hall-of-fame-options', label: '10 אפשרויות היכל תהילה', icon: Crown },
+    { id: 'hall-of-fame-options-extra', label: '20 אפשרויות נוספות', icon: Crown },
   ];
 
   return (

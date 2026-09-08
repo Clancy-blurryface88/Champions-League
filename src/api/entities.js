@@ -564,6 +564,47 @@ export const GeneralQuestion = {
 };
 
 // ============================================
+// HALL OF FAME ENTITY
+// ============================================
+export const HallOfFame = {
+  list: async (orderBy = 'sort_order') => {
+    const { column, ascending } = parseOrder(orderBy);
+    const { data, error } = await supabase
+      .from('hall_of_fame')
+      .select('*')
+      .order(column, { ascending });
+    if (error) throw error;
+    return data;
+  },
+
+  create: async (entryData) => {
+    const { data, error } = await supabase
+      .from('hall_of_fame')
+      .insert(entryData)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  update: async (id, updates) => {
+    const { data, error } = await supabase
+      .from('hall_of_fame')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  delete: async (id) => {
+    const { error } = await supabase.from('hall_of_fame').delete().eq('id', id);
+    if (error) throw error;
+  },
+};
+
+// ============================================
 // GENERAL PREDICTIONS ENTITY (one answer per user per general question)
 // ============================================
 export const GeneralPrediction = {
