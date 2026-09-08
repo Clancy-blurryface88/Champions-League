@@ -8,7 +8,8 @@ import HallOfFameCabinet from "./HallOfFameCabinet";
 // entries' entrance out several seconds.
 const STEP = 0.13;
 const delayFor = (idx) => Math.min(idx, 12) * STEP;
-const SPINE = 26;
+const COL_GAP = 22;
+const NODE_WIDTH = 76;
 
 // A small gold diamond medallion — the node each entry hangs from on the line.
 function Medallion() {
@@ -27,37 +28,71 @@ function Medallion() {
   );
 }
 
-// Alternate view — a vertical timeline, top to bottom, dressed up as part of
-// the same gold trophy-cabinet family as the vitrine: an ornate rule with a
-// diamond medallion marking each entry.
+// Alternate view — a horizontal timeline, right to left, with the gold line
+// running through the middle: the entry's "text" sits in a pill right on
+// that center line (typically a year), and the trophy+name card alternates
+// above/below it row by row so the strip stays compact instead of piling
+// every card in one direction.
 export default function HallOfFameTimeline({ entries }) {
   if (!entries.length) return <HallOfFameEmptyState />;
 
   return (
-    <HallOfFameCabinet maxWidth={460}>
-      <div className="relative max-h-[480px] overflow-y-auto" style={{ scrollbarWidth: "thin" }}>
+    <HallOfFameCabinet maxWidth={520}>
+      <div dir="rtl" className="overflow-x-auto overflow-y-visible pb-1" style={{ scrollbarWidth: "thin" }}>
         <div
-          className="absolute top-0 bottom-0 w-px"
-          style={{ right: SPINE / 2, background: "linear-gradient(to bottom, transparent, rgba(245,197,24,0.75) 5%, rgba(245,197,24,0.75) 95%, transparent)" }}
-        />
+          className="grid grid-flow-col px-2"
+          style={{ gridTemplateRows: "auto auto auto", columnGap: COL_GAP, width: "max-content" }}
+        >
+          {entries.map((entry, idx) => {
+            const above = idx % 2 === 0;
+            const cardEntry = { ...entry, text: undefined };
+            const card = (
+              <motion.div
+                initial={{ opacity: 0, y: above ? 10 : -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: delayFor(idx), ease: "easeOut" }}
+              >
+                <HallOfFameEntryCard entry={cardEntry} size="sm" />
+              </motion.div>
+            );
+            const connector = <span className="w-px" style={{ height: 8, background: "rgba(245,197,24,0.5)" }} />;
 
-        <div className="space-y-7 py-1">
-          {entries.map((entry, idx) => (
-            <motion.div
-              key={entry.id}
-              initial={{ opacity: 0, x: 14 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: delayFor(idx), ease: "easeOut" }}
-              className="flex items-start"
-            >
-              <div className="flex-shrink-0 flex justify-center pt-1.5" style={{ width: SPINE }}>
-                <Medallion />
-              </div>
-              <div className="flex-1 min-w-0">
-                <HallOfFameEntryCard entry={entry} align="start" />
-              </div>
-            </motion.div>
-          ))}
+            return (
+              <React.Fragment key={entry.id}>
+                <div className="flex flex-col items-center justify-end" style={{ width: NODE_WIDTH }}>
+                  {above && (<>{card}{connector}</>)}
+                </div>
+
+                <div className="relative flex items-center justify-center py-2" style={{ width: NODE_WIDTH }}>
+                  <span
+                    className="absolute top-1/2 h-px"
+                    style={{ right: -COL_GAP / 2, left: -COL_GAP / 2, background: "linear-gradient(to left, rgba(245,197,24,0.15), rgba(245,197,24,0.7), rgba(245,197,24,0.15))" }}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.6 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.35, delay: delayFor(idx), ease: "easeOut" }}
+                    className="relative"
+                  >
+                    {entry.text ? (
+                      <span
+                        className="rounded-full px-2 py-0.5 text-[10px] font-black whitespace-nowrap block"
+                        style={{ background: "#0f172a", border: "1px solid #f5c518", color: "#f5c518" }}
+                      >
+                        {entry.text}
+                      </span>
+                    ) : (
+                      <Medallion />
+                    )}
+                  </motion.div>
+                </div>
+
+                <div className="flex flex-col items-center justify-start" style={{ width: NODE_WIDTH }}>
+                  {!above && (<>{connector}{card}</>)}
+                </div>
+              </React.Fragment>
+            );
+          })}
         </div>
       </div>
     </HallOfFameCabinet>

@@ -41,7 +41,7 @@ export default function HallOfFameVitrine({ entries }) {
             })}
           </div>
           <div
-            className="h-2.5 rounded-full"
+            className="h-1.5 rounded-full"
             style={{
               background: "linear-gradient(180deg, #fde68a 0%, #f5c518 35%, #b8860b 80%, #8a6508 100%)",
               boxShadow: "0 5px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.6)",
