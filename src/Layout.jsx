@@ -338,29 +338,31 @@ function LiveMatchesGrid({ liveMatches, liveUserPredictions, compact = false }) 
 function MiniLiveMatchChip({ match }) {
   return (
     <div
-      className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-full"
+      className="flex items-center justify-center gap-1 px-2.5 py-2 rounded-full"
       style={{
         background: 'rgba(239,68,68,0.12)',
         border: '1px solid rgba(239,68,68,0.45)',
         backdropFilter: 'blur(28px) saturate(1.6)',
         WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 20px rgba(0,0,0,0.5)',
-        minWidth: 110,
+        minWidth: 86,
+        maxWidth: '100%',
+        boxSizing: 'border-box',
       }}
     >
       <span className="relative flex h-2 w-2 flex-shrink-0">
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
       </span>
-      <div className="flex items-center gap-1 flex-1 justify-center" dir="ltr">
+      <div className="flex items-center gap-0.5 flex-1 justify-center min-w-0" dir="ltr">
         {match.homeTeam?.crest && (
-          <img src={match.homeTeam.crest} className="w-3.5 h-3.5 object-contain flex-shrink-0" alt="" />
+          <img src={match.homeTeam.crest} className="w-3 h-3 object-contain flex-shrink-0" alt="" />
         )}
-        <span className="text-white text-[11px] font-bold px-0.5">
+        <span className="text-white text-[10px] font-bold px-0.5">
           {match.score?.fullTime?.home ?? '?'}-{match.score?.fullTime?.away ?? '?'}
         </span>
         {match.awayTeam?.crest && (
-          <img src={match.awayTeam.crest} className="w-3.5 h-3.5 object-contain flex-shrink-0 mr-0.5" alt="" />
+          <img src={match.awayTeam.crest} className="w-3 h-3 object-contain flex-shrink-0" alt="" />
         )}
       </div>
     </div>
