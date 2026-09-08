@@ -31,9 +31,7 @@ function TrophyPicker({ value, onChange }) {
                 <Check className="w-2.5 h-2.5 text-black" />
               </span>
             )}
-            <span className="block rounded-full overflow-hidden flex-shrink-0" style={{ width: 40, height: 40, background: "rgba(15,23,42,0.9)", border: "1px solid rgba(245,197,24,0.3)" }}>
-              <img src={t.url} alt={t.label} className="w-full h-full" style={{ objectFit: "contain" }} />
-            </span>
+            <img src={t.url} alt={t.label} className="flex-shrink-0" style={{ maxWidth: 40, maxHeight: 40, width: "auto", height: "auto", objectFit: "contain" }} />
             <span className="text-slate-400 text-[8px] truncate w-full text-center">{t.label}</span>
           </button>
         );
