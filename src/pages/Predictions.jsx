@@ -742,7 +742,7 @@ export default function Predictions() {
 
                 <div>
                   <p className="text-emerald-300 text-sm font-semibold">הניחושים נשלחו בהצלחה</p>
-                  <p className="text-emerald-400/50 text-xs mt-0.5">ניתן לעדכן עד 15 דקות לפני תחילת כל משחק</p>
+                  <p className="text-emerald-400/50 text-xs mt-0.5">ניתן לעדכן עד {PREDICTION_LOCK_MINUTES} דקות לפני תחילת כל משחק</p>
                 </div>
               </div>
             </motion.div>
