@@ -302,23 +302,26 @@ export default function LiveLeaderboard() {
     <div>
       <style>{`@keyframes lb-blur-focus { from { filter: blur(6px); opacity: 0; } to { filter: blur(0); opacity: 1; } }`}</style>
 
-      {/* live match chips — one per concurrent live match */}
-      <AnimatePresence>
-        {liveInfo && liveInfo.map((info, i) => (
-          <motion.div key={i} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            transition={{ delay: i * 0.08 }}
-            className="mb-2 px-3 py-2 rounded-xl flex items-center gap-2"
-            style={{ background: 'rgba(52,211,153,.08)', border: '1px solid rgba(52,211,153,.25)' }}>
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
-            <TeamFlag logo={info.homeLogo} name={info.home} className="w-4 h-4 flex-shrink-0" />
-            <span className="font-bold text-xs text-emerald-400">{info.home}</span>
-            <span className="font-bold text-xs text-white tabular-nums">{info.score}</span>
-            <span className="font-bold text-xs text-emerald-400">{info.away}</span>
-            <TeamFlag logo={info.awayLogo} name={info.away} className="w-4 h-4 flex-shrink-0" />
-            {info.minute && <span className="text-slate-500 text-[10px] mr-1">{info.minute}'</span>}
-          </motion.div>
-        ))}
-      </AnimatePresence>
+      {/* live match cards — logos + score only (no names/minute), 3-column
+          grid so many concurrent matches stay compact instead of stacking
+          into a tall list; caps at ~3 rows visible, scrolls beyond that. */}
+      {liveInfo && liveInfo.length > 0 && (
+        <div className="mb-3 grid grid-cols-3 gap-2 overflow-y-auto" style={{ maxHeight: 156 }}>
+          <AnimatePresence>
+            {liveInfo.map((info, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="relative flex items-center justify-center gap-1.5 py-2 rounded-xl"
+                style={{ background: 'rgba(52,211,153,.08)', border: '1px solid rgba(52,211,153,.25)' }}>
+                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                <TeamFlag logo={info.homeLogo} name={info.home} className="w-5 h-5 flex-shrink-0" />
+                <span className="font-bold text-[11px] text-white tabular-nums">{info.score}</span>
+                <TeamFlag logo={info.awayLogo} name={info.away} className="w-5 h-5 flex-shrink-0" />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
 
       <div style={{ maxWidth: 262, margin: '0 auto' }}>
         <AnimatePresence>
