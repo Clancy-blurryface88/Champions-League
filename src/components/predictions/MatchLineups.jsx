@@ -166,8 +166,8 @@ function PlayerMarker({ entry, shirtColor, topPct, leftPct }) {
 // teams (y=50 is each team's own goal line, y=800 is near the halfway
 // line) — so the away team's y is mirrored to sit in the bottom half of a
 // single shared pitch graphic, while home's is used as-is in the top half.
-function homeTopPct(y) { return (y / 1000) * 48 + 2; }
-function awayTopPct(y) { return 100 - ((y / 1000) * 48 + 2); }
+function homeTopPct(y) { return (y / 1000) * 48 + 5; }
+function awayTopPct(y) { return 100 - ((y / 1000) * 48 + 5); }
 function leftPct(x) { return x / 10; }
 
 function PitchLineup({ home, away }) {
