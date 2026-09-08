@@ -1518,7 +1518,7 @@ export default function Layout({ children, currentPageName }) {
                   }}
                   onTouchEnd={() => clearTimeout(liveChipLongPressTimer.current)}
                   onContextMenu={(e) => e.preventDefault()}
-                  className="relative flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full cursor-pointer"
+                  className="relative flex items-center justify-center gap-1.5 px-3 py-2 rounded-full cursor-pointer"
                   style={{
                     background: 'rgba(239,68,68,0.12)',
                     border: '1px solid rgba(239,68,68,0.45)',
@@ -1532,7 +1532,7 @@ export default function Layout({ children, currentPageName }) {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
                   </span>
-                  <span className="text-red-400 text-[11px] font-bold tracking-widest uppercase animate-pulse">Live</span>
+                  <span className="text-red-400 text-[14px] leading-none font-bold tracking-widest uppercase animate-pulse">Live</span>
                 </motion.button>
               )}
             </AnimatePresence>
