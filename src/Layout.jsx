@@ -406,8 +406,6 @@ export default function Layout({ children, currentPageName }) {
   const [showExactHits, setShowExactHits] = useState(false); // Kept, but its functionality is replaced for swipe
   const [showLiveData, setShowLiveData] = useState(false); // Added: New state for LiveDataPanel
   const [hasLiveMatch, setHasLiveMatch] = useState(false);
-  const [liveMatch, setLiveMatch] = useState(null);
-  const [liveMatchCount, setLiveMatchCount] = useState(0);
   const [liveMatches, setLiveMatches] = useState([]);
   const liveChipLongPressTimer = useRef(null);
   const liveChipLongPressFired = useRef(false);
@@ -687,8 +685,6 @@ export default function Layout({ children, currentPageName }) {
         // prediction row and have it pop in a moment later.
         if (live.length > 0) setLivePredictionLoading(true);
         setHasLiveMatch(live.length > 0);
-        setLiveMatch(live[0] || null);
-        setLiveMatchCount(live.length);
         setLiveMatches(live);
       } catch {
         setHasLiveMatch(false);
@@ -1349,7 +1345,7 @@ export default function Layout({ children, currentPageName }) {
 
         {/* User Info & Admin Button */}
         {user &&
-        <div className="fixed top-[44px] right-4 z-40 flex flex-col items-center gap-5">
+        <div className="fixed top-[44px] right-4 z-40 flex flex-col items-end gap-5">
 
             <div className="flex items-center gap-2">
 
@@ -1531,24 +1527,7 @@ export default function Layout({ children, currentPageName }) {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
                   </span>
-                  {liveMatch ? (
-                    <div className="flex items-center gap-1" dir="ltr">
-                      {liveMatch.homeTeam?.crest && (
-                        <img src={liveMatch.homeTeam.crest} className="w-3.5 h-3.5 object-contain" alt="" />
-                      )}
-                      <span className="text-white text-[11px] font-bold">
-                        {liveMatch.score?.fullTime?.home ?? '?'}-{liveMatch.score?.fullTime?.away ?? '?'}
-                      </span>
-                      {liveMatch.awayTeam?.crest && (
-                        <img src={liveMatch.awayTeam.crest} className="w-3.5 h-3.5 object-contain" alt="" />
-                      )}
-                      {liveMatchCount > 1 && (
-                        <span className="text-red-400 text-[10px] font-bold">+{liveMatchCount - 1}</span>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="text-red-400 text-[11px] font-bold tracking-widest uppercase animate-pulse">Live</span>
-                  )}
+                  <span className="text-red-400 text-[11px] font-bold tracking-widest uppercase animate-pulse">Live</span>
                 </motion.button>
               )}
             </AnimatePresence>
