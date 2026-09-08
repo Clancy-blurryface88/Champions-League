@@ -56,19 +56,19 @@ function StatusCell({ cell }) {
   );
 }
 
-function MatchColumnHeader({ apiMatch }) {
+// Sticky first cell of each match row — logos + score only (no team names),
+// which is what keeps this narrow enough to leave room for a participant
+// column per person instead of the other way around.
+function MatchRowHeader({ apiMatch }) {
   const homeScore = apiMatch.score?.fullTime?.home ?? apiMatch.score?.halfTime?.home ?? 0;
   const awayScore = apiMatch.score?.fullTime?.away ?? apiMatch.score?.halfTime?.away ?? 0;
   return (
-    <div className="flex flex-col items-center gap-1 px-2 py-2" style={{ minWidth: 88 }}>
+    <div className="flex flex-col items-center gap-1 px-2 py-2">
       <div className="flex items-center gap-1.5" dir="ltr">
         <TeamFlag logo={apiMatch.homeTeam?.crest} name={apiMatch.homeTeam?.shortName} size={18} rounded="sm" />
         <span className="text-white text-xs font-black tabular-nums">{homeScore}-{awayScore}</span>
         <TeamFlag logo={apiMatch.awayTeam?.crest} name={apiMatch.awayTeam?.shortName} size={18} rounded="sm" />
       </div>
-      <span className="text-[9px] text-slate-500 truncate max-w-[84px] text-center leading-tight">
-        {apiMatch.homeTeam?.shortName} - {apiMatch.awayTeam?.shortName}
-      </span>
       {apiMatch.minute != null && (
         <span className="flex items-center gap-1 text-[9px] text-red-400 font-bold">
           <span className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
@@ -82,14 +82,14 @@ function MatchColumnHeader({ apiMatch }) {
 export default function LiveComparisonTable({ onClose }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [columns, setColumns] = useState([]);       // [{ dbMatch, apiMatch }]
-  const [rows, setRows] = useState([]);              // [{ userId, name, cells: { [matchId]: cell } }]
+  const [matches, setMatches] = useState([]);        // [{ dbMatch, apiMatch }]
+  const [participants, setParticipants] = useState([]); // [{ userId, name, cells: { [matchId]: cell } }]
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [matches, profiles, predictions] = await Promise.all([
+        const [allMatches, profiles, predictions] = await Promise.all([
           Match.list(), PublicProfile.list(), Prediction.list(),
         ]);
         const now = new Date();
@@ -101,16 +101,16 @@ export default function LiveComparisonTable({ onClose }) {
         const liveMatches = json.matches || [];
         if (cancelled) return;
 
-        const unfinished = matches.filter(m => !m.is_finished);
-        const cols = [];
+        const unfinished = allMatches.filter(m => !m.is_finished);
+        const liveDbMatches = [];
         for (const lm of liveMatches) {
           const f = findDbMatch(lm, unfinished);
-          if (f) cols.push({ dbMatch: f, apiMatch: lm });
+          if (f) liveDbMatches.push({ dbMatch: f, apiMatch: lm });
         }
 
         const getName = uid => profiles.find(p => p.user_id === uid)?.display_name || uid?.slice(0, 6) || '?';
         const byUser = {};
-        for (const { dbMatch, apiMatch } of cols) {
+        for (const { dbMatch, apiMatch } of liveDbMatches) {
           const homeScore = apiMatch.score?.fullTime?.home ?? apiMatch.score?.halfTime?.home ?? 0;
           const awayScore = apiMatch.score?.fullTime?.away ?? apiMatch.score?.halfTime?.away ?? 0;
           const matchPreds = predictions.filter(p => p.match_id === dbMatch.id);
@@ -132,10 +132,10 @@ export default function LiveComparisonTable({ onClose }) {
           }
         }
 
-        const built = Object.values(byUser).sort((a, b) => a.name.localeCompare(b.name, 'he'));
+        const builtParticipants = Object.values(byUser).sort((a, b) => a.name.localeCompare(b.name, 'he'));
         if (!cancelled) {
-          setColumns(cols);
-          setRows(built);
+          setMatches(liveDbMatches);
+          setParticipants(builtParticipants);
           setLoading(false);
         }
       } catch (e) {
@@ -184,7 +184,7 @@ export default function LiveComparisonTable({ onClose }) {
                 <WifiOff className="w-8 h-8 text-red-400/40" />
                 <p className="text-slate-500 text-sm">{error}</p>
               </div>
-            ) : columns.length === 0 ? (
+            ) : matches.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 gap-3">
                 <span className="text-4xl">⚽</span>
                 <p className="text-slate-400 text-sm font-medium">אין משחקים חיים כרגע</p>
@@ -197,30 +197,34 @@ export default function LiveComparisonTable({ onClose }) {
                       className="sticky right-0 z-10 text-right px-3 py-2 text-slate-400 text-xs font-semibold"
                       style={{ background: '#0f1f38', minWidth: 96 }}
                     >
-                      משתתף
+                      משחק
                     </th>
-                    {columns.map(({ dbMatch, apiMatch }) => (
-                      <th key={dbMatch.id} className="px-1" style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-                        <MatchColumnHeader apiMatch={apiMatch} />
+                    {participants.map((p) => (
+                      <th
+                        key={p.userId}
+                        className="px-2 py-2 text-white text-[13px] font-semibold truncate text-center"
+                        style={{ borderRight: '1px solid rgba(255,255,255,0.06)', maxWidth: 90 }}
+                      >
+                        {p.name}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((row, i) => (
+                  {matches.map(({ dbMatch, apiMatch }, i) => (
                     <tr
-                      key={row.userId}
+                      key={dbMatch.id}
                       style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)' }}
                     >
                       <td
-                        className="sticky right-0 z-10 px-3 py-2 text-white text-[13px] font-semibold truncate"
-                        style={{ background: i % 2 === 0 ? '#0b1a2e' : '#0d1d33', maxWidth: 110 }}
+                        className="sticky right-0 z-10"
+                        style={{ background: i % 2 === 0 ? '#0b1a2e' : '#0d1d33' }}
                       >
-                        {row.name}
+                        <MatchRowHeader apiMatch={apiMatch} />
                       </td>
-                      {columns.map(({ dbMatch }) => (
-                        <td key={dbMatch.id} className="px-2 py-1 text-center" style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-                          <StatusCell cell={row.cells[dbMatch.id]} />
+                      {participants.map((p) => (
+                        <td key={p.userId} className="px-2 py-1 text-center" style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+                          <StatusCell cell={p.cells[dbMatch.id]} />
                         </td>
                       ))}
                     </tr>
