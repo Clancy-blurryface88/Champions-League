@@ -420,8 +420,10 @@ export default function LiveDataPanel({ onClose }) {
             )}
           </div>
 
-          {/* Compare everyone's live predictions — only worth showing once there's actually something live to compare */}
-          {filter === 'LIVE' && matches.length > 0 && (
+          {/* Compare everyone's live predictions — lives under the טבלה (LB)
+              tab, next to the leaderboard itself. The modal's own empty
+              state already covers "no live matches right now". */}
+          {filter === 'LB' && (
             <button
               onClick={() => setShowComparison(true)}
               className="w-full mt-3 flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-semibold text-red-300 transition-colors hover:text-white"
