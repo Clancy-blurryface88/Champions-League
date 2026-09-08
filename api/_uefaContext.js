@@ -299,46 +299,6 @@ function matchesName(wanted, candidate) {
 }
 
 /**
- * Every match with a published starting XI right now, across the whole
- * competition — for the no-args mode of /api/uefa-lineups (e.g. testing in
- * Postman without picking a specific match). Only checks LIVE matches and
- * UPCOMING ones kicking off within the next 24h (lineups are published
- * ~45-60 min before kickoff, so anything further out is certainly empty —
- * checking all ~230+ season matches on every call would be slow for no
- * reason).
- */
-export async function getAllPublishedLineups() {
-  const seasonYear = currentSeasonYear();
-  const allMatches = await getMatches({ competitionId: COMPETITION_ID, seasonYear }, undefined, 500, 0);
-  const now = Date.now();
-  const candidates = allMatches.filter((m) => {
-    if (m.status === 'LIVE') return true;
-    if (m.status !== 'UPCOMING') return false;
-    const kickoff = new Date(m.kickOffTime?.dateTime).getTime();
-    return kickoff - now <= 24 * 60 * 60 * 1000 && kickoff - now > -3 * 60 * 60 * 1000;
-  });
-
-  const results = await Promise.all(candidates.map(async (m) => {
-    try {
-      const lineups = await getLineups(m.id);
-      const ready = lineups?.homeTeam?.field?.length > 0 && lineups?.awayTeam?.field?.length > 0;
-      if (!ready) return null;
-      return {
-        matchId: m.id,
-        kickoff: m.kickOffTime?.dateTime,
-        homeTeam: m.homeTeam.internationalName,
-        awayTeam: m.awayTeam.internationalName,
-        lineups,
-      };
-    } catch {
-      return null;
-    }
-  }));
-
-  return results.filter(Boolean);
-}
-
-/**
  * Most recently FINISHED Champions League matches (any phase — qualifying
  * included), newest first — so AdminLiveMatchExplorer.jsx has real match
  * ids to test lineups/events against even when nothing is live right now.
