@@ -62,11 +62,11 @@ function MatchRowHeader({ apiMatch }) {
   const homeScore = apiMatch.score?.fullTime?.home ?? apiMatch.score?.halfTime?.home ?? 0;
   const awayScore = apiMatch.score?.fullTime?.away ?? apiMatch.score?.halfTime?.away ?? 0;
   return (
-    <div className="flex flex-col items-center gap-1 px-2 py-2">
-      <div className="flex items-center gap-1.5" dir="ltr">
-        <TeamFlag logo={apiMatch.homeTeam?.crest} name={apiMatch.homeTeam?.shortName} size={18} rounded="sm" />
+    <div className="flex flex-col items-center gap-1 px-1 py-2">
+      <div className="flex items-center gap-1" dir="ltr">
+        <TeamFlag logo={apiMatch.homeTeam?.crest} name={apiMatch.homeTeam?.shortName} size={15} rounded="sm" />
         <span className="text-white text-xs font-black tabular-nums">{homeScore}-{awayScore}</span>
-        <TeamFlag logo={apiMatch.awayTeam?.crest} name={apiMatch.awayTeam?.shortName} size={18} rounded="sm" />
+        <TeamFlag logo={apiMatch.awayTeam?.crest} name={apiMatch.awayTeam?.shortName} size={15} rounded="sm" />
       </div>
       {apiMatch.minute != null && (
         <span className="flex items-center gap-1 text-[9px] text-red-400 font-bold">
