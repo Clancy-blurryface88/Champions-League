@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, TrendingUp, TrendingDown, Minus, WifiOff } from "lucide-react";
 import { ShineBorder } from "@/components/magicui/shine-border";
-import ScoreCounter from "@/components/ScoreCounter";
+import OdometerValue from "@/components/OdometerValue";
 import TeamFlag from "@/components/TeamFlag";
 import { Match, Prediction, UserStats, PublicProfile } from "@/api/entities";
 import { TOURNAMENT_CODE } from "@/config/tournament";
@@ -98,12 +98,17 @@ function RankCard({ row, index, total, isInitial, onOpen }) {
   const delta = row.officialRank - row.liveRank;
   const rankFromBottom = total - 1 - index;
   const cardDelay   = isInitial ? Math.pow(rankFromBottom, 1.4) * 0.13 + (row.liveRank === 1 ? 0.2 : 0) : 0;
-  const scoreDur    = isInitial ? 0.7 : 2.8;
-  const scoreDelay  = isInitial ? cardDelay + 0.2 : 0;
+  // Odometer trigger — same pattern as LeaderboardPanel's "regular" table:
+  // wait for the card's own entrance animation before rolling the digits so
+  // the roll doesn't finish before a late-staggered card is even visible;
+  // cards that mount after the initial reveal (isInitial already false) have
+  // no entrance to wait for, so they roll immediately.
+  const [revealed, setRevealed] = useState(!isInitial);
   return (
     <motion.div layout layoutId={`lb-${row.userId}`}
       initial={isInitial ? { opacity: 0, y: 14 } : false}
       animate={{ opacity: 1, y: 0 }}
+      onAnimationComplete={() => setRevealed(true)}
       transition={{ layout: { type: 'spring', stiffness: 9, damping: 20 }, ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}) }}
       onClick={() => onOpen?.()}
       className="relative mb-1 cursor-pointer select-none">
@@ -129,7 +134,7 @@ function RankCard({ row, index, total, isInitial, onOpen }) {
               {row.name}
             </p>
             <span className="text-[12px] font-bold text-emerald-400 tabular-nums flex-shrink-0 text-right" style={{ minWidth: 40 }}>
-              <ScoreCounter value={row.total} duration={scoreDur} delay={scoreDelay} showDecimals={true} />
+              <OdometerValue target={row.total} height={15} width={7.5} decimals={2} trigger={revealed} />
             </span>
             <div className="flex-shrink-0 w-8 flex justify-end">
               <DeltaIcon delta={delta} />
