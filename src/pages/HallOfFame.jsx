@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Trophy, Medal } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { HallOfFame } from "@/api/entities";
 import HallOfFameView from "@/components/HallOfFame/HallOfFameView";
 import CircleLoader from "@/components/CircleLoader";
@@ -29,11 +29,11 @@ export default function HallOfFamePage() {
         </div>
 
         <div className="flex items-center justify-center gap-3 mb-8">
-          <Trophy className="w-7 h-7 flex-shrink-0" style={{ color: "#f5c518" }} />
+          <span className="text-2xl sm:text-3xl flex-shrink-0">🏆</span>
           <h1 className="text-2xl sm:text-3xl font-black text-white text-center" style={{ fontFamily: "'Syne', sans-serif" }}>
             היכל התהילה
           </h1>
-          <Medal className="w-7 h-7 flex-shrink-0" style={{ color: "#f5c518" }} />
+          <span className="text-2xl sm:text-3xl flex-shrink-0">🏅</span>
         </div>
 
         {loading ? (
