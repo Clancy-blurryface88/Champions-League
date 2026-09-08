@@ -112,7 +112,13 @@ function useLiveMinuteProgress(liveMatch) {
     const anchorMinute = liveMatch.minute != null
       ? liveMatch.minute
       : (liveMatch.utcDate ? Math.max(0, (anchorAt - new Date(liveMatch.utcDate).getTime()) / 60000) : 0);
-    const compute = () => Math.max(0, Math.min((anchorMinute + (Date.now() - anchorAt) / 60000) / 90, 1));
+    // Only extrapolate forward while the ball is actually rolling — at half-time
+    // (status 'PAUSED') the clock is stopped, so keep the ring/minute frozen at
+    // the last-known minute instead of drifting ahead by the real time elapsed.
+    const compute = () => {
+      const elapsed = liveMatch.status === 'IN_PLAY' ? (Date.now() - anchorAt) / 60000 : 0;
+      return Math.max(0, Math.min((anchorMinute + elapsed) / 90, 1));
+    };
 
     let raf, iv;
     const beginLiveTicking = () => {
@@ -164,6 +170,7 @@ function useLiveMinuteProgress(liveMatch) {
 function LiveMatchCard({ liveMatch, liveUserPrediction, compact = false, centeredWidth = false }) {
   const { progress, settledTick } = useLiveMinuteProgress(liveMatch);
   const minute = liveMatch ? Math.floor(progress * 90) : null;
+  const isHalftime = liveMatch?.status === 'PAUSED';
   const homeScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.home ?? 0) || 0, 0), 9);
   const awayScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.away ?? 0) || 0, 0), 9);
   // Hold the digits at 0 until the ring finishes its reveal — the roll to the
@@ -213,7 +220,7 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, compact = false, centere
             zIndex: 5,
           }}
         >
-          {minute}'
+          {isHalftime ? 'HT' : `${minute}'`}
         </motion.div>
       )}
       <div
