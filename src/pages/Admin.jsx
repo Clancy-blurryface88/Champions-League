@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, ShieldCheck, Radio, Sparkles } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, ShieldCheck, Radio, Sparkles, Crown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
@@ -21,6 +21,7 @@ import AdminPlayoffOverride from "../components/admin/AdminPlayoffOverride";
 import AdminStandingsCheck from "../components/admin/AdminStandingsCheck";
 import AdminLiveMatchExplorer from "../components/admin/AdminLiveMatchExplorer";
 import AdminGeneralQuestions from "../components/admin/AdminGeneralQuestions";
+import AdminHallOfFameOptions from "../components/admin/AdminHallOfFameOptions";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -84,6 +85,7 @@ export default function Admin() {
       case 'standings-check': return <AdminStandingsCheck />;
       case 'live-explorer': return <AdminLiveMatchExplorer />;
       case 'general-questions': return <AdminGeneralQuestions />;
+      case 'hall-of-fame-options': return <AdminHallOfFameOptions />;
       default: return <AdminRounds />;
     }
   };
@@ -103,6 +105,7 @@ export default function Admin() {
     { id: 'standings-check',   label: '✅ אימות טבלה מול UEFA',    icon: ShieldCheck },
     { id: 'live-explorer',     label: '📡 הרכבים + אירועים',      icon: Radio },
     { id: 'general-questions', label: '🎯 ניחושים כלליים', icon: Sparkles },
+    { id: 'hall-of-fame-options', label: '👑 10 אפשרויות היכל תהילה', icon: Crown },
   ];
 
   return (
