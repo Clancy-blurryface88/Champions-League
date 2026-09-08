@@ -415,7 +415,11 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     const el = namePillRef.current;
     if (!el) return;
-    const ro = new ResizeObserver((entries) => setNamePillWidth(entries[0].contentRect.width));
+    // getBoundingClientRect (not ResizeObserver's contentRect, which excludes
+    // padding/border) — the LIVE chip and list below are sized with their
+    // own padding, so matching the pill's true rendered outer width is what
+    // actually lines their edges up with it.
+    const ro = new ResizeObserver(() => setNamePillWidth(el.getBoundingClientRect().width));
     ro.observe(el);
     return () => ro.disconnect();
   }, [user]);
