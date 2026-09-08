@@ -125,13 +125,13 @@ function MatchCard({ match, index }) {
             {isLive && (
               <button
                 onClick={toggleStats}
-                className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
+                className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
                 style={{
                   background: statsOpen ? 'rgba(16,185,129,0.25)' : 'rgba(255,255,255,0.08)',
                   color: statsOpen ? '#34d399' : 'rgba(255,255,255,0.5)',
                 }}
               >
-                <Info className="w-2.5 h-2.5" />
+                <Info className="w-3.5 h-3.5" />
               </button>
             )}
           </div>

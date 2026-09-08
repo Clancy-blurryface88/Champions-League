@@ -280,31 +280,8 @@ function LiveMatchCard({ liveMatch, liveUserPrediction, compact = false, centere
   );
 }
 
-// When several matches are live at once, each gets its own full ring+minute+
-// odometer card (same LiveMatchCard as the single-match case) — but they
-// don't all pop in together. Each is only revealed once the previous one's
-// own minute-ring + score reveal has fully played out, so it reads as
-// "match 1 finishes filling in, then match 2 appears, then match 3...".
-// This mirrors LiveMatchCard/useLiveMinuteProgress's own reveal choreography:
-// the ring fills over 2200ms, then settledTick flips and the score digits
-// start rolling — the later one (away, delayMs=400) finishes 400ms + the
-// 1.4s roll (see OdometerDigit) after that. ~4000ms covers the full sequence.
-const REVEAL_STEP_MS = 4000;
-
 function LiveMatchesGrid({ liveMatches, liveUserPredictions, compact = false }) {
-  const [visibleCount, setVisibleCount] = useState(1);
-
-  useEffect(() => {
-    setVisibleCount(1);
-    if (liveMatches.length <= 1) return;
-    let shown = 1;
-    const iv = setInterval(() => {
-      shown += 1;
-      setVisibleCount(shown);
-      if (shown >= liveMatches.length) clearInterval(iv);
-    }, REVEAL_STEP_MS);
-    return () => clearInterval(iv);
-  }, [liveMatches.length]);
+  const visibleCount = liveMatches.length;
 
   if (liveMatches.length === 0) {
     return <LiveMatchCard liveMatch={null} liveUserPrediction={null} />;
@@ -354,28 +331,29 @@ function LiveMatchesGrid({ liveMatches, liveUserPredictions, compact = false }) 
 function MiniLiveMatchChip({ match }) {
   return (
     <div
-      className="flex items-center gap-1.5 px-3 py-2.5 rounded-full"
+      className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-full"
       style={{
         background: 'rgba(239,68,68,0.12)',
         border: '1px solid rgba(239,68,68,0.45)',
         backdropFilter: 'blur(28px) saturate(1.6)',
         WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 20px rgba(0,0,0,0.5)',
+        minWidth: 110,
       }}
     >
       <span className="relative flex h-2 w-2 flex-shrink-0">
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
       </span>
-      <div className="flex items-center gap-1" dir="ltr">
+      <div className="flex items-center gap-1 flex-1 justify-center" dir="ltr">
         {match.homeTeam?.crest && (
-          <img src={match.homeTeam.crest} className="w-3.5 h-3.5 object-contain" alt="" />
+          <img src={match.homeTeam.crest} className="w-3.5 h-3.5 object-contain flex-shrink-0" alt="" />
         )}
-        <span className="text-white text-[11px] font-bold">
+        <span className="text-white text-[11px] font-bold px-0.5">
           {match.score?.fullTime?.home ?? '?'}-{match.score?.fullTime?.away ?? '?'}
         </span>
         {match.awayTeam?.crest && (
-          <img src={match.awayTeam.crest} className="w-3.5 h-3.5 object-contain" alt="" />
+          <img src={match.awayTeam.crest} className="w-3.5 h-3.5 object-contain flex-shrink-0 mr-0.5" alt="" />
         )}
       </div>
     </div>
@@ -787,24 +765,21 @@ export default function Layout({ children, currentPageName }) {
 
   // Auto-dismiss the live intro — but only start the countdown once we know
   // whether there's a prediction to show, so it never disappears mid-fetch.
-  // Scales with how many tiles the grid has to stagger through (see
-  // LiveMatchesGrid's own REVEAL_STEP_MS) so it never cuts the reveal off
-  // partway with several concurrent matches.
+  // All live tiles animate in together now (no per-tile stagger), so this
+  // no longer needs to scale with match count.
   useEffect(() => {
     if (!showLiveIntro || livePredictionLoading) return;
-    const revealMs = Math.max(0, liveMatches.length - 1) * REVEAL_STEP_MS;
-    const t = setTimeout(() => setShowLiveIntro(false), 7000 + revealMs);
+    const t = setTimeout(() => setShowLiveIntro(false), 7000);
     return () => clearTimeout(t);
-  }, [showLiveIntro, livePredictionLoading, liveMatches.length]);
+  }, [showLiveIntro, livePredictionLoading]);
 
   // Hard safety cap — never let the overlay block the UI indefinitely even
   // if the prediction fetch hangs.
   useEffect(() => {
     if (!showLiveIntro) return;
-    const revealMs = Math.max(0, liveMatches.length - 1) * REVEAL_STEP_MS;
-    const cap = setTimeout(() => setShowLiveIntro(false), 16000 + revealMs);
+    const cap = setTimeout(() => setShowLiveIntro(false), 16000);
     return () => clearTimeout(cap);
-  }, [showLiveIntro, liveMatches.length]);
+  }, [showLiveIntro]);
 
   // Once the live-match intro card closes, surface the live leaderboard so
   // its data starts loading right as the card leaves the screen instead of
