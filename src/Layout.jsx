@@ -345,14 +345,13 @@ function MiniLiveMatchChip({ match }) {
         backdropFilter: 'blur(28px) saturate(1.6)',
         WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 20px rgba(0,0,0,0.5)',
-        minWidth: 110,
       }}
     >
       <span className="relative flex h-2 w-2 flex-shrink-0">
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
       </span>
-      <div className="flex items-center gap-1 flex-1 justify-center" dir="ltr">
+      <div className="flex items-center gap-1 flex-1 justify-center min-w-0" dir="ltr">
         {match.homeTeam?.crest && (
           <img src={match.homeTeam.crest} className="w-3.5 h-3.5 object-contain flex-shrink-0" alt="" />
         )}
