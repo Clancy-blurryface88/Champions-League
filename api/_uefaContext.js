@@ -267,8 +267,13 @@ export async function getOfficialStandings() {
  * season's full match list, using the same tolerant name matching as
  * resolveTeam/findOfficial elsewhere in this file. Returns null — never
  * throws — when the match can't be resolved, or when UEFA hasn't published
- * the lineup yet (lineupStatus !== 'AVAILABLE', which is normal until
- * roughly 45-60 minutes before kickoff).
+ * the starting XI yet (normal until roughly 45-60 minutes before kickoff).
+ *
+ * Readiness is judged by actually having 11 players per side, not by the
+ * `lineupStatus` string — UEFA's undocumented API returns intermediate
+ * values (observed live: 'TACTICAL_AVAILABLE', published well before
+ * kickoff, with full XIs already present) that this app has no need to
+ * distinguish from a later 'AVAILABLE'/confirmed state.
  */
 export async function getLineupsForMatch(homeTeamName, awayTeamName) {
   try {
@@ -281,7 +286,8 @@ export async function getLineupsForMatch(homeTeamName, awayTeamName) {
     if (!found) return null;
 
     const lineups = await getLineups(found.id);
-    return lineups?.lineupStatus === 'AVAILABLE' ? lineups : null;
+    const ready = lineups?.homeTeam?.field?.length > 0 && lineups?.awayTeam?.field?.length > 0;
+    return ready ? lineups : null;
   } catch {
     return null;
   }
