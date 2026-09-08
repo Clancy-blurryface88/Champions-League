@@ -7,4 +7,6 @@ export const TROPHY_IMAGES = [
   { id: "world-cup-2026", label: "מונדיאל 2026", url: "/hall-of-fame/world-cup-2026.png" },
   { id: "premier-league", label: "פרמייר ליג", url: "/hall-of-fame/premier-league.png" },
   { id: "serie-a", label: "סריה A", url: "/hall-of-fame/serie-a.png" },
+  { id: "euro-2024", label: "יורו 2024", url: "/hall-of-fame/euro-2024.jpg" },
+  { id: "euro-2020", label: "יורו 2020", url: "/hall-of-fame/euro-2020.png" },
 ];
