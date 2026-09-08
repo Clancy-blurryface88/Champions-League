@@ -74,13 +74,15 @@ function DeltaIcon({ delta }) {
   );
 }
 
+// Fixed width regardless of content (0 icons, 1 icon, several icons) — same
+// slot as DeltaIcon's fixed w-8 box — so a row with prediction icons never
+// pushes the flexible name column to a different width than a row without
+// them, which used to shift the score/delta columns left-right per row.
 function PredictionBadge({ matchPredictions }) {
-  if (!matchPredictions || matchPredictions.length === 0) return <span className="flex-shrink-0" style={{ minWidth: 38 }} />;
-  const exactCount = matchPredictions.filter(mp => mp.isExact).length;
-  const hitCount   = matchPredictions.filter(mp => mp.isHit && !mp.isExact).length;
-  if (exactCount === 0 && hitCount === 0) return <span className="flex-shrink-0" style={{ minWidth: 38 }} />;
+  const exactCount = matchPredictions?.filter(mp => mp.isExact).length || 0;
+  const hitCount   = matchPredictions?.filter(mp => mp.isHit && !mp.isExact).length || 0;
   return (
-    <div className="flex items-center gap-0.5 flex-shrink-0 flex-wrap justify-end" style={{ maxWidth: 64 }}>
+    <div className="flex items-center gap-0.5 flex-shrink-0 flex-nowrap justify-end" style={{ width: 64 }}>
       {Array.from({ length: exactCount }).map((_, i) => <span key={`e${i}`} style={{ fontSize: 10, lineHeight: 1 }}>🎯</span>)}
       {Array.from({ length: hitCount }).map((_, i) => <span key={`h${i}`} style={{ fontSize: 10, lineHeight: 1 }}>✅</span>)}
     </div>
@@ -121,7 +123,7 @@ function RankCard({ row, index, total, isInitial, onOpen }) {
               style={isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}}>
               {row.name}
             </p>
-            <span className="text-[12px] font-bold text-emerald-400 tabular-nums flex-shrink-0">
+            <span className="text-[12px] font-bold text-emerald-400 tabular-nums flex-shrink-0 text-right" style={{ minWidth: 40 }}>
               <ScoreCounter value={row.total} duration={scoreDur} delay={scoreDelay} showDecimals={true} />
             </span>
             <div className="flex-shrink-0 w-8 flex justify-end">
