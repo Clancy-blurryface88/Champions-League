@@ -77,24 +77,32 @@ function TeamHeader({ team, coach }) {
         <img
           src={team.logoUrl}
           alt=""
-          className="w-6 h-6 flex-shrink-0"
+          className="w-8 h-8 flex-shrink-0"
           onError={(e) => { e.currentTarget.style.display = 'none'; }}
         />
       )}
       <div className="text-center">
-        <p className="text-[12px] font-bold text-white leading-tight">{team?.internationalName}</p>
-        {coach && <p className="text-[9px] text-slate-400 leading-tight">מאמן: {coach}</p>}
+        <p className="text-[14px] font-bold text-white leading-tight">{team?.internationalName}</p>
+        {coach && <p className="text-[10.5px] text-slate-400 leading-tight">מאמן: {coach}</p>}
       </div>
     </div>
   );
+}
+
+// Last name only — the surname UEFA itself supplies (translations.lastName),
+// falling back to splitting internationalName if that's ever missing —
+// matches broadcast-graphic convention and keeps names short enough for the
+// now-larger markers regardless of how long a player's full name is.
+function surname(player) {
+  return player?.translations?.lastName?.EN || (player?.internationalName || '').trim().split(' ').slice(-1)[0] || '';
 }
 
 function Jersey({ color, number, isCaptain, countryCode }) {
   const dark = isLightColor(color);
   const flagCode = COUNTRY_FLAG_CODE[countryCode];
   return (
-    <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: 24, height: 24 }}>
-      <svg viewBox="0 0 100 100" width="24" height="24">
+    <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: 34, height: 34 }}>
+      <svg viewBox="0 0 100 100" width="34" height="34">
         <polygon
           points="35,10 50,20 65,10 80,10 95,25 95,40 78,32 78,90 22,90 22,32 5,40 5,25 20,10"
           fill={color || '#64748b'}
@@ -104,14 +112,14 @@ function Jersey({ color, number, isCaptain, countryCode }) {
       </svg>
       <span
         className="absolute font-black tabular-nums"
-        style={{ fontSize: 9, color: dark ? '#111827' : '#fff', top: '48%', transform: 'translateY(-50%)' }}
+        style={{ fontSize: 13, color: dark ? '#111827' : '#fff', top: '48%', transform: 'translateY(-50%)' }}
       >
         {number}
       </span>
       {isCaptain && (
         <span
           className="absolute flex items-center justify-center rounded-full bg-white text-black font-black"
-          style={{ width: 9, height: 9, fontSize: 6.5, top: -1, right: -1, lineHeight: 1 }}
+          style={{ width: 14, height: 14, fontSize: 10, top: -2, right: -2, lineHeight: 1 }}
         >
           C
         </span>
@@ -121,7 +129,7 @@ function Jersey({ color, number, isCaptain, countryCode }) {
           src={`https://flagcdn.com/${flagCode}.svg`}
           alt=""
           className="absolute rounded-sm"
-          style={{ width: 9, height: 7, bottom: -1, left: -1, boxShadow: '0 0 0 1px rgba(0,0,0,0.5)', objectFit: 'cover' }}
+          style={{ width: 14, height: 11, bottom: -2, left: -2, boxShadow: '0 0 0 1px rgba(0,0,0,0.5)', objectFit: 'cover' }}
           onError={(e) => { e.currentTarget.style.display = 'none'; }}
         />
       )}
@@ -136,7 +144,7 @@ function PlayerMarker({ entry, shirtColor, topPct, leftPct }) {
   return (
     <div
       className="absolute flex flex-col items-center gap-0.5"
-      style={{ top: `${topPct}%`, left: `${leftPct}%`, transform: 'translate(-50%, -50%)', width: 48 }}
+      style={{ top: `${topPct}%`, left: `${leftPct}%`, transform: 'translate(-50%, -50%)', width: 62 }}
     >
       <Jersey
         color={shirtColor}
@@ -145,10 +153,10 @@ function PlayerMarker({ entry, shirtColor, topPct, leftPct }) {
         countryCode={entry.player?.countryCode}
       />
       <span
-        className="text-[8px] text-white text-center leading-tight truncate w-full"
+        className="text-[10.5px] font-semibold text-white text-center leading-tight truncate w-full"
         style={{ textShadow: '0 1px 2px rgba(0,0,0,0.9)' }}
       >
-        {entry.player?.internationalName}
+        {surname(entry.player)}
       </span>
     </div>
   );
