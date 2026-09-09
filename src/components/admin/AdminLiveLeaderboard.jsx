@@ -70,7 +70,12 @@ function calculateScore(prediction, match) {
 // long-standing typo baked into imported fixtures/logos) — the live API
 // always returns the correct "Manchester City", so without this alias that
 // match silently drops out of the live view.
-const TEAM_ALIASES = { "manchastercity": "manchestercity" };
+const TEAM_ALIASES = {
+  "manchastercity": "manchestercity",
+  // DB uses "Sporting Lisbon"; UEFA's API returns "Sporting CP" / "Sporting
+  // Clube de Portugal" — no shared substring without this alias.
+  "sportinglisbon": "sportingcp",
+};
 function normalizeName(name = '') {
   const base = name.toLowerCase().replace(/[^a-z0-9֐-׿]/g, '');
   return TEAM_ALIASES[base] ?? base;

@@ -46,6 +46,10 @@ const TEAM_ALIASES = {
   // always returns the correct "Manchester City", so without this alias that
   // match silently drops out of every live view that matches by team name.
   "manchastercity":    "manchestercity",
+  // DB uses the common English name "Sporting Lisbon"; UEFA's API returns
+  // "Sporting CP" / "Sporting Clube de Portugal" — no shared substring, so
+  // that match dropped out of every live view without this alias.
+  "sportinglisbon":    "sportingcp",
 };
 function normTeam(n = '') {
   const base = n.toLowerCase().replace(/[^a-z0-9א-ת]/g, '');
