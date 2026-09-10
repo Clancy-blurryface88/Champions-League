@@ -75,6 +75,12 @@ const TEAM_ALIASES = {
   // DB uses "Sporting Lisbon"; UEFA's API returns "Sporting CP" / "Sporting
   // Clube de Portugal" — no shared substring without this alias.
   "sportinglisbon": "sportingcp",
+  // Same pattern: DB uses the English "Bayern Munich" / "Slavia Prague",
+  // UEFA's API returns the German/Czech "Bayern München" / "Slavia Praha" —
+  // no shared substring even after diacritic-folding, found by auditing all
+  // 36 teams after the Fenerbahçe fix.
+  "bayernmunich":   "bayernmunchen",
+  "slaviaprague":   "slaviapraha",
 };
 function normalizeName(name = '') {
   const base = name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9֐-׿]/g, '');

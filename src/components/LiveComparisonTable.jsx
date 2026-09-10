@@ -24,6 +24,18 @@ const TEAM_ALIASES = {
   // always returns the correct "Manchester City", so without this alias that
   // match silently drops out of every live view that matches by team name.
   "manchastercity":    "manchestercity",
+  // DB uses the common English name "Sporting Lisbon"; UEFA's API returns
+  // "Sporting CP" / "Sporting Clube de Portugal" — no shared substring, so
+  // that match dropped out of every live view without this alias (kept in
+  // sync with LiveLeaderboard.jsx/AdminLiveLeaderboard.jsx, which already
+  // had it — this file was missing it).
+  "sportinglisbon":    "sportingcp",
+  // Same pattern: DB uses the English "Bayern Munich" / "Slavia Prague",
+  // UEFA's API returns the German/Czech "Bayern München" / "Slavia Praha" —
+  // no shared substring even after diacritic-folding, found by auditing all
+  // 36 teams after the Fenerbahçe fix.
+  "bayernmunich":      "bayernmunchen",
+  "slaviaprague":      "slaviapraha",
 };
 function normTeam(n = '') {
   const base = n.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9א-ת]/g, '');

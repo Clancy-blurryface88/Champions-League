@@ -50,6 +50,12 @@ const TEAM_ALIASES = {
   // "Sporting CP" / "Sporting Clube de Portugal" — no shared substring, so
   // that match dropped out of every live view without this alias.
   "sportinglisbon":    "sportingcp",
+  // Same pattern: DB uses the English "Bayern Munich" / "Slavia Prague",
+  // UEFA's API returns the German/Czech "Bayern München" / "Slavia Praha" —
+  // no shared substring even after diacritic-folding (munich vs münchen,
+  // prague vs praha), found by auditing all 36 teams after the Fenerbahçe fix.
+  "bayernmunich":      "bayernmunchen",
+  "slaviaprague":      "slaviapraha",
 };
 function normTeam(n = '') {
   // Fold accented Latin letters (e.g. "ç" -> "c") before stripping — otherwise
