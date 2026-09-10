@@ -77,7 +77,7 @@ const TEAM_ALIASES = {
   "sportinglisbon": "sportingcp",
 };
 function normalizeName(name = '') {
-  const base = name.toLowerCase().replace(/[^a-z0-9֐-׿]/g, '');
+  const base = name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9֐-׿]/g, '');
   return TEAM_ALIASES[base] ?? base;
 }
 function matchTeams(apiName, dbName) {

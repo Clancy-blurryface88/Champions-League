@@ -26,7 +26,7 @@ const TEAM_ALIASES = {
   "manchastercity":    "manchestercity",
 };
 function normTeam(n = '') {
-  const base = n.toLowerCase().replace(/[^a-z0-9א-ת]/g, '');
+  const base = n.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9א-ת]/g, '');
   return TEAM_ALIASES[base] ?? base;
 }
 function teamsMatch(a, b) { const na = normTeam(a), nb = normTeam(b); return na === nb || na.includes(nb) || nb.includes(na); }

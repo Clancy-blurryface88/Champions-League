@@ -52,7 +52,11 @@ const TEAM_ALIASES = {
   "sportinglisbon":    "sportingcp",
 };
 function normTeam(n = '') {
-  const base = n.toLowerCase().replace(/[^a-z0-9א-ת]/g, '');
+  // Fold accented Latin letters (e.g. "ç" -> "c") before stripping — otherwise
+  // an accent gets deleted instead of folded, silently breaking the match
+  // against a plain-ASCII spelling of the same name (e.g. UEFA's "Fenerbahçe"
+  // vs the DB's "Fenerbahce"), the same failure mode the aliases above cover.
+  const base = n.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9א-ת]/g, '');
   return TEAM_ALIASES[base] ?? base;
 }
 function teamsMatch(a, b) { const na = normTeam(a), nb = normTeam(b); return na === nb || na.includes(nb) || nb.includes(na); }
