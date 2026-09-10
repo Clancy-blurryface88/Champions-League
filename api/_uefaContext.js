@@ -277,7 +277,11 @@ export async function getOfficialStandings() {
  * `lineupStatus` string — UEFA's undocumented API returns intermediate
  * values (observed live: 'TACTICAL_AVAILABLE', published well before
  * kickoff, with full XIs already present) that this app has no need to
- * distinguish from a later 'AVAILABLE'/confirmed state.
+ * distinguish from a later 'AVAILABLE'/confirmed state. However, at
+ * 'TACTICAL_AVAILABLE' the 11 field entries can still be missing
+ * `fieldCoordinate` entirely (observed live: Man Utd vs Sabah) — the pitch
+ * graphic needs a coordinate per player, so readiness must check for that
+ * too, not just the player count.
  */
 export async function getLineupsForMatch(homeTeamName, awayTeamName) {
   try {
@@ -290,11 +294,17 @@ export async function getLineupsForMatch(homeTeamName, awayTeamName) {
     if (!found) return null;
 
     const lineups = await getLineups(found.id);
-    const ready = lineups?.homeTeam?.field?.length > 0 && lineups?.awayTeam?.field?.length > 0;
+    const ready = hasPositionedField(lineups?.homeTeam) && hasPositionedField(lineups?.awayTeam);
     return ready ? lineups : null;
   } catch {
     return null;
   }
+}
+
+function hasPositionedField(team) {
+  return team?.field?.length > 0 && team.field.every(
+    (p) => typeof p.fieldCoordinate?.x === 'number' && typeof p.fieldCoordinate?.y === 'number'
+  );
 }
 
 function matchesName(wanted, candidate) {
