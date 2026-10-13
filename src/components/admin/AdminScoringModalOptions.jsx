@@ -9,7 +9,7 @@ import { Match } from "@/api/entities";
 // Demo only — the real modal is untouched. Each option renders inside a
 // phone-sized frame so lengths can be compared side by side. ──────────────
 
-const DEMO_MATCH = {
+export const DEMO_MATCH = {
   id: "demo",
   team_a: "Real Madrid",
   team_b: "Liverpool",
@@ -28,7 +28,7 @@ const DEMO_MATCH = {
 
 // ── Shared logic (copied from MatchScoringRulesModal so the demo stays isolated) ──
 
-function calcSimPoints(match, a, b) {
+export function calcSimPoints(match, a, b) {
   if (a === null || b === null) return null;
   const dirPts = a > b ? match.home_win_points || 0 : a === b ? match.draw_points || 0 : match.away_win_points || 0;
   const bttsPts = a > 0 && b > 0 ? match.btts_yes_points || 0 : match.btts_no_points || 0;
@@ -48,11 +48,11 @@ function calcSimPoints(match, a, b) {
   return { total: parseFloat(total.toFixed(2)), breakdown };
 }
 
-const parseScore = (s) => s.split(":").map(Number);
-const scoreEntries = (m) => Object.entries(m.score_odds || {}).filter(([s]) => s !== "other");
-const exactPtsFor = (m, a, b) => m.score_odds?.[`${a}:${b}`] ?? m.score_odds?.other ?? 0;
+export const parseScore = (s) => s.split(":").map(Number);
+export const scoreEntries = (m) => Object.entries(m.score_odds || {}).filter(([s]) => s !== "other");
+export const exactPtsFor = (m, a, b) => m.score_odds?.[`${a}:${b}`] ?? m.score_odds?.other ?? 0;
 
-function oddsColumns(m) {
+export function oddsColumns(m) {
   const e = scoreEntries(m);
   const byTotal = ([ka], [kb]) => { const [ah, aa] = parseScore(ka); const [bh, ba] = parseScore(kb); return ah + aa - (bh + ba) || ah - bh; };
   return [
@@ -62,7 +62,7 @@ function oddsColumns(m) {
   ];
 }
 
-function markets(m) {
+export function markets(m) {
   return [
     { key: "dir", title: "כיוון משחק", icon: Trophy, items: [
       { label: "ניצחון ביתי", short: "1", pts: m.home_win_points || 0 },
@@ -81,7 +81,7 @@ function markets(m) {
   ];
 }
 
-function useSim(match) {
+export function useSim(match) {
   const [a, setA] = useState(null);
   const [b, setB] = useState(null);
   useEffect(() => { setA(null); setB(null); }, [match.id]);
@@ -96,7 +96,7 @@ const TONE = {
 
 // ── Shared visual pieces ──────────────────────────────────────────────────
 
-function SimInput({ value, onChange, small }) {
+export function SimInput({ value, onChange, small }) {
   const isSet = value !== null;
   return (
     <div className="flex flex-col items-center gap-0.5">
@@ -112,7 +112,7 @@ function SimInput({ value, onChange, small }) {
   );
 }
 
-function SimTotal({ sim }) {
+export function SimTotal({ sim }) {
   return (
     <motion.span key={sim.total} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}
       className="text-base font-bold text-yellow-400 tabular-nums">
@@ -121,7 +121,7 @@ function SimTotal({ sim }) {
   );
 }
 
-function Breakdown({ sim }) {
+export function Breakdown({ sim }) {
   return (
     <div className="space-y-1">
       {sim.breakdown.map((r) => (
@@ -134,7 +134,7 @@ function Breakdown({ sim }) {
   );
 }
 
-function Simulator({ match, s, small }) {
+export function Simulator({ match, s, small }) {
   return (
     <div className="rounded-2xl border border-yellow-500/25 overflow-hidden" style={{ background: "linear-gradient(145deg, rgba(9,122,220,0.07) 0%, rgba(10,20,50,0.6) 100%)" }}>
       <div className="px-3 pt-2.5 text-center">
@@ -164,7 +164,7 @@ function Simulator({ match, s, small }) {
   );
 }
 
-function SectionLabel({ title, icon: Icon, color = "text-sky-400" }) {
+export function SectionLabel({ title, icon: Icon, color = "text-sky-400" }) {
   return (
     <div className={`flex items-center justify-center gap-1.5 ${color}`}>
       {Icon && <Icon className="w-3.5 h-3.5 opacity-80" />}
@@ -173,7 +173,7 @@ function SectionLabel({ title, icon: Icon, color = "text-sky-400" }) {
   );
 }
 
-function Segmented({ items }) {
+export function Segmented({ items }) {
   return (
     <div className="flex rounded-xl overflow-hidden border border-white/10">
       {items.map((it, i) => (
@@ -189,7 +189,7 @@ function Segmented({ items }) {
   );
 }
 
-function Markets({ match }) {
+export function Markets({ match }) {
   return (
     <div className="space-y-3">
       {markets(match).map((mk) => (
@@ -202,7 +202,7 @@ function Markets({ match }) {
   );
 }
 
-function ExactGrid({ match, highlight }) {
+export function ExactGrid({ match, highlight }) {
   if (!match.score_odds) return <p className="text-center text-xs text-slate-500">אין טבלת פגיעה מדויקת למשחק</p>;
   return (
     <div className="space-y-2">
@@ -232,7 +232,7 @@ function ExactGrid({ match, highlight }) {
 }
 
 // Home goals = rows, away goals = columns. Brighter = more points (= less likely).
-function Heatmap({ match, selected, onPick }) {
+export function Heatmap({ match, selected, onPick }) {
   const keys = scoreEntries(match).map(([s]) => parseScore(s));
   const max = Math.min(5, Math.max(3, ...keys.flat()));
   const vals = scoreEntries(match).map(([, p]) => p);
@@ -273,10 +273,10 @@ function Heatmap({ match, selected, onPick }) {
 
 // ── Phone frame that mimics the real popup chrome ─────────────────────────
 
-function PopupFrame({ match, children, compactHeader, noScroll, footer }) {
+export function PopupFrame({ match, children, compactHeader, noScroll, footer, hideHeader }) {
   return (
     <div className="mx-auto bg-[#0d1526] text-white rounded-2xl border border-white/10 overflow-hidden flex flex-col relative" style={{ width: 340, height: 600 }} dir="rtl">
-      <div className="flex-shrink-0">
+      {!hideHeader && <div className="flex-shrink-0">
         <div className="px-4 pt-3 pb-2 flex items-center">
           <span className="p-1.5 rounded-xl bg-white/5 border border-white/10 text-white/70"><ArrowLeft className="w-4 h-4" /></span>
         </div>
@@ -292,26 +292,26 @@ function PopupFrame({ match, children, compactHeader, noScroll, footer }) {
             <span className="text-[11px] font-bold">{match.team_b}</span>
           </div>
         </div>
-      </div>
+      </div>}
       <div className={`flex-1 min-h-0 ${noScroll ? "overflow-hidden relative" : "overflow-y-auto"} px-4 py-3`}>{children}</div>
       {footer}
     </div>
   );
 }
 
-const SECTIONS = [
+export const SECTIONS = [
   { id: "sim", label: "סימולטור", icon: Calculator },
   { id: "markets", label: "יחסים", icon: Trophy },
   { id: "exact", label: "תוצאה מדויקת", icon: Target },
 ];
 
-function SectionBody({ id, match, s }) {
+export function SectionBody({ id, match, s }) {
   if (id === "sim") return <Simulator match={match} s={s} />;
   if (id === "markets") return <Markets match={match} />;
   return <><SectionLabel title="פגיעה מדויקת" icon={Target} color="text-emerald-400/80" /><div className="h-2" /><ExactGrid match={match} /></>;
 }
 
-const fade = { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -8 }, transition: { duration: 0.2 } };
+export const fade = { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -8 }, transition: { duration: 0.2 } };
 
 // ═══ NAVIGATION BETWEEN SECTIONS (1-8) ═══════════════════════════════════
 
@@ -831,7 +831,7 @@ function Option20({ match }) {
 
 // ── Gallery shell ────────────────────────────────────────────────────────
 
-function OptionCard({ n, title, tagline, approach, children }) {
+export function OptionCard({ n, title, tagline, approach, children }) {
   return (
     <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
       <div className="flex items-start justify-between gap-3 mb-4">
