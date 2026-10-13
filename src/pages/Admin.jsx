@@ -24,6 +24,7 @@ import AdminGeneralQuestions from "../components/admin/AdminGeneralQuestions";
 import AdminHallOfFameOptions from "../components/admin/AdminHallOfFameOptions";
 import AdminHallOfFameOptionsExtra from "../components/admin/AdminHallOfFameOptionsExtra";
 import AdminHallOfFame from "../components/admin/AdminHallOfFame";
+import AdminScoringModalOptions from "../components/admin/AdminScoringModalOptions";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -90,6 +91,7 @@ export default function Admin() {
       case 'hall-of-fame-options': return <AdminHallOfFameOptions />;
       case 'hall-of-fame-options-extra': return <AdminHallOfFameOptionsExtra />;
       case 'hall-of-fame': return <AdminHallOfFame />;
+      case 'scoring-modal-options': return <AdminScoringModalOptions />;
       default: return <AdminRounds />;
     }
   };
@@ -112,6 +114,7 @@ export default function Admin() {
     { id: 'hall-of-fame', label: '👑 היכל התהילה', icon: Award },
     { id: 'hall-of-fame-options', label: '10 אפשרויות היכל תהילה', icon: Crown },
     { id: 'hall-of-fame-options-extra', label: '20 אפשרויות נוספות', icon: Crown },
+    { id: 'scoring-modal-options', label: '🎲 20 אפשרויות פופאפ 1X2', icon: Calculator },
   ];
 
   return (
