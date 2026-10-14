@@ -294,15 +294,17 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
               <span className="text-[10px] uppercase tracking-[0.14em] font-semibold text-yellow-400/80">סימולטור — כמה שווה הניחוש שלך</span>
             </div>
 
-            {/* Picker wheels */}
-            <div key={match.id} className="flex items-center justify-center gap-6 pb-3 pt-1" dir="ltr">
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-xs text-white font-semibold text-center leading-tight">{match.team_a}</span>
-                <ScoreWheel value={simA} onChange={pickA} />
+            {/* Picker wheels — each team's logo + name on the outer side of its wheel */}
+            <div key={match.id} className="flex items-center justify-center gap-3 pb-3 pt-1 px-3" dir="ltr">
+              <div className="flex flex-col items-center gap-1 w-16 min-w-0">
+                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-10 h-10" animate={false} />
+                <span className="text-[11px] text-white font-semibold text-center leading-tight line-clamp-2">{match.team_a}</span>
               </div>
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-xs text-white font-semibold text-center leading-tight">{match.team_b}</span>
-                <ScoreWheel value={simB} onChange={pickB} />
+              <ScoreWheel value={simA} onChange={pickA} />
+              <ScoreWheel value={simB} onChange={pickB} />
+              <div className="flex flex-col items-center gap-1 w-16 min-w-0">
+                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-10 h-10" animate={false} />
+                <span className="text-[11px] text-white font-semibold text-center leading-tight line-clamp-2">{match.team_b}</span>
               </div>
             </div>
 
