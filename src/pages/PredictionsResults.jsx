@@ -752,7 +752,7 @@ export default function PredictionsResults() {
                               Number(p.predicted_score_a) === Number(match.actual_score_a) &&
                               Number(p.predicted_score_b) === Number(match.actual_score_b)
                             );
-                            // Border: green = the viewer hit this exact score, blue = didn't.
+                            // Border: selected = thick white; otherwise green = the viewer hit this exact score, blue = didn't.
                             const border = hit ? '1.5px solid #22c55e' : '1px solid rgba(56,189,248,0.55)';
                             return (
                               <button
@@ -760,7 +760,7 @@ export default function PredictionsResults() {
                                 onClick={() => goToMatch(i)}
                                 className="flex-none flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-bold transition-all"
                                 style={active
-                                  ? { background: 'linear-gradient(135deg, #7c3aed 0%, #2e1065 100%)', border, boxShadow: hit ? '0 0 8px rgba(34,197,94,0.45)' : undefined }
+                                  ? { background: 'rgba(255,255,255,0.08)', border: '2.5px solid #ffffff', boxShadow: hit ? '0 0 8px rgba(34,197,94,0.45)' : undefined }
                                   : { background: 'rgba(255,255,255,0.08)', border, boxShadow: hit ? '0 0 8px rgba(34,197,94,0.45)' : undefined }}
                               >
                                 <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-6 h-6" rounded="sm" />
