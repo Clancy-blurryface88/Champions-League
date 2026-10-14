@@ -51,7 +51,7 @@ const R = {
 function FormDots({ form }) {
   if (!form?.length) return <span className="text-[10px] text-slate-600">—</span>;
   return (
-    <div className="flex gap-2.5">
+    <div className="flex gap-1.5">
       {form.map((item, i) => {
         const s = R[item.result];
         return (
@@ -59,14 +59,14 @@ function FormDots({ form }) {
             <div
               className="rounded-full flex items-center justify-center flex-shrink-0"
               style={{
-                width: 40, height: 40,
+                width: 36, height: 36,
                 background: s.bg,
                 border: `2px solid ${s.tx}`,
                 boxShadow: `0 0 0 3px ${s.bg}, 0 2px 6px rgba(0,0,0,0.25)`,
               }}
               title={`${item.result} · ${item.scored}:${item.conceded} מול ${item.opponent}`}
             >
-              <TeamFlag logo={item.opponentLogo} name={item.opponent} className="w-7 h-7" animate={false} rounded="full" />
+              <TeamFlag logo={item.opponentLogo} name={item.opponent} className="w-6 h-6" animate={false} rounded="full" />
             </div>
             <span className="font-bold" style={{ fontSize: 10, color: s.tx, lineHeight: 1 }}>{item.scored}:{item.conceded}</span>
           </div>
@@ -88,10 +88,12 @@ function AvgGoals({ scored, conceded }) {
   );
 }
 
+// Team on the left, its last games on the right (row-reverse: the page is RTL).
+// One line, never wraps.
 export function TeamFormRow({ logo, name, form, avgGoals, avgConceded }) {
   return (
-    <div className="flex items-start justify-center gap-3 flex-wrap">
-      <div className="flex flex-col items-center gap-1">
+    <div className="flex flex-row-reverse items-center justify-between gap-2">
+      <div className="flex flex-col items-center gap-1 flex-shrink-0">
         <div
           className="rounded-full flex items-center justify-center flex-shrink-0"
           style={{
