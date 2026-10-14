@@ -235,7 +235,7 @@ async function onFinished(fixtureId, mode, sendAfter, late = false) {
   // with the night's exact-hit count.
   let body;
   if (hits === 0) {
-    body = `אף פגיעה מדויקת ${late ? 'אתמול' : 'הערב'} 😱 — כנסו לראות את הטבלה העדכנית 👉`;
+    body = `אף פגיעה מדויקת ${late ? 'אתמול' : 'הערב'} 😟 — כנסו לראות את הטבלה העדכנית 👉`;
   } else if (hitters.size <= 3) {
     const profiles = await supa(`profiles?select=id,display_name&id=in.(${[...hitters].join(',')})`);
     const names = [...hitters].map((id) => profiles.find((p) => p.id === id)?.display_name?.trim()).filter(Boolean);
