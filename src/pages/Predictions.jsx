@@ -1177,6 +1177,12 @@ export default function Predictions() {
                     {/* Separator + Arena toggle */}
                     <div className="h-px mt-3" style={{ background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)' }} />
                     {/* Same look as the "League Phase" stage badge at the top of the card */}
+                    <style>{`
+                      @keyframes arena-glow-pulse {
+                        0%, 100% { border-color: rgba(250,204,21,0.40); box-shadow: inset 0 1px 0 rgba(255,255,255,0.30), 0 0 0 0 rgba(250,204,21,0); }
+                        50% { border-color: rgba(250,204,21,0.95); box-shadow: inset 0 1px 0 rgba(255,255,255,0.30), 0 0 14px 2px rgba(250,204,21,0.55); }
+                      }
+                    `}</style>
                     <div className="flex justify-center mt-3">
                       <button
                         onClick={(e) => { e.stopPropagation(); toggleArena(match.id); }}
@@ -1186,6 +1192,7 @@ export default function Predictions() {
                           backdropFilter: 'blur(20px) saturate(140%)',
                           WebkitBackdropFilter: 'blur(20px) saturate(140%)',
                           boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.30)',
+                          animation: 'arena-glow-pulse 1.8s ease-in-out infinite',
                         }}
                       >
                         זירת המשחק
