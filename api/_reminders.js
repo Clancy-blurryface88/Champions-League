@@ -1,11 +1,11 @@
 // Handler (mounted via GET /api/football?source=reminders) — "go predict"
 // pushes, to every subscriber:
 //   • 12:00 Israel time the day before a round starts (a match day whose
-//     previous day had no matches)
+//     previous day had no matches) — "new round open for predictions"
 //   • 2h15m before the round's first kickoff (19:45 → 17:30), first day only
 //   • before each kickoff slot — 19:00 for 19:45, 21:00 for 22:00 —
 //     "lineups are out, want to update?" (falls back to "last chance")
-// The first two say how many participants still haven't predicted.
+// The 17:30 one says how many participants still haven't predicted.
 //
 // Triggered every ~10 min by .github/workflows/reminders.yml (Vercel Hobby
 // cron runs only once a day). A reminder is created when the trigger lands
@@ -74,7 +74,8 @@ async function plannedReminders(now) {
     if (!byDay.has(addDays(day, -1))) {
       out.push({
         key: `rem:daybefore:${day}`, at: ilNoon(addDays(day, -1)), matchIds: ids,
-        heading: `📅 מחר מחזור ליגת האלופות! (${ilTime(first)})`,
+        heading: '📅 מחזור חדש פורסם ופתוח לניחוש!',
+        body: `המשחקים מתחילים מחר ב-${ilTime(first)} — כנסו לנחש 👉`,
       });
       out.push({
         key: `rem:first:${day}`, at: new Date(slots[0] - 135 * 60e3), matchIds: ids,
@@ -125,8 +126,8 @@ export async function remindersHandler(req, res) {
         results.push({ key: r.key, at: r.at.toISOString(), lineups: published, sent });
         continue;
       }
-      const n = await missingCount(r.matchIds, users);
-      const sent = await push({ heading: r.heading, body: missingLine(n), url: `${SITE}/`, key: r.key, mode, sendAfter: r.at });
+      const n = r.body ? null : await missingCount(r.matchIds, users);
+      const sent = await push({ heading: r.heading, body: r.body || missingLine(n), url: `${SITE}/`, key: r.key, mode, sendAfter: r.at });
       results.push({ key: r.key, at: r.at.toISOString(), missing: n, sent });
     }
     return res.status(200).json({

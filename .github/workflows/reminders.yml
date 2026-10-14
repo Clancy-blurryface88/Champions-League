@@ -4,9 +4,8 @@
 name: Prediction reminders
 
 on:
-  # Schedule off until every reminder text/time is approved.
-  # schedule:
-  #   - cron: "*/10 7-21 * * *"
+  schedule:
+    - cron: "*/10 7-21 * * *"
   workflow_dispatch:
 
 jobs:
