@@ -5,6 +5,7 @@ import { useModalBackButton } from "@/hooks/useModalBackButton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Target, Trophy, Zap, Goal, ArrowLeft, Calculator } from "lucide-react";
 import { ShineBorder } from "@/components/magicui/shine-border";
+import OdometerValue from "@/components/OdometerValue";
 import { motion, AnimatePresence } from "framer-motion";
 
 function calcSimPoints(match, a, b) {
@@ -131,6 +132,9 @@ const CARD_THEMES = {
   'blue-grad': { text: "text-blue-400",    bg: "bg-blue-500/8" },
 };
 
+// 2 → 0 decimals, 1.5 → 1, 2.35 → 2 — so the odometer shows the value as-is.
+const decimalsOf = (v) => Math.min(2, (String(v ?? '').split('.')[1] || '').length);
+
 function SegmentedGroup({ items, delay = 60 }) {
   return (
     <div
@@ -149,14 +153,15 @@ function SegmentedGroup({ items, delay = 60 }) {
           <React.Fragment key={item.label}>
             {i > 0 && <div className="w-px flex-shrink-0 bg-gradient-to-b from-transparent via-white/20 to-transparent self-stretch" />}
             <div className={`flex flex-col items-center gap-1 py-3.5 flex-1 ${t.bg}`}>
+              {/* Odometer roll (same effect as the tables). Solid colour — a
+                  gradient clipped to text doesn't survive the rolling strips. */}
               <span
                 className={`text-2xl font-bold tabular-nums leading-none ${
-                  item.theme === 'rose'    ? 'bg-gradient-to-br from-rose-400 to-red-600 bg-clip-text text-transparent' :
-                  item.theme === 'emerald' ? 'bg-gradient-to-br from-green-400 to-emerald-500 bg-clip-text text-transparent' :
-                  'bg-gradient-to-br from-sky-400 to-white bg-clip-text text-transparent'
+                  item.theme === 'rose' ? 'text-rose-400' : item.theme === 'emerald' ? 'text-emerald-400' : 'text-sky-300'
                 }`}
+                dir="ltr"
               >
-                {item.pts}
+                <OdometerValue target={Number(item.pts) || 0} decimals={decimalsOf(item.pts)} height={26} width={14} />
               </span>
               <span className={`text-[11px] font-medium text-center leading-tight px-1 mt-0.5 ${
                   item.theme === 'rose'    ? 'bg-gradient-to-br from-rose-400 to-red-600 bg-clip-text text-transparent' :
