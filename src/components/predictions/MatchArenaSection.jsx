@@ -164,8 +164,8 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
           </motion.div>
         ) : null}
 
-        {/* Head-to-head — collapsed; fetches past meetings only when opened */}
-        <HeadToHead teamA={match.team_a} teamB={match.team_b} />
+        {/* Head-to-head — every CL meeting (UEFA archive + this season), collapsed */}
+        <HeadToHead teamA={match.team_a?.trim()} teamB={match.team_b?.trim()} logoA={match.team_a_logo} logoB={match.team_b_logo} allMatches={allMatches} />
 
         {/* Odds Bar — fades in after form section, no y-jump */}
         <AnimatePresence>
