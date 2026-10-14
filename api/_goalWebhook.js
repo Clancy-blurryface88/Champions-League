@@ -140,7 +140,7 @@ async function onScoreChanged(fixtureId, data, mode, sendAfter) {
   const our = await findOurMatch(fx);
   if (!our) return { skipped: 'match not in our DB' };
   const hits = await countExact(our, hs, as);
-  const heading = `❌ השער נפסל — ${teamLabel(fx, 'home')} ${hs}-${as} ${teamLabel(fx, 'away')}`;
+  const heading = `🖥️❌ השער נפסל — ${teamLabel(fx, 'home')} ${hs}-${as} ${teamLabel(fx, 'away')}`;
   return push({ heading, body: hitsLine(hits), url: `${SITE}/?open=live`, key: `fix:${fixtureId}:${hs}-${as}:${Date.now() - (Date.now() % 600000)}`, mode, sendAfter });
 }
 
