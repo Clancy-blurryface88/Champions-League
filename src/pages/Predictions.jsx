@@ -6,7 +6,7 @@ import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { User } from "@/api/entities";
 import { AiBrief } from "@/api/entities";
-import { ArrowLeft, Check, Lock, HelpCircle, Eye, Sparkles, ChevronDown, ChevronUp, Dices } from "lucide-react";
+import { ArrowLeft, Check, Lock, HelpCircle, Eye, Sparkles, ChevronDown, Dices } from "lucide-react";
 import AiBriefModal from "@/components/AiBriefModal"; // ADDED Eye icon
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -1177,18 +1177,21 @@ export default function Predictions() {
 
                     {/* Separator + Arena toggle */}
                     <div className="h-px mt-3" style={{ background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)' }} />
+                    {/* Same look as the "League Phase" round cards on the dashboard (RoundsMarquee) */}
                     <button
                       onClick={(e) => { e.stopPropagation(); toggleArena(match.id); }}
-                      className="w-full flex items-center justify-center gap-1.5 pt-2.5 transition-opacity"
-                      style={{ color: '#facc15', opacity: arenaOpen.has(match.id) ? 1 : 0.7 }}
+                      className="relative w-full mt-3 h-11 rounded-2xl flex items-center justify-center gap-3 active:scale-[0.98] transition-transform"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(8,22,42,0.55) 0%, rgba(3,10,20,0.45) 100%)',
+                        border: '1px solid rgba(9, 122, 220,0.28)',
+                        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35)',
+                      }}
                     >
-                      {arenaOpen.has(match.id)
-                        ? <ChevronUp className="w-3.5 h-3.5" />
-                        : <ChevronDown className="w-3.5 h-3.5" />}
-                      <span className="text-[11px] font-semibold tracking-wide">זירת המשחק</span>
-                      {arenaOpen.has(match.id)
-                        ? <ChevronUp className="w-3.5 h-3.5" />
-                        : <ChevronDown className="w-3.5 h-3.5" />}
+                      <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+                        <ShineBorder shineColor={["#097adc", "#ffffff", "#097adc"]} borderRadius={16} borderWidth={1} />
+                      </div>
+                      <img src="/champions/trophy-marquee.png" alt="" className="relative h-7 w-auto object-contain" />
+                      <span className="relative text-white font-semibold text-sm tracking-wide" style={{ fontFamily: "'Outfit', sans-serif" }}>זירת המשחק</span>
                     </button>
 
                     {/* Arena — bottom sheet (portal) */}
