@@ -47,12 +47,12 @@ function calcSimPoints(match, a, b) {
 }
 
 // iOS-style picker wheel (UIPickerView): scroll-snap column 0-9, the centred
-// row is the value. Scrolls to its initial value on mount only — remount
-// (key) to reset.
+// row is the value. value=null = nothing picked yet (all rows dimmed). Scrolls
+// to its initial value on mount only — remount (key) to reset.
 const WHEEL_ITEM = 34;
 function ScoreWheel({ value, onChange }) {
   const ref = useRef(null);
-  useEffect(() => { ref.current?.scrollTo({ top: value * WHEEL_ITEM }); }, []);
+  useEffect(() => { ref.current?.scrollTo({ top: (value ?? 0) * WHEEL_ITEM }); }, []);
   const onScroll = () => {
     const idx = Math.max(0, Math.min(9, Math.round(ref.current.scrollTop / WHEEL_ITEM)));
     if (idx !== value) onChange(idx);
@@ -180,13 +180,17 @@ function Divider() {
 }
 
 export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
-  const [simA, setSimA] = useState(1);
-  const [simB, setSimB] = useState(1);
+  // null until the user turns a wheel — the points breakdown opens only then.
+  const [simA, setSimA] = useState(null);
+  const [simB, setSimB] = useState(null);
+  // Turning one wheel picks the other one's current row (0 if untouched).
+  const pickA = (v) => { setSimA(v); setSimB((b) => b ?? 0); };
+  const pickB = (v) => { setSimB(v); setSimA((a) => a ?? 0); };
   const [tab, setTab] = useState("sim");
 
   useEffect(() => {
-    setSimA(1);
-    setSimB(1);
+    setSimA(null);
+    setSimB(null);
     setTab("sim");
   }, [match?.id]);
 
@@ -294,11 +298,11 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
             <div key={match.id} className="flex items-center justify-center gap-6 pb-3 pt-1" dir="ltr">
               <div className="flex flex-col items-center gap-1">
                 <span className="text-xs text-white font-semibold text-center leading-tight">{match.team_a}</span>
-                <ScoreWheel value={simA} onChange={setSimA} />
+                <ScoreWheel value={simA} onChange={pickA} />
               </div>
               <div className="flex flex-col items-center gap-1">
                 <span className="text-xs text-white font-semibold text-center leading-tight">{match.team_b}</span>
-                <ScoreWheel value={simB} onChange={setSimB} />
+                <ScoreWheel value={simB} onChange={pickB} />
               </div>
             </div>
 
