@@ -1186,7 +1186,7 @@ export default function Predictions() {
                     <div className="flex justify-center mt-3">
                       <button
                         onClick={(e) => { e.stopPropagation(); toggleArena(match.id); }}
-                        className="relative overflow-hidden text-sm font-semibold text-yellow-400 border border-yellow-400/40 px-5 py-1 rounded-full hover:border-yellow-400/70 transition-colors cursor-pointer"
+                        className="relative overflow-hidden flex items-center gap-1.5 text-sm font-semibold text-yellow-400 border border-yellow-400/40 px-5 py-1 rounded-full hover:border-yellow-400/70 transition-colors cursor-pointer"
                         style={{
                           background: 'rgba(255,255,255,0.07)',
                           backdropFilter: 'blur(20px) saturate(140%)',
@@ -1195,6 +1195,7 @@ export default function Predictions() {
                           animation: 'arena-glow-pulse 1.8s ease-in-out infinite',
                         }}
                       >
+                        <img src="/champions/arena-stadium.png" alt="" className="w-4 h-4 object-contain" />
                         זירת המשחק
                       </button>
                     </div>
