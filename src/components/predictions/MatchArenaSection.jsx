@@ -221,14 +221,14 @@ function OddsTab({ match }) {
           <style>{`@keyframes ts-shine{0%{transform:translateX(-120%) skewX(-20deg)}60%,100%{transform:translateX(320%) skewX(-20deg)}}`}</style>
           <p className="text-[12px] font-semibold text-yellow-400 text-center mb-3">התוצאות הסבירות ביותר</p>
           {/* Glass tags with a light sweep running across them */}
-          <div className="flex flex-wrap gap-2.5 justify-center" dir="ltr">
+          <div className="flex flex-col items-center gap-2" dir="ltr">
             {top.map((t, i) => (
               <motion.div
                 key={t.score}
                 initial={{ opacity: 0, y: 6, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ delay: 0.25 + i * 0.09, type: 'spring', stiffness: 380, damping: 24 }}
-                className="relative overflow-hidden flex items-center gap-2 px-4 py-2 rounded-full"
+                className="relative overflow-hidden flex items-center justify-between w-44 px-5 py-2 rounded-full"
                 style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.25)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18)' }}
               >
                 <span className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" style={{ animation: `ts-shine 2.6s ease-in-out ${i * 0.2}s infinite` }} />
