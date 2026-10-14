@@ -6,7 +6,7 @@
 //   • 2h15m before the round's first kickoff (19:45 → 17:30), first day only
 //     — "reminder: matches start at 19:45"
 //   • before each kickoff slot — 19:00 for 19:45, 21:00 for 22:00 —
-//     "lineups are out, want to update?" (falls back to "last chance")
+//     "lineups are out, want to update?" — only if the lineups are out
 // Every reminder opens the predictions page of its round.
 //
 // Triggered every ~10 min by .github/workflows/reminders.yml (Vercel Hobby
@@ -117,18 +117,16 @@ export async function remindersHandler(req, res) {
     const results = [];
     for (const r of due) {
       if (r.kind === 'slot') {
-        // Lineups out → "lineups published" version. Not yet → wait for the
-        // next trigger, until 10 min past the slot time, then send the
-        // plain "last chance" version. Same key, so only one ever goes out.
+        // Sent only once the lineups are out — until then wait for the next
+        // trigger; if they're still missing when the window closes, nothing
+        // goes out (the "last chance" fallback was dropped).
         const checks = await Promise.all(r.slotMatches.map((m) => getLineupsForMatch(m.team_a.trim(), m.team_b.trim())));
         const published = checks.some(Boolean);
-        if (!published && now < new Date(r.at.getTime() + 10 * 60e3)) {
+        if (!published) {
           results.push({ key: r.key, waiting: 'lineups not published yet' });
           continue;
         }
-        const msg = published
-          ? { heading: `📋 ההרכבים למשחקי ${r.kickoff} פורסמו!`, body: `רוצים לעדכן ניחוש? אפשר עד ${r.lock} 👉` }
-          : { heading: `⏰ ניחושי משחקי ${r.kickoff} ננעלים ב-${r.lock}`, body: 'הזדמנות אחרונה לעדכן ניחוש 👉' };
+        const msg = { heading: `📋 ההרכבים למשחקי ${r.kickoff} פורסמו!`, body: `רוצים לעדכן ניחוש? אפשר עד ${r.lock} 👉` };
         const sent = await push({ ...msg, url: r.url, key: r.key, mode, sendAfter: r.at });
         results.push({ key: r.key, at: r.at.toISOString(), lineups: published, sent });
         continue;
