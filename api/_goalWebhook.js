@@ -1,6 +1,7 @@
 // Handler (mounted via POST /api/football?source=goal-webhook — Hobby plan caps
 // us at 12 functions) — receives GOAL API webhooks and sends OneSignal pushes:
 //   goal.scored    → "⚽ גול! …" + how many players currently hold the exact score
+//   score.changed  → correction push (goal ruled out by VAR) with the new count
 //   match.finished → once the night's last CL match ends, a summary push with
 //                    the night's exact-score hits.
 // Pushes go to every subscriber (no per-user targeting yet). Each push carries
@@ -121,7 +122,22 @@ async function onGoal(fixtureId, data, dryRun) {
   }
 
   const heading = `⚽ גול! ${teamLabel(fx, 'home')} ${hs}-${as} ${teamLabel(fx, 'away')}${scorer ? ` (${scorer}${minute ? ` ${minute}'` : ''})` : ''}`;
-  return push({ heading, body: hitsLine(hits), url: `${SITE}/?open=live`, key: `goal:${fixtureId}:${hs}-${as}`, dryRun });
+  return push({ heading, body: hitsLine(hits), url: `${SITE}/?open=live`, // Minute in the key: a goal ruled out by VAR and then re-scored at the same
+  // score is a new goal and must not be deduped against the cancelled one.
+  key: `goal:${fixtureId}:${hs}-${as}:${minute || ''}`, dryRun });
+}
+
+// score.changed = the score moved WITHOUT going up — in practice a goal ruled
+// out (VAR). Tells everyone the corrected score and who's hitting it now.
+async function onScoreChanged(fixtureId, data, dryRun) {
+  const fx = await goal(`/fixtures/${fixtureId}`);
+  const hs = Number(data?.homeScore ?? data?.score?.home ?? fx.homeTeamScore);
+  const as = Number(data?.awayScore ?? data?.score?.away ?? fx.awayTeamScore);
+  const our = await findOurMatch(fx);
+  if (!our) return { skipped: 'match not in our DB' };
+  const hits = await countExact(our, hs, as);
+  const heading = `❌ השער נפסל — ${teamLabel(fx, 'home')} ${hs}-${as} ${teamLabel(fx, 'away')}`;
+  return push({ heading, body: hitsLine(hits), url: `${SITE}/?open=live`, key: `fix:${fixtureId}:${hs}-${as}:${Date.now() - (Date.now() % 600000)}`, dryRun });
 }
 
 async function onFinished(fixtureId, dryRun) {
@@ -170,7 +186,9 @@ export async function goalWebhookHandler(req, res) {
     if (req.headers['x-admin-key'] !== process.env.GOAL_API_KEY) return res.status(401).json({ error: 'unauthorized' });
     const { event, fixtureId } = req.query;
     try {
-      const out = event === 'match.finished' ? await onFinished(fixtureId, true) : await onGoal(fixtureId, {}, true);
+      const out = event === 'match.finished' ? await onFinished(fixtureId, true)
+        : event === 'score.changed' ? await onScoreChanged(fixtureId, {}, true)
+        : await onGoal(fixtureId, {}, true);
       return res.status(200).json(out);
     } catch (e) {
       return res.status(500).json({ error: e.message });
@@ -196,6 +214,7 @@ export async function goalWebhookHandler(req, res) {
     if (!fixtureId) return res.status(200).json({ skipped: 'no fixture id' });
     let out = { ignored: event.event };
     if (event.event === 'goal.scored') out = await onGoal(fixtureId, data, false);
+    else if (event.event === 'score.changed') out = await onScoreChanged(fixtureId, data, false);
     else if (event.event === 'match.finished') out = await onFinished(fixtureId, false);
     console.log('[goal-webhook] result', JSON.stringify(out).slice(0, 500));
     return res.status(200).json({ ok: true });
