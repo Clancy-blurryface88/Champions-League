@@ -35,7 +35,7 @@ export default function MatchLineups({ teamA, teamB }) {
   );
 }
 
-function isLightColor(hex) {
+export function isLightColor(hex) {
   if (!hex) return false;
   const c = hex.replace('#', '');
   if (c.length !== 6) return false;
@@ -54,7 +54,7 @@ function coachName(team) {
 // differ from ISO 3166-1), so it can't be fed to a standard flag CDN
 // as-is. Mapped to flagcdn.com codes — verified against every nationality
 // that actually appears in this season's competition player pool.
-const COUNTRY_FLAG_CODE = {
+export const COUNTRY_FLAG_CODE = {
   ALB: 'al', ALG: 'dz', AND: 'ad', ANG: 'ao', ARG: 'ar', ARM: 'am', AUS: 'au', AUT: 'at', AZE: 'az',
   BEL: 'be', BFA: 'bf', BIH: 'ba', BLR: 'by', BRA: 'br', BUL: 'bg', CAN: 'ca', CGO: 'cg', CHI: 'cl',
   CIV: 'ci', CMR: 'cm', COD: 'cd', COL: 'co', CPV: 'cv', CRC: 'cr', CRO: 'hr', CUW: 'cw', CYP: 'cy',
@@ -93,11 +93,11 @@ function TeamHeader({ team, coach }) {
 // falling back to splitting internationalName if that's ever missing —
 // matches broadcast-graphic convention and keeps names short enough for the
 // now-larger markers regardless of how long a player's full name is.
-function surname(player) {
+export function surname(player) {
   return player?.translations?.lastName?.EN || (player?.internationalName || '').trim().split(' ').slice(-1)[0] || '';
 }
 
-function Jersey({ color, number, isCaptain, countryCode }) {
+export function Jersey({ color, number, isCaptain, countryCode }) {
   const dark = isLightColor(color);
   const flagCode = COUNTRY_FLAG_CODE[countryCode];
   return (
@@ -170,7 +170,9 @@ function homeTopPct(y) { return (y / 1000) * 48 + 5; }
 function awayTopPct(y) { return 100 - ((y / 1000) * 48 + 5); }
 function leftPct(x) { return x / 10; }
 
-export function PitchLineup({ home, away }) {
+// `Marker` lets the admin gallery swap in alternative player markers
+// (photos etc.) without forking the pitch layout.
+export function PitchLineup({ home, away, Marker = PlayerMarker }) {
   return (
     <div className="w-full">
       <TeamHeader team={home?.team} coach={coachName(home)} />
@@ -197,7 +199,7 @@ export function PitchLineup({ home, away }) {
         />
 
         {home?.field?.map((p) => (
-          <PlayerMarker
+          <Marker
             key={p.player.id}
             entry={p}
             shirtColor={home.shirtColor}
@@ -206,7 +208,7 @@ export function PitchLineup({ home, away }) {
           />
         ))}
         {away?.field?.map((p) => (
-          <PlayerMarker
+          <Marker
             key={p.player.id}
             entry={p}
             shirtColor={away.shirtColor}
