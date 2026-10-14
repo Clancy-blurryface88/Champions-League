@@ -121,8 +121,8 @@ export function TeamFormRow({ logo, name, form, avgGoals, avgConceded }) {
 // games as rows, oldest → newest, one team per column — matchday vs matchday.
 function TeamHeaderCard({ logo, name, avgGoals, avgConceded }) {
   return (
-    <div className="flex-1 min-w-0 flex flex-col items-center gap-1.5 rounded-2xl py-3 px-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-      <TeamFlag logo={logo} name={name} className="w-11 h-11" animate={false} rounded="full" />
+    <div className="flex-1 min-w-0 flex flex-col items-center gap-1.5 rounded-2xl py-3 px-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(245,197,24,0.55)' }}>
+      <TeamFlag logo={logo} name={name} className="w-11 h-11" animate={false} rounded="none" />
       <span className="text-[12px] font-bold text-white text-center leading-tight truncate w-full">{name}</span>
       <div className="flex items-center gap-1.5 text-[10px]" dir="rtl">
         <span className="px-1.5 py-0.5 rounded-md" style={{ background: 'rgba(74,222,128,0.12)', color: '#4ade80' }}>זכות {avgGoals ?? '—'}</span>
@@ -140,7 +140,7 @@ function FormCell({ item, mirror }) {
   const s = R[item.result];
   return (
     <div className={`flex-1 min-w-0 max-w-[140px] flex items-center gap-1.5 rounded-xl px-2 py-1 ${mirror ? 'flex-row-reverse' : ''}`} style={{ background: s.bg, border: `1px solid ${s.bd}` }}>
-      <TeamFlag logo={item.opponentLogo} name={item.opponent} className="w-5 h-5 flex-shrink-0" animate={false} rounded="full" />
+      <TeamFlag logo={item.opponentLogo} name={item.opponent} className="w-5 h-5 flex-shrink-0" animate={false} rounded="none" />
       <span className={`flex-1 min-w-0 text-[10px] text-white/85 truncate ${mirror ? 'text-right' : ''}`}>{item.opponent}</span>
       <span className="font-black tabular-nums text-[12px] flex-shrink-0" style={{ color: s.tx }}>{item.scored}:{item.conceded}</span>
     </div>
@@ -319,7 +319,7 @@ function AllCompsCell({ item, mirror }) {
         ? <img src={item.competitionLogo} alt={item.competition} title={item.competition} className="w-4 h-4 object-contain flex-shrink-0 rounded-sm bg-white/90 p-[1px]" loading="lazy" />
         : <span className="w-4 h-4 flex-shrink-0" />}
       <span className="flex-shrink-0 self-stretch mx-0.5" style={{ width: 1, background: 'rgba(255,255,255,0.18)' }} />
-      <img src={item.opponentLogo} alt="" className="w-5 h-5 object-contain flex-shrink-0 rounded-full" loading="lazy" />
+      <img src={item.opponentLogo} alt="" className="w-5 h-5 object-contain flex-shrink-0 " loading="lazy" />
       <div className={`flex-1 min-w-0 leading-tight ${mirror ? 'text-right' : ''}`}>
         <div className="text-[10px] text-white/85 truncate">{item.opponent}</div>
         <div className="text-[8.5px] text-white/45">{dd}/{mm} · {item.isHome ? 'בית' : 'חוץ'}</div>
