@@ -101,6 +101,8 @@ async function onGoal(fixtureId, data, mode, sendAfter) {
   const our = await findOurMatch(fx);
   if (!our) return { skipped: 'match not in our DB' };
   const hits = await countExact(our, hs, as);
+  // Only goals that leave someone on the exact score are worth a push.
+  if (hits === 0) return { skipped: 'nobody hits the new score' };
 
   let scorer = data?.scorer || data?.player || null;
   let minute = data?.minute || data?.time || null;
@@ -125,6 +127,10 @@ async function onScoreChanged(fixtureId, data, mode, sendAfter) {
   const our = await findOurMatch(fx);
   if (!our) return { skipped: 'match not in our DB' };
   const hits = await countExact(our, hs, as);
+  // Goal pushes only go out when someone hits the new score, so only correct
+  // a goal that was announced: one more goal on either side had a hit.
+  const announced = (await countExact(our, hs + 1, as)) > 0 || (await countExact(our, hs, as + 1)) > 0;
+  if (!announced) return { skipped: 'cancelled goal was never announced' };
   const heading = `🖥️❌ השער נפסל — ${teamLabel(fx, 'home')} ${hs}-${as} ${teamLabel(fx, 'away')}`;
   return push({ heading, body: hitsLine(hits), url: `${SITE}/?open=live`, key: `fix:${fixtureId}:${hs}-${as}:${Date.now() - (Date.now() % 600000)}`, mode, sendAfter });
 }
