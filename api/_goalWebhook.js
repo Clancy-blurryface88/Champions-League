@@ -167,6 +167,23 @@ async function onScoreChanged(fixtureId, data, mode, sendAfter) {
   const ph = Number(prev.home), pa = Number(prev.away);
   if (!(ph > hs || pa > as) || ph < hs || pa < as) return { skipped: `score did not drop (${ph}-${pa} → ${hs}-${as})` };
 
+  // GOAL can blip the score down for a moment while it rebuilds a match's
+  // data (Aston Villa–Fenerbahçe 2-0: both goals re-written at once, a false
+  // "goal ruled out" went out). So on a live webhook, wait 45s and re-check:
+  // the score must still be below the previous one, and the cut goal must be
+  // gone from the events (or marked as cancelled).
+  if (mode === 'live') {
+    await new Promise((r) => setTimeout(r, 45e3));
+    const again = await goal(`/fixtures/${fixtureId}`);
+    const nh = Number(again.homeTeamScore), na = Number(again.awayTeamScore);
+    if (nh >= ph && na >= pa) return { skipped: `score back to ${nh}-${na} after 45s — data blip, not VAR` };
+    const events = await goal(`/fixtures/${fixtureId}/events`).catch(() => []);
+    const stillThere = events.some((e) => e.type === 'GOAL'
+      && e.score?.replace(/\s/g, '') === `${ph}-${pa}`
+      && !/var|cancel|disallow/i.test(e.info || ''));
+    if (stillThere) return { skipped: `goal ${ph}-${pa} still in the events after 45s — not VAR` };
+  }
+
   const our = await findOurMatch(fx);
   if (!our) return { skipped: 'match not in our DB' };
   const hits = await countExact(our, hs, as);
