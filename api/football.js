@@ -3,9 +3,11 @@ import { TOURNAMENT_CODE } from '../src/config/tournament.js';
 import { getUefaLiveMatches, getUefaMatchesByDate } from './_uefaContext.js';
 import { goalHandler } from './_goal.js';
 import { goalWebhookHandler } from './_goalWebhook.js';
+import { remindersHandler } from './_reminders.js';
 
 export default async function handler(req, res) {
   if (req.query.source === 'goal-webhook') return goalWebhookHandler(req, res);
+  if (req.query.source === 'reminders') return remindersHandler(req, res);
   if (req.query.source === 'goal') return goalHandler(req, res);
 
   const { competition = TOURNAMENT_CODE, filter = 'LIVE', type } = req.query;

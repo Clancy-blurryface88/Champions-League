@@ -1,0 +1,17 @@
+# Triggers the "go predict" reminder pushes (api/_reminders.js). Vercel Hobby
+# cron can only run once a day, so GitHub pings the endpoint every 10 min;
+# the endpoint decides what's due and dedupes, so extra runs are harmless.
+name: Prediction reminders
+
+on:
+  # Schedule stays off until the Test Users check passes — manual runs only.
+  # schedule:
+  #   - cron: "*/10 7-21 * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - run: curl -fsS --max-time 60 "https://champions-league-2026.vercel.app/api/football?source=reminders"

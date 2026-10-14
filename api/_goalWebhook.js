@@ -39,7 +39,7 @@ async function goal(path) {
   return j.data;
 }
 
-async function supa(path) {
+export async function supa(path) {
   const url = process.env.VITE_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_SERVICE_KEY;
   const r = await fetch(`${url}/rest/v1/${path}`, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
@@ -76,17 +76,21 @@ function uuidFrom(str) {
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-5${h.slice(13, 16)}-a${h.slice(17, 20)}-${h.slice(20, 32)}`;
 }
 
-async function push({ heading, body, url, key, dryRun }) {
+// mode: 'live' → every subscriber · 'test' → only devices marked as Test
+// Users in OneSignal (never deduped, so a test can be re-sent) · 'dry' →
+// build the payload, send nothing. sendAfter (Date) schedules delivery.
+export async function push({ heading, body, url, key, mode = 'live', sendAfter }) {
   const payload = {
     app_id: ONESIGNAL_APP_ID,
     target_channel: 'push',
-    included_segments: ['Total Subscriptions'],
+    included_segments: [mode === 'test' ? 'Test Users' : 'Total Subscriptions'],
     headings: { en: heading, he: heading },
     contents: { en: body, he: body },
     url,
-    idempotency_key: uuidFrom(key),
+    idempotency_key: uuidFrom(mode === 'test' ? `test:${key}:${Date.now()}` : key),
   };
-  if (dryRun) return { dryRun: true, payload };
+  if (sendAfter && sendAfter > new Date()) payload.send_after = sendAfter.toISOString();
+  if (mode === 'dry') return { dryRun: true, payload };
   const r = await fetch('https://api.onesignal.com/notifications?c=push', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Key ${process.env.ONESIGNAL_REST_API_KEY}` },
@@ -104,7 +108,7 @@ function hitsLine(n) {
   return `🎯 ${n} משתתפים פוגעים כרגע בתוצאה המדויקת — כנסו לגלות מי בטבלת הלייב 👉`;
 }
 
-async function onGoal(fixtureId, data, dryRun) {
+async function onGoal(fixtureId, data, mode, sendAfter) {
   const fx = await goal(`/fixtures/${fixtureId}`);
   // The payload's score wins when present — the fixture row can lag a few seconds.
   const hs = Number(data?.homeScore ?? data?.score?.home ?? fx.homeTeamScore);
@@ -124,12 +128,12 @@ async function onGoal(fixtureId, data, dryRun) {
   const heading = `⚽ גול! ${teamLabel(fx, 'home')} ${hs}-${as} ${teamLabel(fx, 'away')}${scorer ? ` (${scorer}${minute ? ` ${minute}'` : ''})` : ''}`;
   return push({ heading, body: hitsLine(hits), url: `${SITE}/?open=live`, // Minute in the key: a goal ruled out by VAR and then re-scored at the same
   // score is a new goal and must not be deduped against the cancelled one.
-  key: `goal:${fixtureId}:${hs}-${as}:${minute || ''}`, dryRun });
+  key: `goal:${fixtureId}:${hs}-${as}:${minute || ''}`, mode, sendAfter });
 }
 
 // score.changed = the score moved WITHOUT going up — in practice a goal ruled
 // out (VAR). Tells everyone the corrected score and who's hitting it now.
-async function onScoreChanged(fixtureId, data, dryRun) {
+async function onScoreChanged(fixtureId, data, mode, sendAfter) {
   const fx = await goal(`/fixtures/${fixtureId}`);
   const hs = Number(data?.homeScore ?? data?.score?.home ?? fx.homeTeamScore);
   const as = Number(data?.awayScore ?? data?.score?.away ?? fx.awayTeamScore);
@@ -137,10 +141,10 @@ async function onScoreChanged(fixtureId, data, dryRun) {
   if (!our) return { skipped: 'match not in our DB' };
   const hits = await countExact(our, hs, as);
   const heading = `❌ השער נפסל — ${teamLabel(fx, 'home')} ${hs}-${as} ${teamLabel(fx, 'away')}`;
-  return push({ heading, body: hitsLine(hits), url: `${SITE}/?open=live`, key: `fix:${fixtureId}:${hs}-${as}:${Date.now() - (Date.now() % 600000)}`, dryRun });
+  return push({ heading, body: hitsLine(hits), url: `${SITE}/?open=live`, key: `fix:${fixtureId}:${hs}-${as}:${Date.now() - (Date.now() % 600000)}`, mode, sendAfter });
 }
 
-async function onFinished(fixtureId, dryRun) {
+async function onFinished(fixtureId, mode, sendAfter) {
   const fx = await goal(`/fixtures/${fixtureId}`);
   const date = fx.matchDate;
   const night = await goal(`/fixtures/date/${date}?leagueId=${CL_LEAGUE}&limit=100`);
@@ -154,7 +158,7 @@ async function onFinished(fixtureId, dryRun) {
   const body = hits === 0
     ? `אף פגיעה מדויקת הערב ב-${night.length} משחקים 😱 — כנסו לראות את הטבלה העדכנית 👉`
     : `🎯 ${hits === 1 ? 'פגיעה מדויקת אחת' : `${hits} פגיעות מדויקות`} הערב ב-${night.length} משחקים — כנסו לראות את הטבלה העדכנית 👉`;
-  return push({ heading: '🏁 ערב ליגת האלופות הסתיים!', body, url: `${SITE}/?open=leaderboard`, key: `night:${date}`, dryRun });
+  return push({ heading: '🏁 ערב ליגת האלופות הסתיים!', body, url: `${SITE}/?open=leaderboard`, key: `night:${date}`, mode, sendAfter });
 }
 
 async function readRaw(req) {
@@ -180,15 +184,19 @@ function verify(raw, header) {
 }
 
 export async function goalWebhookHandler(req, res) {
-  // Dry run (GET, keyed with our GOAL API key): builds the push without sending.
-  // /api/football?source=goal-webhook&dryRun=1&event=goal.scored&fixtureId=…
+  // Manual run (GET, keyed with our GOAL API key) — builds the push for any
+  // past fixture; &send=test also delivers it to Test Users only.
+  // /api/football?source=goal-webhook&event=goal.scored&fixtureId=…[&send=test]
   if (req.method === 'GET') {
     if (req.headers['x-admin-key'] !== process.env.GOAL_API_KEY) return res.status(401).json({ error: 'unauthorized' });
     const { event, fixtureId } = req.query;
+    const mode = req.query.send === 'test' ? 'test' : 'dry';
+    // &at=<ISO time> schedules the test push (OneSignal send_after).
+    const sendAfter = req.query.at ? new Date(req.query.at) : undefined;
     try {
-      const out = event === 'match.finished' ? await onFinished(fixtureId, true)
-        : event === 'score.changed' ? await onScoreChanged(fixtureId, {}, true)
-        : await onGoal(fixtureId, {}, true);
+      const out = event === 'match.finished' ? await onFinished(fixtureId, mode, sendAfter)
+        : event === 'score.changed' ? await onScoreChanged(fixtureId, {}, mode, sendAfter)
+        : await onGoal(fixtureId, {}, mode, sendAfter);
       return res.status(200).json(out);
     } catch (e) {
       return res.status(500).json({ error: e.message });
@@ -213,9 +221,9 @@ export async function goalWebhookHandler(req, res) {
   try {
     if (!fixtureId) return res.status(200).json({ skipped: 'no fixture id' });
     let out = { ignored: event.event };
-    if (event.event === 'goal.scored') out = await onGoal(fixtureId, data, false);
-    else if (event.event === 'score.changed') out = await onScoreChanged(fixtureId, data, false);
-    else if (event.event === 'match.finished') out = await onFinished(fixtureId, false);
+    if (event.event === 'goal.scored') out = await onGoal(fixtureId, data, 'live');
+    else if (event.event === 'score.changed') out = await onScoreChanged(fixtureId, data, 'live');
+    else if (event.event === 'match.finished') out = await onFinished(fixtureId, 'live');
     console.log('[goal-webhook] result', JSON.stringify(out).slice(0, 500));
     return res.status(200).json({ ok: true });
   } catch (e) {
