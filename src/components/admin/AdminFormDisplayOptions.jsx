@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import TeamFlag from "@/components/TeamFlag";
 import { TeamFormRow } from "@/components/predictions/MatchArenaSection";
-import { OptionCard } from "./AdminScoringModalOptions";
+import { Match } from "@/api/entities";
+import { DEMO_MATCH, OptionCard } from "./AdminScoringModalOptions";
 
-// ── 12 alternative UIs for the "last 5 matches" block inside the match arena
+// ── 25 alternative UIs for the "last 5 matches" block inside the match arena
 // (today: TeamFormRow — team badge + 5 opponent circles + score). Demo only.
 // Runs on a 5-result simulation per team by default (early in the season the
 // real data has only 1-3 games), or on real finished matches. ──────────────
@@ -455,19 +456,429 @@ function F12({ teams, forms, newestFirst }) {
   );
 }
 
+// F13. Mirror — both teams on one axis, VS in the middle
+function F13({ teams, forms }) {
+  // Newest sits next to the VS badge on both sides, so each side reads outward into the past.
+  const side = (k) => {
+    const items = forms[k].items;
+    // RTL: side 0 sits on the right, so its newest goes last in DOM (next to the middle); side 1 is mirrored.
+    const nearFirst = k === 0 ? items : [...items].reverse();
+    return nearFirst.map((it, i) => (
+      <div key={i} className="flex flex-col items-center gap-0.5" style={{ opacity: 1 - (k === 0 ? items.length - 1 - i : i) * 0.12 }}>
+        <span className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: RES[it.result].bg, border: `2px solid ${RES[it.result].c}` }}><Opp item={it} size={16} /></span>
+        <span className="text-[8px] font-bold" style={{ color: RES[it.result].c }} dir="ltr">{it.scored}:{it.conceded}</span>
+      </div>
+    ));
+  };
+  return (
+    <Box>
+      <div className="flex items-center justify-between gap-1">
+        <div className="flex gap-1">{side(0)}</div>
+        <div className="flex flex-col items-center gap-1 flex-shrink-0">
+          <div className="flex items-center gap-1"><Badge team={teams[0]} size={26} ring={HOME_C} /><span className="text-[9px] font-black text-white/40">VS</span><Badge team={teams[1]} size={26} ring={AWAY_C} /></div>
+          <span className="text-[8px] text-white/35">האחרון באמצע</span>
+        </div>
+        <div className="flex gap-1">{side(1)}</div>
+      </div>
+      <div className="text-center text-[8.5px] text-white/35 mt-2">המשחק האחרון של כל קבוצה צמוד לאמצע ובולט יותר</div>
+    </Box>
+  );
+}
+
+// F14. LED scoreboard
+function F14({ teams, forms, newestFirst }) {
+  return (
+    <Box>
+      <div className="rounded-xl p-3" style={{ background: "#05070c", border: "2px solid #1f2937", boxShadow: "inset 0 0 20px rgba(0,0,0,0.8)" }}>
+        {teams.map((t, k) => (
+          <div key={t.name} className="flex items-center gap-2 py-1.5" style={{ borderTop: k ? "1px dashed #1f2937" : "none" }}>
+            <span className="text-[10px] font-bold uppercase tracking-wider truncate w-16" style={{ color: "#fbbf24", fontFamily: "monospace" }}>{t.name.slice(0, 8)}</span>
+            <div className="flex-1 flex justify-between">
+              {ordered(forms[k].items, newestFirst).map((it, i) => (
+                <span key={i} className="text-[13px] font-bold tabular-nums" style={{ fontFamily: "'Courier New', monospace", color: RES[it.result].c, textShadow: `0 0 6px ${RES[it.result].c}` }} dir="ltr">{it.scored}-{it.conceded}</span>
+              ))}
+            </div>
+            <span className="text-[13px] font-bold w-7 text-left" style={{ fontFamily: "monospace", color: "#fbbf24", textShadow: "0 0 6px #fbbf24" }}>{forms[k].pts}</span>
+          </div>
+        ))}
+      </div>
+      <OrderHint newestFirst={newestFirst} />
+    </Box>
+  );
+}
+
+// F15. 5×2 grid table
+function F15({ teams, forms, newestFirst }) {
+  const cols = ordered([0, 1, 2, 3, 4], newestFirst);
+  return (
+    <Box>
+      <div className="grid gap-1" style={{ gridTemplateColumns: "40px repeat(5, 1fr)" }}>
+        <span />
+        {cols.map((c) => <span key={c} className="text-center text-[8.5px] text-white/35">{c === 4 ? "אחרון" : `-${4 - c}`}</span>)}
+        {teams.map((t, k) => (
+          <React.Fragment key={t.name}>
+            <div className="flex items-center justify-center"><Badge team={t} size={28} ring={k ? AWAY_C : HOME_C} /></div>
+            {cols.map((c) => {
+              const it = forms[k].items[c];
+              if (!it) return <span key={c} />;
+              return (
+                <div key={c} className="rounded-lg flex flex-col items-center justify-center py-1.5" style={{ background: RES[it.result].bg, border: `1px solid ${RES[it.result].c}55` }}>
+                  <Opp item={it} size={16} />
+                  <span className="text-[10px] font-black mt-0.5" style={{ color: RES[it.result].c }} dir="ltr">{it.scored}-{it.conceded}</span>
+                </div>
+              );
+            })}
+          </React.Fragment>
+        ))}
+      </div>
+    </Box>
+  );
+}
+
+// F16. Goal-difference bars around a zero line
+function F16({ teams, forms, newestFirst }) {
+  return (
+    <Box>
+      <div className="space-y-3">
+        {teams.map((t, k) => (
+          <div key={t.name} className="flex items-center gap-2">
+            <Badge team={t} size={28} ring={k ? AWAY_C : HOME_C} />
+            <div className="flex-1 relative flex justify-between items-center" style={{ height: 52 }}>
+              <div className="absolute inset-x-0 top-1/2 h-px bg-white/20" />
+              {ordered(forms[k].items, newestFirst).map((it, i) => {
+                const diff = it.scored - it.conceded;
+                const h = Math.max(Math.abs(diff) * 8, 3);
+                return (
+                  <div key={i} className="relative flex-1 flex justify-center" style={{ height: 52 }}>
+                    <motion.div initial={{ height: 0 }} animate={{ height: h }} className="absolute w-4 rounded-sm" style={{ background: RES[it.result].c, [diff >= 0 ? "bottom" : "top"]: "50%" }} />
+                    <span className="absolute text-[8.5px] font-bold" style={{ color: RES[it.result].c, [diff >= 0 ? "bottom" : "top"]: `calc(50% + ${h + 1}px)` }} dir="ltr">{diff > 0 ? `+${diff}` : diff}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="text-center text-[8.5px] text-white/35 mt-1">הפרש שערים בכל משחק</div>
+    </Box>
+  );
+}
+
+// F17. Donut per team
+function Donut({ f }) {
+  const r = 24, C = 2 * Math.PI * r, n = f.items.length || 1;
+  let off = 0;
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64">
+      {[["W", f.w], ["D", f.d], ["L", f.l]].filter(([, v]) => v).map(([res, v]) => {
+        const len = (v / n) * C;
+        const el = <motion.circle key={res} cx="32" cy="32" r={r} fill="none" stroke={RES[res].c} strokeWidth="8" transform="rotate(-90 32 32)" strokeDasharray={`${len} ${C - len}`} strokeDashoffset={-off} initial={{ opacity: 0 }} animate={{ opacity: 1 }} />;
+        off += len;
+        return el;
+      })}
+      <text x="32" y="35" textAnchor="middle" fontSize="13" fontWeight="900" fill="#fff">{f.pts}</text>
+    </svg>
+  );
+}
+function F17({ teams, forms }) {
+  return (
+    <Box>
+      <div className="grid grid-cols-2 gap-3">
+        {teams.map((t, k) => (
+          <div key={t.name} className="flex flex-col items-center gap-1">
+            <div className="flex items-center gap-1.5"><Badge team={t} size={22} ring={k ? AWAY_C : HOME_C} /><span className="text-[10px] font-bold text-white truncate max-w-[100px]">{t.name}</span></div>
+            <Donut f={forms[k]} />
+            <div className="flex gap-2 text-[9.5px] font-bold">
+              <span style={{ color: RES.W.c }}>{forms[k].w} נ</span><span style={{ color: RES.D.c }}>{forms[k].d} ת</span><span style={{ color: RES.L.c }}>{forms[k].l} ה</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Box>
+  );
+}
+
+// F18. Goals as footballs
+function F18({ teams, forms, newestFirst }) {
+  return (
+    <Box>
+      <div className="space-y-3">
+        {teams.map((t, k) => (
+          <div key={t.name}>
+            <div className="flex items-center gap-2 mb-1"><Badge team={t} size={22} ring={k ? AWAY_C : HOME_C} /><span className="text-[10.5px] font-bold text-white">{t.name}</span></div>
+            <div className="space-y-0.5">
+              {ordered(forms[k].items, newestFirst).map((it, i) => (
+                <div key={i} className="flex items-center gap-2 text-[11px]">
+                  <span className="w-1 h-4 rounded-full" style={{ background: RES[it.result].c }} />
+                  <span className="w-16 text-left tracking-tighter" dir="ltr">{"⚽".repeat(it.scored) || <span className="text-white/20">—</span>}</span>
+                  <Opp item={it} size={16} />
+                  <span className="tracking-tighter opacity-60" style={{ filter: "grayscale(1)" }}>{"⚽".repeat(it.conceded) || <span className="text-white/20">—</span>}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="text-center text-[8.5px] text-white/35 mt-1">צבעוני = כבשה · אפור = ספגה</div>
+    </Box>
+  );
+}
+
+// F19. Rubber stamps
+function F19({ teams, forms, newestFirst }) {
+  const word = { W: "ניצחון", D: "תיקו", L: "הפסד" };
+  return (
+    <Box>
+      <div className="space-y-3">
+        {teams.map((t, k) => (
+          <div key={t.name} className="flex items-center gap-2">
+            <Badge team={t} size={30} ring={k ? AWAY_C : HOME_C} />
+            <div className="flex-1 flex justify-between">
+              {ordered(forms[k].items, newestFirst).map((it, i) => (
+                <motion.div key={i} initial={{ scale: 1.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: i * 0.12, type: "spring", stiffness: 400, damping: 18 }}
+                  className="flex flex-col items-center justify-center rounded-md px-1 py-0.5" style={{ border: `2px solid ${RES[it.result].c}`, color: RES[it.result].c, transform: `rotate(${(i % 2 ? 1 : -1) * 7}deg)`, minWidth: 44 }}>
+                  <span className="text-[9px] font-black">{word[it.result]}</span>
+                  <span className="text-[10px] font-black" dir="ltr">{it.scored}-{it.conceded}</span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Box>
+  );
+}
+
+// F20. Fanned card hand — tap to spread
+function F20({ teams, forms, newestFirst }) {
+  const [open, setOpen] = useState(null);
+  return (
+    <Box>
+      <div className="space-y-2">
+        {teams.map((t, k) => {
+          const spread = open === k;
+          const items = ordered(forms[k].items, newestFirst);
+          return (
+            <button key={t.name} onClick={() => setOpen(spread ? null : k)} className="w-full flex items-center gap-2 py-1">
+              <Badge team={t} size={28} ring={k ? AWAY_C : HOME_C} />
+              <div className="relative flex-1" style={{ height: 62 }}>
+                {items.map((it, i) => {
+                  const mid = (items.length - 1) / 2;
+                  return (
+                    <motion.div key={i} animate={{ x: spread ? (i - mid) * -52 : (i - mid) * -14, rotate: spread ? 0 : (i - mid) * 6 }} transition={{ type: "spring", stiffness: 300, damping: 24 }}
+                      className="absolute top-0 left-1/2 -ml-[23px] w-[46px] h-[60px] rounded-lg flex flex-col items-center justify-center gap-1" style={{ background: "linear-gradient(160deg,#16306b,#0c1733)", border: `1.5px solid ${RES[it.result].c}`, boxShadow: "0 4px 10px rgba(0,0,0,0.4)", zIndex: i }}>
+                      <Opp item={it} size={20} />
+                      <span className="text-[10px] font-black" style={{ color: RES[it.result].c }} dir="ltr">{it.scored}-{it.conceded}</span>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      <div className="text-center text-[8.5px] text-white/35 mt-1">הקש על חפיסה כדי לפרוס אותה</div>
+    </Box>
+  );
+}
+
+// F21. Bento stats
+function F21({ teams, forms }) {
+  const stats = (f) => {
+    const s = streak(f.items);
+    return [
+      { label: "נקודות", v: `${f.pts}/15` },
+      { label: "שערים למשחק", v: f.avgGoals },
+      { label: "שער נקי", v: f.items.filter((x) => x.conceded === 0).length },
+      { label: "שתיהן כבשו", v: f.items.filter((x) => x.scored > 0 && x.conceded > 0).length },
+      { label: "רצף", v: s ? `${s.n}${RES[s.last].he}` : "—", c: s ? RES[s.last].c : undefined },
+    ];
+  };
+  return (
+    <Box>
+      <div className="space-y-3">
+        {teams.map((t, k) => (
+          <div key={t.name}>
+            <div className="flex items-center gap-2 mb-1.5"><Badge team={t} size={22} ring={k ? AWAY_C : HOME_C} /><span className="text-[10.5px] font-bold text-white">{t.name}</span></div>
+            <div className="grid grid-cols-5 gap-1">
+              {stats(forms[k]).map((s) => (
+                <div key={s.label} className="rounded-lg flex flex-col items-center justify-center py-1.5" style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${k ? "rgba(251,113,133,0.2)" : "rgba(56,189,248,0.2)"}` }}>
+                  <span className="text-[13px] font-black" style={{ color: s.c || "#fff" }}>{s.v}</span>
+                  <span className="text-[7.5px] text-white/45 text-center leading-tight">{s.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Box>
+  );
+}
+
+// F22. One-line form chip, details on tap
+function F22({ teams, forms, newestFirst }) {
+  const [open, setOpen] = useState(null);
+  return (
+    <Box>
+      <div className="space-y-2">
+        {teams.map((t, k) => {
+          const f = forms[k];
+          const s = streak(f.items);
+          const isOpen = open === k;
+          return (
+            <div key={t.name} className="rounded-xl overflow-hidden" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <button onClick={() => setOpen(isOpen ? null : k)} className="w-full flex items-center gap-2 px-2.5 py-2">
+                <Badge team={t} size={24} ring={k ? AWAY_C : HOME_C} />
+                <span className="text-[10.5px] font-bold text-white flex-1 text-right truncate">{t.name}</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.08)", color: "#fff" }}>כושר {f.pts}/15</span>
+                {s && <span className="text-[10px] font-bold" style={{ color: RES[s.last].c }}>{s.n}{RES[s.last].he}</span>}
+                <span className="text-white/40 text-[10px]">{isOpen ? "▲" : "▼"}</span>
+              </button>
+              {isOpen && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="flex justify-around px-2 pb-2">
+                  {ordered(f.items, newestFirst).map((it, i) => (
+                    <div key={i} className="flex flex-col items-center gap-0.5"><Opp item={it} size={20} /><span className="text-[9.5px] font-bold" style={{ color: RES[it.result].c }} dir="ltr">{it.scored}-{it.conceded}</span></div>
+                  ))}
+                </motion.div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div className="text-center text-[8.5px] text-white/35 mt-1.5">מינימלי — הקש לפירוט</div>
+    </Box>
+  );
+}
+
+// F23. Shared vertical timeline — round k of both teams side by side
+function F23({ teams, forms, newestFirst }) {
+  const idx = ordered([0, 1, 2, 3, 4], newestFirst);
+  const cell = (it, align) => it && (
+    <div className={`flex items-center gap-1.5 ${align === "end" ? "flex-row-reverse" : ""}`}>
+      <Opp item={it} size={18} />
+      <span className="text-[10.5px] font-black" style={{ color: RES[it.result].c }} dir="ltr">{it.scored}-{it.conceded}</span>
+      <span className="text-[8px] text-white/35">{it.home ? "ב" : "ח"}</span>
+    </div>
+  );
+  return (
+    <Box>
+      <div className="flex justify-between mb-2">
+        <Badge team={teams[0]} size={28} ring={HOME_C} />
+        <span className="text-[9px] text-white/35 self-center">{newestFirst ? "↓ אחורה בזמן" : "↓ קדימה בזמן"}</span>
+        <Badge team={teams[1]} size={28} ring={AWAY_C} />
+      </div>
+      <div className="relative">
+        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/15" />
+        {idx.map((i) => {
+          const a = forms[0].items[i], b = forms[1].items[i];
+          return (
+            <div key={i} className="relative grid grid-cols-2 gap-6 py-1.5">
+              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-0.5">
+                {[a, b].map((x, j) => <span key={j} className="w-2 h-2 rounded-full" style={{ background: x ? RES[x.result].c : "transparent" }} />)}
+              </span>
+              <div className="flex justify-start">{cell(a)}</div>
+              <div className="flex justify-end">{cell(b, "end")}</div>
+            </div>
+          );
+        })}
+      </div>
+    </Box>
+  );
+}
+
+// F24. Trend arrows + first-3 vs last-2 momentum
+function F24({ teams, forms, newestFirst }) {
+  const arrow = (it) => { const d = it.scored - it.conceded; return d >= 2 ? "⬆" : d === 1 ? "↗" : d === 0 ? "➡" : d === -1 ? "↘" : "⬇"; };
+  return (
+    <Box>
+      <div className="space-y-3">
+        {teams.map((t, k) => {
+          const items = forms[k].items;
+          const early = items.slice(0, 3).reduce((s, x) => s + RES[x.result].pts, 0) / 3;
+          const late = items.slice(3).reduce((s, x) => s + RES[x.result].pts, 0) / Math.max(items.slice(3).length, 1);
+          const trend = late > early + 0.3 ? { t: "בעלייה", c: RES.W.c, i: "📈" } : late < early - 0.3 ? { t: "בירידה", c: RES.L.c, i: "📉" } : { t: "יציבה", c: RES.D.c, i: "➖" };
+          return (
+            <div key={t.name} className="flex items-center gap-2">
+              <Badge team={t} size={28} ring={k ? AWAY_C : HOME_C} />
+              <div className="flex-1 flex justify-between">
+                {ordered(items, newestFirst).map((it, i) => (
+                  <div key={i} className="flex flex-col items-center">
+                    <span className="text-lg leading-none" style={{ color: RES[it.result].c }}>{arrow(it)}</span>
+                    <span className="text-[8.5px] text-white/50" dir="ltr">{it.scored}-{it.conceded}</span>
+                  </div>
+                ))}
+              </div>
+              <span className="text-[9.5px] font-bold px-2 py-1 rounded-lg text-center" style={{ background: `${trend.c}22`, color: trend.c }}>{trend.i}<br />{trend.t}</span>
+            </div>
+          );
+        })}
+      </div>
+    </Box>
+  );
+}
+
+// F25. Home record for the home side, away record for the away side
+function F25({ teams, forms, newestFirst }) {
+  return (
+    <Box>
+      <div className="space-y-3">
+        {teams.map((t, k) => {
+          const relevantHome = k === 0;
+          const rel = forms[k].items.filter((x) => x.home === relevantHome);
+          const other = forms[k].items.filter((x) => x.home !== relevantHome);
+          const pts = (arr) => arr.reduce((s, x) => s + RES[x.result].pts, 0);
+          return (
+            <div key={t.name} className="rounded-xl p-2.5" style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${k ? "rgba(251,113,133,0.25)" : "rgba(56,189,248,0.25)"}` }}>
+              <div className="flex items-center gap-2 mb-2"><Badge team={t} size={24} ring={k ? AWAY_C : HOME_C} /><span className="text-[10.5px] font-bold text-white flex-1 truncate">{t.name}</span><span className="text-[9px] font-bold" style={{ color: k ? AWAY_C : HOME_C }}>משחקת {relevantHome ? "בבית" : "בחוץ"}</span></div>
+              {[[rel, relevantHome ? "בבית" : "בחוץ", true], [other, relevantHome ? "בחוץ" : "בבית", false]].map(([arr, label, main]) => (
+                <div key={label} className="flex items-center gap-2 py-0.5" style={{ opacity: main ? 1 : 0.45 }}>
+                  <span className="text-[9.5px] w-9 font-semibold text-white/70">{label}</span>
+                  <div className="flex gap-1 flex-1">
+                    {ordered(arr, newestFirst).map((it, i) => (
+                      <span key={i} className="flex items-center gap-1 rounded-full px-1.5 py-0.5" style={{ background: RES[it.result].bg }}>
+                        <Opp item={it} size={14} /><span className="text-[9.5px] font-bold" style={{ color: RES[it.result].c }} dir="ltr">{it.scored}-{it.conceded}</span>
+                      </span>
+                    ))}
+                    {!arr.length && <span className="text-[9px] text-white/30">—</span>}
+                  </div>
+                  <span className="text-[10px] font-black text-white tabular-nums">{pts(arr)}/{arr.length * 3}</span>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+      <div className="text-center text-[8.5px] text-white/35 mt-1">מדגיש את המאזן הרלוונטי: הבית של המארחת, החוץ של האורחת</div>
+    </Box>
+  );
+}
+
 const VARIANTS = [
-  { n: "F1", title: "העיצוב הנוכחי", tagline: "לבסיס השוואה — סמל קבוצה, ממוצעים ו-5 עיגולי יריבה עם תוצאה.", approach: "בסיס", Comp: F1 },
-  { n: "F2", title: "ציר זמן מתעצם", tagline: "העיגולים גדלים לכיוון המשחק האחרון, שמקבל זוהר ותגית \"אחרון\".", approach: "כרונולוגי", Comp: F2 },
-  { n: "F3", title: "אותיות נ/ת/ה + נקודות", tagline: "ריבועים צבעוניים עם אות התוצאה, וציון נקודות מתוך 15 בצד. התוצאה המלאה במעבר עכבר.", approach: "קומפקטי", Comp: F3 },
-  { n: "F4", title: "עמודות זו מול זו", tagline: "שתי הקבוצות בשתי עמודות, שורה מול שורה — משווים משחק אחר משחק.", approach: "השוואה", Comp: F4 },
-  { n: "F5", title: "רשימת תוצאות", tagline: "טבלה מלאה: בית/חוץ, שם היריבה, תוצאה ואות — הכי הרבה מידע.", approach: "מפורט", Comp: F5 },
-  { n: "F6", title: "גרף מומנטום", tagline: "נקודות מצטברות לאורך 5 המשחקים — שתי הקבוצות על אותו גרף.", approach: "גרפי", Comp: F6 },
-  { n: "F7", title: "עמודות שערים", tagline: "לכל משחק: עמודה ירוקה למעלה לשערים, אדומה למטה לספיגות.", approach: "גרפי", Comp: F7 },
-  { n: "F8", title: "מד כושר", tagline: "טבעת נקודות מתוך 15 לכל קבוצה, נקודות תוצאה ורצף נוכחי.", approach: "סיכום", Comp: F8 },
-  { n: "F9", title: "פס מאזן", tagline: "פס אחד מחולק לניצחונות/תיקו/הפסדים + ממוצעי שערים.", approach: "סיכום", Comp: F9 },
-  { n: "F10", title: "כרטיסוני משחק", tagline: "כרטיס קטן לכל משחק עם פס צבע, יריבה, תוצאה ובית/חוץ; גלילה הצידה.", approach: "מפורט", Comp: F10 },
-  { n: "F11", title: "רצועת חום", tagline: "רצועה רציפה: הצבע לפי תוצאה, העוצמה לפי הפער; תגית רצף.", approach: "קומפקטי", Comp: F11 },
-  { n: "F12", title: "משיכת חבל", tagline: "השוואה ישירה לפי מדד — נקודות, ניצחונות, שערים, ספיגות; המובילה מודגשת.", approach: "השוואה", Comp: F12 },
+  { n: 1, title: "העיצוב הנוכחי", tagline: "לבסיס השוואה — סמל קבוצה, ממוצעים ו-5 עיגולי יריבה עם תוצאה.", approach: "בסיס", Comp: F1 },
+  { n: 2, title: "ציר זמן מתעצם", tagline: "העיגולים גדלים לכיוון המשחק האחרון, שמקבל זוהר ותגית \"אחרון\".", approach: "כרונולוגי", Comp: F2 },
+  { n: 3, title: "אותיות נ/ת/ה + נקודות", tagline: "ריבועים צבעוניים עם אות התוצאה, וציון נקודות מתוך 15 בצד. התוצאה המלאה במעבר עכבר.", approach: "קומפקטי", Comp: F3 },
+  { n: 4, title: "עמודות זו מול זו", tagline: "שתי הקבוצות בשתי עמודות, שורה מול שורה — משווים משחק אחר משחק.", approach: "השוואה", Comp: F4 },
+  { n: 5, title: "רשימת תוצאות", tagline: "טבלה מלאה: בית/חוץ, שם היריבה, תוצאה ואות — הכי הרבה מידע.", approach: "מפורט", Comp: F5 },
+  { n: 6, title: "גרף מומנטום", tagline: "נקודות מצטברות לאורך 5 המשחקים — שתי הקבוצות על אותו גרף.", approach: "גרפי", Comp: F6 },
+  { n: 7, title: "עמודות שערים", tagline: "לכל משחק: עמודה ירוקה למעלה לשערים, אדומה למטה לספיגות.", approach: "גרפי", Comp: F7 },
+  { n: 8, title: "מד כושר", tagline: "טבעת נקודות מתוך 15 לכל קבוצה, נקודות תוצאה ורצף נוכחי.", approach: "סיכום", Comp: F8 },
+  { n: 9, title: "פס מאזן", tagline: "פס אחד מחולק לניצחונות/תיקו/הפסדים + ממוצעי שערים.", approach: "סיכום", Comp: F9 },
+  { n: 10, title: "כרטיסוני משחק", tagline: "כרטיס קטן לכל משחק עם פס צבע, יריבה, תוצאה ובית/חוץ; גלילה הצידה.", approach: "מפורט", Comp: F10 },
+  { n: 11, title: "רצועת חום", tagline: "רצועה רציפה: הצבע לפי תוצאה, העוצמה לפי הפער; תגית רצף.", approach: "קומפקטי", Comp: F11 },
+  { n: 12, title: "משיכת חבל", tagline: "השוואה ישירה לפי מדד — נקודות, ניצחונות, שערים, ספיגות; המובילה מודגשת.", approach: "השוואה", Comp: F12 },
+  { n: 13, title: "מראה עם VS", tagline: "שתי הקבוצות על ציר אחד, המשחק האחרון של כל אחת צמוד לאמצע והישנים דוהים החוצה.", approach: "השוואה", Comp: F13 },
+  { n: 14, title: "לוח תוצאות LED", tagline: "לוח אצטדיון כהה עם ספרות זוהרות ונקודות בסוף השורה.", approach: "אווירה", Comp: F14 },
+  { n: 15, title: "גריד 5×2", tagline: "טבלת משבצות: עמודה לכל משחק, שורה לכל קבוצה — סריקה אנכית קלה.", approach: "השוואה", Comp: F15 },
+  { n: 16, title: "הפרש שערים", tagline: "עמודות מעל/מתחת לקו האפס לפי הפרש השערים בכל משחק.", approach: "גרפי", Comp: F16 },
+  { n: 17, title: "דונאט מאזן", tagline: "טבעת מחולקת לניצחונות/תיקו/הפסדים, נקודות במרכז.", approach: "סיכום", Comp: F17 },
+  { n: 18, title: "שערים ככדורים", tagline: "כל שער = ⚽: צבעוני לשערים שכבשה, אפור לספיגות.", approach: "שובבי", Comp: F18 },
+  { n: 19, title: "חותמות", tagline: "כל תוצאה כחותמת דיו מוטה שנוחתת באנימציה.", approach: "שובבי", Comp: F19 },
+  { n: 20, title: "חפיסת קלפים נפרסת", tagline: "5 קלפים במניפה צפופה; הקשה פורסת אותם לשורה.", approach: "אינטראקטיבי", Comp: F20 },
+  { n: 21, title: "Bento סטטיסטיקה", tagline: "5 אריחים: נקודות, שערים למשחק, שערים נקיים, שתיהן כבשו, רצף.", approach: "סיכום", Comp: F21 },
+  { n: 22, title: "צ׳יפ כושר מינימלי", tagline: "שורה אחת \"כושר 10/15 · 2נ\" — הקשה פותחת את 5 המשחקים.", approach: "קומפקטי", Comp: F22 },
+  { n: 23, title: "ציר זמן משותף", tagline: "קו אנכי אחד: משחק 1 של שתי הקבוצות באותה שורה, וכן הלאה.", approach: "השוואה", Comp: F23 },
+  { n: 24, title: "חיצי מגמה", tagline: "חץ לכל משחק לפי הפרש השערים, ותגית אם הכושר בעלייה/ירידה.", approach: "גרפי", Comp: F24 },
+  { n: 25, title: "בית מול חוץ", tagline: "מדגיש את מה שרלוונטי: מאזן הבית של המארחת ומאזן החוץ של האורחת.", approach: "הקשר", Comp: F25 },
 ];
 
 function Seg({ value, set, opts }) {
@@ -478,9 +889,18 @@ function Seg({ value, set, opts }) {
   );
 }
 
-export default function FormVariantsGallery({ match, allMatches }) {
+export default function AdminFormDisplayOptions() {
+  const [allMatches, setAllMatches] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
   const [source, setSource] = useState("sim");
   const [newestFirst, setNewestFirst] = useState(false);
+
+  useEffect(() => {
+    Match.list("match_date").then((all) => setAllMatches(all || [])).catch(() => setAllMatches([]));
+  }, []);
+  const upcoming = useMemo(() => allMatches.filter((m) => !m.is_finished), [allMatches]);
+  const sel = selectedId ?? String(upcoming[0]?.id ?? "demo");
+  const match = upcoming.find((m) => String(m.id) === sel) || DEMO_MATCH;
   const teams = [{ name: match.team_a, logo: match.team_a_logo }, { name: match.team_b, logo: match.team_b_logo }];
   const forms = useMemo(() => {
     if (source === "real") return [realForm(allMatches, match.team_a), realForm(allMatches, match.team_b)];
@@ -490,10 +910,14 @@ export default function FormVariantsGallery({ match, allMatches }) {
   const empty = forms.every((f) => !f.items.length);
 
   return (
-    <div className="mt-12 pt-8 border-t border-white/10">
-      <h2 className="text-xl font-bold text-white mb-1">12 תצוגות ל-5 המשחקים האחרונים</h2>
+    <div>
+      <h2 className="text-xl font-bold text-white mb-1">25 תצוגות ל-5 המשחקים האחרונים</h2>
       <p className="text-slate-400 text-sm mb-3">אותו מידע בארגון שונה. ברירת המחדל היא סימולציה של 5 תוצאות לכל קבוצה (בתחילת העונה אין עדיין 5 משחקים אמיתיים).</p>
       <div className="flex items-center gap-3 flex-wrap mb-5">
+        <select value={sel} onChange={(e) => setSelectedId(e.target.value)} className="bg-slate-900 border border-white/15 rounded-lg px-2 py-1 text-white text-xs">
+          <option value="demo">דמו — {DEMO_MATCH.team_a} נגד {DEMO_MATCH.team_b}</option>
+          {upcoming.map((m) => <option key={m.id} value={String(m.id)}>{m.team_a} נגד {m.team_b}</option>)}
+        </select>
         <Seg value={source} set={setSource} opts={[["sim", "סימולציה 5 תוצאות"], ["real", "נתונים אמיתיים"]]} />
         <Seg value={newestFirst} set={setNewestFirst} opts={[[false, "החדש ביותר משמאל"], [true, "החדש ביותר מימין"]]} />
       </div>

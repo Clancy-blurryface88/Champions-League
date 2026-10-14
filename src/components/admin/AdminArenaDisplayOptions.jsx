@@ -8,7 +8,6 @@ import { getTeamForm, TeamFormRow } from "@/components/predictions/MatchArenaSec
 import { PitchLineup } from "@/components/predictions/MatchLineups";
 import { CrowdWisdomView } from "@/components/predictions/CrowdWisdomStats";
 import { DEMO_MATCH, OptionCard } from "./AdminScoringModalOptions";
-import FormVariantsGallery from "./AdminFormDisplayOptions";
 
 // ── 25 concepts for the "זירת המשחק" area under each match card in
 // Predictions.jsx (today: form → odds → lineups → crowd, all stacked in one
@@ -1131,7 +1130,6 @@ export default function AdminArenaDisplayOptions() {
           </OptionCard>
         ))}
       </div>
-      <FormVariantsGallery match={match} allMatches={formSource} />
     </div>
   );
 }
