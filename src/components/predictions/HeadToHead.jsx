@@ -129,11 +129,33 @@ function MeetingCard({ m, teamA, teamB, logoA, logoB }) {
 
 const PAGE = 6;
 
-export default function HeadToHead({ teamA, teamB, logoA, logoB, allMatches }) {
-  const [open, setOpen] = useState(false);
+function MeetingsList({ list, teamA, teamB, logoA, logoB }) {
   const [shown, setShown] = useState(PAGE);
+  if (!list.length) return <p className="text-slate-400 text-xs text-center py-4">המפגש הראשון של הקבוצות בליגת האלופות 🆕</p>;
+  return (
+    <>
+      <Summary list={list} teamA={teamA} teamB={teamB} />
+      {list.slice(0, shown).map((m) => (
+        <MeetingCard key={m.date + m.ga + m.gb} m={m} teamA={teamA} teamB={teamB} logoA={logoA} logoB={logoB} />
+      ))}
+      {list.length > shown && (
+        <button type="button" onClick={() => setShown((s) => s + PAGE)} className="w-full text-[11px] text-sky-300 py-1">
+          הצג עוד ({list.length - shown})
+        </button>
+      )}
+    </>
+  );
+}
+
+// inline: render the meetings straight away (inside the arena sheet's tab);
+// otherwise a collapsed block with a header.
+export default function HeadToHead({ teamA, teamB, logoA, logoB, allMatches, inline = false }) {
+  const [open, setOpen] = useState(false);
   const list = useMeetings(teamA, teamB, allMatches);
-  if (!list) return null;
+  if (!list) return inline ? <p className="text-slate-400 text-xs text-center py-4">אין נתוני ראש בראש לקבוצות האלה</p> : null;
+  if (inline) {
+    return <div className="space-y-2" dir="rtl"><MeetingsList list={list} teamA={teamA} teamB={teamB} logoA={logoA} logoB={logoB} /></div>;
+  }
 
   return (
     <div className="rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
@@ -153,21 +175,7 @@ export default function HeadToHead({ teamA, teamB, logoA, logoB, allMatches }) {
             style={{ overflow: "hidden" }}
           >
             <div className="px-2.5 pb-2.5 space-y-2" dir="rtl">
-              {list.length ? (
-                <>
-                  <Summary list={list} teamA={teamA} teamB={teamB} />
-                  {list.slice(0, shown).map((m) => (
-                    <MeetingCard key={m.date + m.ga + m.gb} m={m} teamA={teamA} teamB={teamB} logoA={logoA} logoB={logoB} />
-                  ))}
-                  {list.length > shown && (
-                    <button type="button" onClick={() => setShown((s) => s + PAGE)} className="w-full text-[11px] text-sky-300 py-1">
-                      הצג עוד ({list.length - shown})
-                    </button>
-                  )}
-                </>
-              ) : (
-                <p className="text-slate-400 text-xs text-center py-4">המפגש הראשון של הקבוצות בליגת האלופות 🆕</p>
-              )}
+              <MeetingsList list={list} teamA={teamA} teamB={teamB} logoA={logoA} logoB={logoB} />
             </div>
           </motion.div>
         )}

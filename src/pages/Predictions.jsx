@@ -221,19 +221,13 @@ export default function Predictions() {
     loadMatchData();
   }, []);
 
+  // The arena opens as a bottom sheet over the page (MatchArenaSection).
   const toggleArena = (matchId) => {
-    const isOpening = !arenaOpen.has(matchId);
     setArenaOpen(prev => {
       const next = new Set(prev);
       next.has(matchId) ? next.delete(matchId) : next.add(matchId);
       return next;
     });
-    if (isOpening) {
-      setTimeout(() => {
-        const container = scrollContainerRef.current;
-        if (container) container.scrollBy({ top: 200, behavior: 'smooth' });
-      }, 300);
-    }
   };
 
   // MODIFIED: Enhanced to return breakdown of time units while preserving all existing logic
@@ -1197,7 +1191,7 @@ export default function Predictions() {
                         : <ChevronDown className="w-3.5 h-3.5" />}
                     </button>
 
-                    {/* Arena section — expandable */}
+                    {/* Arena — bottom sheet (portal) */}
                     <AnimatePresence>
                       {arenaOpen.has(match.id) && (
                         <MatchArenaSection
@@ -1206,6 +1200,7 @@ export default function Predictions() {
                           isLocked={isLocked}
                           allMatches={allMatchesForForm}
                           loading={arenaMatchesLoading}
+                          onClose={() => toggleArena(match.id)}
                         />
                       )}
                     </AnimatePresence>

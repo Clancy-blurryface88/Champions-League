@@ -1,7 +1,9 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import MatchOddsBar from './MatchOddsBar';
-import MatchLineups from './MatchLineups';
+import { PitchLineup } from './MatchLineups';
+import { useModalBackButtonOnMount } from '@/hooks/useModalBackButton';
 import HeadToHead from './HeadToHead';
 import CrowdWisdomStats from './CrowdWisdomStats';
 import TeamFlag from '@/components/TeamFlag';
@@ -111,95 +113,145 @@ export function TeamFormRow({ logo, name, form, avgGoals, avgConceded }) {
   );
 }
 
-export default function MatchArenaSection({ match, isLocked, allMatches, loading }) {
+// Arena bottom sheet (admin gallery option 12): rises over the page with
+// glass category tabs in one uniform color; drag the handle down (or tap the
+// backdrop / back button) to close. Lineups get a tab only once UEFA has
+// published them; the crowd tab only once predictions are locked.
+const TAB_COLOR = '56,189,248';
+const sheetFade = { initial: { opacity: 0, y: 6 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -6 }, transition: { duration: 0.2 } };
+
+function useLineups(teamA, teamB) {
+  const [lineups, setLineups] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/uefa-lineups?homeTeam=${encodeURIComponent(teamA)}&awayTeam=${encodeURIComponent(teamB)}`)
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled && d.success && d.lineups) setLineups(d.lineups); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [teamA, teamB]);
+  return lineups;
+}
+
+export default function MatchArenaSection({ match, isLocked, allMatches, loading, onClose }) {
   const formA = useMemo(() => getTeamForm(allMatches, match.team_a), [allMatches, match.team_a]);
   const formB = useMemo(() => getTeamForm(allMatches, match.team_b), [allMatches, match.team_b]);
   const hasForm = formA.played > 0 || formB.played > 0;
+  const hasOdds = match.score_odds || (match.home_win_points > 0 && match.draw_points > 0 && match.away_win_points > 0);
+  const lineups = useLineups(match.team_a, match.team_b);
+  const dragControls = useDragControls();
+  useModalBackButtonOnMount(onClose);
 
-  // Show odds section after form section has entered
-  const [showOdds, setShowOdds] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setShowOdds(true), 1100);
-    return () => clearTimeout(t);
-  }, []);
+  const tabs = [
+    { id: 'form', label: '5 אחרונים' },
+    { id: 'odds', label: 'תחזית' },
+    { id: 'h2h', label: 'ראש בראש' },
+    ...(lineups ? [{ id: 'lineups', label: 'הרכבים' }] : []),
+    ...(isLocked ? [{ id: 'crowd', label: 'הקהל' }] : []),
+  ];
+  const [tab, setTab] = useState('form');
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: 'auto' }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-      style={{ overflow: 'hidden' }}
-    >
-      <div className="pt-2 space-y-3">
-        {/* Last 5 matches form — enters first */}
-        {loading ? (
-          <div className="flex justify-center py-1">
-            <span className="text-[10px] text-slate-600 animate-pulse">טוען...</span>
+  const body = (() => {
+    if (tab === 'form') {
+      if (loading) return <p className="text-center text-[11px] text-slate-500 py-4 animate-pulse">טוען...</p>;
+      if (!hasForm) return <p className="text-center text-[11px] text-slate-500 py-4">אין עדיין משחקים שהסתיימו</p>;
+      return (
+        <div className="flex flex-col gap-2.5 px-0.5">
+          <TeamFormRow logo={match.team_a_logo} name={match.team_a} form={formA.last5} avgGoals={formA.avgGoals} avgConceded={formA.avgConceded} />
+          <TeamFormRow logo={match.team_b_logo} name={match.team_b} form={formB.last5} avgGoals={formB.avgGoals} avgConceded={formB.avgConceded} />
+        </div>
+      );
+    }
+    if (tab === 'odds') {
+      if (!hasOdds) return <p className="text-center text-[11px] text-slate-500 py-4">אין עדיין יחסים למשחק הזה</p>;
+      return (
+        <div className="[&>div]:mt-0">
+          <MatchOddsBar scoreOdds={match.score_odds} homeWinPoints={match.home_win_points} drawPoints={match.draw_points} awayWinPoints={match.away_win_points} teamA={match.team_a} teamB={match.team_b} />
+        </div>
+      );
+    }
+    if (tab === 'h2h') {
+      return <HeadToHead inline teamA={match.team_a?.trim()} teamB={match.team_b?.trim()} logoA={match.team_a_logo} logoB={match.team_b_logo} allMatches={allMatches} />;
+    }
+    if (tab === 'lineups' && lineups) return <PitchLineup home={lineups.homeTeam} away={lineups.awayTeam} />;
+    if (tab === 'crowd') return <CrowdWisdomStats matchId={match.id} teamA={match.team_a} teamB={match.team_b} />;
+    return null;
+  })();
+
+  return createPortal(
+    <>
+      <motion.div
+        key="arena-bg"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 z-[70] bg-black/55"
+      />
+      <motion.div
+        key="arena-sheet"
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+        drag="y"
+        dragListener={false}
+        dragControls={dragControls}
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={{ top: 0, bottom: 0.6 }}
+        onDragEnd={(e, info) => { if (info.offset.y > 90 || info.velocity.y > 500) onClose(); }}
+        className="fixed inset-x-0 bottom-0 z-[71] mx-auto max-w-lg rounded-t-3xl flex flex-col"
+        style={{ height: '82vh', background: 'linear-gradient(180deg,#13265a,#0a1226)', borderTop: '1px solid rgba(255,255,255,0.18)' }}
+        dir="rtl"
+      >
+        {/* Drag handle + title — the only drag area, so the content scrolls freely */}
+        <div onPointerDown={(e) => dragControls.start(e)} className="flex-shrink-0 cursor-grab touch-none pt-2 pb-2">
+          <div className="flex justify-center pb-1.5"><div className="w-10 h-1 rounded-full bg-white/30" /></div>
+          <div className="flex items-center justify-center gap-2 text-[12px] font-bold">
+            <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5" animate={false} />
+            <span className="text-white truncate max-w-[30%]">{match.team_a}</span>
+            <span className="text-yellow-400">זירת המשחק</span>
+            <span className="text-white truncate max-w-[30%]">{match.team_b}</span>
+            <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5" animate={false} />
           </div>
-        ) : hasForm ? (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
-            className="flex flex-col gap-2.5 px-0.5"
-          >
-            {/* Home team form */}
-            <TeamFormRow
-              logo={match.team_a_logo}
-              name={match.team_a}
-              form={formA.last5}
-              avgGoals={formA.avgGoals}
-              avgConceded={formA.avgConceded}
-            />
+        </div>
 
-            {/* Away team form */}
-            <TeamFormRow
-              logo={match.team_b_logo}
-              name={match.team_b}
-              form={formB.last5}
-              avgGoals={formB.avgGoals}
-              avgConceded={formB.avgConceded}
-            />
-          </motion.div>
-        ) : null}
+        {/* Glass category tabs — one uniform color */}
+        <div
+          className="flex-shrink-0 mx-4 mb-3 p-1 flex gap-1 rounded-2xl"
+          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(14px) saturate(160%)', WebkitBackdropFilter: 'blur(14px) saturate(160%)' }}
+        >
+          {tabs.map((t) => {
+            const on = tab === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className="relative flex-1 text-[10.5px] font-bold py-1.5 rounded-xl transition-colors"
+                style={{ color: on ? '#fff' : 'rgba(255,255,255,0.55)' }}
+              >
+                {on && (
+                  <motion.span
+                    layoutId={`arena-tab-${match.id}`}
+                    className="absolute inset-0 rounded-xl"
+                    style={{ background: `rgba(${TAB_COLOR},0.22)`, border: `1px solid rgba(${TAB_COLOR},0.45)`, boxShadow: `inset 0 1px 0 rgba(255,255,255,0.18), 0 4px 14px rgba(${TAB_COLOR},0.18)`, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+                    transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
+                  />
+                )}
+                <span className="relative">{t.label}</span>
+              </button>
+            );
+          })}
+        </div>
 
-        {/* Head-to-head — every CL meeting (UEFA archive + this season), collapsed */}
-        <HeadToHead teamA={match.team_a?.trim()} teamB={match.team_b?.trim()} logoA={match.team_a_logo} logoB={match.team_b_logo} allMatches={allMatches} />
-
-        {/* Odds Bar — fades in after form section, no y-jump */}
-        <AnimatePresence>
-          {showOdds && (match.score_odds || (match.home_win_points > 0 && match.draw_points > 0 && match.away_win_points > 0)) && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
-            >
-              <MatchOddsBar
-                scoreOdds={match.score_odds}
-                homeWinPoints={match.home_win_points}
-                drawPoints={match.draw_points}
-                awayWinPoints={match.away_win_points}
-                teamA={match.team_a}
-                teamB={match.team_b}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Lineups — appears on its own the moment UEFA publishes them, right below the score chips */}
-        <MatchLineups teamA={match.team_a} teamB={match.team_b} />
-
-        {/* Crowd Wisdom — only when locked, unchanged design */}
-        {isLocked && showOdds && (
-          <CrowdWisdomStats
-            matchId={match.id}
-            teamA={match.team_a}
-            teamB={match.team_b}
-          />
-        )}
-      </div>
-    </motion.div>
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-6">
+          <AnimatePresence mode="wait">
+            <motion.div key={tab} {...sheetFade}>{body}</motion.div>
+          </AnimatePresence>
+        </div>
+      </motion.div>
+    </>,
+    document.body
   );
 }
