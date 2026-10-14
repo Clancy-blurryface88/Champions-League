@@ -656,6 +656,21 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('dashboardReload', handleDashboardReload);
   }, [user]);
 
+  // Push-notification deep links (api/_goalWebhook.js): ?open=live opens the
+  // live panel (live leaderboard), ?open=leaderboard the main table. The param
+  // is stripped right away so a refresh doesn't reopen it.
+  useEffect(() => {
+    if (!user) return;
+    const params = new URLSearchParams(window.location.search);
+    const target = params.get('open');
+    if (!target) return;
+    if (target === 'live') setShowLiveData(true);
+    if (target === 'leaderboard') setShowLeaderboard(true);
+    params.delete('open');
+    const qs = params.toString();
+    window.history.replaceState(null, '', window.location.pathname + (qs ? `?${qs}` : '') + window.location.hash);
+  }, [user]);
+
   // Add effect to handle live data panel opening from admin
   useEffect(() => {
     const handleOpenLiveDataPanel = () => {
