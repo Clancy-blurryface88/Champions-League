@@ -206,16 +206,10 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
         style={{ height: '82vh', background: 'linear-gradient(180deg,#13265a,#0a1226)', borderTop: '1px solid rgba(255,255,255,0.18)' }}
         dir="rtl"
       >
-        {/* Drag handle + title — the only drag area, so the content scrolls freely */}
-        <div onPointerDown={(e) => dragControls.start(e)} className="flex-shrink-0 cursor-grab touch-none pt-2 pb-2">
-          <div className="flex justify-center pb-1.5"><div className="w-10 h-1 rounded-full bg-white/30" /></div>
-          <div className="flex items-center justify-center gap-2 text-[12px] font-bold">
-            <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5" animate={false} />
-            <span className="text-white truncate max-w-[30%]">{match.team_a}</span>
-            <span className="text-yellow-400">זירת המשחק</span>
-            <span className="text-white truncate max-w-[30%]">{match.team_b}</span>
-            <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5" animate={false} />
-          </div>
+        {/* Drag handle — the only drag area, so the content scrolls freely.
+            No title: the gap above the tabs stays empty on purpose. */}
+        <div onPointerDown={(e) => dragControls.start(e)} className="flex-shrink-0 cursor-grab touch-none pt-2 pb-6">
+          <div className="flex justify-center"><div className="w-10 h-1 rounded-full bg-white/30" /></div>
         </div>
 
         {/* Glass category tabs — one uniform color */}
