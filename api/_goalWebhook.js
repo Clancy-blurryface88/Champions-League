@@ -73,6 +73,9 @@ export async function push({ heading, body, url, key, mode = 'live', sendAfter }
     contents: { en: body, he: body },
     url,
     idempotency_key: uuidFrom(mode === 'test' ? `test:${key}:${Date.now()}` : key),
+    // Own topic per push: web push replaces a shown notification that shares
+    // a topic, so without this a goal push wiped out the reminder above it.
+    web_push_topic: uuidFrom(`topic:${key}:${mode === 'test' ? Date.now() : ''}`),
   };
   if (sendAfter && sendAfter > new Date()) payload.send_after = sendAfter.toISOString();
   if (mode === 'dry') return { dryRun: true, payload };
