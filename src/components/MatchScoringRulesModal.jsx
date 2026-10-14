@@ -99,7 +99,7 @@ function ClipTabs({ tabs, active, onChange }) {
     </div>
   );
   return (
-    <div className="relative rounded-lg bg-white/5 border border-white/10">
+    <div className="relative rounded-lg bg-white/5 border border-white/10" dir="rtl">
       <Row />
       <div className="absolute inset-0" style={{ clipPath: clip, transition: "clip-path 260ms cubic-bezier(0.23,1,0.32,1)" }} aria-hidden>
         <Row on />
