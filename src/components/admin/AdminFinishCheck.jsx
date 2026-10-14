@@ -12,18 +12,34 @@ const REFRESH_MS = 3 * 60 * 1000;
 const PAIR_WINDOW_MS = 3 * 3600e3; // our kickoff vs UEFA kickoff
 
 const norm = (s) => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
+// UEFA's names include 3-letter team codes ("mun" = Man Utd), so short names
+// must match exactly — a "contains" check paired "Bayern MUNich" with Man Utd.
+// Longer names may match by prefix/containment or by the same first word
+// ("Bayern Munich" ↔ "Bayern München", "Atletico Madrid" ↔ "Atlético de Madrid").
 function sameTeam(ours, names) {
   const w = norm(ours);
-  return names.some((n) => { const c = norm(n); return c === w || c.startsWith(w) || w.startsWith(c) || c.includes(w) || w.includes(c); });
+  const wFirst = w.split(/\s+/)[0];
+  return names.some((n) => {
+    const c = norm(n);
+    if (c === w) return true;
+    if (c.length <= 4 || w.length <= 4) return false;
+    if (c.startsWith(w) || w.startsWith(c) || c.includes(w) || w.includes(c)) return true;
+    const cFirst = c.split(/\s+/)[0];
+    return wFirst.length >= 4 && wFirst === cFirst;
+  });
 }
-// A team plays once per kickoff slot, so one matching side + close kickoff is enough
-// (copes with spellings like "Slavia Prague" vs UEFA's "Slavia Praha").
+// Among UEFA matches kicking off near ours, pick the one where the most sides
+// match (both > one). A tie means it's ambiguous → no pairing rather than a guess.
 function findUefa(match, uefa) {
   const t = new Date(match.match_date).getTime();
-  return uefa.find((u) =>
-    Math.abs(new Date(u.utcDate).getTime() - t) <= PAIR_WINDOW_MS &&
-    (sameTeam(match.team_a, u.homeNames) || sameTeam(match.team_b, u.awayNames))
-  ) || null;
+  const scored = uefa
+    .filter((u) => Math.abs(new Date(u.utcDate).getTime() - t) <= PAIR_WINDOW_MS)
+    .map((u) => ({ u, s: (sameTeam(match.team_a, u.homeNames) ? 1 : 0) + (sameTeam(match.team_b, u.awayNames) ? 1 : 0) }))
+    .filter((x) => x.s > 0)
+    .sort((a, b) => b.s - a.s);
+  if (!scored.length) return null;
+  if (scored.length > 1 && scored[0].s === scored[1].s) return null;
+  return scored[0].u;
 }
 
 // Same rules as AdminScoring.calculateScore (copied so the real scoring code
