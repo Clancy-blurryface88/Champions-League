@@ -35,7 +35,7 @@ export default function MatchLineups({ teamA, teamB }) {
   );
 }
 
-export function isLightColor(hex) {
+function isLightColor(hex) {
   if (!hex) return false;
   const c = hex.replace('#', '');
   if (c.length !== 6) return false;
@@ -54,7 +54,7 @@ function coachName(team) {
 // differ from ISO 3166-1), so it can't be fed to a standard flag CDN
 // as-is. Mapped to flagcdn.com codes — verified against every nationality
 // that actually appears in this season's competition player pool.
-export const COUNTRY_FLAG_CODE = {
+const COUNTRY_FLAG_CODE = {
   ALB: 'al', ALG: 'dz', AND: 'ad', ANG: 'ao', ARG: 'ar', ARM: 'am', AUS: 'au', AUT: 'at', AZE: 'az',
   BEL: 'be', BFA: 'bf', BIH: 'ba', BLR: 'by', BRA: 'br', BUL: 'bg', CAN: 'ca', CGO: 'cg', CHI: 'cl',
   CIV: 'ci', CMR: 'cm', COD: 'cd', COL: 'co', CPV: 'cv', CRC: 'cr', CRO: 'hr', CUW: 'cw', CYP: 'cy',
@@ -93,11 +93,11 @@ function TeamHeader({ team, coach }) {
 // falling back to splitting internationalName if that's ever missing —
 // matches broadcast-graphic convention and keeps names short enough for the
 // now-larger markers regardless of how long a player's full name is.
-export function surname(player) {
+function surname(player) {
   return player?.translations?.lastName?.EN || (player?.internationalName || '').trim().split(' ').slice(-1)[0] || '';
 }
 
-export function Jersey({ color, number, isCaptain, countryCode }) {
+function Jersey({ color, number, isCaptain, countryCode }) {
   const dark = isLightColor(color);
   const flagCode = COUNTRY_FLAG_CODE[countryCode];
   return (
@@ -137,8 +137,56 @@ export function Jersey({ color, number, isCaptain, countryCode }) {
   );
 }
 
+// Official UEFA headshot (player.imageUrl) in a circle, jersey number on a
+// badge in the shirt color, nationality flag — the captain "C" stays. Falls
+// back to the plain jersey when UEFA has no photo for the player.
+function PlayerFace({ player, shirtColor, number, isCaptain }) {
+  const [broken, setBroken] = useState(false);
+  if (!player?.imageUrl || broken) {
+    return <Jersey color={shirtColor} number={number} isCaptain={isCaptain} countryCode={player?.countryCode} />;
+  }
+  const flagCode = COUNTRY_FLAG_CODE[player.countryCode];
+  return (
+    <div className="relative flex-shrink-0" style={{ width: 32, height: 32 }}>
+      <div
+        className="w-full h-full rounded-full overflow-hidden"
+        style={{ background: 'linear-gradient(180deg,#1e3a5f,#0b1730)', boxShadow: '0 0 0 2px rgba(255,255,255,0.5)' }}
+      >
+        <img src={player.imageUrl} alt="" className="w-full h-full object-cover object-top" onError={() => setBroken(true)} />
+      </div>
+      <span
+        className="absolute flex items-center justify-center rounded-full font-black tabular-nums"
+        style={{
+          width: 15, height: 15, fontSize: 8.5, bottom: -3, right: -4,
+          background: shirtColor || '#64748b', color: isLightColor(shirtColor) ? '#111827' : '#fff',
+          boxShadow: '0 0 0 1.5px #0b1730',
+        }}
+      >
+        {number}
+      </span>
+      {flagCode && (
+        <img
+          src={`https://flagcdn.com/${flagCode}.svg`}
+          alt=""
+          className="absolute rounded-sm"
+          style={{ width: 12, height: 9.5, bottom: -2, left: -4, boxShadow: '0 0 0 1px rgba(0,0,0,0.5)', objectFit: 'cover' }}
+          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+        />
+      )}
+      {isCaptain && (
+        <span
+          className="absolute flex items-center justify-center rounded-full bg-white text-black font-black"
+          style={{ width: 12, height: 12, fontSize: 8.5, top: -3, right: -3, lineHeight: 1 }}
+        >
+          C
+        </span>
+      )}
+    </div>
+  );
+}
+
 // Kept under the tightest real row spacing — 5-across defensive lines sit
-// ~20% of pitch width apart — so a marker's jersey/name never reaches into
+// ~20% of pitch width apart — so a marker's photo/name never reaches into
 // its neighbor's slot.
 function PlayerMarker({ entry, shirtColor, topPct, leftPct }) {
   return (
@@ -146,11 +194,11 @@ function PlayerMarker({ entry, shirtColor, topPct, leftPct }) {
       className="absolute flex flex-col items-center gap-0.5"
       style={{ top: `${topPct}%`, left: `${leftPct}%`, transform: 'translate(-50%, -50%)', width: 55 }}
     >
-      <Jersey
-        color={shirtColor}
+      <PlayerFace
+        player={entry.player}
+        shirtColor={shirtColor}
         number={entry.jerseyNumber}
         isCaptain={entry.type === 'CAPTAIN'}
-        countryCode={entry.player?.countryCode}
       />
       <span
         className="text-[9.5px] font-semibold text-white text-center leading-tight truncate w-full"
@@ -170,9 +218,7 @@ function homeTopPct(y) { return (y / 1000) * 48 + 5; }
 function awayTopPct(y) { return 100 - ((y / 1000) * 48 + 5); }
 function leftPct(x) { return x / 10; }
 
-// `Marker` lets the admin gallery swap in alternative player markers
-// (photos etc.) without forking the pitch layout.
-export function PitchLineup({ home, away, Marker = PlayerMarker }) {
+export function PitchLineup({ home, away }) {
   return (
     <div className="w-full">
       <TeamHeader team={home?.team} coach={coachName(home)} />
@@ -199,7 +245,7 @@ export function PitchLineup({ home, away, Marker = PlayerMarker }) {
         />
 
         {home?.field?.map((p) => (
-          <Marker
+          <PlayerMarker
             key={p.player.id}
             entry={p}
             shirtColor={home.shirtColor}
@@ -208,7 +254,7 @@ export function PitchLineup({ home, away, Marker = PlayerMarker }) {
           />
         ))}
         {away?.field?.map((p) => (
-          <Marker
+          <PlayerMarker
             key={p.player.id}
             entry={p}
             shirtColor={away.shirtColor}

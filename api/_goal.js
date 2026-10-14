@@ -29,7 +29,9 @@ export async function goalHandler(req, res) {
     });
     const body = await r.json();
     res.setHeader('X-Goal-Quota-Remaining', r.headers.get('x-ratelimit-remaining') || '');
-    if (r.ok) res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
+    // Past meetings barely change — cache H2H for 12h, everything else 1h.
+    const ttl = path.startsWith('/h2h/') ? 43200 : 3600;
+    if (r.ok) res.setHeader('Cache-Control', `s-maxage=${ttl}, stale-while-revalidate=86400`);
     return res.status(r.status).json(body);
   } catch (err) {
     return res.status(502).json({ success: false, error: err.message });
