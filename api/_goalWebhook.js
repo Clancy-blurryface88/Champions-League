@@ -158,8 +158,8 @@ async function onFinished(fixtureId, mode, sendAfter, late = false) {
   }
   const when = late ? 'אתמול' : 'הערב';
   const body = hits === 0
-    ? `אף פגיעה מדויקת ${when} ב-${night.length} משחקים 😱 — כנסו לראות את הטבלה העדכנית 👉`
-    : `🎯 ${hits === 1 ? 'פגיעה מדויקת אחת' : `${hits} פגיעות מדויקות`} ${when} ב-${night.length} משחקים — כנסו לראות את הטבלה העדכנית 👉`;
+    ? `אף פגיעה מדויקת ${when} 😱 — כנסו לראות את הטבלה העדכנית 👉`
+    : `🎯 ${hits === 1 ? 'פגיעה מדויקת אחת' : `${hits} פגיעות מדויקות`} ${when} — כנסו לראות את הטבלה העדכנית 👉`;
   return push({ heading: late ? '🏁 סיכום ערב ליגת האלופות של אתמול' : '🏁 ערב ליגת האלופות הסתיים!', body, url: `${SITE}/?open=leaderboard`, key: `night:${date}`, mode, sendAfter });
 }
 
