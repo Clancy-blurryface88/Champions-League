@@ -55,6 +55,10 @@ export default function CrowdWisdomStats({ matchId, teamA, teamB }) {
 
   if (loading || !stats) return null;
 
+  return <CrowdWisdomView stats={stats} teamA={teamA} teamB={teamB} />;
+}
+
+export function CrowdWisdomView({ stats, teamA, teamB }) {
   return (
     <motion.div
       initial={{ opacity: 0, height: 0 }}

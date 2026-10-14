@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, History, Percent, Shirt, X, Lock, LayoutGrid, RotateCw } from "lucide-react";
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, History, Percent, Shirt, X, Lock, LayoutGrid, RotateCw, Users } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
-import { Match } from "@/api/entities";
+import { Match, Prediction } from "@/api/entities";
 import MatchOddsBar, { calculateProbabilities, getTopScores } from "@/components/predictions/MatchOddsBar";
 import { getTeamForm, TeamFormRow } from "@/components/predictions/MatchArenaSection";
 import { PitchLineup } from "@/components/predictions/MatchLineups";
+import { CrowdWisdomView } from "@/components/predictions/CrowdWisdomStats";
 import { DEMO_MATCH, OptionCard } from "./AdminScoringModalOptions";
 
 // ── 25 concepts for the "זירת המשחק" area under each match card in
@@ -19,7 +20,14 @@ const SECTIONS = [
   { id: "form", label: "5 משחקים אחרונים", short: "5 אחרונים", icon: History, color: "#38bdf8", rgb: "56,189,248" },
   { id: "odds", label: "אחוזי יתרון ותוצאות", short: "תחזית", icon: Percent, color: "#facc15", rgb: "250,204,21" },
   { id: "lineups", label: "הרכבים", short: "הרכבים", icon: Shirt, color: "#4ade80", rgb: "74,222,128" },
+  { id: "crowd", label: "חוכמת ההמונים", short: "הקהל", icon: Users, color: "#c084fc", rgb: "192,132,252" },
 ];
+// Lineups exist only once UEFA publishes them; crowd stats only once predictions lock.
+const isAvail = (id, ctx) => (id === "lineups" ? !!ctx.lineups : id === "crowd" ? !!ctx.crowd : true);
+const PENDING = {
+  lineups: { short: "טרם פורסם", long: "יופיעו כאן ~שעה לפני שריקת הפתיחה" },
+  crowd: { short: "בנעילה", long: "ייפתח ברגע שהניחושים ננעלים" },
+};
 const sectionById = (id) => SECTIONS.find((s) => s.id === id);
 const RES = { W: "#4ade80", D: "#facc15", L: "#f87171" };
 const fade = { initial: { opacity: 0, y: 6 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -6 }, transition: { duration: 0.2 } };
@@ -59,14 +67,16 @@ function demoLineups(match) {
   };
 }
 
+const DEMO_CROWD = { home: 52, draw: 20, away: 28, total: 25, homeCount: 13, drawCount: 5, awayCount: 7 };
+
 // ── Shared pieces ─────────────────────────────────────────────────────────
 
-function useArena({ match, allMatches, lineups }) {
+function useArena({ match, allMatches, lineups, crowd }) {
   const formA = useMemo(() => getTeamForm(allMatches, match.team_a), [allMatches, match.team_a]);
   const formB = useMemo(() => getTeamForm(allMatches, match.team_b), [allMatches, match.team_b]);
   const probs = useMemo(() => calculateProbabilities(match.home_win_points, match.draw_points, match.away_win_points), [match]);
   const topScore = useMemo(() => getTopScores(match.score_odds, 1)[0], [match]);
-  const sections = useMemo(() => SECTIONS.filter((s) => s.id !== "lineups" || lineups), [lineups]);
+  const sections = useMemo(() => SECTIONS.filter((s) => isAvail(s.id, { lineups, crowd })), [lineups, crowd]);
   return { formA, formB, probs, topScore, sections };
 }
 
@@ -104,6 +114,7 @@ function SectionBody({ id, ctx }) {
   if (id === "form") return <FormBlock ctx={ctx} />;
   if (id === "odds") return <OddsBlock ctx={ctx} />;
   if (id === "lineups" && ctx.lineups) return <PitchLineup home={ctx.lineups.homeTeam} away={ctx.lineups.awayTeam} />;
+  if (id === "crowd" && ctx.crowd) return <div className="[&>div]:mt-0 [&>div]:pt-0 [&>div]:border-t-0"><CrowdWisdomView stats={ctx.crowd} teamA={ctx.match.team_a} teamB={ctx.match.team_b} /></div>;
   return null;
 }
 
@@ -134,6 +145,7 @@ function Summary({ id, ctx }) {
       </span>
     );
   }
+  if (id === "crowd") return <span className="text-[10px] text-purple-300 tabular-nums" dir="ltr">{ctx.crowd.home}% · {ctx.crowd.draw}% · {ctx.crowd.away}%</span>;
   return <span className="text-[10px] font-bold text-emerald-400">פורסמו ✓</span>;
 }
 
@@ -194,8 +206,9 @@ function Frame({ ctx, children, overlay, scrollRef, onScroll }) {
 }
 
 function Pending({ ctx }) {
-  if (ctx.lineups) return null;
-  return <p className="text-center text-[10px] text-slate-500 pt-2">הרכבים יופיעו כאן כשיפורסמו (~שעה לפני המשחק)</p>;
+  const missing = SECTIONS.filter((s) => !isAvail(s.id, ctx));
+  if (!missing.length) return null;
+  return <p className="text-center text-[10px] text-slate-500 pt-2">{missing.map((s) => `${s.label}: ${PENDING[s.id].long}`).join(" · ")}</p>;
 }
 
 // ── Options ───────────────────────────────────────────────────────────────
@@ -391,13 +404,13 @@ function Option7({ ctx }) {
       <Expand open={open}>
         <div className="space-y-3">
           {SECTIONS.map((s) => {
-            const pending = s.id === "lineups" && !ctx.lineups;
+            const pending = !isAvail(s.id, ctx);
             return (
               <div key={s.id} className="relative rounded-2xl px-2.5 pb-3 pt-5" style={{ background: pending ? "transparent" : `linear-gradient(160deg, rgba(${s.rgb},0.07), rgba(255,255,255,0.02))`, border: pending ? "1.5px dashed rgba(255,255,255,0.15)" : `1px solid rgba(${s.rgb},0.3)` }}>
                 <span className="absolute -top-2.5 right-3 flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#0d1a3a", color: pending ? "rgba(255,255,255,0.4)" : s.color, border: `1px solid ${pending ? "rgba(255,255,255,0.15)" : `rgba(${s.rgb},0.5)`}` }}>
                   <s.icon className="w-3 h-3" />{s.label}
                 </span>
-                {pending ? <p className="text-center text-[10px] text-slate-500 py-2">יופיעו כאן ~שעה לפני שריקת הפתיחה</p> : <SectionBody id={s.id} ctx={ctx} />}
+                {pending ? <p className="text-center text-[10px] text-slate-500 py-2">{PENDING[s.id].long}</p> : <SectionBody id={s.id} ctx={ctx} />}
               </div>
             );
           })}
@@ -465,7 +478,7 @@ function Option10({ ctx }) {
   const [fan, setFan] = useState(false);
   const [sec, setSec] = useState(null);
   const shown = sec && sections.some((s) => s.id === sec) ? sec : null;
-  const spread = sections.length === 3 ? [-95, 0, 95] : [-55, 55];
+  const spread = sections.map((_, k) => (k - (sections.length - 1) / 2) * 80);
   return (
     <Frame ctx={ctx}>
       <ArenaToggle open={fan || !!shown} onClick={() => { if (shown) setSec(null); setFan(!fan && !shown); }} />
@@ -473,7 +486,7 @@ function Option10({ ctx }) {
         <AnimatePresence>
           {fan && sections.map((s, k) => (
             <motion.button key={s.id} onClick={() => { setSec(s.id); setFan(false); }}
-              initial={{ x: 0, y: -10, scale: 0.3, opacity: 0 }} animate={{ x: spread[k], y: k === 1 && sections.length === 3 ? 26 : 12, scale: 1, opacity: 1 }} exit={{ x: 0, y: -10, scale: 0.3, opacity: 0 }}
+              initial={{ x: 0, y: -10, scale: 0.3, opacity: 0 }} animate={{ x: spread[k], y: 26 - Math.abs(spread[k]) / 6, scale: 1, opacity: 1 }} exit={{ x: 0, y: -10, scale: 0.3, opacity: 0 }}
               transition={{ type: "spring", stiffness: 380, damping: 22, delay: k * 0.04 }}
               className="absolute left-1/2 top-0 -ml-7 w-14 flex flex-col items-center gap-1">
               <span className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: `rgba(${s.rgb},0.18)`, border: `2px solid ${s.color}`, boxShadow: `0 0 16px rgba(${s.rgb},0.4)` }}><s.icon className="w-5 h-5" style={{ color: s.color }} /></span>
@@ -512,12 +525,12 @@ function Option11({ ctx }) {
             <motion.div initial={{ opacity: 0, y: -6, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: 0.96 }} transition={{ duration: 0.16 }}
               className="absolute z-20 left-1/2 -translate-x-1/2 top-full mt-2 w-64 rounded-2xl p-1.5" style={{ background: "rgba(13,26,58,0.97)", border: "1px solid rgba(255,255,255,0.14)", boxShadow: "0 16px 40px rgba(0,0,0,0.5)" }}>
               {SECTIONS.map((s) => {
-                const disabled = s.id === "lineups" && !ctx.lineups;
+                const disabled = !isAvail(s.id, ctx);
                 return (
                   <button key={s.id} disabled={disabled} onClick={() => { setSec(s.id); setMenu(false); }} className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl hover:bg-white/5 disabled:opacity-40 text-right">
                     <span className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `rgba(${s.rgb},0.15)` }}><s.icon className="w-3.5 h-3.5" style={{ color: s.color }} /></span>
                     <span className="flex-1 text-[12px] font-semibold text-white">{s.label}</span>
-                    {disabled ? <span className="text-[9px] text-slate-400">טרם פורסם</span> : <Summary id={s.id} ctx={ctx} />}
+                    {disabled ? <span className="text-[9px] text-slate-400">{PENDING[s.id].short}</span> : <Summary id={s.id} ctx={ctx} />}
                   </button>
                 );
               })}
@@ -586,7 +599,7 @@ function Option13({ ctx }) {
             <span className="flex-1" />
             <button onClick={() => setOpen(false)} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center"><X className="w-4 h-4 text-white" /></button>
           </div>
-          <div className="flex px-3 pt-2 gap-4 border-b border-white/10">
+          <div className="flex px-3 pt-2 gap-4 border-b border-white/10 overflow-x-auto">
             {sections.map((s) => (
               <button key={s.id} onClick={() => setTab(s.id)} className="relative pb-2 text-[12px] font-bold" style={{ color: tab === s.id ? "#fff" : "rgba(255,255,255,0.45)" }}>
                 {s.label}
@@ -622,7 +635,7 @@ function Option14({ ctx }) {
           ) : (
             <>
               {sections.map((s) => (
-                <motion.button layout="position" key={s.id} onClick={() => setTab(s.id)} className="relative px-3 py-1.5 text-[10.5px] font-bold rounded-full">
+                <motion.button layout="position" key={s.id} onClick={() => setTab(s.id)} className="relative px-2.5 py-1.5 text-[10px] font-bold rounded-full whitespace-nowrap">
                   {tab === s.id && <motion.div layoutId="o14-pill" className="absolute inset-0 rounded-full" style={{ background: `rgba(${s.rgb},0.25)` }} />}
                   <span className="relative" style={{ color: tab === s.id ? s.color : "rgba(255,255,255,0.55)" }}>{s.short}</span>
                 </motion.button>
@@ -709,13 +722,13 @@ function Option17({ ctx }) {
         ) : (
           <div className="grid grid-cols-2 gap-2">
             {SECTIONS.map((s) => {
-              const pending = s.id === "lineups" && !ctx.lineups;
+              const pending = !isAvail(s.id, ctx);
               return (
                 <motion.button layoutId={`o17-${s.id}`} key={s.id} disabled={pending} onClick={() => setSec(s.id)}
-                  className={`rounded-2xl p-3 flex flex-col items-start gap-2 text-right ${s.id === "form" ? "col-span-2" : ""}`}
+                  className={`rounded-2xl p-3 flex flex-col items-start gap-2 text-right ${s.id === "form" || s.id === "crowd" ? "col-span-2" : ""}`}
                   style={{ background: pending ? "transparent" : `rgba(${s.rgb},0.07)`, border: pending ? "1.5px dashed rgba(255,255,255,0.15)" : `1px solid rgba(${s.rgb},0.3)`, minHeight: 76 }}>
                   <span className="flex items-center gap-1.5 text-[11px] font-bold" style={{ color: pending ? "rgba(255,255,255,0.35)" : s.color }}><s.icon className="w-3.5 h-3.5" />{s.short}</span>
-                  {pending ? <span className="text-[9.5px] text-slate-500">ממתין לפרסום</span> : <Summary id={s.id} ctx={ctx} />}
+                  {pending ? <span className="text-[9.5px] text-slate-500">{PENDING[s.id].short}</span> : <Summary id={s.id} ctx={ctx} />}
                 </motion.button>
               );
             })}
@@ -824,7 +837,7 @@ function Option21({ ctx }) {
         <div className="relative pr-5">
           <div className="absolute right-[7px] top-2 bottom-2 w-px" style={{ background: "linear-gradient(180deg,#38bdf8,#facc15,#4ade80)", opacity: 0.4 }} />
           {SECTIONS.map((s) => {
-            const pending = s.id === "lineups" && !ctx.lineups;
+            const pending = !isAvail(s.id, ctx);
             const active = sec === s.id && !pending;
             return (
               <div key={s.id} className="relative pb-3">
@@ -832,7 +845,7 @@ function Option21({ ctx }) {
                 <button disabled={pending} onClick={() => setSec(active ? null : s.id)} className="w-full flex items-center gap-2 py-1">
                   <span className="text-[12px] font-bold" style={{ color: pending ? "rgba(255,255,255,0.35)" : s.color }}>{s.label}</span>
                   <span className="flex-1" />
-                  {pending ? <span className="text-[9.5px] text-slate-500 flex items-center gap-1"><Lock className="w-3 h-3" /> ~שעה לפני</span> : !active && <Summary id={s.id} ctx={ctx} />}
+                  {pending ? <span className="text-[9.5px] text-slate-500 flex items-center gap-1"><Lock className="w-3 h-3" /> {PENDING[s.id].short}</span> : !active && <Summary id={s.id} ctx={ctx} />}
                 </button>
                 <Expand open={active}><SectionBody id={s.id} ctx={ctx} /></Expand>
               </div>
@@ -851,20 +864,20 @@ function Option22({ ctx }) {
   const publishAt = new Date(ctx.match.match_date || Date.now()).getTime() - 60 * 60 * 1000;
   const mins = Math.round((publishAt - Date.now()) / 60000);
   const countdown = mins > 60 * 24 ? `בעוד ${Math.round(mins / 1440)} ימים` : mins > 60 ? `בעוד ${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, "0")} ש'` : mins > 0 ? `בעוד ${mins} דק'` : "בקרוב";
-  const cur = tab === "lineups" && !ctx.lineups ? "form" : tab;
+  const cur = isAvail(tab, ctx) ? tab : "form";
   return (
     <Frame ctx={ctx}>
       <ArenaToggle open={open} onClick={() => setOpen(!open)} />
       <Expand open={open}>
         <div className="flex gap-1.5 mb-3">
           {SECTIONS.map((s) => {
-            const locked = s.id === "lineups" && !ctx.lineups;
+            const locked = !isAvail(s.id, ctx);
             const active = cur === s.id;
             return (
               <button key={s.id} disabled={locked} onClick={() => setTab(s.id)} className="flex-1 rounded-xl py-1.5 flex flex-col items-center gap-0.5"
                 style={{ background: active ? `rgba(${s.rgb},0.18)` : "rgba(255,255,255,0.04)", border: `1px solid ${active ? s.color : locked ? "rgba(255,255,255,0.08)" : `rgba(${s.rgb},0.25)`}`, boxShadow: !locked && s.id === "lineups" && !active ? `0 0 12px rgba(${s.rgb},0.35)` : "none" }}>
                 <span className="flex items-center gap-1 text-[10.5px] font-bold" style={{ color: locked ? "rgba(255,255,255,0.3)" : s.color }}>{locked ? <Lock className="w-3 h-3" /> : <s.icon className="w-3 h-3" />}{s.short}</span>
-                {locked && <span className="text-[8.5px] text-slate-500 tabular-nums">{countdown}</span>}
+                {locked && <span className="text-[8.5px] text-slate-500 tabular-nums">{s.id === "lineups" ? countdown : PENDING.crowd.short}</span>}
               </button>
             );
           })}
@@ -920,7 +933,7 @@ function Option23({ ctx }) {
 function Option24({ ctx }) {
   const [open, setOpen] = useState(true);
   const [sec, setSec] = useState(null);
-  const shown = sec === "lineups" && !ctx.lineups ? null : sec;
+  const shown = sec && isAvail(sec, ctx) ? sec : null;
   return (
     <Frame ctx={ctx}>
       <ArenaToggle open={open} onClick={() => setOpen(!open)} />
@@ -936,15 +949,15 @@ function Option24({ ctx }) {
                 <SectionBody id={shown} ctx={ctx} />
               </motion.div>
             ) : (
-              <motion.div key="menu" initial={{ x: 80, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 80, opacity: 0 }} transition={{ duration: 0.22 }} className="grid grid-cols-3 gap-2">
+              <motion.div key="menu" initial={{ x: 80, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 80, opacity: 0 }} transition={{ duration: 0.22 }} className="grid grid-cols-2 gap-2">
                 {SECTIONS.map((s) => {
-                  const pending = s.id === "lineups" && !ctx.lineups;
+                  const pending = !isAvail(s.id, ctx);
                   return (
                     <button key={s.id} disabled={pending} onClick={() => setSec(s.id)} className="aspect-square rounded-2xl flex flex-col items-center justify-center gap-1.5"
                       style={{ background: pending ? "rgba(255,255,255,0.02)" : `linear-gradient(145deg, rgba(${s.rgb},0.22), rgba(${s.rgb},0.05))`, border: `1px solid ${pending ? "rgba(255,255,255,0.08)" : `rgba(${s.rgb},0.45)`}` }}>
                       <s.icon className="w-6 h-6" style={{ color: pending ? "rgba(255,255,255,0.25)" : s.color }} />
                       <span className="text-[10px] font-bold" style={{ color: pending ? "rgba(255,255,255,0.3)" : "#fff" }}>{s.short}</span>
-                      {pending && <span className="text-[8.5px] text-slate-500">טרם פורסם</span>}
+                      {pending && <span className="text-[8.5px] text-slate-500">{PENDING[s.id].short}</span>}
                     </button>
                   );
                 })}
@@ -1038,6 +1051,8 @@ export default function AdminArenaDisplayOptions() {
   const [selectedId, setSelectedId] = useState(null);
   const [lineupsOn, setLineupsOn] = useState(true);
   const [realLineups, setRealLineups] = useState(null);
+  const [lockedOn, setLockedOn] = useState(true);
+  const [realCrowd, setRealCrowd] = useState(null);
 
   useEffect(() => {
     Match.list("match_date").then((all) => setAllMatches(all || [])).catch(() => setAllMatches([]));
@@ -1063,16 +1078,31 @@ export default function AdminArenaDisplayOptions() {
     return () => { cancelled = true; };
   }, [isDemo, match.team_a, match.team_b]);
 
+  useEffect(() => {
+    setRealCrowd(null);
+    if (isDemo) return;
+    let cancelled = false;
+    Prediction.filter({ match_id: match.id }).then((preds) => {
+      if (cancelled || !preds?.length) return;
+      let homeCount = 0, drawCount = 0, awayCount = 0;
+      preds.forEach((p) => { const a = Number(p.predicted_score_a), b = Number(p.predicted_score_b); if (a > b) homeCount++; else if (a < b) awayCount++; else drawCount++; });
+      const total = preds.length;
+      setRealCrowd({ home: Math.round((homeCount / total) * 100), draw: Math.round((drawCount / total) * 100), away: Math.round((awayCount / total) * 100), total, homeCount, drawCount, awayCount });
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [isDemo, match.id]);
+
   const formSource = useMemo(() => (isDemo ? demoFormMatches(match) : allMatches), [isDemo, match, allMatches]);
   const lineups = useMemo(() => (lineupsOn ? realLineups || demoLineups(match) : null), [lineupsOn, realLineups, match]);
-  const ctx = useMemo(() => ({ match, allMatches: formSource, lineups }), [match, formSource, lineups]);
+  const crowd = useMemo(() => (lockedOn ? realCrowd || DEMO_CROWD : null), [lockedOn, realCrowd]);
+  const ctx = useMemo(() => ({ match, allMatches: formSource, lineups, crowd }), [match, formSource, lineups, crowd]);
 
   return (
     <div>
       <div className="mb-6">
         <h2 className="text-xl font-bold text-white mb-1">25 אפשרויות לזירת המשחק</h2>
         <p className="text-slate-400 text-sm mb-3">
-          היום הזירה פותחת ערימה אחת ארוכה: 5 משחקים אחרונים → אחוזי יתרון ותגיות תוצאה → הרכבים (רק כשפורסמו). כאן 25 דרכים להפריד ולנווט ביניהם.
+          היום הזירה פותחת ערימה אחת ארוכה: 5 משחקים אחרונים → אחוזי יתרון ותגיות תוצאה → הרכבים (רק כשפורסמו) → חוכמת ההמונים (רק אחרי נעילה). כאן 25 דרכים להפריד ולנווט ביניהם. שני המתגים מדמים את המצבים — כבויים מראים איך כל אפשרות נראית לפני פרסום ההרכבים / לפני נעילה.
           הרכיבים עצמם הם הרכיבים האמיתיים, ללא שינוי — רק המעטפת שונה. דמו בלבד, הכרטיס האמיתי לא שונה.
         </p>
         <div className="flex items-center gap-4 flex-wrap text-xs text-slate-400">
@@ -1086,6 +1116,10 @@ export default function AdminArenaDisplayOptions() {
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input type="checkbox" checked={lineupsOn} onChange={(e) => setLineupsOn(e.target.checked)} className="accent-emerald-500" />
             הרכבים פורסמו {lineupsOn && (realLineups ? <span className="text-emerald-400">(הרכב אמיתי מאופ"א)</span> : <span className="text-slate-500">(הרכב דמו)</span>)}
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" checked={lockedOn} onChange={(e) => setLockedOn(e.target.checked)} className="accent-purple-500" />
+            משחק ננעל (חוכמת ההמונים) {lockedOn && (realCrowd ? <span className="text-purple-300">(ניחושים אמיתיים)</span> : <span className="text-slate-500">(נתוני דמו)</span>)}
           </label>
         </div>
       </div>
