@@ -133,13 +133,15 @@ function TeamHeaderCard({ logo, name, avgGoals, avgConceded }) {
   );
 }
 
-function FormCell({ item }) {
-  if (!item) return <div className="flex-1 min-w-0 rounded-xl py-2 text-center text-[10px] text-slate-600" style={{ background: 'rgba(255,255,255,0.02)' }}>—</div>;
+// The right-hand team's cell is mirrored (logo on the outer edge), so both
+// scores sit side by side in the middle of the row.
+function FormCell({ item, mirror }) {
+  if (!item) return <div className="flex-1 min-w-0 max-w-[140px] rounded-xl py-1.5 text-center text-[10px] text-slate-600" style={{ background: 'rgba(255,255,255,0.02)' }}>—</div>;
   const s = R[item.result];
   return (
-    <div className="flex-1 min-w-0 flex items-center gap-2 rounded-xl px-2 py-1.5" style={{ background: s.bg, border: `1px solid ${s.bd}` }}>
-      <TeamFlag logo={item.opponentLogo} name={item.opponent} className="w-6 h-6 flex-shrink-0" animate={false} rounded="full" />
-      <span className="flex-1 min-w-0 text-[10.5px] text-white/85 truncate">{item.opponent}</span>
+    <div className={`flex-1 min-w-0 max-w-[140px] flex items-center gap-1.5 rounded-xl px-2 py-1 ${mirror ? 'flex-row-reverse' : ''}`} style={{ background: s.bg, border: `1px solid ${s.bd}` }}>
+      <TeamFlag logo={item.opponentLogo} name={item.opponent} className="w-5 h-5 flex-shrink-0" animate={false} rounded="full" />
+      <span className={`flex-1 min-w-0 text-[10px] text-white/85 truncate ${mirror ? 'text-right' : ''}`}>{item.opponent}</span>
       <span className="font-black tabular-nums text-[12px] flex-shrink-0" style={{ color: s.tx }}>{item.scored}:{item.conceded}</span>
     </div>
   );
@@ -164,10 +166,10 @@ function FormTab({ match, formA, formB }) {
       </div>
       <div className="space-y-1.5">
         {rows.map((r) => (
-          <div key={r.md} className="flex items-center gap-1.5">
+          <div key={r.md} className="flex items-center justify-center gap-1.5">
             <FormCell item={r.a} />
             <span className="w-11 flex-shrink-0 text-center text-[9.5px] text-slate-500 leading-tight" dir="rtl">מחזור<br />{r.md}</span>
-            <FormCell item={r.b} />
+            <FormCell item={r.b} mirror />
           </div>
         ))}
       </div>
@@ -307,17 +309,17 @@ function summarize(games) {
   return { avgGoals: (g / games.length).toFixed(1), avgConceded: (c / games.length).toFixed(1) };
 }
 
-function AllCompsCell({ item }) {
+function AllCompsCell({ item, mirror }) {
   if (!item) return <div className="flex-1 min-w-0 rounded-xl py-2 text-center text-[10px] text-slate-600" style={{ background: 'rgba(255,255,255,0.02)' }}>—</div>;
   const s = R[item.result];
   const [, mm, dd] = item.date.split('-');
   return (
-    <div className="flex-1 min-w-0 flex items-center gap-1.5 rounded-xl px-1.5 py-1.5" style={{ background: s.bg, border: `1px solid ${s.bd}` }}>
+    <div className={`flex-1 min-w-0 flex items-center gap-1.5 rounded-xl px-1.5 py-1.5 ${mirror ? 'flex-row-reverse' : ''}`} style={{ background: s.bg, border: `1px solid ${s.bd}` }}>
       {item.competitionLogo
         ? <img src={item.competitionLogo} alt={item.competition} title={item.competition} className="w-4 h-4 object-contain flex-shrink-0 rounded-sm bg-white/90 p-[1px]" loading="lazy" />
         : <span className="w-4 h-4 flex-shrink-0" />}
       <img src={item.opponentLogo} alt="" className="w-5 h-5 object-contain flex-shrink-0 rounded-full" loading="lazy" />
-      <div className="flex-1 min-w-0 leading-tight">
+      <div className={`flex-1 min-w-0 leading-tight ${mirror ? 'text-right' : ''}`}>
         <div className="text-[10px] text-white/85 truncate">{item.opponent}</div>
         <div className="text-[8.5px] text-white/45">{dd}/{mm} · {item.isHome ? 'בית' : 'חוץ'}</div>
       </div>
@@ -369,9 +371,9 @@ function AllCompsFormTab({ match, a, b }) {
             : (
               <div className="space-y-1.5">
                 {Array.from({ length: n }, (_, j) => (
-                  <div key={j} className="flex items-center gap-1.5">
+                  <div key={j} className="flex items-center justify-center gap-1.5">
                     <AllCompsCell item={ga[j]} />
-                    <AllCompsCell item={gb[j]} />
+                    <AllCompsCell item={gb[j]} mirror />
                   </div>
                 ))}
               </div>
