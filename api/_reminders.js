@@ -13,6 +13,7 @@
 // idempotency key, so extra or overlapping triggers can never double-send —
 // which is also why this needs no secret.
 import { supa, push } from './_goalWebhook.js';
+import { PREDICTION_LOCK_MINUTES } from '../src/config/tournament.js';
 
 const SITE = 'https://champions-league-2026.vercel.app';
 const TZ = 'Asia/Jerusalem';
@@ -38,9 +39,10 @@ async function missingCount(matchIds, users) {
   return users.filter((u) => (done.get(u.id) || 0) < matchIds.length).length;
 }
 
-const missingLine = (n, what) => (n === 0
-  ? `כולם כבר ניחשו את ${what} 💪 — אפשר עדיין לשנות עד שריקת הפתיחה 👉`
-  : `${n === 1 ? 'משתתף אחד עדיין לא סיים' : `${n} משתתפים עדיין לא סיימו`} לנחש את ${what} — כנסו לנחש 👉`);
+// Kept short — a phone lock screen shows ~1 line of body text.
+const missingLine = (n) => (n === 0
+  ? `כולם כבר ניחשו 💪 — אפשר לשנות עד ${PREDICTION_LOCK_MINUTES} דק' לפני כל משחק 👉`
+  : `${n === 1 ? 'משתתף אחד עוד לא ניחש' : `${n} משתתפים עוד לא ניחשו`} — כנסו לנחש 👉`);
 
 // All reminders whose time falls on Israel dates [today, today+1].
 async function plannedReminders(now) {
@@ -66,21 +68,18 @@ async function plannedReminders(now) {
     if (!byDay.has(addDays(day, -1))) {
       out.push({
         key: `rem:daybefore:${day}`, at: ilNoon(addDays(day, -1)), matchIds: ids,
-        heading: '📅 מחר מחזור ליגת האלופות!',
-        what: `${list.length} המשחקים של מחר (פתיחה ב-${ilTime(first)})`,
+        heading: `📅 מחר מחזור ליגת האלופות! (${ilTime(first)})`,
       });
     }
     out.push({
       key: `rem:first:${day}`, at: new Date(slots[0] - 135 * 60e3), matchIds: ids,
       heading: `⏰ עוד שעתיים ורבע שריקת פתיחה! (${ilTime(first)})`,
-      what: 'משחקי הערב',
     });
     slots.slice(1).forEach((t) => {
       const slotIds = list.filter((m) => new Date(m.match_date).getTime() === t).map((m) => m.id);
       out.push({
         key: `rem:slot:${day}:${t}`, at: new Date(t - 60 * 60e3), matchIds: slotIds,
         heading: `⏰ עוד שעה למשחקי ${ilTime(new Date(t))}!`,
-        what: `משחקי ${ilTime(new Date(t))}`,
       });
     });
   }
@@ -101,7 +100,7 @@ export async function remindersHandler(req, res) {
     const results = [];
     for (const r of due) {
       const n = await missingCount(r.matchIds, users);
-      const sent = await push({ heading: r.heading, body: missingLine(n, r.what), url: `${SITE}/`, key: r.key, mode, sendAfter: r.at });
+      const sent = await push({ heading: r.heading, body: missingLine(n), url: `${SITE}/`, key: r.key, mode, sendAfter: r.at });
       results.push({ key: r.key, at: r.at.toISOString(), missing: n, sent });
     }
     return res.status(200).json({
