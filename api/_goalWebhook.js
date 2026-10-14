@@ -158,12 +158,21 @@ async function onScoreChanged(fixtureId, data, mode, sendAfter) {
   const fx = await goal(`/fixtures/${fixtureId}`);
   const hs = Number(data?.homeScore ?? data?.score?.home ?? fx.homeTeamScore);
   const as = Number(data?.awayScore ?? data?.score?.away ?? fx.awayTeamScore);
+  // GOAL also fires score.changed at kickoff (SCHEDULED → LIVE, 0-0 → 0-0) —
+  // that sent a false "goal ruled out" push for Shakhtar–AEK. Only a real
+  // drop in the score is a cancelled goal: the payload must carry the previous
+  // score and it must have had more goals on one side.
+  const prev = data?.previousScore;
+  if (!prev || prev.home == null || prev.away == null) return { skipped: 'no previous score — not a cancellation' };
+  const ph = Number(prev.home), pa = Number(prev.away);
+  if (!(ph > hs || pa > as) || ph < hs || pa < as) return { skipped: `score did not drop (${ph}-${pa} → ${hs}-${as})` };
+
   const our = await findOurMatch(fx);
   if (!our) return { skipped: 'match not in our DB' };
   const hits = await countExact(our, hs, as);
   // Goal pushes only go out when someone hits the new score, so only correct
-  // a goal that was announced: one more goal on either side had a hit.
-  const announced = (await countExact(our, hs + 1, as)) > 0 || (await countExact(our, hs, as + 1)) > 0;
+  // a goal that was announced: someone hit the score before it was cut.
+  const announced = (await countExact(our, ph, pa)) > 0;
   if (!announced) return { skipped: 'cancelled goal was never announced' };
   const heading = `🖥️❌ השער נפסל — ${teamLabel(fx, 'home')} ${hs}-${as} ${teamLabel(fx, 'away')}`;
   return push({ heading, body: hitsLine(hits), url: `${SITE}/?open=live`, key: `fix:${fixtureId}:${hs}-${as}:${Date.now() - (Date.now() % 600000)}`, mode, sendAfter });
@@ -223,7 +232,7 @@ export async function goalWebhookHandler(req, res) {
     const sendAfter = req.query.at ? new Date(req.query.at) : undefined;
     try {
       const out = event === 'match.finished' ? await onFinished(fixtureId, mode, sendAfter, req.query.late === '1')
-        : event === 'score.changed' ? await onScoreChanged(fixtureId, {}, mode, sendAfter)
+        : event === 'score.changed' ? await onScoreChanged(fixtureId, req.query.prevHome != null ? { previousScore: { home: req.query.prevHome, away: req.query.prevAway } } : {}, mode, sendAfter)
         : await onGoal(fixtureId, {}, mode, sendAfter);
       return res.status(200).json(out);
     } catch (e) {
