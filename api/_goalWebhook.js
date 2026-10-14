@@ -2,8 +2,8 @@
 // us at 12 functions) — receives GOAL API webhooks and sends OneSignal pushes:
 //   goal.scored    → "⚽ גול! …" + how many players currently hold the exact score
 //   score.changed  → correction push (goal ruled out by VAR) with the new count
-//   match.finished → once the night's last CL match ends, a summary push with
-//                    the night's exact-score hits.
+//   match.finished → once the night's last CL match ends, a summary push that
+//                    congratulates the exact-score hitters (by name if ≤3).
 // Pushes go to every subscriber (no per-user targeting yet). Each push carries
 // an idempotency key, so GOAL's retries (and two matches finishing together)
 // never send the same push twice.
@@ -49,11 +49,20 @@ async function findOurMatch(fx) {
   return null;
 }
 
-async function countExact(our, homeScore, awayScore) {
-  const preds = await supa(`predictions?select=predicted_score_a,predicted_score_b&match_id=eq.${our.match.id}`);
+// user_ids whose prediction for our match is exactly this score.
+async function exactHitters(our, homeScore, awayScore) {
+  const preds = await supa(`predictions?select=user_id,predicted_score_a,predicted_score_b&match_id=eq.${our.match.id}`);
   const [a, b] = our.swapped ? [awayScore, homeScore] : [homeScore, awayScore];
-  return preds.filter((p) => p.predicted_score_a === a && p.predicted_score_b === b).length;
+  return preds.filter((p) => p.predicted_score_a === a && p.predicted_score_b === b).map((p) => p.user_id);
 }
+
+async function countExact(our, homeScore, awayScore) {
+  return (await exactHitters(our, homeScore, awayScore)).length;
+}
+
+// "דני", "דני ויוסי", "דני, יוסי ומיכל"
+const joinNames = (names) => (names.length < 2 ? names.join('')
+  : `${names.slice(0, -1).join(', ')} ו${names[names.length - 1]}`);
 
 // Deterministic UUID from a string — OneSignal's idempotency_key must be a UUID.
 function uuidFrom(str) {
@@ -203,14 +212,28 @@ async function onFinished(fixtureId, mode, sendAfter, late = false) {
   if (night.some((f) => f.matchStatus !== 'FINISHED')) return { skipped: 'night not over yet' };
 
   let hits = 0;
+  const hitters = new Set();
   for (const f of night) {
     const our = await findOurMatch(f);
-    if (our) hits += await countExact(our, Number(f.homeTeamScore), Number(f.awayTeamScore));
+    if (!our) continue;
+    const ids = await exactHitters(our, Number(f.homeTeamScore), Number(f.awayTeamScore));
+    hits += ids.length;
+    ids.forEach((id) => hitters.add(id));
   }
-  const when = late ? 'אתמול' : 'הערב';
-  const body = hits === 0
-    ? `אף פגיעה מדויקת ${when} 😱 — כנסו לראות את הטבלה העדכנית 👉`
-    : `🎯 ${hits === 1 ? 'פגיעה מדויקת אחת' : `${hits} פגיעות מדויקות`} ${when} — כנסו לראות את הטבלה העדכנית 👉`;
+  // Up to 3 hitters → congratulate them by name; more → a general cheer
+  // with the night's exact-hit count.
+  let body;
+  if (hits === 0) {
+    body = `אף פגיעה מדויקת ${late ? 'אתמול' : 'הערב'} 😱 — כנסו לראות את הטבלה העדכנית 👉`;
+  } else if (hitters.size <= 3) {
+    const profiles = await supa(`profiles?select=id,display_name&id=in.(${[...hitters].join(',')})`);
+    const names = [...hitters].map((id) => profiles.find((p) => p.id === id)?.display_name?.trim()).filter(Boolean);
+    body = names.length
+      ? `👏 כל הכבוד ל${joinNames(names)} על 🎯 כנסו לטבלה העדכנית 👉`
+      : `👏 כל הכבוד לפוגעים, ${hits === 1 ? 'פגיעה מדויקת אחת' : `${hits} פגיעות מדויקות`} 🎯, כנסו לטבלה העדכנית 👉`;
+  } else {
+    body = `👏 כל הכבוד לפוגעים, ${hits} פגיעות מדויקות 🎯, כנסו לטבלה העדכנית 👉`;
+  }
   return push({ heading: late ? '🏁 סיכום ערב ליגת האלופות של אתמול' : '🏁 ערב ליגת האלופות הסתיים!', body, url: `${SITE}/?open=leaderboard`, key: `night:${date}`, mode, sendAfter });
 }
 
