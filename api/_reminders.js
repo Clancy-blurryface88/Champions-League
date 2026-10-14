@@ -4,14 +4,15 @@
 //     (a match day whose previous day had no matches) — "new round open for
 //     predictions"; the two-days one names the weekday and date
 //   • 2h15m before the round's first kickoff (19:45 → 17:30), first day only
+//     — "reminder: matches start at 19:45"
 //   • before each kickoff slot — 19:00 for 19:45, 21:00 for 22:00 —
 //     "lineups are out, want to update?" (falls back to "last chance")
-// The 17:30 one says how many participants still haven't predicted.
+// Every reminder opens the predictions page of its round.
 //
 // Triggered every ~10 min by .github/workflows/reminders.yml (Vercel Hobby
 // cron runs only once a day). A reminder is created when the trigger lands
 // within 25 min before its time and scheduled with send_after, so it arrives
-// on the minute with a near-fresh count. Every reminder has a fixed
+// on the minute. Every reminder has a fixed
 // idempotency key, so extra or overlapping triggers can never double-send —
 // which is also why this needs no secret.
 import { supa, push } from './_goalWebhook.js';
@@ -42,19 +43,6 @@ function ilNoon(ymd) {
   return new Date(guess.getTime() - (Number(shown) - 12) * 3600e3);
 }
 
-async function missingCount(matchIds, users) {
-  if (!matchIds.length) return 0;
-  const preds = await supa(`predictions?select=user_id,match_id&match_id=in.(${matchIds.join(',')})`);
-  const done = new Map();
-  preds.forEach((p) => done.set(p.user_id, (done.get(p.user_id) || 0) + 1));
-  return users.filter((u) => (done.get(u.id) || 0) < matchIds.length).length;
-}
-
-// Kept short — a phone lock screen shows ~1 line of body text.
-const missingLine = (n) => (n === 0
-  ? `כולם כבר ניחשו 💪 — אפשר לשנות עד ${PREDICTION_LOCK_MINUTES} דק' לפני כל משחק 👉`
-  : `${n === 1 ? 'משתתף אחד עוד לא ניחש' : `${n} משתתפים עוד לא ניחשו`} — כנסו לנחש 👉`);
-
 // All reminders whose time falls on Israel dates [today, today+1].
 async function plannedReminders(now) {
   const today = ilDate(now);
@@ -72,7 +60,6 @@ async function plannedReminders(now) {
   for (const day of [today, addDays(today, 1), addDays(today, 2)]) {
     const list = byDay.get(day);
     if (!list) continue;
-    const ids = list.map((m) => m.id);
     const slots = [...new Set(list.map((m) => new Date(m.match_date).getTime()))].sort((a, b) => a - b);
     const first = new Date(slots[0]);
     // The round's own predictions page (round of the day's first match).
@@ -86,29 +73,31 @@ async function plannedReminders(now) {
       // belongs to the previous round.
       if (!byDay.has(addDays(day, -2))) {
         out.push({
-          key: `rem:twodays:${day}`, at: ilNoon(addDays(day, -2)), matchIds: ids, url: roundUrl,
+          key: `rem:twodays:${day}`, at: ilNoon(addDays(day, -2)), url: roundUrl,
           heading: '📅 מחזור חדש פורסם ופתוח לניחוש!',
           body: `המשחקים מתחילים ב${ilDayLabel(first)} ב-${ilTime(first)} — כנסו לנחש 👉`,
         });
       }
       out.push({
-        key: `rem:daybefore:${day}`, at: ilNoon(addDays(day, -1)), matchIds: ids, url: roundUrl,
+        key: `rem:daybefore:${day}`, at: ilNoon(addDays(day, -1)), url: roundUrl,
         heading: '📅 מחזור חדש פורסם ופתוח לניחוש!',
         body: `המשחקים מתחילים מחר ב-${ilTime(first)} — כנסו לנחש 👉`,
       });
       out.push({
-        key: `rem:first:${day}`, at: new Date(slots[0] - 135 * 60e3), matchIds: ids,
-        heading: `⏰ הניחושים ננעלים ב-${ilTime(lockOf(slots[0]))}!`,
+        key: `rem:first:${day}`, at: new Date(slots[0] - 135 * 60e3), url: roundUrl,
+        heading: '⏰ תזכורת',
+        body: `המשחקים מתחילים ב-${ilTime(first)} — כנסו לנחש 👉`,
       });
     }
     slots.forEach((t, i) => {
       // Everyone has predicted by now — these are about updating, hooked on
       // UEFA publishing the lineups (~1h before kickoff). First slot 45 min
       // before (19:45 → 19:00), later slots 1h before (22:00 → 21:00).
+      const slotMatches = list.filter((m) => new Date(m.match_date).getTime() === t);
       out.push({
         kind: 'slot', key: `rem:slot:${day}:${t}`, at: new Date(t - (i === 0 ? 45 : 60) * 60e3),
-        slotMatches: list.filter((m) => new Date(m.match_date).getTime() === t),
-        kickoff: ilTime(new Date(t)), lock: ilTime(lockOf(t)),
+        slotMatches, kickoff: ilTime(new Date(t)), lock: ilTime(lockOf(t)),
+        url: slotMatches[0].round_id ? `${SITE}/Predictions?round_id=${slotMatches[0].round_id}` : `${SITE}/`,
       });
     });
   }
@@ -125,7 +114,6 @@ export async function remindersHandler(req, res) {
   try {
     const all = await plannedReminders(now);
     const due = all.filter((r) => now >= new Date(r.at.getTime() - LEAD_MS) && now < new Date(r.at.getTime() + LATE_MS));
-    const users = due.length ? await supa('profiles?select=id') : [];
     const results = [];
     for (const r of due) {
       if (r.kind === 'slot') {
@@ -141,13 +129,12 @@ export async function remindersHandler(req, res) {
         const msg = published
           ? { heading: `📋 ההרכבים למשחקי ${r.kickoff} פורסמו!`, body: `רוצים לעדכן ניחוש? אפשר עד ${r.lock} 👉` }
           : { heading: `⏰ ניחושי משחקי ${r.kickoff} ננעלים ב-${r.lock}`, body: 'הזדמנות אחרונה לעדכן ניחוש 👉' };
-        const sent = await push({ ...msg, url: `${SITE}/`, key: r.key, mode, sendAfter: r.at });
+        const sent = await push({ ...msg, url: r.url, key: r.key, mode, sendAfter: r.at });
         results.push({ key: r.key, at: r.at.toISOString(), lineups: published, sent });
         continue;
       }
-      const n = r.body ? null : await missingCount(r.matchIds, users);
-      const sent = await push({ heading: r.heading, body: r.body || missingLine(n), url: r.url || `${SITE}/`, key: r.key, mode, sendAfter: r.at });
-      results.push({ key: r.key, at: r.at.toISOString(), missing: n, sent });
+      const sent = await push({ heading: r.heading, body: r.body, url: r.url, key: r.key, mode, sendAfter: r.at });
+      results.push({ key: r.key, at: r.at.toISOString(), sent });
     }
     return res.status(200).json({
       now: now.toISOString(),
