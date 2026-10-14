@@ -31,7 +31,6 @@ import LeagueTableModal from "@/components/LeagueTableModal";
 import { PREDICTION_LOCK_MINUTES } from "@/config/tournament";
 import TeamInfoModal from "@/components/TeamInfoModal";
 import TeamFixturesModal from "@/components/TeamFixturesModal";
-import { ShineBorder } from "@/components/magicui/shine-border";
 import { loadLeagueTableOverride, applyOverride } from '@/utils/standingsOverride';
 import { calcStandings } from '@/utils/standings';
 import { STAGES, STAGE_LABELS, DIRECT_R16_CUTOFF, PLAYOFF_CUTOFF } from '@/config/tournament';
@@ -1177,23 +1176,21 @@ export default function Predictions() {
 
                     {/* Separator + Arena toggle */}
                     <div className="h-px mt-3" style={{ background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)' }} />
-                    {/* Same look as the "League Phase" round cards on the dashboard (RoundsMarquee) */}
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleArena(match.id); }}
-                      className="relative group mx-auto mt-3 h-16 w-60 rounded-2xl flex items-center justify-center gap-4 active:scale-[0.98] transition-transform"
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(8,22,42,0.55) 0%, rgba(3,10,20,0.45) 100%)',
-                        border: '1px solid rgba(9, 122, 220,0.28)',
-                        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35)',
-                      }}
-                    >
-                      <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-sky-400/60 via-white/20 to-sky-400/60 blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                      <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
-                        <ShineBorder shineColor={["#097adc", "#ffffff", "#097adc"]} borderRadius={16} borderWidth={1} />
-                      </div>
-                      <img src="/champions/trophy-marquee.png" alt="" className="relative h-9 w-auto object-contain" />
-                      <span className="relative text-white font-semibold text-base tracking-wide" style={{ fontFamily: "'Outfit', sans-serif" }}>זירת המשחק</span>
-                    </button>
+                    {/* Same look as the "League Phase" stage badge at the top of the card */}
+                    <div className="flex justify-center mt-3">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleArena(match.id); }}
+                        className="relative overflow-hidden text-sm font-semibold text-yellow-400 border border-yellow-400/40 px-5 py-1 rounded-full hover:border-yellow-400/70 transition-colors cursor-pointer"
+                        style={{
+                          background: 'rgba(255,255,255,0.07)',
+                          backdropFilter: 'blur(20px) saturate(140%)',
+                          WebkitBackdropFilter: 'blur(20px) saturate(140%)',
+                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.30)',
+                        }}
+                      >
+                        זירת המשחק
+                      </button>
+                    </div>
 
                     {/* Arena — bottom sheet (portal) */}
                     <AnimatePresence>
