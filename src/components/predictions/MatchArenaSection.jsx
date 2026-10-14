@@ -6,7 +6,6 @@ import OdometerValue from '@/components/OdometerValue';
 import { PitchLineup } from './MatchLineups';
 import { useModalBackButtonOnMount } from '@/hooks/useModalBackButton';
 import HeadToHead from './HeadToHead';
-import CrowdWisdomStats from './CrowdWisdomStats';
 import TeamFlag from '@/components/TeamFlag';
 
 export function getTeamForm(allMatches, teamName) {
@@ -177,7 +176,7 @@ function FormTab({ match, formA, formB }) {
 
 // ── Arena sheet tab: תחזית ────────────────────────────────────────────────
 // Big 1/X/2 probability squares (odometer roll), the most likely exact scores
-// stacked by likelihood, and — once predictions lock — the crowd's picks.
+// stacked by likelihood. (The crowd's picks live in MatchPredictionsModal.)
 function ProbSquare({ label, logo, pct, best }) {
   return (
     <div
@@ -199,7 +198,7 @@ function ProbSquare({ label, logo, pct, best }) {
   );
 }
 
-function OddsTab({ match, isLocked }) {
+function OddsTab({ match }) {
   const probs = useMemo(() => calculateProbabilities(match.home_win_points, match.draw_points, match.away_win_points), [match]);
   const top = useMemo(() => getTopScores(match.score_odds, 5), [match]);
   const maxPct = top[0]?.pct || 1;
@@ -243,15 +242,6 @@ function OddsTab({ match, isLocked }) {
           ))}
         </div>
       )}
-
-      {isLocked && (
-        <div className="space-y-1">
-          <p className="text-[10.5px] font-semibold text-yellow-400 text-center">ניחושי המשתתפים</p>
-          <div className="[&>div]:mt-0 [&>div]:pt-0 [&>div]:border-t-0">
-            <CrowdWisdomStats matchId={match.id} teamA={match.team_a} teamB={match.team_b} />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -259,7 +249,7 @@ function OddsTab({ match, isLocked }) {
 // Arena bottom sheet (admin gallery option 12): rises over the page with
 // glass category tabs in one uniform color; drag the handle down (or tap the
 // backdrop / back button) to close. Lineups get a tab only once UEFA has
-// published them. The crowd's picks live at the bottom of תחזית once locked.
+// published them. The crowd's 1/X/2 split lives in MatchPredictionsModal.
 const TAB_COLOR = '56,189,248';
 const sheetFade = { initial: { opacity: 0, y: 6 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -6 }, transition: { duration: 0.2 } };
 
@@ -276,7 +266,7 @@ function useLineups(teamA, teamB) {
   return lineups;
 }
 
-export default function MatchArenaSection({ match, isLocked, allMatches, loading, onClose }) {
+export default function MatchArenaSection({ match, allMatches, loading, onClose }) {
   const formA = useMemo(() => getTeamForm(allMatches, match.team_a), [allMatches, match.team_a]);
   const formB = useMemo(() => getTeamForm(allMatches, match.team_b), [allMatches, match.team_b]);
   const hasForm = formA.played > 0 || formB.played > 0;
@@ -298,7 +288,7 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
       if (!hasForm) return <p className="text-center text-[11px] text-slate-500 py-4">אין עדיין משחקים שהסתיימו</p>;
       return <FormTab match={match} formA={formA} formB={formB} />;
     }
-    if (tab === 'odds') return <OddsTab match={match} isLocked={isLocked} />;
+    if (tab === 'odds') return <OddsTab match={match} />;
     if (tab === 'h2h') {
       return <HeadToHead inline teamA={match.team_a?.trim()} teamB={match.team_b?.trim()} logoA={match.team_a_logo} logoB={match.team_b_logo} allMatches={allMatches} />;
     }

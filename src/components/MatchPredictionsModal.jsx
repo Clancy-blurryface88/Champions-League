@@ -2,6 +2,7 @@ import TeamFlag from "@/components/TeamFlag";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import React, { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import CrowdWisdomStats from "@/components/predictions/CrowdWisdomStats";
 import { Prediction } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
 import { motion, AnimatePresence } from "framer-motion";
@@ -200,6 +201,11 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
                   })}
                 </div>
               ))}
+
+              {/* The crowd's 1/X/2 split — under everyone's predictions */}
+              <div className="pt-2">
+                <CrowdWisdomStats matchId={match.id} teamA={match.team_a} teamB={match.team_b} />
+              </div>
             </div>
           )}
         </div>
