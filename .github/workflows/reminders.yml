@@ -4,9 +4,9 @@
 name: Prediction reminders
 
 on:
-  # Schedule stays off until the Test Users check passes — manual runs only.
-  # schedule:
-  #   - cron: "*/10 7-21 * * *"
+
+  schedule:
+    - cron: "*/10 7-21 * * *"
   workflow_dispatch:
 
 jobs:

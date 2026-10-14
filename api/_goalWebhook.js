@@ -144,7 +144,8 @@ async function onScoreChanged(fixtureId, data, mode, sendAfter) {
   return push({ heading, body: hitsLine(hits), url: `${SITE}/?open=live`, key: `fix:${fixtureId}:${hs}-${as}:${Date.now() - (Date.now() % 600000)}`, mode, sendAfter });
 }
 
-async function onFinished(fixtureId, mode, sendAfter) {
+// late=true: a manual re-send the day after ("אתמול" instead of "הערב").
+async function onFinished(fixtureId, mode, sendAfter, late = false) {
   const fx = await goal(`/fixtures/${fixtureId}`);
   const date = fx.matchDate;
   const night = await goal(`/fixtures/date/${date}?leagueId=${CL_LEAGUE}&limit=100`);
@@ -155,10 +156,11 @@ async function onFinished(fixtureId, mode, sendAfter) {
     const our = await findOurMatch(f);
     if (our) hits += await countExact(our, Number(f.homeTeamScore), Number(f.awayTeamScore));
   }
+  const when = late ? 'אתמול' : 'הערב';
   const body = hits === 0
-    ? `אף פגיעה מדויקת הערב ב-${night.length} משחקים 😱 — כנסו לראות את הטבלה העדכנית 👉`
-    : `🎯 ${hits === 1 ? 'פגיעה מדויקת אחת' : `${hits} פגיעות מדויקות`} הערב ב-${night.length} משחקים — כנסו לראות את הטבלה העדכנית 👉`;
-  return push({ heading: '🏁 ערב ליגת האלופות הסתיים!', body, url: `${SITE}/?open=leaderboard`, key: `night:${date}`, mode, sendAfter });
+    ? `אף פגיעה מדויקת ${when} ב-${night.length} משחקים 😱 — כנסו לראות את הטבלה העדכנית 👉`
+    : `🎯 ${hits === 1 ? 'פגיעה מדויקת אחת' : `${hits} פגיעות מדויקות`} ${when} ב-${night.length} משחקים — כנסו לראות את הטבלה העדכנית 👉`;
+  return push({ heading: late ? '🏁 סיכום ערב ליגת האלופות של אתמול' : '🏁 ערב ליגת האלופות הסתיים!', body, url: `${SITE}/?open=leaderboard`, key: `night:${date}`, mode, sendAfter });
 }
 
 async function readRaw(req) {
@@ -185,16 +187,17 @@ function verify(raw, header) {
 
 export async function goalWebhookHandler(req, res) {
   // Manual run (GET, keyed with our GOAL API key) — builds the push for any
-  // past fixture; &send=test also delivers it to Test Users only.
+  // past fixture; &send=test delivers it to Test Users only, &send=live to
+  // everyone (only when the owner explicitly asks for a broadcast).
   // /api/football?source=goal-webhook&event=goal.scored&fixtureId=…[&send=test]
   if (req.method === 'GET') {
     if (req.headers['x-admin-key'] !== process.env.GOAL_API_KEY) return res.status(401).json({ error: 'unauthorized' });
     const { event, fixtureId } = req.query;
-    const mode = req.query.send === 'test' ? 'test' : 'dry';
+    const mode = ['test', 'live'].includes(req.query.send) ? req.query.send : 'dry';
     // &at=<ISO time> schedules the test push (OneSignal send_after).
     const sendAfter = req.query.at ? new Date(req.query.at) : undefined;
     try {
-      const out = event === 'match.finished' ? await onFinished(fixtureId, mode, sendAfter)
+      const out = event === 'match.finished' ? await onFinished(fixtureId, mode, sendAfter, req.query.late === '1')
         : event === 'score.changed' ? await onScoreChanged(fixtureId, {}, mode, sendAfter)
         : await onGoal(fixtureId, {}, mode, sendAfter);
       return res.status(200).json(out);
