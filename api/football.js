@@ -1,8 +1,11 @@
 // Vercel Serverless Function — proxies football-data.org API
 import { TOURNAMENT_CODE } from '../src/config/tournament.js';
 import { getUefaLiveMatches, getUefaMatchesByDate } from './_uefaContext.js';
+import { goalHandler } from './_goal.js';
 
 export default async function handler(req, res) {
+  if (req.query.source === 'goal') return goalHandler(req, res);
+
   const { competition = TOURNAMENT_CODE, filter = 'LIVE', type } = req.query;
 
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');

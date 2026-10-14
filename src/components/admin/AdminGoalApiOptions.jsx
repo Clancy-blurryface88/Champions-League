@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 // ── GOAL API (api.goal-api.com) — what it can add to the app, shown live on
-// real finished CL matches via /api/goal (server proxy, CDN-cached). Demo only:
+// real finished CL matches via /api/football?source=goal (server proxy, CDN-cached). Demo only:
 // each card is one candidate feature + a verdict on the data quality. ──────
 
 const CL_LEAGUE = "cmr77dw3900f5rx06j05wgzv4";
@@ -26,7 +26,7 @@ function useGoal(path, enabled = true) {
     if (!enabled || !path) return;
     let alive = true;
     if (!goalCache.has(path)) {
-      goalCache.set(path, fetch(`/api/goal?path=${encodeURIComponent(path)}`).then((r) => r.json()));
+      goalCache.set(path, fetch(`/api/football?source=goal&path=${encodeURIComponent(path)}`).then((r) => r.json()));
     }
     setState({ loading: true, data: null, error: null });
     goalCache.get(path)
