@@ -4,7 +4,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, ShieldCheck, Radio, Sparkles, Crown, Award } from "lucide-react";
+import { ArrowLeft, Target, Trophy, Calculator, Image, Users, User as UserIcon, Eye, BarChart3, Download, RotateCcw, ShieldCheck, Radio, Sparkles, Award } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import AdminRounds from "../components/admin/AdminRounds";
@@ -21,14 +21,8 @@ import AdminPlayoffOverride from "../components/admin/AdminPlayoffOverride";
 import AdminStandingsCheck from "../components/admin/AdminStandingsCheck";
 import AdminLiveMatchExplorer from "../components/admin/AdminLiveMatchExplorer";
 import AdminGeneralQuestions from "../components/admin/AdminGeneralQuestions";
-import AdminHallOfFameOptions from "../components/admin/AdminHallOfFameOptions";
-import AdminHallOfFameOptionsExtra from "../components/admin/AdminHallOfFameOptionsExtra";
 import AdminHallOfFame from "../components/admin/AdminHallOfFame";
-import AdminScoringModalOptions from "../components/admin/AdminScoringModalOptions";
-import AdminScoringModalOptionsExtra from "../components/admin/AdminScoringModalOptionsExtra";
-import AdminArenaDisplayOptions from "../components/admin/AdminArenaDisplayOptions";
-import AdminFormDisplayOptions from "../components/admin/AdminFormDisplayOptions";
-import AdminGoalApiOptions from "../components/admin/AdminGoalApiOptions";
+import AdminTopScoresOptions from "../components/admin/AdminTopScoresOptions";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -92,14 +86,8 @@ export default function Admin() {
       case 'standings-check': return <AdminStandingsCheck />;
       case 'live-explorer': return <AdminLiveMatchExplorer />;
       case 'general-questions': return <AdminGeneralQuestions />;
-      case 'hall-of-fame-options': return <AdminHallOfFameOptions />;
-      case 'hall-of-fame-options-extra': return <AdminHallOfFameOptionsExtra />;
       case 'hall-of-fame': return <AdminHallOfFame />;
-      case 'scoring-modal-options': return <AdminScoringModalOptions />;
-      case 'scoring-modal-options-extra': return <AdminScoringModalOptionsExtra />;
-      case 'arena-options': return <AdminArenaDisplayOptions />;
-      case 'form-options': return <AdminFormDisplayOptions />;
-      case 'goal-api': return <AdminGoalApiOptions />;
+      case 'top-scores-options': return <AdminTopScoresOptions />;
       default: return <AdminRounds />;
     }
   };
@@ -120,13 +108,7 @@ export default function Admin() {
     { id: 'live-explorer',     label: '📡 הרכבים + אירועים',      icon: Radio },
     { id: 'general-questions', label: '🎯 ניחושים כלליים', icon: Sparkles },
     { id: 'hall-of-fame', label: '👑 היכל התהילה', icon: Award },
-    { id: 'hall-of-fame-options', label: '10 אפשרויות היכל תהילה', icon: Crown },
-    { id: 'hall-of-fame-options-extra', label: '20 אפשרויות נוספות', icon: Crown },
-    { id: 'scoring-modal-options', label: '🎲 20 אפשרויות פופאפ 1X2', icon: Calculator },
-    { id: 'scoring-modal-options-extra', label: '🎲 20 אפשרויות נוספות 1X2', icon: Calculator },
-    { id: 'arena-options', label: '🏟️ 25 אפשרויות זירת המשחק', icon: Eye },
-    { id: 'form-options', label: '📊 25 תצוגות 5 משחקים אחרונים', icon: BarChart3 },
-    { id: 'goal-api', label: '🔌 GOAL API — אפשרויות', icon: Radio },
+    { id: 'top-scores-options', label: '🎯 50 תצוגות תוצאות סבירות', icon: Eye },
   ];
 
   return (
