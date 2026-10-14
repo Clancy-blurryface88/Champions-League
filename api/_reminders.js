@@ -1,7 +1,8 @@
 // Handler (mounted via GET /api/football?source=reminders) — "go predict"
 // pushes, to every subscriber:
-//   • 12:00 Israel time the day before a round starts (a match day whose
-//     previous day had no matches) — "new round open for predictions"
+//   • 12:00 Israel time two days before and the day before a round starts
+//     (a match day whose previous day had no matches) — "new round open for
+//     predictions"; the two-days one names the weekday and date
 //   • 2h15m before the round's first kickoff (19:45 → 17:30), first day only
 //   • before each kickoff slot — 19:00 for 19:45, 21:00 for 22:00 —
 //     "lineups are out, want to update?" (falls back to "last chance")
@@ -27,6 +28,12 @@ const ilTime = (d) => new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-
 // Predictions lock this long before kickoff (same rule as the app).
 const lockOf = (kickoffMs) => new Date(kickoffMs - PREDICTION_LOCK_MINUTES * 60e3);
 const addDays = (ymd, n) => { const d = new Date(`${ymd}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+// "יום שלישי (21.10)" — the Israel weekday and day.month of a Date.
+const ilDayLabel = (d) => {
+  const weekday = new Intl.DateTimeFormat('he-IL', { timeZone: TZ, weekday: 'long' }).format(d);
+  const [, m, day] = ilDate(d).split('-');
+  return `${weekday} (${Number(day)}.${Number(m)})`;
+};
 
 // 12:00 Israel time on a given Israel date, as a UTC Date (DST-safe).
 function ilNoon(ymd) {
@@ -53,7 +60,7 @@ async function plannedReminders(now) {
   const today = ilDate(now);
   const from = new Date(`${addDays(today, -1)}T00:00:00Z`).toISOString();
   const to = new Date(`${addDays(today, 3)}T00:00:00Z`).toISOString();
-  const matches = await supa(`matches?select=id,match_date,team_a,team_b&match_date=gte.${from}&match_date=lt.${to}&order=match_date`);
+  const matches = await supa(`matches?select=id,match_date,team_a,team_b,round_id&match_date=gte.${from}&match_date=lt.${to}&order=match_date`);
   const byDay = new Map();
   matches.forEach((m) => {
     const d = ilDate(new Date(m.match_date));
@@ -68,12 +75,24 @@ async function plannedReminders(now) {
     const ids = list.map((m) => m.id);
     const slots = [...new Set(list.map((m) => new Date(m.match_date).getTime()))].sort((a, b) => a - b);
     const first = new Date(slots[0]);
+    // The round's own predictions page (round of the day's first match).
+    const roundUrl = list[0].round_id ? `${SITE}/Predictions?round_id=${list[0].round_id}` : `${SITE}/`;
 
     // First day of a round (no matches the day before — usually Tuesday):
-    // 12:00 the day before + 2h15m before the first kickoff (19:45 → 17:30).
+    // 12:00 two days before (names the weekday and date), 12:00 the day
+    // before, and 2h15m before the first kickoff (19:45 → 17:30).
     if (!byDay.has(addDays(day, -1))) {
+      // Skipped when two days before is itself a match day — that noon
+      // belongs to the previous round.
+      if (!byDay.has(addDays(day, -2))) {
+        out.push({
+          key: `rem:twodays:${day}`, at: ilNoon(addDays(day, -2)), matchIds: ids, url: roundUrl,
+          heading: '📅 מחזור חדש פורסם ופתוח לניחוש!',
+          body: `המשחקים מתחילים ב${ilDayLabel(first)} ב-${ilTime(first)} — כנסו לנחש 👉`,
+        });
+      }
       out.push({
-        key: `rem:daybefore:${day}`, at: ilNoon(addDays(day, -1)), matchIds: ids,
+        key: `rem:daybefore:${day}`, at: ilNoon(addDays(day, -1)), matchIds: ids, url: roundUrl,
         heading: '📅 מחזור חדש פורסם ופתוח לניחוש!',
         body: `המשחקים מתחילים מחר ב-${ilTime(first)} — כנסו לנחש 👉`,
       });
@@ -127,7 +146,7 @@ export async function remindersHandler(req, res) {
         continue;
       }
       const n = r.body ? null : await missingCount(r.matchIds, users);
-      const sent = await push({ heading: r.heading, body: r.body || missingLine(n), url: `${SITE}/`, key: r.key, mode, sendAfter: r.at });
+      const sent = await push({ heading: r.heading, body: r.body || missingLine(n), url: r.url || `${SITE}/`, key: r.key, mode, sendAfter: r.at });
       results.push({ key: r.key, at: r.at.toISOString(), missing: n, sent });
     }
     return res.status(200).json({
