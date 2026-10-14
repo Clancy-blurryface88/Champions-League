@@ -112,6 +112,29 @@ export default function TeamFixturesModal({ team, allMatches, logosByName, onClo
   const predicted = getPredictedEntry(team.name);
   const history = getUclAllTimeHistory(team.name);
 
+  // This season's CL record, from the finished matches already in the app —
+  // same shape as the all-time history so one box renders either.
+  const seasonStats = useMemo(() => {
+    const done = fixtures.filter((f) => f.result);
+    let wins = 0, draws = 0, losses = 0, gf = 0, ga = 0;
+    done.forEach((f) => {
+      const [a, b] = f.result.score.split(":").map(Number);
+      gf += f.isHome ? a : b;
+      ga += f.isHome ? b : a;
+      if (f.result.outcome === "W") wins++; else if (f.result.outcome === "D") draws++; else losses++;
+    });
+    const n = done.length;
+    return {
+      matches: n, wins, draws, losses,
+      goalsPerMatch: n ? Math.round((gf / n) * 100) / 100 : 0,
+      concededPerMatch: n ? Math.round((ga / n) * 100) / 100 : 0,
+    };
+  }, [fixtures]);
+  // Defaults to this season; teams with no all-time record (first-time
+  // entrants) only ever see the season view.
+  const [statsMode, setStatsMode] = useState("season");
+  const stats = statsMode === "allTime" && history ? history : seasonStats;
+
   return (
     <motion.div
       className="fixed inset-0 z-[60] flex items-center justify-center p-4"
@@ -140,39 +163,61 @@ export default function TeamFixturesModal({ team, allMatches, logosByName, onClo
           </button>
         </div>
 
-        {history && (
+        {(history || seasonStats.matches > 0) && (
           <div
             className="rounded-xl p-3 mb-4"
             style={{ background: "rgba(245,197,24,0.08)", border: "1px solid rgba(245,197,24,0.25)" }}
           >
-            <span className="text-amber-300 text-[10px] font-bold uppercase tracking-wide block text-center mb-2">
-              היסטוריה כל-הזמנים בליגת האלופות
-            </span>
-
-            <div className="flex items-center justify-center gap-4 mb-3">
-              <div className="text-center">
-                <div className="text-white text-[9px]">משחקים</div>
-                <div className="font-bold text-sm" style={{ color: "#60a5fa" }} dir="ltr">
-                  <OdometerValue target={history.matches} decimals={0} height={14} width={8} />
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-amber-300 text-[10px] font-bold uppercase tracking-wide">
+                {statsMode === "season" ? "העונה בליגת האלופות" : "כל הזמנים בליגת האלופות"}
+              </span>
+              {history && (
+                <div className="flex rounded-full p-0.5" style={{ background: "rgba(255,255,255,0.06)" }}>
+                  {[["season", "העונה"], ["allTime", "כל הזמנים"]].map(([k, l]) => (
+                    <button
+                      key={k}
+                      onClick={() => setStatsMode(k)}
+                      className="text-[9.5px] px-2 py-0.5 rounded-full font-semibold transition-colors"
+                      style={{ background: statsMode === k ? "#f5c518" : "transparent", color: statsMode === k ? "#000" : "#cbd5e1" }}
+                    >
+                      {l}
+                    </button>
+                  ))}
                 </div>
-              </div>
-              <div className="w-px h-6" style={{ background: "rgba(255,255,255,0.1)" }} />
-              <div className="text-center">
-                <div className="text-white text-[9px]">שערים למשחק</div>
-                <div className="font-bold text-sm" style={{ color: "#4ade80" }} dir="ltr">
-                  <OdometerValue target={history.goalsPerMatch} height={14} width={8} />
-                </div>
-              </div>
-              <div className="w-px h-6" style={{ background: "rgba(255,255,255,0.1)" }} />
-              <div className="text-center">
-                <div className="text-white text-[9px]">ספיגות למשחק</div>
-                <div className="font-bold text-sm" style={{ color: "#f87171" }} dir="ltr">
-                  <OdometerValue target={history.concededPerMatch} height={14} width={8} />
-                </div>
-              </div>
+              )}
             </div>
 
-            <WdlBar wins={history.wins} draws={history.draws} losses={history.losses} />
+            {stats.matches > 0 ? (
+              <div key={statsMode}>
+                <div className="flex items-center justify-center gap-4 mb-3">
+                  <div className="text-center">
+                    <div className="text-white text-[9px]">משחקים</div>
+                    <div className="font-bold text-sm" style={{ color: "#60a5fa" }} dir="ltr">
+                      <OdometerValue target={stats.matches} decimals={0} height={14} width={8} />
+                    </div>
+                  </div>
+                  <div className="w-px h-6" style={{ background: "rgba(255,255,255,0.1)" }} />
+                  <div className="text-center">
+                    <div className="text-white text-[9px]">שערים למשחק</div>
+                    <div className="font-bold text-sm" style={{ color: "#4ade80" }} dir="ltr">
+                      <OdometerValue target={stats.goalsPerMatch} height={14} width={8} />
+                    </div>
+                  </div>
+                  <div className="w-px h-6" style={{ background: "rgba(255,255,255,0.1)" }} />
+                  <div className="text-center">
+                    <div className="text-white text-[9px]">ספיגות למשחק</div>
+                    <div className="font-bold text-sm" style={{ color: "#f87171" }} dir="ltr">
+                      <OdometerValue target={stats.concededPerMatch} height={14} width={8} />
+                    </div>
+                  </div>
+                </div>
+
+                <WdlBar wins={stats.wins} draws={stats.draws} losses={stats.losses} />
+              </div>
+            ) : (
+              <p className="text-center text-white/50 text-[11px] py-2">עוד לא שוחקו משחקים העונה</p>
+            )}
           </div>
         )}
 
