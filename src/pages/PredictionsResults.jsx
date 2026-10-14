@@ -742,18 +742,26 @@ export default function PredictionsResults() {
 
                       {/* Chip strip — jump straight to any match, newest first */}
                       {finishedMatches.length > 1 &&
-                        <div ref={chipStripRef} className="flex gap-1.5 overflow-x-auto px-0.5 scrollbar-hide">
+                        <div ref={chipStripRef} className="flex gap-1.5 overflow-x-auto px-1 py-1 scrollbar-hide">
                           {finishedMatches.map((match, i) => i).reverse().map((i) => {
                             const match = finishedMatches[i];
                             const active = i === currentMatchIndex;
+                            const hit = !!user && predictions.some((p) =>
+                              p.match_id === match.id && p.user_id === user.id &&
+                              p.predicted_score_a != null && p.predicted_score_b != null &&
+                              Number(p.predicted_score_a) === Number(match.actual_score_a) &&
+                              Number(p.predicted_score_b) === Number(match.actual_score_b)
+                            );
+                            // Border: green = the viewer hit this exact score, blue = didn't.
+                            const border = hit ? '1.5px solid #22c55e' : '1px solid rgba(56,189,248,0.55)';
                             return (
                               <button
                                 key={match.id}
                                 onClick={() => goToMatch(i)}
                                 className="flex-none flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-bold transition-all"
                                 style={active
-                                  ? { background: 'linear-gradient(135deg, #7c3aed 0%, #2e1065 100%)' }
-                                  : { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)' }}
+                                  ? { background: 'linear-gradient(135deg, #7c3aed 0%, #2e1065 100%)', border, boxShadow: hit ? '0 0 8px rgba(34,197,94,0.45)' : undefined }
+                                  : { background: 'rgba(255,255,255,0.08)', border, boxShadow: hit ? '0 0 8px rgba(34,197,94,0.45)' : undefined }}
                               >
                                 <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-6 h-6" rounded="sm" />
                                 <span className="tabular-nums" style={{ color: '#22d3ee' }}>{match.actual_score_a}-{match.actual_score_b}</span>
