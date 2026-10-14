@@ -318,6 +318,7 @@ function AllCompsCell({ item, mirror }) {
       {item.competitionLogo
         ? <img src={item.competitionLogo} alt={item.competition} title={item.competition} className="w-4 h-4 object-contain flex-shrink-0 rounded-sm bg-white/90 p-[1px]" loading="lazy" />
         : <span className="w-4 h-4 flex-shrink-0" />}
+      <span className="flex-shrink-0 self-stretch mx-0.5" style={{ width: 1, background: 'rgba(255,255,255,0.18)' }} />
       <img src={item.opponentLogo} alt="" className="w-5 h-5 object-contain flex-shrink-0 rounded-full" loading="lazy" />
       <div className={`flex-1 min-w-0 leading-tight ${mirror ? 'text-right' : ''}`}>
         <div className="text-[10px] text-white/85 truncate">{item.opponent}</div>
