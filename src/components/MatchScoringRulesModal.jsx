@@ -46,16 +46,18 @@ function calcSimPoints(match, a, b) {
   return { total: parseFloat(total.toFixed(2)), breakdown };
 }
 
-// iOS-style picker wheel (UIPickerView): scroll-snap column 0-9, the centred
-// row is the value. value=null = nothing picked yet (all rows dimmed). Scrolls
-// to its initial value on mount only — remount (key) to reset.
+// iOS-style picker wheel (UIPickerView): scroll-snap column "–", 0…9; the
+// centred row is the value. The "–" row (index 0) means nothing picked
+// (value null). Scrolls to its initial value on mount only — remount (key)
+// to reset.
 const WHEEL_ITEM = 34;
+const WHEEL_ROWS = [null, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 function ScoreWheel({ value, onChange }) {
   const ref = useRef(null);
-  useEffect(() => { ref.current?.scrollTo({ top: (value ?? 0) * WHEEL_ITEM }); }, []);
+  useEffect(() => { ref.current?.scrollTo({ top: WHEEL_ROWS.indexOf(value) * WHEEL_ITEM }); }, []);
   const onScroll = () => {
-    const idx = Math.max(0, Math.min(9, Math.round(ref.current.scrollTop / WHEEL_ITEM)));
-    if (idx !== value) onChange(idx);
+    const idx = Math.max(0, Math.min(WHEEL_ROWS.length - 1, Math.round(ref.current.scrollTop / WHEEL_ITEM)));
+    if (WHEEL_ROWS[idx] !== value) onChange(WHEEL_ROWS[idx]);
   };
   return (
     <div className="relative w-16 rounded-xl bg-white/[0.03] border border-white/10" style={{ height: WHEEL_ITEM * 3 }}>
@@ -67,15 +69,18 @@ function ScoreWheel({ value, onChange }) {
         style={{ scrollbarWidth: "none", maskImage: "linear-gradient(transparent, #000 30%, #000 70%, transparent)", WebkitMaskImage: "linear-gradient(transparent, #000 30%, #000 70%, transparent)" }}
       >
         <div style={{ height: WHEEL_ITEM }} />
-        {Array.from({ length: 10 }, (_, n) => (
-          <div
-            key={n}
-            className="snap-center flex items-center justify-center tabular-nums transition-[opacity,transform] duration-150"
-            style={{ height: WHEEL_ITEM, fontFamily: "'Bebas Neue', sans-serif", fontSize: 24, opacity: n === value ? 1 : 0.35, transform: `scale(${n === value ? 1 : 0.85})` }}
-          >
-            {n}
-          </div>
-        ))}
+        {WHEEL_ROWS.map((n) => {
+          const on = n === value;
+          return (
+            <div
+              key={n ?? "none"}
+              className="snap-center flex items-center justify-center tabular-nums transition-[opacity,transform] duration-150"
+              style={{ height: WHEEL_ITEM, fontFamily: "'Bebas Neue', sans-serif", fontSize: 24, opacity: on ? (n === null ? 0.6 : 1) : 0.35, transform: `scale(${on ? 1 : 0.85})` }}
+            >
+              {n === null ? "–" : n}
+            </div>
+          );
+        })}
         <div style={{ height: WHEEL_ITEM }} />
       </div>
     </div>
@@ -180,12 +185,9 @@ function Divider() {
 }
 
 export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
-  // null until the user turns a wheel — the points breakdown opens only then.
+  // Both wheels start on "–"; the points breakdown opens once both are picked.
   const [simA, setSimA] = useState(null);
   const [simB, setSimB] = useState(null);
-  // Turning one wheel picks the other one's current row (0 if untouched).
-  const pickA = (v) => { setSimA(v); setSimB((b) => b ?? 0); };
-  const pickB = (v) => { setSimB(v); setSimA((a) => a ?? 0); };
   const [tab, setTab] = useState("sim");
 
   useEffect(() => {
@@ -300,8 +302,8 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
                 <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-10 h-10" animate={false} />
                 <span className="text-[11px] text-white font-semibold text-center leading-tight line-clamp-2">{match.team_a}</span>
               </div>
-              <ScoreWheel value={simA} onChange={pickA} />
-              <ScoreWheel value={simB} onChange={pickB} />
+              <ScoreWheel value={simA} onChange={setSimA} />
+              <ScoreWheel value={simB} onChange={setSimB} />
               <div className="flex flex-col items-center gap-1 w-16 min-w-0">
                 <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-10 h-10" animate={false} />
                 <span className="text-[11px] text-white font-semibold text-center leading-tight line-clamp-2">{match.team_b}</span>
