@@ -116,6 +116,9 @@ function useLiveMinuteProgress(liveMatch) {
     // (status 'PAUSED') the clock is stopped, so keep the ring/minute frozen at
     // the last-known minute instead of drifting ahead by the real time elapsed.
     const compute = () => {
+      // Half-time always sits exactly on the halfway mark, however much
+      // first-half stoppage time there was (the API minute can read 45+5).
+      if (liveMatch.status === 'PAUSED') return 0.5;
       const elapsed = liveMatch.status === 'IN_PLAY' ? (Date.now() - anchorAt) / 60000 : 0;
       return Math.max(0, Math.min((anchorMinute + elapsed) / 90, 1));
     };

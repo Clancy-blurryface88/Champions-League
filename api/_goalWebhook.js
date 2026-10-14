@@ -84,6 +84,33 @@ export async function push({ heading, body, url, key, mode = 'live', sendAfter }
   return { status: r.status, body: await r.json().catch(() => null) };
 }
 
+// GOAL sometimes delivers the same goal.scored twice ~30s apart (seen live:
+// Feyenoord 1-1 at 17:07:00 and 17:07:30), and the idempotency key can differ
+// between the two because the scorer/minute lookup may not be ready the first
+// time. So before a goal push, look at this match's newest push from the last
+// 10 minutes: if it already announced this exact score, skip. A VAR "goal
+// ruled out" push in between makes the newest one different, so a re-scored
+// goal at the same score still goes out. If OneSignal can't be read, send.
+async function alreadyAnnounced(home, away, scoreText) {
+  try {
+    const r = await fetch(`https://api.onesignal.com/notifications?app_id=${ONESIGNAL_APP_ID}&limit=20&kind=1`, {
+      headers: { Authorization: `Key ${process.env.ONESIGNAL_REST_API_KEY}` },
+    });
+    if (!r.ok) return false;
+    const { notifications = [] } = await r.json();
+    const since = Date.now() / 1000 - 600;
+    const forMatch = notifications
+      .filter((n) => (n.queued_at || 0) >= since)
+      .map((n) => ({ at: n.queued_at, h: n.headings?.he || n.headings?.en || '' }))
+      .filter((n) => n.h.includes(home) && n.h.includes(away))
+      .sort((a, b) => b.at - a.at);
+    const newest = forMatch[0];
+    return !!newest && newest.h.startsWith('⚽') && newest.h.includes(scoreText);
+  } catch {
+    return false;
+  }
+}
+
 // GOAL's short display names ("Lille", "Atl. Madrid") — our DB names carry typos.
 const teamLabel = (fx, side) => (side === 'home' ? fx.homeTeamName : fx.awayTeamName).trim();
 
@@ -110,6 +137,10 @@ async function onGoal(fixtureId, data, mode, sendAfter) {
     const events = await goal(`/fixtures/${fixtureId}/events`).catch(() => []);
     const last = events.filter((e) => e.type === 'GOAL' && e.score?.replace(/\s/g, '') === `${hs}-${as}`).pop();
     if (last) { scorer = last.homeScorer || last.awayScorer; minute = last.time; }
+  }
+
+  if (mode === 'live' && await alreadyAnnounced(teamLabel(fx, 'home'), teamLabel(fx, 'away'), ` ${hs}-${as} `)) {
+    return { skipped: 'duplicate — this score was already announced' };
   }
 
   const heading = `⚽ גול! ${teamLabel(fx, 'home')} ${hs}-${as} ${teamLabel(fx, 'away')}${scorer ? ` (${scorer}${minute ? ` ${minute}'` : ''})` : ''}`;
