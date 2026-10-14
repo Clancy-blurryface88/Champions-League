@@ -83,7 +83,11 @@ function Summary({ list, teamA, teamB }) {
         <div style={{ width: `${(d / n) * 100}%`, background: "#64748b" }} />
         <div style={{ width: `${(wb / n) * 100}%`, background: B_C }} />
       </div>
-      <p className="text-center text-[10px] text-slate-500 mt-2">{list.length} מפגשים בליגת האלופות · שערים {ga}–{gb}</p>
+      <div className="flex items-center justify-center gap-3 mt-2.5 text-[13px] font-bold text-white">
+        <span>{list.length} מפגשים בליגת האלופות</span>
+        <span className="text-white/30">·</span>
+        <span>שערים <span dir="ltr" className="tabular-nums">{ga}–{gb}</span></span>
+      </div>
     </div>
   );
 }
