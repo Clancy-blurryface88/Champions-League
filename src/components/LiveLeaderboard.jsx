@@ -323,14 +323,17 @@ export default function LiveLeaderboard() {
 
       {/* live match cards — logos + score only (no names/minute), 3-column
           grid so many concurrent matches stay compact instead of stacking
-          into a tall list; caps at ~3 rows visible, scrolls beyond that. */}
+          into a tall list; caps at ~3 rows visible, scrolls beyond that.
+          Exactly 7 matches → symmetric 2-3-2: a 6-column grid where each card
+          spans 2, and the first card of the top and bottom rows starts at
+          column 2 so those rows sit centered. */}
       {liveInfo && liveInfo.length > 0 && (
-        <div className="mb-3 grid grid-cols-3 gap-2 overflow-y-auto" style={{ maxHeight: 156 }}>
+        <div className={`mb-3 grid ${liveInfo.length === 7 ? 'grid-cols-6' : 'grid-cols-3'} gap-2 overflow-y-auto`} style={{ maxHeight: 156 }}>
           <AnimatePresence>
             {liveInfo.map((info, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="relative flex items-center justify-center gap-1.5 py-2 rounded-xl"
+                className={`relative flex items-center justify-center gap-1.5 py-2 rounded-xl ${liveInfo.length === 7 ? `col-span-2${i === 0 || i === 5 ? ' col-start-2' : ''}` : ''}`}
                 style={{ background: 'rgba(52,211,153,.08)', border: '1px solid rgba(52,211,153,.25)' }}>
                 <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
                 <TeamFlag logo={info.homeLogo} name={info.home} className="w-5 h-5 flex-shrink-0" />
