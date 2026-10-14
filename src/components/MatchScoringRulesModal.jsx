@@ -1,9 +1,9 @@
 import TeamFlag from "@/components/TeamFlag";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { getTeamColor } from "@/utils/teamColors";
 import { useModalBackButton } from "@/hooks/useModalBackButton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Target, Trophy, Zap, Goal, ChevronUp, ChevronDown, ArrowLeft } from "lucide-react";
+import { Target, Trophy, Zap, Goal, ArrowLeft, Calculator } from "lucide-react";
 import { ShineBorder } from "@/components/magicui/shine-border";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -46,32 +46,74 @@ function calcSimPoints(match, a, b) {
   return { total: parseFloat(total.toFixed(2)), breakdown };
 }
 
-function SimInput({ value, onChange }) {
-  const inc = () => onChange((value ?? -1) + 1);
-  const dec = () => { if (value !== null && value > 0) onChange(value - 1); };
-  const isSet = value !== null;
+// iOS-style picker wheel (UIPickerView): scroll-snap column 0-9, the centred
+// row is the value. Scrolls to its initial value on mount only — remount
+// (key) to reset.
+const WHEEL_ITEM = 34;
+function ScoreWheel({ value, onChange }) {
+  const ref = useRef(null);
+  useEffect(() => { ref.current?.scrollTo({ top: value * WHEEL_ITEM }); }, []);
+  const onScroll = () => {
+    const idx = Math.max(0, Math.min(9, Math.round(ref.current.scrollTop / WHEEL_ITEM)));
+    if (idx !== value) onChange(idx);
+  };
   return (
-    <div className="flex flex-col items-center gap-1">
-      <button onClick={inc} className="text-yellow-400 hover:opacity-70 transition-opacity">
-        <ChevronUp className="w-5 h-5" strokeWidth={2.5} />
-      </button>
-      <div className="w-11 h-14 flex items-center justify-center rounded-xl border"
-        style={{
-          background: isSet ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.02)',
-          borderColor: isSet ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)'
-        }}>
-        <span className="text-3xl font-bold tabular-nums"
-          style={{ fontFamily: "'Bebas Neue', sans-serif", color: isSet ? 'white' : 'rgba(255,255,255,0.25)' }}>
-          {isSet ? value : '—'}
-        </span>
+    <div className="relative w-16 rounded-xl bg-white/[0.03] border border-white/10" style={{ height: WHEEL_ITEM * 3 }}>
+      <div className="absolute inset-x-1 rounded-lg bg-white/10 pointer-events-none" style={{ top: WHEEL_ITEM, height: WHEEL_ITEM }} />
+      <div
+        ref={ref}
+        onScroll={onScroll}
+        className="h-full overflow-y-scroll snap-y snap-mandatory"
+        style={{ scrollbarWidth: "none", maskImage: "linear-gradient(transparent, #000 30%, #000 70%, transparent)", WebkitMaskImage: "linear-gradient(transparent, #000 30%, #000 70%, transparent)" }}
+      >
+        <div style={{ height: WHEEL_ITEM }} />
+        {Array.from({ length: 10 }, (_, n) => (
+          <div
+            key={n}
+            className="snap-center flex items-center justify-center tabular-nums transition-[opacity,transform] duration-150"
+            style={{ height: WHEEL_ITEM, fontFamily: "'Bebas Neue', sans-serif", fontSize: 24, opacity: n === value ? 1 : 0.35, transform: `scale(${n === value ? 1 : 0.85})` }}
+          >
+            {n}
+          </div>
+        ))}
+        <div style={{ height: WHEEL_ITEM }} />
       </div>
-      <button onClick={dec} disabled={!isSet || value === 0} className="text-yellow-400 hover:opacity-70 disabled:opacity-20 transition-opacity">
-        <ChevronDown className="w-5 h-5" strokeWidth={2.5} />
-      </button>
     </div>
   );
 }
+
+// Tab bar: a coloured copy of the row is clip-path'ed to the active tab, so
+// the highlight slides with a perfect colour transition. Rectangular.
+function ClipTabs({ tabs, active, onChange }) {
+  const i = Math.max(0, tabs.findIndex((t) => t.id === active));
+  const step = 100 / tabs.length;
+  // RTL: tab 0 sits on the right
+  const clip = `inset(0 ${i * step}% 0 ${(tabs.length - 1 - i) * step}% round 8px)`;
+  const Row = ({ on }) => (
+    <div className={`flex rounded-lg ${on ? "bg-sky-500 text-white" : "text-slate-400"}`}>
+      {tabs.map((t) => (
+        <button key={t.id} type="button" onClick={() => onChange(t.id)} className="flex-1 py-2 text-[11px] font-semibold flex items-center justify-center gap-1">
+          <t.icon className="w-3.5 h-3.5" />{t.label}
+        </button>
+      ))}
+    </div>
+  );
+  return (
+    <div className="relative rounded-lg bg-white/5 border border-white/10">
+      <Row />
+      <div className="absolute inset-0" style={{ clipPath: clip, transition: "clip-path 260ms cubic-bezier(0.23,1,0.32,1)" }} aria-hidden>
+        <Row on />
+      </div>
+    </div>
+  );
+}
+
+const tabSwap = {
+  initial: { opacity: 0, filter: "blur(4px)" },
+  animate: { opacity: 1, filter: "blur(0px)" },
+  exit: { opacity: 0, filter: "blur(4px)" },
+  transition: { duration: 0.18, ease: [0.23, 1, 0.32, 1] },
+};
 
 const CARD_THEMES = {
   emerald:     { text: "text-emerald-400", bg: "bg-emerald-500/8" },
@@ -138,12 +180,14 @@ function Divider() {
 }
 
 export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
-  const [simA, setSimA] = useState(null);
-  const [simB, setSimB] = useState(null);
+  const [simA, setSimA] = useState(1);
+  const [simB, setSimB] = useState(1);
+  const [tab, setTab] = useState("sim");
 
   useEffect(() => {
-    setSimA(null);
-    setSimB(null);
+    setSimA(1);
+    setSimB(1);
+    setTab("sim");
   }, [match?.id]);
 
   useModalBackButton(isOpen, onClose);
@@ -152,6 +196,11 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
 
   const hasOdds = match.score_odds && Object.keys(match.score_odds).length > 0;
   const sim = calcSimPoints(match, simA, simB);
+  const tabs = [
+    { id: "sim", label: "סימולטור", icon: Calculator },
+    { id: "markets", label: "יחסים", icon: Trophy },
+    ...(hasOdds ? [{ id: "exact", label: "תוצאה מדויקת", icon: Target }] : []),
+  ];
 
   const oddsColumns = [
     {
@@ -222,12 +271,18 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
           </div>
             );
           })()}
+
+          <div className="mx-4 mt-3">
+            <ClipTabs tabs={tabs} active={tab} onChange={setTab} />
+          </div>
         </div>
 
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+        {/* Scrollable content — one tab at a time */}
+        <div className="flex-1 overflow-y-auto px-5 py-5">
+        <AnimatePresence mode="wait" initial={false}>
+        <motion.div key={tab} {...tabSwap} className="space-y-5">
+        {tab === "sim" && (
 
-          {/* ── סימולטור ניחוש ── */}
           <div className="rounded-2xl border border-yellow-500/25 overflow-hidden"
             style={{ background: 'linear-gradient(145deg, rgba(9, 122, 220,0.07) 0%, rgba(10,20,50,0.6) 100%)' }}>
 
@@ -235,15 +290,15 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
               <span className="text-[10px] uppercase tracking-[0.14em] font-semibold text-yellow-400/80">סימולטור — כמה שווה הניחוש שלך</span>
             </div>
 
-            {/* Inputs */}
-            <div className="flex items-center justify-center gap-2 pb-3 pt-1" dir="ltr">
+            {/* Picker wheels */}
+            <div key={match.id} className="flex items-center justify-center gap-6 pb-3 pt-1" dir="ltr">
               <div className="flex flex-col items-center gap-1">
                 <span className="text-xs text-white font-semibold text-center leading-tight">{match.team_a}</span>
-                <SimInput value={simA} onChange={setSimA} />
+                <ScoreWheel value={simA} onChange={setSimA} />
               </div>
               <div className="flex flex-col items-center gap-1">
                 <span className="text-xs text-white font-semibold text-center leading-tight">{match.team_b}</span>
-                <SimInput value={simB} onChange={setSimB} />
+                <ScoreWheel value={simB} onChange={setSimB} />
               </div>
             </div>
 
@@ -285,9 +340,10 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
               )}
             </AnimatePresence>
           </div>
+        )}
 
-          <Divider />
-
+        {tab === "markets" && (
+          <>
           {/* כיוון משחק */}
           <div className="space-y-3">
             <SectionLabel title="כיוון משחק" icon={Trophy} color="text-sky-400" />
@@ -321,10 +377,12 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
             ]} />
           </div>
 
+          </>
+        )}
+
           {/* פגיעה מדויקת */}
-          {hasOdds && (
+          {tab === "exact" && hasOdds && (
             <>
-              <Divider />
               <div
                 className="space-y-3 animate-in fade-in"
                 style={{ animationDuration: "200ms", animationFillMode: "both", animationDelay: "140ms" }}
@@ -364,6 +422,8 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
             </>
           )}
 
+        </motion.div>
+        </AnimatePresence>
         </div>
       </DialogContent>
     </Dialog>
