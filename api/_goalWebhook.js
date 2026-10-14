@@ -8,28 +8,13 @@
 // an idempotency key, so GOAL's retries (and two matches finishing together)
 // never send the same push twice.
 import crypto from 'crypto';
+import { TEAM_BY_GOAL_ID } from '../src/data/goalTeamIds.js';
 
 const GOAL_BASE = 'https://api.goal-api.com/v1';
 const CL_LEAGUE = 'cmr77dw3900f5rx06j05wgzv4';
 const ONESIGNAL_APP_ID = '9c8b733e-9d73-41bb-b092-ae462aa5cdb1';
 const SITE = 'https://champions-league-2026.vercel.app';
 
-// GOAL team id → our team name (matches.team_a/team_b, compared trimmed +
-// lowercased — the DB names carry stray spaces and typos on purpose).
-const TEAM_BY_GOAL_ID = {
-  cmr7foowe2kf3rx06u6eu3rhl: 'Arsenal', cmr7hvawd3yvgrx06qjdxxr4v: 'Aston villa', cmrib5shdfmxalb07sx4orfri: 'AEK Athens',
-  cmr7fp1we2n8rrx066zdyo70w: 'Atletico Madrid', cmr7m55u15efyrx06ndeg0510: 'Barcelona', cmr79jab703zerx06eqilba4s: 'Bayern Munich',
-  cmr7m55uo5eg8rx06hlsjolr6: 'Real Betis', cmr7qedkz6y2rrx067li8of8c: 'Bodø/Glimt', cmri4ql11dmzulb07v3q9pnmj: 'Club Brugge',
-  cmr7m6brl5t30rx06i2fz3gmw: 'Como', cmr79jabe03zfrx061s6b1xiw: 'Dortmund', cmr7upbul8vobrx06j8bdlukj: 'Porto',
-  cmri0ey3gb6jzlb07w6sj8iaq: 'Fenerbahce', cmr7qeuoo746xrx06gpaowm5g: 'Feyenoord', cmri0ey53b6kulb07e541svio: 'Galatasaray',
-  cmr7fp1wj2n8urx061yv6ov5t: 'Inter', cmr7hu9t63l1jrx06d0t9rema: 'Lask', cmr7oa1g86g0srx06rgl26fqf: 'RC Lens',
-  cmr7oa1go6g16rx06ws7j9hiq: 'LOSC LIlle', cmr7hvad33yp7rx06q6tlbmde: 'Liverpool', cmr7fpx0e2ybgrx06dajtxqc1: 'Manchaster City',
-  cmr7fp1wp2n8yrx061vxmb1a5: 'Manchester United', cmr7m6br45t2orx06ql4em344: 'Napoli', cmr7oa1gr6g19rx06g1miy6jr: 'Paris',
-  cmr7qeuox746zrx06n7udaoim: 'PSV', cmr79jabm03zmrx06phgewkx5: 'Leipzig', cmr7fp1wf2n8srx06b3wila7x: 'Real Madrid',
-  cmr7m6brt5t37rx06ixsgl3rc: 'AS Roma', cmri0gkbgbr6mlb07s324klf3: 'Sabah FC', cmri911gbf1a8lb07eetvoj7d: 'Shakhtar Donetsk',
-  cmri4pzegddctlb07j7xenzfd: 'Slavia Prague', cmri2lbvwcmvmlb07i45ou65m: 'Slovan Bratislava', cmr7upbvc8vorrx06s3awvvn9: 'Sporting Lisbon',
-  cmr79jabg03zhrx06z7qf1z8v: 'Stuttgart', cmr7m55u85eg1rx06wsvtxyr5: 'Villarreal', cmr7qedl26y2trx06nvff2rj6: 'Viking',
-};
 const norm = (s) => (s || '').trim().toLowerCase();
 
 async function goal(path) {

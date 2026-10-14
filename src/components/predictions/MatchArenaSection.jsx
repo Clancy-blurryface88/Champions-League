@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MatchOddsBar from './MatchOddsBar';
 import MatchLineups from './MatchLineups';
+import HeadToHead from './HeadToHead';
 import CrowdWisdomStats from './CrowdWisdomStats';
 import TeamFlag from '@/components/TeamFlag';
 
@@ -162,6 +163,9 @@ export default function MatchArenaSection({ match, isLocked, allMatches, loading
             />
           </motion.div>
         ) : null}
+
+        {/* Head-to-head — collapsed; fetches past meetings only when opened */}
+        <HeadToHead teamA={match.team_a} teamB={match.team_b} />
 
         {/* Odds Bar — fades in after form section, no y-jump */}
         <AnimatePresence>

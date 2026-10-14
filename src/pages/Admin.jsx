@@ -29,7 +29,6 @@ import AdminScoringModalOptionsExtra from "../components/admin/AdminScoringModal
 import AdminArenaDisplayOptions from "../components/admin/AdminArenaDisplayOptions";
 import AdminFormDisplayOptions from "../components/admin/AdminFormDisplayOptions";
 import AdminGoalApiOptions from "../components/admin/AdminGoalApiOptions";
-import AdminH2HOptions from "../components/admin/AdminH2HOptions";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -101,7 +100,6 @@ export default function Admin() {
       case 'arena-options': return <AdminArenaDisplayOptions />;
       case 'form-options': return <AdminFormDisplayOptions />;
       case 'goal-api': return <AdminGoalApiOptions />;
-      case 'h2h-options': return <AdminH2HOptions />;
       default: return <AdminRounds />;
     }
   };
@@ -129,7 +127,6 @@ export default function Admin() {
     { id: 'arena-options', label: '🏟️ 25 אפשרויות זירת המשחק', icon: Eye },
     { id: 'form-options', label: '📊 25 תצוגות 5 משחקים אחרונים', icon: BarChart3 },
     { id: 'goal-api', label: '🔌 GOAL API — אפשרויות', icon: Radio },
-    { id: 'h2h-options', label: '⚔️ ראש בראש — 3 אפשרויות', icon: Users },
   ];
 
   return (
