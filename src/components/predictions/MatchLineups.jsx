@@ -211,21 +211,34 @@ function PlayerMarker({ entry, shirtColor, topPct, leftPct }) {
 }
 
 // UEFA's fieldCoordinate is on a ~0-1000 scale, own-half-relative for both
-// teams (y=50 is each team's own goal line, y=800 is near the halfway
-// line) — so the away team's y is mirrored to sit in the bottom half of a
-// single shared pitch graphic, while home's is used as-is in the top half.
-function homeTopPct(y) { return (y / 1000) * 48 + 5; }
-function awayTopPct(y) { return 100 - ((y / 1000) * 48 + 5); }
+// teams (y=50 is each team's own goal line, y=800 is near the halfway line).
+// Raw y bunches lines together (a 700 row and an 888 striker, plus the other
+// team's 800 forwards, overlap near the center), so each team's distinct
+// lines get evenly spaced rows inside its own half instead: home in the top
+// half, away mirrored into the bottom half. x is used as-is.
+const HALF_FROM = 5;  // % from the team's own goal line
+const HALF_TO = 43;   // % — leaves a clear gap around the halfway line
+function rowTopPcts(field) {
+  const ys = [...new Set((field || []).map((p) => p.fieldCoordinate.y))].sort((a, b) => a - b);
+  const lines = [];
+  ys.forEach((y) => { const last = lines[lines.length - 1]; if (last && y - last[last.length - 1] < 60) last.push(y); else lines.push([y]); });
+  const step = lines.length > 1 ? (HALF_TO - HALF_FROM) / (lines.length - 1) : 0;
+  const byY = {};
+  lines.forEach((line, i) => line.forEach((y) => { byY[y] = HALF_FROM + i * step; }));
+  return byY;
+}
 function leftPct(x) { return x / 10; }
 
 export function PitchLineup({ home, away }) {
+  const homeRows = rowTopPcts(home?.field);
+  const awayRows = rowTopPcts(away?.field);
   return (
     <div className="w-full">
       <TeamHeader team={home?.team} coach={coachName(home)} />
       <div
         className="relative w-full mt-1.5 rounded-lg overflow-hidden"
         style={{
-          paddingBottom: '138%',
+          paddingBottom: '160%',
           background: 'linear-gradient(180deg, #0b1730, #0d1c40)',
           border: '1px solid rgba(56,189,248,0.35)',
         }}
@@ -249,7 +262,7 @@ export function PitchLineup({ home, away }) {
             key={p.player.id}
             entry={p}
             shirtColor={home.shirtColor}
-            topPct={homeTopPct(p.fieldCoordinate.y)}
+            topPct={homeRows[p.fieldCoordinate.y]}
             leftPct={leftPct(p.fieldCoordinate.x)}
           />
         ))}
@@ -258,7 +271,7 @@ export function PitchLineup({ home, away }) {
             key={p.player.id}
             entry={p}
             shirtColor={away.shirtColor}
-            topPct={awayTopPct(p.fieldCoordinate.y)}
+            topPct={100 - awayRows[p.fieldCoordinate.y]}
             leftPct={leftPct(p.fieldCoordinate.x)}
           />
         ))}

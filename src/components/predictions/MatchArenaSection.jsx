@@ -7,6 +7,7 @@ import { PitchLineup } from './MatchLineups';
 import { useModalBackButtonOnMount } from '@/hooks/useModalBackButton';
 import HeadToHead from './HeadToHead';
 import TeamFlag from '@/components/TeamFlag';
+import { goalTeamId } from '@/data/goalTeamIds';
 
 export function getTeamForm(allMatches, teamName) {
   const played = allMatches
@@ -201,7 +202,6 @@ function ProbSquare({ label, logo, pct, best }) {
 function OddsTab({ match }) {
   const probs = useMemo(() => calculateProbabilities(match.home_win_points, match.draw_points, match.away_win_points), [match]);
   const top = useMemo(() => getTopScores(match.score_odds, 5), [match]);
-  const maxPct = top[0]?.pct || 1;
   const best = probs ? Math.max(probs.home, probs.draw, probs.away) : null;
   if (!probs && !top.length) return <p className="text-center text-[11px] text-slate-500 py-4">אין עדיין יחסים למשחק הזה</p>;
   return (
@@ -215,31 +215,26 @@ function OddsTab({ match }) {
       )}
 
       {top.length > 0 && (
-        <div className="space-y-1.5">
-          <p className="text-[10.5px] font-semibold text-yellow-400 text-center">התוצאות הסבירות ביותר</p>
-          {top.map((t, i) => (
-            <motion.div
-              key={t.score}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 + i * 0.08 }}
-              className="flex items-center gap-3 rounded-xl px-3 py-2"
-              style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.3)' }}
-              dir="ltr"
-            >
-              <span className="w-12 text-lg font-black text-white tabular-nums">{t.score.replace(':', '-')}</span>
-              <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                <motion.div
-                  className="h-full rounded-full"
-                  style={{ background: 'linear-gradient(90deg,#097adc,#38bdf8)' }}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(t.pct / maxPct) * 100}%` }}
-                  transition={{ delay: 0.3 + i * 0.08, duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
-                />
-              </div>
-              <span className="w-10 text-right text-[12px] font-bold text-sky-300 tabular-nums">{t.pct}%</span>
-            </motion.div>
-          ))}
+        <div>
+          <style>{`@keyframes ts-shine{0%{transform:translateX(-120%) skewX(-20deg)}60%,100%{transform:translateX(320%) skewX(-20deg)}}`}</style>
+          <p className="text-[12px] font-semibold text-yellow-400 text-center mb-3">התוצאות הסבירות ביותר</p>
+          {/* Glass tags with a light sweep running across them */}
+          <div className="flex flex-wrap gap-2.5 justify-center" dir="ltr">
+            {top.map((t, i) => (
+              <motion.div
+                key={t.score}
+                initial={{ opacity: 0, y: 6, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: 0.25 + i * 0.09, type: 'spring', stiffness: 380, damping: 24 }}
+                className="relative overflow-hidden flex items-center gap-2 px-4 py-2 rounded-full"
+                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.25)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18)' }}
+              >
+                <span className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" style={{ animation: `ts-shine 2.6s ease-in-out ${i * 0.2}s infinite` }} />
+                <span className="relative text-[17px] font-black text-white tabular-nums">{t.score.replace(':', '-')}</span>
+                <span className="relative text-[12px] font-semibold text-slate-300 tabular-nums">{t.pct}%</span>
+              </motion.div>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -252,6 +247,140 @@ function OddsTab({ match }) {
 // published them. The crowd's 1/X/2 split lives in MatchPredictionsModal.
 const TAB_COLOR = '56,189,248';
 const sheetFade = { initial: { opacity: 0, y: 6 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -6 }, transition: { duration: 0.2 } };
+
+// ── "כל המסגרות" mode of the 5 אחרונים tab ─────────────────────────────────
+// Each team's latest games this season in every competition (league, cups,
+// CL, friendlies) from GOAL API via our cached proxy — fetched only when the
+// toggle is switched on. Up to 12 per team, newest first, filterable by venue.
+const ALL_COMPS_LIMIT = 12;
+
+function seasonStart() {
+  const d = new Date();
+  const y = d.getMonth() >= 6 ? d.getFullYear() : d.getFullYear() - 1; // season starts in July
+  return `${y}-07-01`;
+}
+
+function useAllCompsResults(teamName, enabled) {
+  const [state, setState] = useState({ loading: false, games: null });
+  useEffect(() => {
+    if (!enabled) return;
+    const id = goalTeamId(teamName);
+    if (!id) { setState({ loading: false, games: [] }); return; }
+    let cancelled = false;
+    setState((s) => ({ ...s, loading: !s.games }));
+    fetch(`/api/football?source=goal&path=${encodeURIComponent(`/teams/${id}/results`)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled) return;
+        const from = seasonStart();
+        const games = (d.data || [])
+          .filter((m) => m.matchStatus === 'FINISHED' && m.matchDate >= from && m.homeTeamScore != null && m.awayTeamScore != null)
+          .sort((a, b) => (b.kickoffUtc || b.matchDate).localeCompare(a.kickoffUtc || a.matchDate))
+          .map((m) => {
+            const isHome = m.homeTeamId === id;
+            const scored = Number(isHome ? m.homeTeamScore : m.awayTeamScore);
+            const conceded = Number(isHome ? m.awayTeamScore : m.homeTeamScore);
+            return {
+              key: m.id,
+              isHome,
+              date: m.matchDate,
+              competition: m.leagueName,
+              competitionLogo: m.leagueLogo || m.league?.logo,
+              opponent: isHome ? m.awayTeamName : m.homeTeamName,
+              opponentLogo: isHome ? m.teamAwayBadge : m.teamHomeBadge,
+              scored, conceded,
+              result: scored > conceded ? 'W' : scored < conceded ? 'L' : 'D',
+            };
+          });
+        setState({ loading: false, games });
+      })
+      .catch(() => { if (!cancelled) setState({ loading: false, games: [] }); });
+    return () => { cancelled = true; };
+  }, [teamName, enabled]);
+  return state;
+}
+
+function summarize(games) {
+  if (!games.length) return { avgGoals: null, avgConceded: null };
+  const g = games.reduce((s, x) => s + x.scored, 0);
+  const c = games.reduce((s, x) => s + x.conceded, 0);
+  return { avgGoals: (g / games.length).toFixed(1), avgConceded: (c / games.length).toFixed(1) };
+}
+
+function AllCompsCell({ item }) {
+  if (!item) return <div className="flex-1 min-w-0 rounded-xl py-2 text-center text-[10px] text-slate-600" style={{ background: 'rgba(255,255,255,0.02)' }}>—</div>;
+  const s = R[item.result];
+  const [, mm, dd] = item.date.split('-');
+  return (
+    <div className="flex-1 min-w-0 flex items-center gap-1.5 rounded-xl px-1.5 py-1.5" style={{ background: s.bg, border: `1px solid ${s.bd}` }}>
+      {item.competitionLogo
+        ? <img src={item.competitionLogo} alt={item.competition} title={item.competition} className="w-4 h-4 object-contain flex-shrink-0 rounded-sm bg-white/90 p-[1px]" loading="lazy" />
+        : <span className="w-4 h-4 flex-shrink-0" />}
+      <img src={item.opponentLogo} alt="" className="w-5 h-5 object-contain flex-shrink-0 rounded-full" loading="lazy" />
+      <div className="flex-1 min-w-0 leading-tight">
+        <div className="text-[10px] text-white/85 truncate">{item.opponent}</div>
+        <div className="text-[8.5px] text-white/45">{dd}/{mm} · {item.isHome ? 'בית' : 'חוץ'}</div>
+      </div>
+      <span className="font-black tabular-nums text-[12px] flex-shrink-0" style={{ color: s.tx }}>{item.scored}:{item.conceded}</span>
+    </div>
+  );
+}
+
+function Segmented({ value, onChange, options }) {
+  return (
+    <div className="flex p-0.5 gap-0.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} dir="rtl">
+      {options.map(([id, label]) => (
+        <button
+          key={id}
+          type="button"
+          onClick={() => onChange(id)}
+          className="flex-1 text-[10.5px] font-bold px-3 py-1 rounded-[10px] transition-colors"
+          style={value === id
+            ? { background: `rgba(${TAB_COLOR},0.22)`, border: `1px solid rgba(${TAB_COLOR},0.45)`, color: '#fff' }
+            : { border: '1px solid transparent', color: 'rgba(255,255,255,0.55)' }}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function AllCompsFormTab({ match, a, b }) {
+  const [venue, setVenue] = useState('all');
+  const pick = (games) => (games || []).filter((g) => venue === 'all' || (venue === 'home' ? g.isHome : !g.isHome)).slice(0, ALL_COMPS_LIMIT);
+  const ga = pick(a.games);
+  const gb = pick(b.games);
+  const sa = summarize(ga);
+  const sb = summarize(gb);
+  const n = Math.max(ga.length, gb.length);
+  return (
+    <div className="space-y-3">
+      <Segmented value={venue} onChange={setVenue} options={[['all', 'הכל'], ['home', 'בית'], ['away', 'חוץ']]} />
+      <div dir="ltr" className="space-y-3">
+        <div className="flex gap-2">
+          <TeamHeaderCard logo={match.team_a_logo} name={match.team_a} avgGoals={sa.avgGoals} avgConceded={sa.avgConceded} />
+          <TeamHeaderCard logo={match.team_b_logo} name={match.team_b} avgGoals={sb.avgGoals} avgConceded={sb.avgConceded} />
+        </div>
+        {(a.loading || b.loading) && !n
+          ? <p className="text-center text-[11px] text-slate-500 py-4 animate-pulse">טוען...</p>
+          : !n
+            ? <p className="text-center text-[11px] text-slate-500 py-4">אין משחקים העונה</p>
+            : (
+              <div className="space-y-1.5">
+                {Array.from({ length: n }, (_, j) => (
+                  <div key={j} className="flex items-center gap-1.5">
+                    <AllCompsCell item={ga[j]} />
+                    <AllCompsCell item={gb[j]} />
+                  </div>
+                ))}
+              </div>
+            )}
+      </div>
+      <p className="text-center text-[9px] text-slate-500">העונה הנוכחית · מהחדש לישן · עד {ALL_COMPS_LIMIT} משחקים</p>
+    </div>
+  );
+}
 
 function useLineups(teamA, teamB) {
   const [lineups, setLineups] = useState(null);
@@ -281,12 +410,17 @@ export default function MatchArenaSection({ match, allMatches, loading, onClose 
     ...(lineups ? [{ id: 'lineups', label: 'הרכבים' }] : []),
   ];
   const [tab, setTab] = useState('odds');
+  const [formScope, setFormScope] = useState('cl');
+  const allA = useAllCompsResults(match.team_a, tab === 'form' && formScope === 'all');
+  const allB = useAllCompsResults(match.team_b, tab === 'form' && formScope === 'all');
 
   const body = (() => {
     if (tab === 'form') {
-      if (loading) return <p className="text-center text-[11px] text-slate-500 py-4 animate-pulse">טוען...</p>;
-      if (!hasForm) return <p className="text-center text-[11px] text-slate-500 py-4">אין עדיין משחקים שהסתיימו</p>;
-      return <FormTab match={match} formA={formA} formB={formB} />;
+      const scope = <div className="mb-3"><Segmented value={formScope} onChange={setFormScope} options={[['cl', 'ליגת האלופות'], ['all', 'כל המסגרות']]} /></div>;
+      if (formScope === 'all') return <>{scope}<AllCompsFormTab match={match} a={allA} b={allB} /></>;
+      if (loading) return <>{scope}<p className="text-center text-[11px] text-slate-500 py-4 animate-pulse">טוען...</p></>;
+      if (!hasForm) return <>{scope}<p className="text-center text-[11px] text-slate-500 py-4">אין עדיין משחקים שהסתיימו</p></>;
+      return <>{scope}<FormTab match={match} formA={formA} formB={formB} /></>;
     }
     if (tab === 'odds') return <OddsTab match={match} />;
     if (tab === 'h2h') {
