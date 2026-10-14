@@ -29,7 +29,7 @@ function useCountUp(target, delay = 0) {
 // real betting odds) and, via the standard implied-probability formula
 // (1/value, normalized to 100%), the favorite indicator here. Admin edits
 // these per match to reflect the real matchup — no separate odds field.
-function calculateProbabilities(homePts, drawPts, awayPts) {
+export function calculateProbabilities(homePts, drawPts, awayPts) {
   const nums = [homePts, drawPts, awayPts];
   if (nums.some((v) => !v || v <= 0)) return null;
   const [home, draw, away] = nums.map((v) => 1 / v);
@@ -39,7 +39,7 @@ function calculateProbabilities(homePts, drawPts, awayPts) {
   return { home: homePct, draw: drawPct, away: 100 - homePct - drawPct };
 }
 
-function getTopScores(scoreOdds, n = 5) {
+export function getTopScores(scoreOdds, n = 5) {
   if (!scoreOdds || typeof scoreOdds !== 'object') return [];
   const entries = Object.entries(scoreOdds)
     .filter(([score, odds]) => score !== 'other' && odds > 0)

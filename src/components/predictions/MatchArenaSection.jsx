@@ -5,7 +5,7 @@ import MatchLineups from './MatchLineups';
 import CrowdWisdomStats from './CrowdWisdomStats';
 import TeamFlag from '@/components/TeamFlag';
 
-function getTeamForm(allMatches, teamName) {
+export function getTeamForm(allMatches, teamName) {
   const played = allMatches
     .filter(m =>
       m.is_finished &&
@@ -85,7 +85,7 @@ function AvgGoals({ scored, conceded }) {
   );
 }
 
-function TeamFormRow({ logo, name, form, avgGoals, avgConceded }) {
+export function TeamFormRow({ logo, name, form, avgGoals, avgConceded }) {
   return (
     <div className="flex items-start justify-center gap-3 flex-wrap">
       <div className="flex flex-col items-center gap-1">

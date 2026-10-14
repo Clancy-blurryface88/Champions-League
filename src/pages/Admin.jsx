@@ -26,6 +26,7 @@ import AdminHallOfFameOptionsExtra from "../components/admin/AdminHallOfFameOpti
 import AdminHallOfFame from "../components/admin/AdminHallOfFame";
 import AdminScoringModalOptions from "../components/admin/AdminScoringModalOptions";
 import AdminScoringModalOptionsExtra from "../components/admin/AdminScoringModalOptionsExtra";
+import AdminArenaDisplayOptions from "../components/admin/AdminArenaDisplayOptions";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -94,6 +95,7 @@ export default function Admin() {
       case 'hall-of-fame': return <AdminHallOfFame />;
       case 'scoring-modal-options': return <AdminScoringModalOptions />;
       case 'scoring-modal-options-extra': return <AdminScoringModalOptionsExtra />;
+      case 'arena-options': return <AdminArenaDisplayOptions />;
       default: return <AdminRounds />;
     }
   };
@@ -118,6 +120,7 @@ export default function Admin() {
     { id: 'hall-of-fame-options-extra', label: '20 אפשרויות נוספות', icon: Crown },
     { id: 'scoring-modal-options', label: '🎲 20 אפשרויות פופאפ 1X2', icon: Calculator },
     { id: 'scoring-modal-options-extra', label: '🎲 20 אפשרויות נוספות 1X2', icon: Calculator },
+    { id: 'arena-options', label: '🏟️ 25 אפשרויות זירת המשחק', icon: Eye },
   ];
 
   return (

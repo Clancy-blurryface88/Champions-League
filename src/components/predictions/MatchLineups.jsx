@@ -170,7 +170,7 @@ function homeTopPct(y) { return (y / 1000) * 48 + 5; }
 function awayTopPct(y) { return 100 - ((y / 1000) * 48 + 5); }
 function leftPct(x) { return x / 10; }
 
-function PitchLineup({ home, away }) {
+export function PitchLineup({ home, away }) {
   return (
     <div className="w-full">
       <TeamHeader team={home?.team} coach={coachName(home)} />
