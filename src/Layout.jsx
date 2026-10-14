@@ -719,7 +719,15 @@ export default function Layout({ children, currentPageName }) {
     } else if (hasLiveMatch) {
       setShowLiveIntro(true);
     } else if (nextMatch) {
-      setShowNextMatchIntro(true);
+      // "משחקי היום" — only once per calendar day (per user), not on every reload.
+      const seenKey = 'today_matches_seen_' + (user?.id ?? '');
+      const today = localDayKey(new Date());
+      let alreadySeen = false;
+      try { alreadySeen = localStorage.getItem(seenKey) === today; } catch {}
+      if (!alreadySeen) {
+        setShowNextMatchIntro(true);
+        try { localStorage.setItem(seenKey, today); } catch {}
+      }
     }
   }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading, showWelcomeModal, showGeneralPredictionsOnboarding, showIntroVideo, tournamentEnded]);
 
