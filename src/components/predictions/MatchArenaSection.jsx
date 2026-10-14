@@ -280,7 +280,7 @@ export default function MatchArenaSection({ match, allMatches, loading, onClose 
     { id: 'h2h', label: 'ראש בראש' },
     ...(lineups ? [{ id: 'lineups', label: 'הרכבים' }] : []),
   ];
-  const [tab, setTab] = useState('form');
+  const [tab, setTab] = useState('odds');
 
   const body = (() => {
     if (tab === 'form') {
