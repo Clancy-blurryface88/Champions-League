@@ -367,3 +367,31 @@ export async function getMatchStatsForMatch(homeTeamName, awayTeamName) {
     return null;
   }
 }
+
+/**
+ * Status + score of every CL match kicking off in [now-36h, now+12h], with
+ * all known team names so the caller can pair them with our matches. Used
+ * read-only by the admin "בדיקת סיום משחקים" tab — nothing is written.
+ */
+export async function getMatchStatusWindow() {
+  const seasonYear = currentSeasonYear();
+  const allMatches = await getMatches({ competitionId: COMPETITION_ID, seasonYear }, undefined, 500, 0);
+  const now = Date.now();
+  return allMatches
+    .filter((m) => {
+      const t = new Date(m.kickOffTime?.dateTime).getTime();
+      return t >= now - 36 * 3600e3 && t <= now + 12 * 3600e3;
+    })
+    .map((m) => ({
+      id: m.id,
+      utcDate: m.kickOffTime?.dateTime,
+      status: m.status,
+      minute: m.minute?.normal ?? null,
+      homeNames: teamNames(m.homeTeam),
+      awayNames: teamNames(m.awayTeam),
+      homeTeam: m.homeTeam.internationalName,
+      awayTeam: m.awayTeam.internationalName,
+      score: { home: m.score?.total?.home ?? null, away: m.score?.total?.away ?? null },
+      regular: { home: m.score?.regular?.home ?? null, away: m.score?.regular?.away ?? null },
+    }));
+}

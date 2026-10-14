@@ -22,6 +22,7 @@ import AdminStandingsCheck from "../components/admin/AdminStandingsCheck";
 import AdminLiveMatchExplorer from "../components/admin/AdminLiveMatchExplorer";
 import AdminGeneralQuestions from "../components/admin/AdminGeneralQuestions";
 import AdminHallOfFame from "../components/admin/AdminHallOfFame";
+import AdminFinishCheck from "../components/admin/AdminFinishCheck";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -86,6 +87,7 @@ export default function Admin() {
       case 'live-explorer': return <AdminLiveMatchExplorer />;
       case 'general-questions': return <AdminGeneralQuestions />;
       case 'hall-of-fame': return <AdminHallOfFame />;
+      case 'finish-check': return <AdminFinishCheck />;
       default: return <AdminRounds />;
     }
   };
@@ -106,6 +108,7 @@ export default function Admin() {
     { id: 'live-explorer',     label: '📡 הרכבים + אירועים',      icon: Radio },
     { id: 'general-questions', label: '🎯 ניחושים כלליים', icon: Sparkles },
     { id: 'hall-of-fame', label: '👑 היכל התהילה', icon: Award },
+    { id: 'finish-check', label: '🧪 בדיקת סיום משחקים', icon: ShieldCheck },
   ];
 
   return (
