@@ -1178,6 +1178,10 @@ export default function Predictions() {
                     <div className="h-px mt-3" style={{ background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)' }} />
                     {/* Same look as the "League Phase" stage badge at the top of the card */}
                     <style>{`
+                      @keyframes arena-text-glow {
+                        0%, 100% { text-shadow: 0 0 0 rgba(250,204,21,0); opacity: .8; }
+                        50% { text-shadow: 0 0 6px rgba(250,204,21,0.9), 0 0 12px rgba(250,204,21,0.6); opacity: 1; }
+                      }
                       @keyframes arena-glow-pulse {
                         0%, 100% { border-color: rgba(250,204,21,0.40); box-shadow: inset 0 1px 0 rgba(255,255,255,0.30), 0 0 0 0 rgba(250,204,21,0); }
                         50% { border-color: rgba(250,204,21,0.95); box-shadow: inset 0 1px 0 rgba(255,255,255,0.30), 0 0 14px 2px rgba(250,204,21,0.55); }
@@ -1196,7 +1200,7 @@ export default function Predictions() {
                         }}
                       >
                         <img src="/champions/arena-stadium.png" alt="" className="w-4 h-4 object-contain" />
-                        זירת המשחק
+                        <span style={{ animation: 'arena-text-glow 1.8s ease-in-out infinite' }}>זירת המשחק</span>
                       </button>
                     </div>
 
