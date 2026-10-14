@@ -3,7 +3,8 @@
 //   goal.scored    → "⚽ גול! …" + how many players currently hold the exact score
 //   score.changed  → correction push (goal ruled out by VAR) with the new count
 //   match.finished → once the night's last CL match ends, a summary push that
-//                    congratulates the exact-score hitters (by name if ≤3).
+//                    congratulates the exact-score hitters (by name if ≤3),
+//                    delivered at 23:59 Israel time.
 // Pushes go to every subscriber (no per-user targeting yet). Each push carries
 // an idempotency key, so GOAL's retries (and two matches finishing together)
 // never send the same push twice.
@@ -58,6 +59,16 @@ async function exactHitters(our, homeScore, awayScore) {
 
 async function countExact(our, homeScore, awayScore) {
   return (await exactHitters(our, homeScore, awayScore)).length;
+}
+
+// 23:59 Israel time on the Israel date of a moment, as a UTC Date (DST-safe).
+function ilEndOfNight(d) {
+  const TZ = 'Asia/Jerusalem';
+  const ymd = new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(d);
+  const guess = new Date(`${ymd}T23:59:00Z`);
+  const shown = Number(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', hourCycle: 'h23' }).format(guess));
+  // Israel is ahead of UTC, so 23:59Z shows as 01:59/02:59 the next day.
+  return new Date(guess.getTime() - (shown + 24 - 23) % 24 * 3600e3);
 }
 
 // "דני", "דני ויוסי", "דני, יוסי ומיכל"
@@ -233,6 +244,13 @@ async function onFinished(fixtureId, mode, sendAfter, late = false) {
       : `👏 כל הכבוד לפוגעים, ${hits === 1 ? 'פגיעה מדויקת אחת' : `${hits} פגיעות מדויקות`} 🎯, כנסו לטבלה העדכנית 👉`;
   } else {
     body = `👏 כל הכבוד לפוגעים, ${hits} פגיעות מדויקות 🎯, כנסו לטבלה העדכנית 👉`;
+  }
+  // Delivered at 23:59 Israel time of the match night (OneSignal send_after);
+  // if the night runs past that, push() sends right away. A manual &at= or a
+  // test/late re-send keeps its own timing.
+  if (!sendAfter && !late && mode !== 'test') {
+    const lastKickoff = new Date(Math.max(...night.map((f) => new Date(f.kickoffUtc).getTime())));
+    sendAfter = ilEndOfNight(lastKickoff);
   }
   return push({ heading: late ? '🏁 סיכום ערב ליגת האלופות של אתמול' : '🏁 ערב ליגת האלופות הסתיים!', body, url: `${SITE}/?open=leaderboard`, key: `night:${date}`, mode, sendAfter });
 }
