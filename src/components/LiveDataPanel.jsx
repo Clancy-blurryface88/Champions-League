@@ -36,15 +36,65 @@ function StatusBadge({ status, minute }) {
   );
 }
 
-const STAT_ROWS = [
-  { key: 'attempts', label: 'בעיטות' },
-  { key: 'attempts_on_target', label: 'לשער' },
-  { key: 'corners', label: 'קרנות' },
-  { key: 'fouls_committed', label: 'עבירות' },
-  { key: 'offsides', label: 'נבדלות' },
-  { key: 'yellow_cards', label: 'כרטיס צהוב' },
-  { key: 'red_cards', label: 'כרטיס אדום' },
+// UEFA returns ~430 raw stats per match — this is the curated subset shown
+// in the "i" panel, grouped. Rows missing from the response are skipped.
+const STAT_GROUPS = [
+  { title: 'כללי', rows: [
+    { key: 'ball_possession', label: 'החזקת כדור', pct: true },
+  ] },
+  { title: 'התקפה', rows: [
+    { key: 'attempts', label: 'בעיטות' },
+    { key: 'attempts_on_target', label: 'לשער' },
+    { key: 'attempts_off_target', label: 'החוצה' },
+    { key: 'attempts_blocked', label: 'נחסמו' },
+    { key: 'corners', label: 'קרנות' },
+    { key: 'offsides', label: 'נבדלות' },
+    { key: 'dribbling', label: 'דריבלים' },
+    { key: 'dribbling_successful', label: 'דריבלים מוצלחים' },
+    { key: 'cross_attempted', label: 'הגבהות' },
+    { key: 'cross_completed', label: 'הגבהות מוצלחות' },
+  ] },
+  { title: 'מסירות', rows: [
+    { key: 'passes_attempted', label: 'מסירות' },
+    { key: 'passes_completed', label: 'מסירות מדויקות' },
+    { key: 'passes_accuracy', label: 'דיוק מסירות', pct: true },
+    { key: 'passes_short_completed', label: 'קצרות מדויקות' },
+    { key: 'passes_medium_completed', label: 'בינוניות מדויקות' },
+    { key: 'passes_long_completed', label: 'ארוכות מדויקות' },
+  ] },
+  { title: 'הגנה ומשמעת', rows: [
+    { key: 'recovered_ball', label: 'חטיפות כדור' },
+    { key: 'aerialduel', label: 'דו-קרבים באוויר' },
+    { key: 'fouls_committed', label: 'עבירות' },
+    { key: 'fouls_suffered', label: 'עבירות שספגו' },
+    { key: 'yellow_cards', label: 'כרטיס צהוב' },
+    { key: 'red_cards', label: 'כרטיס אדום' },
+  ] },
+  { title: 'שוער', rows: [
+    { key: 'saves', label: 'הצלות' },
+    { key: 'goalkeeper_kicks', label: 'בעיטות שוער' },
+  ] },
 ];
+
+function StatRow({ label, home, away, pct }) {
+  const h = home ?? 0;
+  const a = away ?? 0;
+  const total = h + a || 1;
+  const fmt = (v) => (pct ? `${v}%` : v);
+  return (
+    <div>
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] font-bold text-white w-9 text-center tabular-nums">{fmt(h)}</span>
+        <span className="text-[10px] text-slate-500 flex-1 text-center">{label}</span>
+        <span className="text-[11px] font-bold text-white w-9 text-center tabular-nums">{fmt(a)}</span>
+      </div>
+      <div className="flex h-1 rounded-full overflow-hidden gap-0.5 mt-0.5 mx-1" style={{ background: 'rgba(255,255,255,0.04)' }}>
+        <div style={{ width: `${(h / total) * 100}%`, background: h >= a ? '#38bdf8' : 'rgba(56,189,248,0.35)' }} />
+        <div style={{ width: `${(a / total) * 100}%`, background: a >= h ? '#fb7185' : 'rgba(251,113,133,0.35)' }} />
+      </div>
+    </div>
+  );
+}
 
 function MatchStatsPanel({ loading, stats }) {
   if (loading) {
@@ -54,14 +104,22 @@ function MatchStatsPanel({ loading, stats }) {
     return <p className="text-center text-[10px] text-slate-500 py-3">סטטיסטיקה עדיין לא זמינה</p>;
   }
   return (
-    <div className="py-2 space-y-1.5">
-      {STAT_ROWS.map(({ key, label }) => (
-        <div key={key} className="flex items-center justify-between">
-          <span className="text-[11px] font-bold text-white w-7 text-center tabular-nums">{stats.home[key] ?? 0}</span>
-          <span className="text-[10px] text-slate-500 flex-1 text-center">{label}</span>
-          <span className="text-[11px] font-bold text-white w-7 text-center tabular-nums">{stats.away[key] ?? 0}</span>
-        </div>
-      ))}
+    <div
+      className="py-2 space-y-3 max-h-72 overflow-y-auto overscroll-contain pl-1"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {STAT_GROUPS.map(({ title, rows }) => {
+        const present = rows.filter(({ key }) => stats.home[key] != null || stats.away[key] != null);
+        if (!present.length) return null;
+        return (
+          <div key={title} className="space-y-1.5">
+            <p className="text-[9.5px] font-bold text-amber-300/80 text-center tracking-wide">{title}</p>
+            {present.map(({ key, label, pct }) => (
+              <StatRow key={key} label={label} home={stats.home[key]} away={stats.away[key]} pct={pct} />
+            ))}
+          </div>
+        );
+      })}
     </div>
   );
 }
