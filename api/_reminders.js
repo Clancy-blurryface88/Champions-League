@@ -22,6 +22,8 @@ const LATE_MS = 20 * 60e3; // still send if the trigger arrives up to 20 min lat
 
 const ilDate = (d) => new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(d); // YYYY-MM-DD
 const ilTime = (d) => new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit' }).format(d);
+// Predictions lock this long before kickoff (same rule as the app).
+const lockOf = (kickoffMs) => new Date(kickoffMs - PREDICTION_LOCK_MINUTES * 60e3);
 const addDays = (ymd, n) => { const d = new Date(`${ymd}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 
 // 12:00 Israel time on a given Israel date, as a UTC Date (DST-safe).
@@ -73,7 +75,7 @@ async function plannedReminders(now) {
     }
     out.push({
       key: `rem:first:${day}`, at: new Date(slots[0] - 135 * 60e3), matchIds: ids,
-      heading: `⏰ עוד שעתיים ורבע שריקת פתיחה! (${ilTime(first)})`,
+      heading: `⏰ הניחושים ננעלים ב-${ilTime(lockOf(slots[0]))}!`,
     });
     slots.slice(1).forEach((t) => {
       const slotIds = list.filter((m) => new Date(m.match_date).getTime() === t).map((m) => m.id);
