@@ -278,7 +278,7 @@ export default function AdminNightReplay({ publicMode = false, roundId = null, i
   const hero = (height, narrow = false) => (
     <div className="relative rounded-2xl overflow-hidden" style={{ height, border: "1px solid rgba(52,211,153,.22)", background: "#070d1c" }}>
       <AnimatePresence mode="wait">
-        {reachedEnd ? <EndHero key="end" rows={rows} startRank={model.startRank} />
+        {reachedEnd ? <EndHero key="end" rows={rows} startRank={model.startRank} single={filter !== "all"} />
           : lastEvent ? <GoalHero key={lastEvent.id} e={lastEvent} mm={active.find((m) => m.id === lastEvent.matchId)} preds={preds.map} compact={height < 120} narrow={narrow} />
           : <IntroHero key="pre" night={night} count={active.length} clock={clockText} compact={height < 120} />}
       </AnimatePresence>
@@ -336,7 +336,7 @@ export default function AdminNightReplay({ publicMode = false, roundId = null, i
       </>);
       case "story": return (<>
         <StoryCard e={lastEvent} mm={lastEvent && active.find((m) => m.id === lastEvent.matchId)} preds={preds.map}
-          index={lastEvent ? events.indexOf(lastEvent) + 1 : 0} total={events.length} overtakes={overtakes} reachedEnd={reachedEnd} rows={rows} startRank={model.startRank} />
+          index={lastEvent ? events.indexOf(lastEvent) + 1 : 0} total={events.length} overtakes={overtakes} reachedEnd={reachedEnd} rows={rows} startRank={model.startRank} single={filter !== "all"} />
         <div className="mt-3">{ticker}</div>
         <div className="mt-3">{table}</div>
       </>);
@@ -596,15 +596,16 @@ function nightHighlights(rows, startRank) {
   return { best, climber, climb: climber ? startRank[climber.userId] - climber.rank : 0 };
 }
 
-function EndHero({ rows, startRank }) {
+// single: one match picked in the filter → "the match" instead of "the night"
+function EndHero({ rows, startRank, single }) {
   const { best, climber, climb } = nightHighlights(rows, startRank);
   return (
     <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
       className="absolute inset-0 flex flex-col justify-center px-4 gap-2"
       style={{ background: "radial-gradient(90% 90% at 50% 0%, rgba(192,132,252,.35), transparent 70%), linear-gradient(160deg,#1d1440,#0a1226 70%)" }}>
-      <div className="text-white font-black text-[17px]">🏁 סיום הערב</div>
+      <div className="text-white font-black text-[17px]">{single ? "סיום המשחק" : "סיום הערב"} 🏁</div>
       <div className="grid grid-cols-2 gap-3 text-[12px]">
-        <div><span className="text-slate-400">מלך הערב</span><div className="text-white font-bold">👑 {best?.name} <span className="text-emerald-300" dir="ltr">+{pts(best?.night || 0)}</span></div></div>
+        <div><span className="text-slate-400">{single ? "מלך המשחק" : "מלך הערב"}</span><div className="text-white font-bold">👑 {best?.name} <span className="text-emerald-300" dir="ltr">+{pts(best?.night || 0)}</span></div></div>
         <div><span className="text-slate-400">הטיפוס הגדול</span><div className="text-white font-bold">🚀 {climb > 0 ? `${climber.name} ↑${climb}` : "אין שינוי"}</div></div>
       </div>
     </motion.div>
@@ -716,7 +717,7 @@ function Feed({ events, t, matches, preds }) {
   );
 }
 
-function StoryCard({ e, mm, preds, index, total, overtakes, reachedEnd, rows, startRank }) {
+function StoryCard({ e, mm, preds, index, total, overtakes, reachedEnd, rows, startRank, single }) {
   const segs = Math.min(total, 24);
   const done = total ? Math.round((index / total) * segs) : 0;
   let content;
@@ -725,8 +726,8 @@ function StoryCard({ e, mm, preds, index, total, overtakes, reachedEnd, rows, st
     content = (
       <div className="text-center">
         <div className="text-4xl mb-1">🏁</div>
-        <div className="text-white font-black text-lg">סיום הערב</div>
-        <div className="text-[13px] text-slate-300 mt-2">👑 מלך הערב: <b className="text-white">{best?.name}</b> <span className="text-emerald-300" dir="ltr">+{pts(best?.night || 0)}</span></div>
+        <div className="text-white font-black text-lg">{single ? "סיום המשחק" : "סיום הערב"}</div>
+        <div className="text-[13px] text-slate-300 mt-2">👑 {single ? "מלך המשחק" : "מלך הערב"}: <b className="text-white">{best?.name}</b> <span className="text-emerald-300" dir="ltr">+{pts(best?.night || 0)}</span></div>
         {climb > 0 && <div className="text-[13px] text-slate-300">🚀 הטיפוס הגדול: <b className="text-white">{climber.name}</b> ↑{climb}</div>}
       </div>
     );
