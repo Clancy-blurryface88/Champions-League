@@ -4,6 +4,7 @@ import TeamFlag from "@/components/TeamFlag";
 import { getTeamColor } from "@/utils/teamColors";
 import { Match } from "@/api/entities";
 import { VARIANTS2 } from "./AdminOddsDesigns2";
+import { VARIANTS3 } from "./AdminOddsDesigns3";
 
 // Admin playground: 20 ways to show a match's "יחסים" (the markets tab in the
 // scoring-rules modal) — game direction, both teams score, goal range — on a
@@ -695,10 +696,10 @@ export default function AdminOddsDesigns() {
       setId(list[0]?.id || null);
     });
   }, []);
-  const [set, setSet] = useState(2);
+  const [set, setSet] = useState(3);
   const m = matches?.find((x) => x.id === id);
   const k = useMemo(() => (m ? marketsOf(m) : null), [m]);
-  const list = set === 2 ? VARIANTS2 : VARIANTS;
+  const list = set === 3 ? VARIANTS3 : set === 2 ? VARIANTS2 : VARIANTS;
 
   if (!matches) return <div className="text-slate-400 p-6" dir="rtl">טוען משחקים...</div>;
   if (!m) return <div className="text-slate-400 p-6" dir="rtl">אין משחקים עם יחסים</div>;
@@ -707,7 +708,7 @@ export default function AdminOddsDesigns() {
       <h2 className="text-2xl font-black text-white mb-1">עיצובי יחסים 🎨</h2>
       <p className="text-slate-400 text-sm mb-3">דרכים להציג כיוון משחק, שתי קבוצות כובשות וטווח שערים. כולן מציגות את אותו משחק אמיתי, ואפשר ללחוץ ולשחק עם כל אחת.</p>
       <div className="inline-flex p-1 rounded-xl mb-3" style={{ background: "rgba(255,255,255,.06)" }}>
-        {[[2, "סט 2 · 25 חדשים"], [1, "סט 1 · 20 קודמים"]].map(([n, t]) => (
+        {[[3, "סט 3 · 25 אינטראקטיביים"], [2, "סט 2 · 25"], [1, "סט 1 · 20"]].map(([n, t]) => (
           <button key={n} onClick={() => setSet(n)} className="px-3 py-1.5 rounded-lg text-[12px] font-bold"
             style={{ background: set === n ? "#facc15" : "transparent", color: set === n ? "#0f172a" : "#94a3b8" }}>{t}</button>
         ))}
