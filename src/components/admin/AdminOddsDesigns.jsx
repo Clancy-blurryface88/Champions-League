@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import TeamFlag from "@/components/TeamFlag";
 import { getTeamColor } from "@/utils/teamColors";
 import { Match } from "@/api/entities";
+import { VARIANTS2 } from "./AdminOddsDesigns2";
 
 // Admin playground: 20 ways to show a match's "יחסים" (the markets tab in the
 // scoring-rules modal) — game direction, both teams score, goal range — on a
@@ -10,7 +11,7 @@ import { Match } from "@/api/entities";
 // implied probability is 1/points normalized within the market.
 
 // ── data ─────────────────────────────────────────────────────────────────────
-function marketsOf(m) {
+export function marketsOf(m) {
   const mk = (items) => {
     const inv = items.map((i) => (i.pts > 0 ? 1 / i.pts : 0));
     const sum = inv.reduce((a, b) => a + b, 0) || 1;
@@ -36,8 +37,8 @@ function marketsOf(m) {
     ]),
   };
 }
-const TITLES = { dir: "כיוון משחק", btts: "שתי קבוצות כובשות", goals: "טווח שערים" };
-const fmt = (n) => (Math.round(n * 100) / 100).toString();
+export const TITLES = { dir: "כיוון משחק", btts: "שתי קבוצות כובשות", goals: "טווח שערים" };
+export const fmt = (n) => (Math.round(n * 100) / 100).toString();
 const C = { gold: "#facc15", mint: "#34d399", sky: "#7cadee", rose: "#fb7185", ink: "#e8eefc", dim: "#8d9bbd" };
 
 const Flag = ({ m, side, size = "w-6 h-6" }) => (
@@ -694,15 +695,23 @@ export default function AdminOddsDesigns() {
       setId(list[0]?.id || null);
     });
   }, []);
+  const [set, setSet] = useState(2);
   const m = matches?.find((x) => x.id === id);
   const k = useMemo(() => (m ? marketsOf(m) : null), [m]);
+  const list = set === 2 ? VARIANTS2 : VARIANTS;
 
   if (!matches) return <div className="text-slate-400 p-6" dir="rtl">טוען משחקים...</div>;
   if (!m) return <div className="text-slate-400 p-6" dir="rtl">אין משחקים עם יחסים</div>;
   return (
     <div dir="rtl" className="text-slate-200">
       <h2 className="text-2xl font-black text-white mb-1">עיצובי יחסים 🎨</h2>
-      <p className="text-slate-400 text-sm mb-3">20 דרכים להציג כיוון משחק, שתי קבוצות כובשות וטווח שערים. כולן מציגות את אותו משחק אמיתי, ואפשר ללחוץ ולשחק עם כל אחת.</p>
+      <p className="text-slate-400 text-sm mb-3">דרכים להציג כיוון משחק, שתי קבוצות כובשות וטווח שערים. כולן מציגות את אותו משחק אמיתי, ואפשר ללחוץ ולשחק עם כל אחת.</p>
+      <div className="inline-flex p-1 rounded-xl mb-3" style={{ background: "rgba(255,255,255,.06)" }}>
+        {[[2, "סט 2 · 25 חדשים"], [1, "סט 1 · 20 קודמים"]].map(([n, t]) => (
+          <button key={n} onClick={() => setSet(n)} className="px-3 py-1.5 rounded-lg text-[12px] font-bold"
+            style={{ background: set === n ? "#facc15" : "transparent", color: set === n ? "#0f172a" : "#94a3b8" }}>{t}</button>
+        ))}
+      </div>
       <div className="flex gap-1.5 overflow-x-auto pb-2 mb-4" style={{ scrollbarWidth: "none" }}>
         {matches.map((x) => (
           <button key={x.id} onClick={() => setId(x.id)} className="flex-shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold"
@@ -714,8 +723,8 @@ export default function AdminOddsDesigns() {
         ))}
       </div>
       <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 340px), 1fr))" }}>
-        {VARIANTS.map(({ C: Comp, name, note }, i) => (
-          <section key={`${i}-${m.id}`} className="rounded-2xl p-4 min-w-0" style={{ background: "#0d1526", border: "1px solid rgba(255,255,255,.08)" }}>
+        {list.map(({ C: Comp, name, note }, i) => (
+          <section key={`${set}-${i}-${m.id}`} className="rounded-2xl p-4 min-w-0" style={{ background: "#0d1526", border: "1px solid rgba(255,255,255,.08)" }}>
             <header className="flex items-baseline gap-2 mb-0.5">
               <span className="text-[12px] font-black text-amber-300 tabular-nums">{i + 1}</span>
               <h3 className="text-[15px] font-black text-white">{name}</h3>
