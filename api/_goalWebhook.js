@@ -18,7 +18,7 @@ const SITE = 'https://champions-league-2026.vercel.app';
 
 const norm = (s) => (s || '').trim().toLowerCase();
 
-async function goal(path) {
+export async function goal(path) {
   const r = await fetch(`${GOAL_BASE}${path}`, { headers: { Authorization: `Bearer ${process.env.GOAL_API_KEY}` } });
   const j = await r.json();
   if (!j.success) throw new Error(`GOAL ${path}: ${j.error || j.message || r.status}`);
@@ -35,7 +35,7 @@ export async function supa(path) {
 
 // Our DB match for a GOAL fixture (same two teams, kickoff within ±6h), with
 // a flag telling whether our team_a is GOAL's away side.
-async function findOurMatch(fx) {
+export async function findOurMatch(fx) {
   const home = TEAM_BY_GOAL_ID[fx.homeTeamId];
   const away = TEAM_BY_GOAL_ID[fx.awayTeamId];
   if (!home || !away) return null;

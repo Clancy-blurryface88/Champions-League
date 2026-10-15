@@ -9,7 +9,7 @@ import { TOURNAMENT_CODE } from "@/config/tournament";
 
 // ── Live leaderboard helpers ──────────────────────────────────────────────────
 
-function calculateScore(prediction, match) {
+export function calculateScore(prediction, match) {
   if (match.actual_score_a === null || match.actual_score_b === null) return { totalPoints: 0 };
   const pA = prediction.predicted_score_a, pB = prediction.predicted_score_b;
   const aA = match.actual_score_a,         aB = match.actual_score_b;
