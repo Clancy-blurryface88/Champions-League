@@ -51,6 +51,9 @@ export default function AdminNightReplay() {
   const [speed, setSpeed] = useState(1);
   const [flashKey, setFlashKey] = useState(null); // event id just reached → glow
   const [preds, setPreds] = useState(null); // matchId → userId → prediction
+  // which of the 6 layouts — remembered per browser
+  const [layout, setLayout] = useState(() => { try { return localStorage.getItem("replayLayout") || "broadcast"; } catch { return "broadcast"; } });
+  const chooseLayout = (id) => { setLayout(id); try { localStorage.setItem("replayLayout", id); } catch { /* private mode */ } };
 
   // ── base data: matches, users, rounds ──────────────────────────────────────
   useEffect(() => {
@@ -192,6 +195,12 @@ export default function AdminNightReplay() {
     return i;
   }, [snapshots, t]);
   const rows = snapshots[snapIdx]?.rows || [];
+  // race bars: one fixed scale for the whole night so bars only grow
+  const scale = useMemo(() => {
+    let lo = Infinity, hi = -Infinity;
+    snapshots.forEach((s) => s.rows.forEach((r) => { lo = Math.min(lo, r.total); hi = Math.max(hi, r.total); }));
+    return { lo, hi };
+  }, [snapshots]);
   const reachedEnd = t >= range[1] - 0.01;
 
   // reset the clock when the night or the filter changes
@@ -245,15 +254,86 @@ export default function AdminNightReplay() {
 
   const lastEvent = [...events].reverse().find((e) => e.t <= t + 1e-6) || null;
 
+  const prevRows = snapshots[snapIdx - 1]?.rows || rows;
+  const overtakes = useMemo(() => overtakesBetween(prevRows, rows), [prevRows, rows]);
+  const clockText = model && !model.empty ? ilClock(new Date(model.t0 + t * 60000)) : "";
+
   // ── render ─────────────────────────────────────────────────────────────────
   if (error) return <div className="text-red-400 p-6" dir="rtl">שגיאה: {error}</div>;
   if (!db || !nightKey) return <Loading text="טוען ערבי משחקים..." />;
   const night = nights.find((n) => n.key === nightKey);
+  const wide = ["table-col", "race-col", "feed"].includes(layout);
+
+  // shared pieces, arranged differently by each layout
+  const hero = (height) => (
+    <div className="relative rounded-2xl overflow-hidden" style={{ height, border: "1px solid rgba(52,211,153,.22)", background: "#070d1c" }}>
+      <AnimatePresence mode="wait">
+        {reachedEnd ? <EndHero key="end" rows={rows} startRank={model.startRank} />
+          : lastEvent ? <GoalHero key={lastEvent.id} e={lastEvent} mm={active.find((m) => m.id === lastEvent.matchId)} preds={preds.map} compact={height < 120} />
+          : <IntroHero key="pre" night={night} count={active.length} clock={clockText} compact={height < 120} />}
+      </AnimatePresence>
+    </div>
+  );
+  const hotId = lastEvent && t - lastEvent.t < 4 ? lastEvent.matchId : null;
+  const pick = (id) => setFilter(filter === id ? "all" : id);
+  const ticker = <MatchTicker active={active} t={t} scoreAt={model?.scoreAt} hotId={hotId} onPick={pick} />;
+  const column = <MatchColumn active={active} t={t} scoreAt={model?.scoreAt} hotId={hotId} onPick={pick} />;
+  const table = (
+    <div className="min-w-0">
+      <TableHead />
+      {rows.map((r) => <Row key={r.userId} r={r} isMe={r.userId === me} delta={model.startRank[r.userId] - r.rank} hot={overtakes.movers.has(r.userId)} />)}
+    </div>
+  );
+  const race = (
+    <div className="min-w-0">
+      <div className="flex items-center justify-between px-1 mb-2 text-[10px] text-slate-500 font-semibold">
+        <span>מרוץ הנקודות</span>
+        <span className="flex items-center gap-1.5"><i className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: "#6ee7b7" }} />נקודות הערב</span>
+      </div>
+      {rows.map((r) => <RaceBar key={r.userId} r={r} isMe={r.userId === me} delta={model.startRank[r.userId] - r.rank} scale={scale} />)}
+    </div>
+  );
+
+  const body = () => {
+    switch (layout) {
+      case "table-col": return (<>
+        <div className="mb-3">{hero(96)}</div>
+        <div className="grid gap-3" style={{ gridTemplateColumns: "minmax(0,1fr) 104px" }}>{table}{column}</div>
+      </>);
+      case "race-col": return (<>
+        <div className="mb-3">{hero(96)}</div>
+        <div className="grid gap-3" style={{ gridTemplateColumns: "minmax(0,1fr) 104px" }}>{race}{column}</div>
+      </>);
+      case "board": return (<>
+        <ScoreGrid active={active} t={t} scoreAt={model.scoreAt} hotId={hotId} onPick={pick} />
+        <div className="my-3">{hero(96)}</div>
+        {table}
+      </>);
+      case "feed": return (<>
+        {ticker}
+        <div className="grid gap-3 mt-3" style={{ gridTemplateColumns: "minmax(0,1fr) minmax(0,0.85fr)" }}>
+          {table}
+          <Feed events={events} t={t} matches={active} preds={preds.map} />
+        </div>
+      </>);
+      case "story": return (<>
+        <StoryCard e={lastEvent} mm={lastEvent && active.find((m) => m.id === lastEvent.matchId)} preds={preds.map}
+          index={lastEvent ? events.indexOf(lastEvent) + 1 : 0} total={events.length} overtakes={overtakes} reachedEnd={reachedEnd} rows={rows} startRank={model.startRank} />
+        <div className="mt-3">{ticker}</div>
+        <div className="mt-3">{table}</div>
+      </>);
+      default: return (<>
+        {hero(172)}
+        <div className="mt-2">{ticker}</div>
+        <div className="mt-4">{race}</div>
+      </>);
+    }
+  };
 
   return (
-    <div dir="rtl" className="mx-auto w-full max-w-xl text-slate-200">
+    <div dir="rtl" className={`mx-auto w-full ${wide ? "max-w-3xl" : "max-w-xl"} text-slate-200`}>
       {/* header */}
-      <div className="flex items-end justify-between gap-3 mb-4">
+      <div className="flex items-end justify-between gap-3 mb-3">
         <div>
           <h2 className="text-2xl font-black text-white tracking-tight">🔁 הילוך חוזר</h2>
           <p className="text-slate-400 text-sm">איך הטבלה זזה לאורך ערב המשחקים</p>
@@ -263,11 +343,26 @@ export default function AdminNightReplay() {
         </span>
       </div>
 
+      {/* layout switcher */}
+      <div className="flex gap-1.5 overflow-x-auto pb-2 mb-2" style={{ scrollbarWidth: "none" }}>
+        {LAYOUTS.map((l, i) => (
+          <button key={l.id} onClick={() => chooseLayout(l.id)}
+            className="flex-shrink-0 rounded-lg px-2.5 py-1.5 text-[12px] font-bold transition-all"
+            style={{
+              background: layout === l.id ? "rgba(192,132,252,.2)" : "rgba(255,255,255,.04)",
+              border: `1px solid ${layout === l.id ? "rgba(192,132,252,.6)" : "rgba(255,255,255,.08)"}`,
+              color: layout === l.id ? "#f3e8ff" : "#94a3b8",
+            }}>
+            <span className="opacity-60 ml-1 tabular-nums">{i + 1}</span>{l.label}
+          </button>
+        ))}
+      </div>
+
       {/* nights */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: "none" }}>
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-2" style={{ scrollbarWidth: "none" }}>
         {nights.slice(0, 8).map((n) => (
           <button key={n.key} onClick={() => setNightKey(n.key)}
-            className="flex-shrink-0 rounded-xl px-3 py-2 text-right transition-all"
+            className="flex-shrink-0 rounded-xl px-3 py-1.5 text-right transition-all"
             style={{
               background: n.key === nightKey ? "linear-gradient(135deg,rgba(124,173,238,.25),rgba(9,122,220,.18))" : "rgba(255,255,255,.04)",
               border: `1px solid ${n.key === nightKey ? "rgba(124,173,238,.6)" : "rgba(255,255,255,.08)"}`,
@@ -286,7 +381,7 @@ export default function AdminNightReplay() {
           <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: "none" }}>
             <Chip on={filter === "all"} onClick={() => setFilter("all")}>כל הערב</Chip>
             {model.matches.map((mm) => (
-              <Chip key={mm.id} on={filter === mm.id} onClick={() => setFilter(filter === mm.id ? "all" : mm.id)}>
+              <Chip key={mm.id} on={filter === mm.id} onClick={() => pick(mm.id)}>
                 <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-4 h-4" animate={false} />
                 <span className="tabular-nums" dir="ltr">{mm.final.a}-{mm.final.b}</span>
                 <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-4 h-4" animate={false} />
@@ -294,79 +389,67 @@ export default function AdminNightReplay() {
             ))}
           </div>
 
-          {/* stadium clock + scoreboard */}
-          <div className="relative rounded-2xl p-3 mb-3 overflow-hidden"
-            style={{ background: "radial-gradient(120% 140% at 50% -20%, rgba(76,29,149,.55) 0%, rgba(8,18,32,.92) 55%)", border: "1px solid rgba(167,139,250,.28)" }}>
-            <div className="flex items-center justify-between mb-2.5">
-              <div className="flex items-center gap-2">
+          {body()}
+
+          {/* player */}
+          <div className="sticky bottom-2 z-10 rounded-2xl px-3 pt-2.5 pb-3 mt-3"
+            style={{ background: "rgba(5,10,22,.92)", border: "1px solid rgba(255,255,255,.08)", backdropFilter: "blur(12px)" }}>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="flex items-center gap-1.5 text-[11px] text-slate-400 font-semibold">
                 <span className={`w-2 h-2 rounded-full ${reachedEnd ? "bg-slate-500" : t >= Math.min(...active.map((m) => m.ko)) ? "bg-red-500 animate-pulse" : "bg-sky-400"}`} />
-                <span className="text-[11px] text-slate-400 font-semibold">{night?.round} · {ilDayLabel(night.first)}</span>
-              </div>
-              <span className="font-black text-2xl text-white tabular-nums tracking-wider" dir="ltr">
-                {ilClock(new Date(model.t0 + t * 60000))}
+                {night?.round} · {ilDayLabel(night.first)}
               </span>
+              <span className="font-black text-xl text-white tabular-nums tracking-wider" dir="ltr">{clockText}</span>
             </div>
-            <div className={`grid gap-1.5 ${active.length === 1 ? "grid-cols-1" : active.length % 3 === 0 || active.length > 4 ? "grid-cols-3" : "grid-cols-2"}`}>
-              {active.map((mm) => (
-                <ScoreCard key={mm.id} mm={mm} t={t} score={model.scoreAt(mm, t)} big={active.length === 1}
-                  flash={lastEvent && lastEvent.matchId === mm.id && flashKey === lastEvent.id && t - lastEvent.t < 0.6}
-                  onClick={() => setFilter(filter === mm.id ? "all" : mm.id)} />
-              ))}
+            <Timeline t={t} range={range} events={events} matches={active} t0={model.t0} flashKey={flashKey}
+              onScrub={(v) => { setPlaying(false); setT(v); }} />
+            <div className="flex items-center justify-center gap-2 mt-2">
+              <CtrlBtn onClick={() => { setPlaying(false); setT(range[0]); }} label="מההתחלה"><RotateCcw className="w-4 h-4" /></CtrlBtn>
+              <CtrlBtn onClick={() => jump(-1)} label="השער הקודם"><SkipForward className="w-4 h-4" /></CtrlBtn>
+              <motion.button whileTap={{ scale: 0.92 }}
+                onClick={() => { if (reachedEnd) setT(range[0]); setPlaying((p) => !p); }}
+                className="w-12 h-12 rounded-full flex items-center justify-center text-slate-900"
+                style={{ background: "linear-gradient(135deg,#a7f3d0,#34d399 50%,#7cadee)", boxShadow: "0 0 24px rgba(52,211,153,.45)" }}
+                aria-label={playing ? "השהיה" : "הפעלה"}>
+                {playing ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 -mr-0.5" />}
+              </motion.button>
+              <CtrlBtn onClick={() => jump(1)} label="השער הבא"><SkipBack className="w-4 h-4" /></CtrlBtn>
+              <button onClick={() => setSpeed((s) => SPEEDS[(SPEEDS.indexOf(s) + 1) % SPEEDS.length])}
+                className="h-10 min-w-[48px] px-2 rounded-xl text-[13px] font-black text-emerald-300 tabular-nums"
+                style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)" }}
+                aria-label="מהירות" title="מהירות" dir="ltr">×{speed}</button>
             </div>
-          </div>
-
-          {/* timeline */}
-          <Timeline t={t} range={range} events={events} matches={active} t0={model.t0} flashKey={flashKey}
-            onScrub={(v) => { setPlaying(false); setT(v); }} />
-
-          {/* controls */}
-          <div className="flex items-center justify-center gap-2 my-3">
-            <CtrlBtn onClick={() => { setPlaying(false); setT(range[0]); }} label="מההתחלה"><RotateCcw className="w-4 h-4" /></CtrlBtn>
-            <CtrlBtn onClick={() => jump(-1)} label="השער הקודם"><SkipForward className="w-4 h-4" /></CtrlBtn>
-            <motion.button whileTap={{ scale: 0.92 }}
-              onClick={() => { if (reachedEnd) setT(range[0]); setPlaying((p) => !p); }}
-              className="w-14 h-14 rounded-full flex items-center justify-center text-slate-900 shadow-lg"
-              style={{ background: "linear-gradient(135deg,#a5f3fc,#7cadee 55%,#c084fc)", boxShadow: "0 0 28px rgba(124,173,238,.45)" }}
-              aria-label={playing ? "השהיה" : "הפעלה"}>
-              {playing ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 -mr-0.5" />}
-            </motion.button>
-            <CtrlBtn onClick={() => jump(1)} label="השער הבא"><SkipBack className="w-4 h-4" /></CtrlBtn>
-            <button onClick={() => setSpeed((s) => (s === 1 ? 2 : s === 2 ? 4 : 1))}
-              className="h-10 min-w-[48px] px-2 rounded-xl text-[13px] font-black text-sky-300 tabular-nums"
-              style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)" }}
-              aria-label="מהירות">×{speed}</button>
-          </div>
-
-          {/* event card */}
-          <div className="min-h-[74px] mb-3">
-            <AnimatePresence mode="wait">
-              {reachedEnd ? (
-                <EndCard key="end" rows={rows} startRank={model.startRank} />
-              ) : lastEvent ? (
-                <EventCard key={lastEvent.id} e={lastEvent} mm={active.find((m) => m.id === lastEvent.matchId)} preds={preds.map} />
-              ) : (
-                <motion.div key="pre" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="rounded-2xl px-4 py-3 text-center text-sm text-slate-400" style={{ background: "rgba(255,255,255,.03)", border: "1px dashed rgba(255,255,255,.12)" }}>
-                  ▶ לחצו על הפעלה, או גררו את ציר הזמן, כדי לראות את הערב מתגלגל
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* table */}
-          <div className="flex items-center justify-between px-1 mb-1.5 text-[10px] text-slate-500 font-semibold">
-            <span>מקום · משתתף</span>
-            <span className="flex gap-6"><span>הערב</span><span>סה״כ</span><span>שינוי</span></span>
-          </div>
-          <div className="relative">
-            {rows.map((r) => (
-              <Row key={r.userId} r={r} isMe={r.userId === me} delta={model.startRank[r.userId] - r.rank} />
-            ))}
           </div>
         </>
       )}
     </div>
   );
+}
+
+const LAYOUTS = [
+  { id: "broadcast", label: "שידור + מרוץ" },
+  { id: "table-col", label: "טבלה + טור משחקים" },
+  { id: "race-col", label: "מרוץ + טור משחקים" },
+  { id: "feed", label: "טבלה + פיד שערים" },
+  { id: "story", label: "סטוריז" },
+  { id: "board", label: "לוח תוצאות" },
+];
+const SPEEDS = [0.5, 1, 1.5, 2, 4];
+
+// Who climbed past whom between two consecutive tables.
+function overtakesBetween(prev, cur) {
+  const before = Object.fromEntries(prev.map((r) => [r.userId, r.rank]));
+  const movers = new Set();
+  const pairs = [];
+  cur.forEach((r) => {
+    const was = before[r.userId];
+    if (was == null || was <= r.rank) return;
+    movers.add(r.userId);
+    cur.forEach((o) => {
+      if (o.userId !== r.userId && before[o.userId] < was && o.rank > r.rank) pairs.push([r, o]);
+    });
+  });
+  return { movers, pairs };
 }
 
 // ── pieces ───────────────────────────────────────────────────────────────────
@@ -404,35 +487,263 @@ function CtrlBtn({ onClick, label, children }) {
   );
 }
 
-function ScoreCard({ mm, t, score, flash, big, onClick }) {
-  const clock = gameClock(t - mm.ko, mm.end - mm.ko);
-  const live = clock && clock !== "סיום";
+const exactCount = (preds, mm, s) => Object.values(preds[mm.id] || {}).filter((p) => p.predicted_score_a === s.a && p.predicted_score_b === s.b).length;
+const goalBefore = (mm, e) => mm.goals[mm.goals.findIndex((g) => g.id === e.id) - 1] || { a: 0, b: 0 };
+
+function ImpactPills({ e, mm, preds, small }) {
+  const inNow = exactCount(preds, mm, e), out = exactCount(preds, mm, goalBefore(mm, e));
+  const cls = `${small ? "text-[10px] px-1.5" : "text-[11px] px-2"} py-0.5 rounded-full font-bold`;
   return (
-    <motion.button onClick={onClick} layout
-      animate={flash ? { scale: [1, 1.08, 1], boxShadow: ["0 0 0 rgba(52,211,153,0)", "0 0 22px rgba(52,211,153,.7)", "0 0 0 rgba(52,211,153,0)"] } : { scale: 1 }}
-      transition={{ duration: 0.9 }}
-      className={`relative flex flex-col items-center justify-center rounded-xl ${big ? "py-4 gap-2" : "py-2 gap-1"}`}
-      style={{
-        background: live ? "rgba(52,211,153,.07)" : "rgba(255,255,255,.035)",
-        border: `1px solid ${live ? "rgba(52,211,153,.28)" : "rgba(255,255,255,.07)"}`,
-        opacity: clock ? 1 : 0.55,
-      }}>
-      <div className="flex items-center gap-1.5" dir="ltr">
-        <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className={big ? "w-9 h-9" : "w-5 h-5"} animate={false} />
-        <AnimatePresence mode="popLayout">
-          <motion.span key={score ? `${score.a}-${score.b}` : "pre"}
-            initial={{ y: -10, opacity: 0, filter: "blur(4px)" }} animate={{ y: 0, opacity: 1, filter: "blur(0px)" }} exit={{ y: 10, opacity: 0 }}
-            className={`font-black text-white tabular-nums ${big ? "text-3xl" : "text-[13px]"}`}>
-            {score ? `${score.a}-${score.b}` : "–"}
+    <div className="flex flex-wrap gap-1.5">
+      {inNow > 0
+        ? <span className={cls} style={{ background: "rgba(52,211,153,.18)", color: "#a7f3d0" }}>🎯 {inNow} על התוצאה</span>
+        : <span className={cls} style={{ background: "rgba(255,255,255,.07)", color: "#94a3b8" }}>אף אחד לא על התוצאה</span>}
+      {out > 0 && <span className={cls} style={{ background: "rgba(248,113,113,.15)", color: "#fecaca" }}>⬇ {out} יצאו ממנה</span>}
+    </div>
+  );
+}
+
+function GoalHero({ e, mm, preds, compact }) {
+  if (!mm) return null;
+  const team = e.side === "a" ? mm.m.team_a : mm.m.team_b;
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.22 }}
+      className={`absolute inset-0 flex ${compact ? "items-center gap-3 px-3" : "flex-col px-4 pt-4 pb-3"}`}
+      style={{ background: "radial-gradient(90% 90% at 50% 0%, rgba(52,211,153,.3), transparent 70%), linear-gradient(160deg,#0f2a2a,#0a1226 70%)" }}>
+      <span aria-hidden className="absolute -bottom-3 -left-1 font-black select-none pointer-events-none" dir="ltr"
+        style={{ fontSize: compact ? 64 : 92, lineHeight: 1, color: "rgba(52,211,153,.08)", letterSpacing: "-.04em" }}>GOAL</span>
+      {compact ? (
+        <>
+          <motion.span initial={{ rotate: -180, scale: 0.4 }} animate={{ rotate: 0, scale: 1 }} transition={{ type: "spring", stiffness: 260, damping: 14 }} className="text-3xl flex-shrink-0">⚽</motion.span>
+          <div className="flex-1 min-w-0 relative">
+            <div className="flex items-baseline flex-wrap gap-x-2">
+              <span className="text-emerald-300 font-black tabular-nums">{e.label}'</span>
+              <span className="text-white font-black text-[15px]" dir="ltr">{e.scorer || "שער"}</span>
+              <span className="text-[11px] text-emerald-100/70 font-semibold">{team.trim()}</span>
+            </div>
+            <div className="mt-1"><ImpactPills e={e} mm={mm} preds={preds} small /></div>
+          </div>
+          <div className="flex items-center gap-1.5 relative" dir="ltr">
+            <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-6 h-6" animate={false} />
+            <span className="font-black text-white text-2xl tabular-nums">{e.a}-{e.b}</span>
+            <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-6 h-6" animate={false} />
+          </div>
+        </>
+      ) : (
+        <>
+          <motion.span initial={{ x: 30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 300, damping: 22 }}
+            className="self-start text-[10px] font-black tracking-[.14em] px-2 py-0.5 rounded" style={{ background: "#34d399", color: "#062a1e" }} dir="ltr">
+            ⚽ GOAL · {e.label}'
           </motion.span>
-        </AnimatePresence>
-        <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className={big ? "w-9 h-9" : "w-5 h-5"} animate={false} />
+          <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.08 }} className="mt-2 relative">
+            <div className="text-white font-black text-[22px] leading-none" dir="ltr" style={{ textAlign: "right" }}>{e.scorer || "שער"}</div>
+            <div className="text-[12px] text-emerald-100/75 font-semibold mt-1">{team.trim()}</div>
+          </motion.div>
+          <div className="flex-1" />
+          <div className="flex items-end justify-between gap-2 relative">
+            <ImpactPills e={e} mm={mm} preds={preds} />
+            <motion.div initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 260, damping: 16, delay: 0.12 }}
+              className="flex items-center gap-2 flex-shrink-0" dir="ltr">
+              <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-8 h-8" animate={false} />
+              <span className="font-black text-white text-[34px] tabular-nums leading-none">{e.a}-{e.b}</span>
+              <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-8 h-8" animate={false} />
+            </motion.div>
+          </div>
+        </>
+      )}
+    </motion.div>
+  );
+}
+
+function IntroHero({ night, count, clock, compact }) {
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="absolute inset-0 flex flex-col items-center justify-center text-center gap-1"
+      style={{ background: "radial-gradient(90% 90% at 50% 0%, rgba(124,173,238,.25), transparent 70%), linear-gradient(160deg,#101c3a,#0a1226 70%)" }}>
+      <span className="text-[11px] text-slate-400 font-semibold">{night?.round} · {count} משחקים</span>
+      <span className={`font-black text-white tabular-nums ${compact ? "text-2xl" : "text-4xl"}`} dir="ltr">{clock}</span>
+      <span className="text-[12px] text-sky-200/80">▶ לחצו על הפעלה כדי לראות את הערב מתגלגל</span>
+    </motion.div>
+  );
+}
+
+function nightHighlights(rows, startRank) {
+  const best = [...rows].sort((a, b) => b.night - a.night)[0];
+  const climber = [...rows].sort((a, b) => (startRank[b.userId] - b.rank) - (startRank[a.userId] - a.rank))[0];
+  return { best, climber, climb: climber ? startRank[climber.userId] - climber.rank : 0 };
+}
+
+function EndHero({ rows, startRank }) {
+  const { best, climber, climb } = nightHighlights(rows, startRank);
+  return (
+    <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+      className="absolute inset-0 flex flex-col justify-center px-4 gap-2"
+      style={{ background: "radial-gradient(90% 90% at 50% 0%, rgba(192,132,252,.35), transparent 70%), linear-gradient(160deg,#1d1440,#0a1226 70%)" }}>
+      <div className="text-white font-black text-[17px]">🏁 סיום הערב</div>
+      <div className="grid grid-cols-2 gap-3 text-[12px]">
+        <div><span className="text-slate-400">מלך הערב</span><div className="text-white font-bold">👑 {best?.name} <span className="text-emerald-300" dir="ltr">+{pts(best?.night || 0)}</span></div></div>
+        <div><span className="text-slate-400">הטיפוס הגדול</span><div className="text-white font-bold">🚀 {climb > 0 ? `${climber.name} ↑${climb}` : "אין שינוי"}</div></div>
       </div>
-      <span className={`text-[10px] font-bold tabular-nums ${live ? "text-emerald-300" : "text-slate-500"}`}>
-        {clock || ilClock(new Date(Date.parse(mm.m.match_date)))}
-      </span>
-      {big && <span className="text-[12px] text-slate-400">{mm.m.team_a.trim()} – {mm.m.team_b.trim()}</span>}
-    </motion.button>
+    </motion.div>
+  );
+}
+
+function MatchTicker({ active, t, scoreAt, hotId, onPick }) {
+  return (
+    <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+      {active.map((mm) => {
+        const s = scoreAt(mm, t), clock = gameClock(t - mm.ko, mm.end - mm.ko), live = clock && clock !== "סיום";
+        return (
+          <motion.button key={mm.id} onClick={() => onPick(mm.id)}
+            animate={hotId === mm.id ? { boxShadow: "0 0 14px rgba(52,211,153,.6)" } : { boxShadow: "0 0 0 rgba(0,0,0,0)" }}
+            className="flex-shrink-0 flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[12px] font-black"
+            style={{ background: hotId === mm.id ? "rgba(52,211,153,.14)" : "rgba(255,255,255,.04)", border: `1px solid ${hotId === mm.id ? "rgba(52,211,153,.55)" : "rgba(255,255,255,.08)"}`, opacity: clock ? 1 : 0.55 }}>
+            <span className="flex items-center gap-1" dir="ltr">
+              <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-4 h-4" animate={false} />
+              <span className="text-white tabular-nums">{s ? `${s.a}-${s.b}` : "–"}</span>
+              <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-4 h-4" animate={false} />
+            </span>
+            <span className={`text-[10px] tabular-nums ${live ? "text-emerald-300" : "text-slate-500"}`}>{clock || ilClock(new Date(Date.parse(mm.m.match_date)))}</span>
+          </motion.button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Matches stacked in a narrow column, next to the table.
+function MatchColumn({ active, t, scoreAt, hotId, onPick }) {
+  return (
+    <div className="flex flex-col gap-1.5 min-w-0">
+      <div className="text-[10px] text-slate-500 font-semibold text-center mb-0.5">משחקים</div>
+      {active.map((mm) => {
+        const s = scoreAt(mm, t), clock = gameClock(t - mm.ko, mm.end - mm.ko), live = clock && clock !== "סיום", hot = hotId === mm.id;
+        return (
+          <motion.button key={mm.id} onClick={() => onPick(mm.id)}
+            animate={hot ? { scale: [1, 1.06, 1] } : { scale: 1 }} transition={{ duration: 0.6 }}
+            className="rounded-xl py-1.5 flex flex-col items-center gap-0.5"
+            style={{ background: hot ? "rgba(52,211,153,.14)" : live ? "rgba(52,211,153,.06)" : "rgba(255,255,255,.035)", border: `1px solid ${hot ? "rgba(52,211,153,.6)" : live ? "rgba(52,211,153,.22)" : "rgba(255,255,255,.07)"}`, opacity: clock ? 1 : 0.5, boxShadow: hot ? "0 0 14px rgba(52,211,153,.45)" : "none" }}>
+            <span className="flex items-center gap-1" dir="ltr">
+              <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-4 h-4" animate={false} />
+              <AnimatePresence mode="popLayout">
+                <motion.span key={s ? `${s.a}-${s.b}` : "pre"} initial={{ y: -8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 8, opacity: 0 }}
+                  className="text-white font-black text-[12px] tabular-nums">{s ? `${s.a}-${s.b}` : "–"}</motion.span>
+              </AnimatePresence>
+              <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-4 h-4" animate={false} />
+            </span>
+            <span className={`text-[9px] font-bold tabular-nums ${live ? "text-emerald-300" : "text-slate-500"}`}>{clock || ilClock(new Date(Date.parse(mm.m.match_date)))}</span>
+          </motion.button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ScoreGrid({ active, t, scoreAt, hotId, onPick }) {
+  return (
+    <div className="grid gap-1.5 p-2 rounded-2xl" style={{ gridTemplateColumns: `repeat(${active.length === 1 ? 1 : 3}, minmax(0,1fr))`, background: "radial-gradient(120% 140% at 50% -20%, rgba(76,29,149,.5), rgba(8,18,32,.92) 55%)", border: "1px solid rgba(167,139,250,.28)" }}>
+      {active.map((mm) => {
+        const s = scoreAt(mm, t), clock = gameClock(t - mm.ko, mm.end - mm.ko), live = clock && clock !== "סיום", hot = hotId === mm.id;
+        return (
+          <button key={mm.id} onClick={() => onPick(mm.id)} className="rounded-xl py-2 flex flex-col items-center gap-0.5"
+            style={{ background: live ? "rgba(52,211,153,.07)" : "rgba(255,255,255,.035)", border: `1px solid ${hot ? "rgba(52,211,153,.6)" : live ? "rgba(52,211,153,.25)" : "rgba(255,255,255,.07)"}`, opacity: clock ? 1 : 0.55, boxShadow: hot ? "0 0 16px rgba(52,211,153,.5)" : "none" }}>
+            <span className="flex items-center gap-1.5" dir="ltr">
+              <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-5 h-5" animate={false} />
+              <span className="text-white font-black text-[13px] tabular-nums">{s ? `${s.a}-${s.b}` : "–"}</span>
+              <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-5 h-5" animate={false} />
+            </span>
+            <span className={`text-[10px] font-bold tabular-nums ${live ? "text-emerald-300" : "text-slate-500"}`}>{clock || ilClock(new Date(Date.parse(mm.m.match_date)))}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Goals so far, newest first, each with its effect.
+function Feed({ events, t, matches, preds }) {
+  const shown = events.filter((e) => e.t <= t + 1e-6).reverse();
+  return (
+    <div className="min-w-0">
+      <div className="text-[10px] text-slate-500 font-semibold px-1 mb-1.5">שערים ({shown.length})</div>
+      <div className="flex flex-col gap-1.5">
+        <AnimatePresence initial={false}>
+          {shown.length === 0 && <div className="text-[12px] text-slate-500 px-1">עוד לא נכבשו שערים</div>}
+          {shown.map((e, i) => {
+            const mm = matches.find((m) => m.id === e.matchId);
+            if (!mm) return null;
+            return (
+              <motion.div key={e.id} layout initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                className="rounded-xl px-2.5 py-2" style={{ background: i === 0 ? "rgba(52,211,153,.12)" : "rgba(255,255,255,.035)", border: `1px solid ${i === 0 ? "rgba(52,211,153,.45)" : "rgba(255,255,255,.07)"}` }}>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[12px] font-black text-white truncate"><span className="text-emerald-300 tabular-nums ml-1">{e.label}'</span><span dir="ltr">{e.scorer || "שער"}</span></span>
+                  <span className="flex items-center gap-1 flex-shrink-0" dir="ltr">
+                    <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} size={14} animate={false} />
+                    <span className="text-[11px] font-bold tabular-nums">{e.a}-{e.b}</span>
+                    <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} size={14} animate={false} />
+                  </span>
+                </div>
+                <div className="mt-1"><ImpactPills e={e} mm={mm} preds={preds} small /></div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+function StoryCard({ e, mm, preds, index, total, overtakes, reachedEnd, rows, startRank }) {
+  const segs = Math.min(total, 24);
+  const done = total ? Math.round((index / total) * segs) : 0;
+  let content;
+  if (reachedEnd) {
+    const { best, climber, climb } = nightHighlights(rows, startRank);
+    content = (
+      <div className="text-center">
+        <div className="text-4xl mb-1">🏁</div>
+        <div className="text-white font-black text-lg">סיום הערב</div>
+        <div className="text-[13px] text-slate-300 mt-2">👑 מלך הערב: <b className="text-white">{best?.name}</b> <span className="text-emerald-300" dir="ltr">+{pts(best?.night || 0)}</span></div>
+        {climb > 0 && <div className="text-[13px] text-slate-300">🚀 הטיפוס הגדול: <b className="text-white">{climber.name}</b> ↑{climb}</div>}
+      </div>
+    );
+  } else if (e && mm) {
+    const pair = overtakes.pairs[0];
+    content = (
+      <div className="text-center">
+        <div className="font-black text-white text-5xl leading-none tabular-nums">{e.label}'<span className="text-xl mr-1">⚽</span></div>
+        <div className="flex items-center justify-center gap-3 mt-3" dir="ltr">
+          <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-8 h-8" animate={false} />
+          <span className="font-black text-white text-3xl tabular-nums">{e.a}-{e.b}</span>
+          <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-8 h-8" animate={false} />
+        </div>
+        <div className="text-[13px] text-violet-100 mt-2"><span dir="ltr">{e.scorer || "שער"}</span> · {(e.side === "a" ? mm.m.team_a : mm.m.team_b).trim()}</div>
+        <div className="flex justify-center mt-2"><ImpactPills e={e} mm={mm} preds={preds} /></div>
+        {pair && (
+          <div className="mt-3 grid items-center gap-2 text-[12px]" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
+            <div className="rounded-xl py-1.5" style={{ background: "rgba(52,211,153,.14)", border: "1px solid rgba(52,211,153,.45)" }}><b className="text-white">{pair[0].name}</b> <span className="text-emerald-300">↑</span></div>
+            <span className="text-lg">⇄</span>
+            <div className="rounded-xl py-1.5" style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)" }}><b className="text-white">{pair[1].name}</b> <span className="text-red-300">↓</span></div>
+          </div>
+        )}
+        {pair && overtakes.pairs.length > 1 && <div className="text-[11px] text-slate-400 mt-1">ועוד {overtakes.pairs.length - 1} עקיפות</div>}
+      </div>
+    );
+  } else {
+    content = <div className="text-center text-sky-100/80 text-[14px] py-6">▶ לחצו על הפעלה, כל שער יופיע כאן כסטורי</div>;
+  }
+  return (
+    <div className="rounded-3xl px-4 pt-3 pb-5" style={{ background: "radial-gradient(110% 80% at 50% 20%, #3b1d6e 0%, #0b1026 70%)", border: "1px solid rgba(192,132,252,.3)" }}>
+      <div className="flex gap-[3px] mb-2" dir="ltr">
+        {Array.from({ length: segs }).map((_, i) => <i key={i} className="flex-1 h-[3px] rounded-full" style={{ background: i < done ? "#fff" : "rgba(255,255,255,.22)" }} />)}
+      </div>
+      <div className="text-[10px] text-violet-200/80 mb-3">{total ? `שער ${index} מתוך ${total}` : "אין שערים"}</div>
+      <AnimatePresence mode="wait">
+        <motion.div key={reachedEnd ? "end" : e?.id || "pre"} initial={{ opacity: 0, scale: 0.96, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98, y: -8 }} transition={{ type: "spring", stiffness: 300, damping: 26 }}>
+          {content}
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -443,28 +754,20 @@ function Timeline({ t, range, events, matches, t0, flashKey, onScrub }) {
   return (
     <div className="relative select-none" dir="ltr">
       <div className="relative h-11 rounded-xl overflow-hidden" style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)" }}>
-        {/* half-time bands */}
         {kos.map((k) => (
           <div key={`ht${k}`} className="absolute top-0 bottom-0" style={{ left: pct(k + 47), width: `calc(${pct(k + 60)} - ${pct(k + 47)})`, background: "rgba(255,255,255,.035)" }} />
         ))}
-        {/* progress */}
-        <div className="absolute top-0 bottom-0 left-0" style={{ width: pct(Math.max(a, Math.min(b, t))), background: "linear-gradient(90deg,rgba(124,173,238,.10),rgba(124,173,238,.28))" }} />
-        {/* goals */}
+        <div className="absolute top-0 bottom-0 left-0" style={{ width: pct(Math.max(a, Math.min(b, t))), background: "linear-gradient(90deg,rgba(52,211,153,.06),rgba(52,211,153,.24))" }} />
         {events.map((e) => {
           const passed = e.t <= t + 1e-6;
           return (
             <motion.div key={e.id} className="absolute top-1/2" style={{ left: pct(e.t), x: "-50%", y: "-50%" }}
               animate={flashKey === e.id && passed ? { scale: [1, 1.9, 1] } : { scale: 1 }} transition={{ duration: 0.6 }}>
-              <div className="rounded-full" style={{
-                width: 9, height: 9,
-                background: passed ? "#34d399" : "rgba(255,255,255,.28)",
-                boxShadow: passed ? "0 0 10px rgba(52,211,153,.8)" : "none",
-              }} />
+              <div className="rounded-full" style={{ width: 9, height: 9, background: passed ? "#34d399" : "rgba(255,255,255,.28)", boxShadow: passed ? "0 0 10px rgba(52,211,153,.8)" : "none" }} />
             </motion.div>
           );
         })}
-        {/* playhead */}
-        <div className="absolute top-0 bottom-0 w-[2px] pointer-events-none" style={{ left: pct(Math.max(a, Math.min(b, t))), background: "#fff", boxShadow: "0 0 10px #7cadee" }} />
+        <div className="absolute top-0 bottom-0 w-[2px] pointer-events-none" style={{ left: pct(Math.max(a, Math.min(b, t))), background: "#fff", boxShadow: "0 0 10px #34d399" }} />
         <input type="range" min={a} max={b} step={0.1} value={Math.max(a, Math.min(b, t))}
           onChange={(ev) => onScrub(Number(ev.target.value))}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" aria-label="ציר הזמן של הערב" />
@@ -479,79 +782,70 @@ function Timeline({ t, range, events, matches, t0, flashKey, onScrub }) {
   );
 }
 
-function EventCard({ e, mm, preds }) {
-  if (!mm) return null;
-  const before = mm.goals[mm.goals.findIndex((g) => g.id === e.id) - 1] || { a: 0, b: 0 };
-  const exactAt = (s) => Object.values(preds[mm.id] || {}).filter((p) => p.predicted_score_a === s.a && p.predicted_score_b === s.b).length;
-  const inNow = exactAt(e), outNow = exactAt(before);
-  const scorerTeam = e.side === "a" ? mm.m.team_a : mm.m.team_b;
+function DeltaTag({ delta }) {
+  return delta > 0 ? <span className="flex items-center gap-0.5 text-emerald-400 text-[11px] font-bold"><TrendingUp className="w-3.5 h-3.5" />{delta}</span>
+    : delta < 0 ? <span className="flex items-center gap-0.5 text-red-400 text-[11px] font-bold"><TrendingDown className="w-3.5 h-3.5" />{-delta}</span>
+    : <Minus className="w-3.5 h-3.5 text-slate-600" />;
+}
+
+function TableHead() {
   return (
-    <motion.div initial={{ opacity: 0, y: 12, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -10, scale: 0.97 }}
-      transition={{ type: "spring", stiffness: 320, damping: 26 }}
-      className="rounded-2xl px-4 py-3 flex items-center gap-3"
-      style={{ background: "linear-gradient(135deg,rgba(52,211,153,.14),rgba(8,18,32,.9) 60%)", border: "1px solid rgba(52,211,153,.35)" }}>
-      <motion.span initial={{ rotate: -180, scale: 0.4 }} animate={{ rotate: 0, scale: 1 }} transition={{ type: "spring", stiffness: 260, damping: 14 }} className="text-3xl flex-shrink-0">⚽</motion.span>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-baseline flex-wrap gap-x-2 text-white font-black text-[15px] leading-tight">
-          <span className="tabular-nums text-emerald-300">{e.label}'</span>
-          <span dir="ltr">{e.scorer || "שער"}</span>
-          <span className="text-slate-400 font-semibold text-[12px]">{scorerTeam.trim()}</span>
-        </div>
-        <div className="flex items-center flex-wrap gap-x-3 gap-y-0.5 mt-1 text-[12px]">
-          <span className="flex items-center gap-1.5 text-slate-200" dir="ltr">
-            <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-4 h-4" animate={false} />
-            <span className="font-bold tabular-nums">{e.a}-{e.b}</span>
-            <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-4 h-4" animate={false} />
-          </span>
-          {inNow > 0
-            ? <span className="text-emerald-300 font-bold">🎯 {inNow} על התוצאה</span>
-            : <span className="text-slate-500">אף אחד לא על התוצאה</span>}
-          {outNow > 0 && <span className="text-red-300/90 font-semibold">⬇ {outNow} יצאו ממנה</span>}
-        </div>
-      </div>
-    </motion.div>
+    <div className="flex items-center gap-2 px-2 mb-1.5 text-[10px] text-slate-500 font-semibold">
+      <span className="w-5" /><span className="flex-1">משתתף</span><span className="w-11 text-left">הערב</span><span className="w-12 text-left">סה״כ</span><span className="w-8" />
+    </div>
   );
 }
 
-function EndCard({ rows, startRank }) {
-  const nightBest = [...rows].sort((a, b) => b.night - a.night)[0];
-  const climber = [...rows].sort((a, b) => (startRank[b.userId] - b.rank) - (startRank[a.userId] - a.rank))[0];
-  const climb = climber ? startRank[climber.userId] - climber.rank : 0;
-  return (
-    <motion.div initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
-      transition={{ type: "spring", stiffness: 260, damping: 22 }}
-      className="rounded-2xl px-4 py-3"
-      style={{ background: "linear-gradient(135deg,rgba(192,132,252,.18),rgba(124,173,238,.12))", border: "1px solid rgba(192,132,252,.4)" }}>
-      <div className="text-white font-black text-[15px] mb-1.5">🏁 סיום הערב</div>
-      <div className="grid grid-cols-2 gap-2 text-[12px]">
-        <div><span className="text-slate-400">מלך הערב</span><div className="text-white font-bold">👑 {nightBest?.name} <span className="text-emerald-300">+{pts(nightBest?.night || 0)}</span></div></div>
-        <div><span className="text-slate-400">הטיפוס הגדול</span><div className="text-white font-bold">🚀 {climb > 0 ? `${climber.name} ↑${climb}` : "אין שינוי"}</div></div>
-      </div>
-    </motion.div>
-  );
-}
-
-function Row({ r, isMe, delta }) {
+function Row({ r, isMe, delta, hot }) {
   return (
     <motion.div layout transition={{ layout: { type: "spring", stiffness: 140, damping: 22 } }}
+      animate={hot ? { boxShadow: ["0 0 0 rgba(52,211,153,0)", "0 0 16px rgba(52,211,153,.55)", "0 0 0 rgba(52,211,153,0)"] } : {}}
       className="relative mb-1 rounded-lg overflow-hidden"
       style={{
         background: isMe ? "linear-gradient(90deg,rgba(124,173,238,.22),rgba(124,173,238,.06))" : r.rank <= 3 ? "rgba(255,255,255,.055)" : "rgba(30,41,59,.55)",
         border: `1px solid ${isMe ? "rgba(124,173,238,.6)" : r.rank <= 3 ? `${RANK_TINT(r.rank)}66` : "rgba(255,255,255,.06)"}`,
       }}>
-      <div className="flex items-center gap-2.5 px-3 py-2">
-        <span className="w-6 text-center font-black text-[15px] tabular-nums" style={{ color: RANK_TINT(r.rank) }}>{r.rank}</span>
-        <span className="flex-1 min-w-0 truncate text-[13px] font-semibold text-slate-100">
-          {r.name}{isMe && <span className="text-sky-300 text-[10px] font-bold mr-1.5">(את/ה)</span>}
+      <div className="flex items-center gap-2 px-2 py-1.5">
+        <span className="w-5 text-center font-black text-[14px] tabular-nums" style={{ color: RANK_TINT(r.rank) }}>{r.rank}</span>
+        <span className="flex-1 min-w-0 flex items-center gap-1">
+          <span className="truncate text-[13px] font-semibold text-slate-100">{r.name}</span>
+          {isMe && <span className="text-sky-300 text-[10px] font-bold flex-shrink-0">(את/ה)</span>}
+          {r.exact > 0 && <span className="text-[10px] flex-shrink-0">{"🎯".repeat(Math.min(r.exact, 3))}</span>}
         </span>
-        <span className="text-[11px] w-4 text-center">{r.exact > 0 ? "🎯".repeat(Math.min(r.exact, 2)) : ""}</span>
-        <AnimatedNum value={r.night} className={`w-12 text-left text-[11px] font-bold tabular-nums ${r.night > 0 ? "text-emerald-300" : "text-slate-500"}`} prefix={r.night > 0 ? "+" : ""} />
-        <AnimatedNum value={r.total} className="w-14 text-left text-[13px] font-black text-white tabular-nums" />
-        <span className="w-9 flex justify-end">
-          {delta > 0 ? <span className="flex items-center gap-0.5 text-emerald-400 text-[11px] font-bold"><TrendingUp className="w-3.5 h-3.5" />{delta}</span>
-            : delta < 0 ? <span className="flex items-center gap-0.5 text-red-400 text-[11px] font-bold"><TrendingDown className="w-3.5 h-3.5" />{-delta}</span>
-            : <Minus className="w-3.5 h-3.5 text-slate-600" />}
+        <AnimatedNum value={r.night} className={`w-11 text-left text-[11px] font-bold tabular-nums ${r.night > 0 ? "text-emerald-300" : "text-slate-500"}`} prefix={r.night > 0 ? "+" : ""} />
+        <AnimatedNum value={r.total} className="w-12 text-left text-[13px] font-black text-white tabular-nums" />
+        <span className="w-8 flex justify-end"><DeltaTag delta={delta} /></span>
+      </div>
+    </motion.div>
+  );
+}
+
+function RaceBar({ r, isMe, delta, scale }) {
+  const span = Math.max(1e-6, scale.hi - scale.lo);
+  const w = 34 + (66 * (r.total - scale.lo)) / span;
+  const gain = Math.max(0, Math.min(w, (66 * r.night) / span));
+  const col = r.rank === 1 ? ["#4f86d1", "#9cc3f5"] : r.rank === 2 ? ["#7c8aa0", "#cbd5e1"] : r.rank === 3 ? ["#a2621f", "#e0a35a"] : ["#3b5578", "#64809f"];
+  return (
+    <motion.div layout transition={{ layout: { type: "spring", stiffness: 140, damping: 22 } }} className="mb-1.5">
+      <div className="flex items-center justify-between gap-2 text-[11px] mb-0.5 px-0.5">
+        <span className="flex items-center gap-1.5 min-w-0">
+          <b className="tabular-nums" style={{ color: RANK_TINT(r.rank) }}>{r.rank}</b>
+          <span className="font-bold text-slate-100 truncate">{r.name}</span>
+          {isMe && <span className="text-sky-300 text-[10px] font-bold">(את/ה)</span>}
+          <DeltaTag delta={delta} />
         </span>
+        <AnimatedNum value={r.total} className="font-black text-white text-[12px] tabular-nums flex-shrink-0" />
+      </div>
+      <div className="h-[18px] rounded-l-full rounded-r-md" style={{ background: "rgba(255,255,255,.04)" }}>
+        <motion.div className="relative h-full rounded-l-full rounded-r-md flex items-center overflow-hidden"
+          initial={false} animate={{ width: `${w}%` }} transition={{ type: "spring", stiffness: 90, damping: 20 }}
+          style={{ background: `linear-gradient(270deg, ${col[0]}, ${col[1]})`, boxShadow: isMe ? "0 0 0 1.5px #7cadee, 0 0 14px rgba(124,173,238,.5)" : "none" }}>
+          <motion.div className="absolute left-0 top-0 bottom-0" initial={false} animate={{ width: `${(gain / w) * 100}%` }} transition={{ type: "spring", stiffness: 90, damping: 20 }}
+            style={{ background: "linear-gradient(90deg,#6ee7b7,#34d399)" }} />
+          <span className="relative z-[1] mr-auto ml-1.5 text-[10px] font-black text-slate-900 whitespace-nowrap" dir="ltr">
+            {r.night > 0 ? `+${pts(r.night)}` : ""}{r.exact > 0 ? ` ${"🎯".repeat(Math.min(r.exact, 3))}` : ""}
+          </span>
+        </motion.div>
       </div>
     </motion.div>
   );
