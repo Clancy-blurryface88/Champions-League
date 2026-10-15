@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
-import { Play, Pause, SkipBack, SkipForward, RotateCcw, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, RotateCcw, TrendingUp, TrendingDown, Minus, ArrowLeft } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
 import { calculateScore } from "@/components/LiveLeaderboard";
 import { Match, Prediction, UserStats, PublicProfile, Round, User } from "@/api/entities";
@@ -37,12 +37,11 @@ function gameClock(elapsed, end) {
   return "90+'";
 }
 
-const RANK_TINT = (r) => (r === 1 ? "#7cadee" : r === 2 ? "#cbd5e1" : r === 3 ? "#d6923f" : "rgba(255,255,255,.35)");
+const RANK_TINT = (r) => (r === 1 ? "#facc15" : r === 2 ? "#cbd5e1" : r === 3 ? "#d6923f" : "rgba(255,255,255,.35)");
 
-// publicMode: the participants' page — "combo" layout only, no admin bits.
 // roundId limits the night chips to that round; initialDate (YYYY-MM-DD,
 // Israel date) opens that night, e.g. from the end-of-night push.
-export default function AdminNightReplay({ publicMode = false, roundId = null, initialDate = null }) {
+export default function NightReplay({ roundId = null, initialDate = null, onBack }) {
   const [db, setDb] = useState(null);
   const [me, setMe] = useState(null);
   const [nightKey, setNightKey] = useState(null);
@@ -54,10 +53,6 @@ export default function AdminNightReplay({ publicMode = false, roundId = null, i
   const [speed, setSpeed] = useState(1);
   const [flashKey, setFlashKey] = useState(null); // event id just reached → glow
   const [preds, setPreds] = useState(null); // matchId → userId → prediction
-  // which of the 6 layouts — remembered per browser
-  const [savedLayout, setLayout] = useState(() => { try { return localStorage.getItem("replayLayout") || "combo"; } catch { return "combo"; } });
-  const layout = publicMode ? "combo" : savedLayout;
-  const chooseLayout = (id) => { setLayout(id); try { localStorage.setItem("replayLayout", id); } catch { /* private mode */ } };
 
   // ── base data: matches, users, rounds ──────────────────────────────────────
   useEffect(() => {
@@ -205,12 +200,6 @@ export default function AdminNightReplay({ publicMode = false, roundId = null, i
     return i;
   }, [snapshots, t]);
   const rows = snapshots[snapIdx]?.rows || [];
-  // race bars: one fixed scale for the whole night so bars only grow
-  const scale = useMemo(() => {
-    let lo = Infinity, hi = -Infinity;
-    snapshots.forEach((s) => s.rows.forEach((r) => { lo = Math.min(lo, r.total); hi = Math.max(hi, r.total); }));
-    return { lo, hi };
-  }, [snapshots]);
   const reachedEnd = t >= range[1] - 0.01;
 
   // reset the clock when the night or the filter changes
@@ -272,111 +261,34 @@ export default function AdminNightReplay({ publicMode = false, roundId = null, i
   if (error) return <div className="text-red-400 p-6" dir="rtl">שגיאה: {error}</div>;
   if (!db || !nightKey) return <Loading text="טוען ערבי משחקים..." />;
   const night = nights.find((n) => n.key === nightKey);
-  const wide = ["table-col", "race-col", "feed"].includes(layout);
 
-  // shared pieces, arranged differently by each layout
-  const hero = (height, narrow = false) => (
-    <div className="relative rounded-2xl overflow-hidden" style={{ height, border: "1px solid rgba(52,211,153,.22)", background: "#070d1c" }}>
+  const hero = (
+    <div className="relative rounded-2xl overflow-hidden" style={{ height: 172, border: "1px solid rgba(52,211,153,.22)", background: "#070d1c" }}>
       <AnimatePresence mode="wait">
         {reachedEnd ? <EndHero key="end" rows={rows} startRank={model.startRank} single={filter !== "all"} />
-          : lastEvent ? <GoalHero key={lastEvent.id} e={lastEvent} mm={active.find((m) => m.id === lastEvent.matchId)} preds={preds.map} compact={height < 120} narrow={narrow} />
-          : <IntroHero key="pre" night={night} count={active.length} clock={clockText} compact={height < 120} />}
+          : lastEvent ? <GoalHero key={lastEvent.id} e={lastEvent} mm={active.find((m) => m.id === lastEvent.matchId)} preds={preds.map} narrow />
+          : <IntroHero key="pre" night={night} count={active.length} clock={clockText} />}
       </AnimatePresence>
     </div>
   );
   const hotId = lastEvent && t - lastEvent.t < 4 ? lastEvent.matchId : null;
   const pick = (id) => setFilter(filter === id ? "all" : id);
-  const ticker = <MatchTicker active={active} t={t} scoreAt={model?.scoreAt} hotId={hotId} onPick={pick} />;
-  const column = <MatchColumn active={active} t={t} scoreAt={model?.scoreAt} hotId={hotId} onPick={pick} />;
-  const table = (
-    <div className="min-w-0">
-      <TableHead />
-      {rows.map((r) => <Row key={r.userId} r={r} isMe={r.userId === me} delta={model.startRank[r.userId] - r.rank} hot={overtakes.movers.has(r.userId)} />)}
-    </div>
-  );
-  const race = (
-    <div className="min-w-0">
-      <div className="flex items-center justify-between px-1 mb-2 text-[10px] text-slate-500 font-semibold">
-        <span>מרוץ הנקודות</span>
-        <span className="flex items-center gap-1.5"><i className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: "#6ee7b7" }} />נקודות הערב</span>
-      </div>
-      {rows.map((r) => <RaceBar key={r.userId} r={r} isMe={r.userId === me} delta={model.startRank[r.userId] - r.rank} scale={scale} />)}
-    </div>
-  );
-
-  const body = () => {
-    switch (layout) {
-      // matches down the right, the table on the left with the latest goal
-      // filling the space under it — the whole night on one phone screen
-      case "combo": return (
-        <div className="grid gap-3 items-start" style={{ gridTemplateColumns: "104px minmax(0,1fr)" }}>
-          {column}
-          <div className="min-w-0 flex flex-col gap-3">{table}{hero(172, true)}</div>
-        </div>
-      );
-      case "table-col": return (<>
-        <div className="mb-3">{hero(96)}</div>
-        <div className="grid gap-3" style={{ gridTemplateColumns: "minmax(0,1fr) 104px" }}>{table}{column}</div>
-      </>);
-      case "race-col": return (<>
-        <div className="mb-3">{hero(96)}</div>
-        <div className="grid gap-3" style={{ gridTemplateColumns: "minmax(0,1fr) 104px" }}>{race}{column}</div>
-      </>);
-      case "board": return (<>
-        <ScoreGrid active={active} t={t} scoreAt={model.scoreAt} hotId={hotId} onPick={pick} />
-        <div className="my-3">{hero(96)}</div>
-        {table}
-      </>);
-      case "feed": return (<>
-        {ticker}
-        <div className="grid gap-3 mt-3" style={{ gridTemplateColumns: "minmax(0,1fr) minmax(0,0.85fr)" }}>
-          {table}
-          <Feed events={events} t={t} matches={active} preds={preds.map} />
-        </div>
-      </>);
-      case "story": return (<>
-        <StoryCard e={lastEvent} mm={lastEvent && active.find((m) => m.id === lastEvent.matchId)} preds={preds.map}
-          index={lastEvent ? events.indexOf(lastEvent) + 1 : 0} total={events.length} overtakes={overtakes} reachedEnd={reachedEnd} rows={rows} startRank={model.startRank} single={filter !== "all"} />
-        <div className="mt-3">{ticker}</div>
-        <div className="mt-3">{table}</div>
-      </>);
-      default: return (<>
-        {hero(172)}
-        <div className="mt-2">{ticker}</div>
-        <div className="mt-4">{race}</div>
-      </>);
-    }
-  };
 
   return (
-    <div dir="rtl" className={`mx-auto w-full ${wide ? "max-w-3xl" : "max-w-xl"} text-slate-200`}>
-      {/* header */}
-      <div className="flex items-end justify-between gap-3 mb-3">
-        <div>
-          <h2 className="text-2xl font-black text-white tracking-tight">🔁 הילוך חוזר</h2>
+    <div dir="rtl" className="mx-auto w-full max-w-xl text-slate-200">
+      {/* header: title on the right (icon left of the text), back on the left */}
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="min-w-0">
+          <h2 className="flex items-center gap-2 text-2xl font-black text-white tracking-tight"><span>הילוך חוזר</span><span aria-hidden>🔁</span></h2>
           <p className="text-slate-400 text-sm">איך הטבלה זזה לאורך ערב המשחקים</p>
         </div>
-        {!publicMode && (
-          <span className="text-[11px] font-bold px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0" style={{ background: "rgba(192,132,252,.14)", color: "#d8b4fe", border: "1px solid rgba(192,132,252,.35)" }}>
-            תצוגת אדמין
-          </span>
+        {onBack && (
+          <button onClick={onBack} aria-label="חזרה"
+            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 backdrop-blur-sm text-white/70 hover:text-white transition-all flex-shrink-0">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
         )}
       </div>
-
-      {/* layout switcher (admin only) */}
-      {!publicMode && <div className="flex gap-1.5 overflow-x-auto pb-2 mb-2" style={{ scrollbarWidth: "none" }}>
-        {LAYOUTS.map((l, i) => (
-          <button key={l.id} onClick={() => chooseLayout(l.id)}
-            className="flex-shrink-0 rounded-lg px-2.5 py-1.5 text-[12px] font-bold transition-all"
-            style={{
-              background: layout === l.id ? "rgba(192,132,252,.2)" : "rgba(255,255,255,.04)",
-              border: `1px solid ${layout === l.id ? "rgba(192,132,252,.6)" : "rgba(255,255,255,.08)"}`,
-              color: layout === l.id ? "#f3e8ff" : "#94a3b8",
-            }}>
-            <span className="opacity-60 ml-1 tabular-nums">{i + 1}</span>{l.label}
-          </button>
-        ))}
-      </div>}
 
       {/* nights */}
       <div className="flex gap-2 overflow-x-auto pb-2 mb-2" style={{ scrollbarWidth: "none" }}>
@@ -409,7 +321,18 @@ export default function AdminNightReplay({ publicMode = false, roundId = null, i
             ))}
           </div>
 
-          {body()}
+          {/* matches down the right, the table on the left with the latest goal
+              under it — the whole night on one phone screen */}
+          <div className="grid gap-3 items-start" style={{ gridTemplateColumns: "104px minmax(0,1fr)" }}>
+            <MatchColumn active={active} t={t} scoreAt={model.scoreAt} hotId={hotId} onPick={pick} />
+            <div className="min-w-0 flex flex-col gap-3">
+              <div className="min-w-0">
+                <TableHead />
+                {rows.map((r) => <Row key={r.userId} r={r} isMe={r.userId === me} delta={model.startRank[r.userId] - r.rank} hot={overtakes.movers.has(r.userId)} />)}
+              </div>
+              {hero}
+            </div>
+          </div>
 
           {/* player */}
           <div className="sticky bottom-2 z-10 rounded-2xl px-3 pt-2.5 pb-3 mt-3"
@@ -446,15 +369,6 @@ export default function AdminNightReplay({ publicMode = false, roundId = null, i
   );
 }
 
-const LAYOUTS = [
-  { id: "combo", label: "משולב" },
-  { id: "broadcast", label: "שידור + מרוץ" },
-  { id: "table-col", label: "טבלה + טור משחקים" },
-  { id: "race-col", label: "מרוץ + טור משחקים" },
-  { id: "feed", label: "טבלה + פיד שערים" },
-  { id: "story", label: "סטוריז" },
-  { id: "board", label: "לוח תוצאות" },
-];
 const SPEEDS = [0.5, 1, 1.5, 2, 4];
 
 // Who climbed past whom between two consecutive tables.
@@ -585,7 +499,7 @@ function IntroHero({ night, count, clock, compact }) {
       style={{ background: "radial-gradient(90% 90% at 50% 0%, rgba(124,173,238,.25), transparent 70%), linear-gradient(160deg,#101c3a,#0a1226 70%)" }}>
       <span className="text-[11px] text-slate-400 font-semibold">{night?.round} · {count} משחקים</span>
       <span className={`font-black text-white tabular-nums ${compact ? "text-2xl" : "text-4xl"}`} dir="ltr">{clock}</span>
-      <span className="text-[12px] text-sky-200/80">▶ לחצו על הפעלה כדי לראות את הערב מתגלגל</span>
+      <span className="text-[12px] leading-snug text-sky-200/80 px-4">▶ לחצו על הפעלה כדי לראות את הערב מתגלגל</span>
     </motion.div>
   );
 }
@@ -609,29 +523,6 @@ function EndHero({ rows, startRank, single }) {
         <div><span className="text-slate-400">הטיפוס הגדול</span><div className="text-white font-bold">🚀 {climb > 0 ? `${climber.name} ↑${climb}` : "אין שינוי"}</div></div>
       </div>
     </motion.div>
-  );
-}
-
-function MatchTicker({ active, t, scoreAt, hotId, onPick }) {
-  return (
-    <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-      {active.map((mm) => {
-        const s = scoreAt(mm, t), clock = gameClock(t - mm.ko, mm.end - mm.ko), live = clock && clock !== "סיום";
-        return (
-          <motion.button key={mm.id} onClick={() => onPick(mm.id)}
-            animate={hotId === mm.id ? { boxShadow: "0 0 14px rgba(52,211,153,.6)" } : { boxShadow: "0 0 0 rgba(0,0,0,0)" }}
-            className="flex-shrink-0 flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[12px] font-black"
-            style={{ background: hotId === mm.id ? "rgba(52,211,153,.14)" : "rgba(255,255,255,.04)", border: `1px solid ${hotId === mm.id ? "rgba(52,211,153,.55)" : "rgba(255,255,255,.08)"}`, opacity: clock ? 1 : 0.55 }}>
-            <span className="flex items-center gap-1" dir="ltr">
-              <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-4 h-4" animate={false} />
-              <span className="text-white tabular-nums">{s ? `${s.a}-${s.b}` : "–"}</span>
-              <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-4 h-4" animate={false} />
-            </span>
-            <span className={`text-[10px] tabular-nums ${live ? "text-emerald-300" : "text-slate-500"}`}>{clock || ilClock(new Date(Date.parse(mm.m.match_date)))}</span>
-          </motion.button>
-        );
-      })}
-    </div>
   );
 }
 
@@ -659,114 +550,6 @@ function MatchColumn({ active, t, scoreAt, hotId, onPick }) {
           </motion.button>
         );
       })}
-    </div>
-  );
-}
-
-function ScoreGrid({ active, t, scoreAt, hotId, onPick }) {
-  return (
-    <div className="grid gap-1.5 p-2 rounded-2xl" style={{ gridTemplateColumns: `repeat(${active.length === 1 ? 1 : 3}, minmax(0,1fr))`, background: "radial-gradient(120% 140% at 50% -20%, rgba(76,29,149,.5), rgba(8,18,32,.92) 55%)", border: "1px solid rgba(167,139,250,.28)" }}>
-      {active.map((mm) => {
-        const s = scoreAt(mm, t), clock = gameClock(t - mm.ko, mm.end - mm.ko), live = clock && clock !== "סיום", hot = hotId === mm.id;
-        return (
-          <button key={mm.id} onClick={() => onPick(mm.id)} className="rounded-xl py-2 flex flex-col items-center gap-0.5"
-            style={{ background: live ? "rgba(52,211,153,.07)" : "rgba(255,255,255,.035)", border: `1px solid ${hot ? "rgba(52,211,153,.6)" : live ? "rgba(52,211,153,.25)" : "rgba(255,255,255,.07)"}`, opacity: clock ? 1 : 0.55, boxShadow: hot ? "0 0 16px rgba(52,211,153,.5)" : "none" }}>
-            <span className="flex items-center gap-1.5" dir="ltr">
-              <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-5 h-5" animate={false} />
-              <span className="text-white font-black text-[13px] tabular-nums">{s ? `${s.a}-${s.b}` : "–"}</span>
-              <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-5 h-5" animate={false} />
-            </span>
-            <span className={`text-[10px] font-bold tabular-nums ${live ? "text-emerald-300" : "text-slate-500"}`}>{clock || ilClock(new Date(Date.parse(mm.m.match_date)))}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-// Goals so far, newest first, each with its effect.
-function Feed({ events, t, matches, preds }) {
-  const shown = events.filter((e) => e.t <= t + 1e-6).reverse();
-  return (
-    <div className="min-w-0">
-      <div className="text-[10px] text-slate-500 font-semibold px-1 mb-1.5">שערים ({shown.length})</div>
-      <div className="flex flex-col gap-1.5">
-        <AnimatePresence initial={false}>
-          {shown.length === 0 && <div className="text-[12px] text-slate-500 px-1">עוד לא נכבשו שערים</div>}
-          {shown.map((e, i) => {
-            const mm = matches.find((m) => m.id === e.matchId);
-            if (!mm) return null;
-            return (
-              <motion.div key={e.id} layout initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
-                className="rounded-xl px-2.5 py-2" style={{ background: i === 0 ? "rgba(52,211,153,.12)" : "rgba(255,255,255,.035)", border: `1px solid ${i === 0 ? "rgba(52,211,153,.45)" : "rgba(255,255,255,.07)"}` }}>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-[12px] font-black text-white truncate"><span className="text-emerald-300 tabular-nums ml-1">{e.label}'</span><span dir="ltr">{e.scorer || "שער"}</span></span>
-                  <span className="flex items-center gap-1 flex-shrink-0" dir="ltr">
-                    <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} size={14} animate={false} />
-                    <span className="text-[11px] font-bold tabular-nums">{e.a}-{e.b}</span>
-                    <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} size={14} animate={false} />
-                  </span>
-                </div>
-                <div className="mt-1"><ImpactPills e={e} mm={mm} preds={preds} small /></div>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
-      </div>
-    </div>
-  );
-}
-
-function StoryCard({ e, mm, preds, index, total, overtakes, reachedEnd, rows, startRank, single }) {
-  const segs = Math.min(total, 24);
-  const done = total ? Math.round((index / total) * segs) : 0;
-  let content;
-  if (reachedEnd) {
-    const { best, climber, climb } = nightHighlights(rows, startRank);
-    content = (
-      <div className="text-center">
-        <div className="text-4xl mb-1">🏁</div>
-        <div className="text-white font-black text-lg">{single ? "סיום המשחק" : "סיום הערב"}</div>
-        <div className="text-[13px] text-slate-300 mt-2">👑 {single ? "מלך המשחק" : "מלך הערב"}: <b className="text-white">{best?.name}</b> <span className="text-emerald-300" dir="ltr">+{pts(best?.night || 0)}</span></div>
-        {climb > 0 && <div className="text-[13px] text-slate-300">🚀 הטיפוס הגדול: <b className="text-white">{climber.name}</b> ↑{climb}</div>}
-      </div>
-    );
-  } else if (e && mm) {
-    const pair = overtakes.pairs[0];
-    content = (
-      <div className="text-center">
-        <div className="font-black text-white text-5xl leading-none tabular-nums">{e.label}'<span className="text-xl mr-1">⚽</span></div>
-        <div className="flex items-center justify-center gap-3 mt-3" dir="ltr">
-          <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-8 h-8" animate={false} />
-          <span className="font-black text-white text-3xl tabular-nums">{e.a}-{e.b}</span>
-          <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-8 h-8" animate={false} />
-        </div>
-        <div className="text-[13px] text-violet-100 mt-2"><span dir="ltr">{e.scorer || "שער"}</span> · {(e.side === "a" ? mm.m.team_a : mm.m.team_b).trim()}</div>
-        <div className="flex justify-center mt-2"><ImpactPills e={e} mm={mm} preds={preds} /></div>
-        {pair && (
-          <div className="mt-3 grid items-center gap-2 text-[12px]" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
-            <div className="rounded-xl py-1.5" style={{ background: "rgba(52,211,153,.14)", border: "1px solid rgba(52,211,153,.45)" }}><b className="text-white">{pair[0].name}</b> <span className="text-emerald-300">↑</span></div>
-            <span className="text-lg">⇄</span>
-            <div className="rounded-xl py-1.5" style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)" }}><b className="text-white">{pair[1].name}</b> <span className="text-red-300">↓</span></div>
-          </div>
-        )}
-        {pair && overtakes.pairs.length > 1 && <div className="text-[11px] text-slate-400 mt-1">ועוד {overtakes.pairs.length - 1} עקיפות</div>}
-      </div>
-    );
-  } else {
-    content = <div className="text-center text-sky-100/80 text-[14px] py-6">▶ לחצו על הפעלה, כל שער יופיע כאן כסטורי</div>;
-  }
-  return (
-    <div className="rounded-3xl px-4 pt-3 pb-5" style={{ background: "radial-gradient(110% 80% at 50% 20%, #3b1d6e 0%, #0b1026 70%)", border: "1px solid rgba(192,132,252,.3)" }}>
-      <div className="flex gap-[3px] mb-2" dir="ltr">
-        {Array.from({ length: segs }).map((_, i) => <i key={i} className="flex-1 h-[3px] rounded-full" style={{ background: i < done ? "#fff" : "rgba(255,255,255,.22)" }} />)}
-      </div>
-      <div className="text-[10px] text-violet-200/80 mb-3">{total ? `שער ${index} מתוך ${total}` : "אין שערים"}</div>
-      <AnimatePresence mode="wait">
-        <motion.div key={reachedEnd ? "end" : e?.id || "pre"} initial={{ opacity: 0, scale: 0.96, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98, y: -8 }} transition={{ type: "spring", stiffness: 300, damping: 26 }}>
-          {content}
-        </motion.div>
-      </AnimatePresence>
     </div>
   );
 }
@@ -842,36 +625,6 @@ function Row({ r, isMe, delta, hot }) {
         <AnimatedNum value={r.night} className={`w-10 text-left text-[11px] font-bold tabular-nums ${r.night > 0 ? "text-emerald-300" : "text-slate-500"}`} prefix={r.night > 0 ? "+" : ""} />
         <AnimatedNum value={r.total} className="w-11 text-left text-[13px] font-black text-white tabular-nums" />
         <span className="w-7 flex justify-end"><DeltaTag delta={delta} /></span>
-      </div>
-    </motion.div>
-  );
-}
-
-function RaceBar({ r, isMe, delta, scale }) {
-  const span = Math.max(1e-6, scale.hi - scale.lo);
-  const w = 34 + (66 * (r.total - scale.lo)) / span;
-  const gain = Math.max(0, Math.min(w, (66 * r.night) / span));
-  const col = r.rank === 1 ? ["#4f86d1", "#9cc3f5"] : r.rank === 2 ? ["#7c8aa0", "#cbd5e1"] : r.rank === 3 ? ["#a2621f", "#e0a35a"] : ["#3b5578", "#64809f"];
-  return (
-    <motion.div layout transition={{ layout: { type: "spring", stiffness: 140, damping: 22 } }} className="mb-1.5">
-      <div className="flex items-center justify-between gap-2 text-[11px] mb-0.5 px-0.5">
-        <span className="flex items-center gap-1.5 min-w-0">
-          <b className="tabular-nums" style={{ color: RANK_TINT(r.rank) }}>{r.rank}</b>
-          <span className="font-bold text-slate-100 truncate">{r.name}</span>
-          <DeltaTag delta={delta} />
-        </span>
-        <AnimatedNum value={r.total} className="font-black text-white text-[12px] tabular-nums flex-shrink-0" />
-      </div>
-      <div className="h-[18px] rounded-l-full rounded-r-md" style={{ background: "rgba(255,255,255,.04)" }}>
-        <motion.div className="relative h-full rounded-l-full rounded-r-md flex items-center overflow-hidden"
-          initial={false} animate={{ width: `${w}%` }} transition={{ type: "spring", stiffness: 90, damping: 20 }}
-          style={{ background: `linear-gradient(270deg, ${col[0]}, ${col[1]})`, boxShadow: r.exact > 0 ? EXACT_GLOW : isMe ? "0 0 0 1.5px #7cadee, 0 0 14px rgba(124,173,238,.5)" : "none" }}>
-          <motion.div className="absolute left-0 top-0 bottom-0" initial={false} animate={{ width: `${(gain / w) * 100}%` }} transition={{ type: "spring", stiffness: 90, damping: 20 }}
-            style={{ background: "linear-gradient(90deg,#6ee7b7,#34d399)" }} />
-          <span className="relative z-[1] mr-auto ml-1.5 text-[10px] font-black text-slate-900 whitespace-nowrap" dir="ltr">
-            {r.night > 0 ? `+${pts(r.night)}` : ""}
-          </span>
-        </motion.div>
       </div>
     </motion.div>
   );
