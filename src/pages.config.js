@@ -55,6 +55,7 @@ import KnockoutBracket from './pages/KnockoutBracket';
 import MyStats from './pages/MyStats';
 import Predictions from './pages/Predictions';
 import PredictionsResults from './pages/PredictionsResults';
+import Replay from './pages/Replay';
 import RoundsList from './pages/RoundsList';
 import __Layout from './Layout.jsx';
 
@@ -68,6 +69,7 @@ export const PAGES = {
     "MyStats": MyStats,
     "Predictions": Predictions,
     "PredictionsResults": PredictionsResults,
+    "Replay": Replay,
     "RoundsList": RoundsList,
 }
 

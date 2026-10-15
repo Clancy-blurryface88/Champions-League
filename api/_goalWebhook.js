@@ -4,7 +4,8 @@
 //   score.changed  → correction push (goal ruled out by VAR) with the new count
 //   match.finished → once the night's last CL match ends, a summary push that
 //                    congratulates the exact-score hitters (by name if ≤3),
-//                    delivered at 23:59 Israel time.
+//                    delivered at 23:59 Israel time; opens that night's
+//                    replay (/Replay?date=).
 // Pushes go to every subscriber (no per-user targeting yet). Each push carries
 // an idempotency key, so GOAL's retries (and two matches finishing together)
 // never send the same push twice.
@@ -252,7 +253,7 @@ async function onFinished(fixtureId, mode, sendAfter, late = false) {
     const lastKickoff = new Date(Math.max(...night.map((f) => new Date(f.kickoffUtc).getTime())));
     sendAfter = ilEndOfNight(lastKickoff);
   }
-  return push({ heading: late ? '🏁 סיכום ערב ליגת האלופות של אתמול' : '🏁 ערב ליגת האלופות הסתיים!', body, url: `${SITE}/?open=leaderboard`, key: `night:${date}`, mode, sendAfter });
+  return push({ heading: late ? '🏁 סיכום ערב ליגת האלופות של אתמול' : '🏁 ערב ליגת האלופות הסתיים!', body, url: `${SITE}/Replay?date=${String(date).slice(0, 10)}`, key: `night:${date}`, mode, sendAfter });
 }
 
 async function readRaw(req) {

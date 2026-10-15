@@ -6,7 +6,7 @@ import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { User } from "@/api/entities";
 import { AiBrief } from "@/api/entities";
-import { ArrowLeft, Check, Lock, HelpCircle, Eye, Sparkles, ChevronDown, Dices } from "lucide-react";
+import { ArrowLeft, Check, Lock, HelpCircle, Eye, Sparkles, ChevronDown, Dices, History } from "lucide-react";
 import AiBriefModal from "@/components/AiBriefModal"; // ADDED Eye icon
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -1266,6 +1266,23 @@ export default function Predictions() {
 
       </div>
       </div>
+
+      {/* Round over → gold "replay" button in the same bottom bar as "send predictions" */}
+      {matches.length > 0 && matches.every((match) => match.is_finished) && (
+        <div className="absolute bottom-0 left-0 right-0 flex justify-center px-4 py-2 border-t border-white/[0.08] z-20 rounded-t-3xl" style={{ background: 'rgba(10,18,40,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)' }}>
+          <motion.button
+            onClick={() => navigate(createPageUrl(`Replay?round_id=${roundId}`))}
+            initial={{ opacity: 0, y: 16, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+            whileTap={{ scale: 0.96 }}
+            className="w-full max-w-sm flex items-center justify-center gap-2.5 px-8 py-3 rounded-2xl font-bold text-base text-yellow-400 border border-yellow-500/40 bg-yellow-500/5 hover:bg-yellow-500/10 hover:border-yellow-500/70 transition-colors"
+          >
+            <History className="w-5 h-5" />
+            <span>הילוך חוזר למחזור</span>
+          </motion.button>
+        </div>
+      )}
 
       {/* Submit Button — תמיד גלוי, מחוץ לאזור הגלילה */}
       {matches.some((match) => !isMatchLocked(match.match_date)) && (() => {

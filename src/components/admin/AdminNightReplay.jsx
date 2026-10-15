@@ -39,7 +39,10 @@ function gameClock(elapsed, end) {
 
 const RANK_TINT = (r) => (r === 1 ? "#7cadee" : r === 2 ? "#cbd5e1" : r === 3 ? "#d6923f" : "rgba(255,255,255,.35)");
 
-export default function AdminNightReplay() {
+// publicMode: the participants' page — "combo" layout only, no admin bits.
+// roundId limits the night chips to that round; initialDate (YYYY-MM-DD,
+// Israel date) opens that night, e.g. from the end-of-night push.
+export default function AdminNightReplay({ publicMode = false, roundId = null, initialDate = null }) {
   const [db, setDb] = useState(null);
   const [me, setMe] = useState(null);
   const [nightKey, setNightKey] = useState(null);
@@ -52,7 +55,8 @@ export default function AdminNightReplay() {
   const [flashKey, setFlashKey] = useState(null); // event id just reached → glow
   const [preds, setPreds] = useState(null); // matchId → userId → prediction
   // which of the 6 layouts — remembered per browser
-  const [layout, setLayout] = useState(() => { try { return localStorage.getItem("replayLayout") || "combo"; } catch { return "combo"; } });
+  const [savedLayout, setLayout] = useState(() => { try { return localStorage.getItem("replayLayout") || "combo"; } catch { return "combo"; } });
+  const layout = publicMode ? "combo" : savedLayout;
   const chooseLayout = (id) => { setLayout(id); try { localStorage.setItem("replayLayout", id); } catch { /* private mode */ } };
 
   // ── base data: matches, users, rounds ──────────────────────────────────────
@@ -68,11 +72,14 @@ export default function AdminNightReplay() {
     })();
   }, []);
 
-  // Finished nights, newest first.
+  // Played nights, newest first. A match counts once it's marked finished or
+  // kicked off 2.5h+ ago — so the end-of-night push link works even before
+  // the night's scores are calculated.
   const nights = useMemo(() => {
     if (!db) return [];
     const byDay = new Map();
-    db.matches.filter((m) => m.is_finished && m.match_date).forEach((m) => {
+    const played = (m) => m.match_date && (m.is_finished || Date.parse(m.match_date) < Date.now() - 2.5 * 3600e3);
+    db.matches.filter((m) => played(m) && (!roundId || m.round_id === roundId)).forEach((m) => {
       const k = ilDate(new Date(m.match_date));
       if (!byDay.has(k)) byDay.set(k, []);
       byDay.get(k).push(m);
@@ -81,9 +88,12 @@ export default function AdminNightReplay() {
       key: k, matches: list, first: new Date(list[0].match_date),
       round: db.rounds.find((r) => r.id === list[0].round_id)?.name || "",
     }));
-  }, [db]);
+  }, [db, roundId]);
 
-  useEffect(() => { if (!nightKey && nights.length) setNightKey(nights[0].key); }, [nights, nightKey]);
+  useEffect(() => {
+    if (nightKey || !nights.length) return;
+    setNightKey(nights.find((n) => n.key === initialDate)?.key || nights[0].key);
+  }, [nights, nightKey, initialDate]);
 
   // ── the chosen night: goal timeline + predictions ─────────────────────────
   useEffect(() => {
@@ -346,13 +356,15 @@ export default function AdminNightReplay() {
           <h2 className="text-2xl font-black text-white tracking-tight">🔁 הילוך חוזר</h2>
           <p className="text-slate-400 text-sm">איך הטבלה זזה לאורך ערב המשחקים</p>
         </div>
-        <span className="text-[11px] font-bold px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0" style={{ background: "rgba(192,132,252,.14)", color: "#d8b4fe", border: "1px solid rgba(192,132,252,.35)" }}>
-          תצוגה לאדמין בלבד
-        </span>
+        {!publicMode && (
+          <span className="text-[11px] font-bold px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0" style={{ background: "rgba(192,132,252,.14)", color: "#d8b4fe", border: "1px solid rgba(192,132,252,.35)" }}>
+            תצוגת אדמין
+          </span>
+        )}
       </div>
 
-      {/* layout switcher */}
-      <div className="flex gap-1.5 overflow-x-auto pb-2 mb-2" style={{ scrollbarWidth: "none" }}>
+      {/* layout switcher (admin only) */}
+      {!publicMode && <div className="flex gap-1.5 overflow-x-auto pb-2 mb-2" style={{ scrollbarWidth: "none" }}>
         {LAYOUTS.map((l, i) => (
           <button key={l.id} onClick={() => chooseLayout(l.id)}
             className="flex-shrink-0 rounded-lg px-2.5 py-1.5 text-[12px] font-bold transition-all"
@@ -364,7 +376,7 @@ export default function AdminNightReplay() {
             <span className="opacity-60 ml-1 tabular-nums">{i + 1}</span>{l.label}
           </button>
         ))}
-      </div>
+      </div>}
 
       {/* nights */}
       <div className="flex gap-2 overflow-x-auto pb-2 mb-2" style={{ scrollbarWidth: "none" }}>
@@ -807,22 +819,25 @@ function TableHead() {
   );
 }
 
+// Exact hit right now → the card glows green (no icon, no extra width).
+const EXACT_GLOW = "0 0 0 1px rgba(52,211,153,.85), 0 0 12px rgba(52,211,153,.55)";
+const NO_GLOW = "0 0 0 0px rgba(52,211,153,0), 0 0 0px rgba(52,211,153,0)";
+
 function Row({ r, isMe, delta, hot }) {
+  const glow = r.exact > 0 ? EXACT_GLOW : NO_GLOW;
   return (
-    <motion.div layout transition={{ layout: { type: "spring", stiffness: 140, damping: 22 } }}
-      animate={hot ? { boxShadow: ["0 0 0 rgba(52,211,153,0)", "0 0 16px rgba(52,211,153,.55)", "0 0 0 rgba(52,211,153,0)"] } : {}}
+    <motion.div layout initial={false}
+      transition={{ layout: { type: "spring", stiffness: 140, damping: 22 }, boxShadow: { duration: hot ? 0.9 : 0.4 } }}
+      animate={{ boxShadow: hot ? [glow, "0 0 0 1px rgba(52,211,153,.9), 0 0 22px rgba(52,211,153,.8)", glow] : glow }}
       className="relative mb-1 rounded-lg overflow-hidden"
       style={{
         background: isMe ? "linear-gradient(90deg,rgba(124,173,238,.22),rgba(124,173,238,.06))" : r.rank <= 3 ? "rgba(255,255,255,.055)" : "rgba(30,41,59,.55)",
-        border: `1px solid ${isMe ? "rgba(124,173,238,.6)" : r.rank <= 3 ? `${RANK_TINT(r.rank)}66` : "rgba(255,255,255,.06)"}`,
+        border: `1px solid ${r.exact > 0 ? "rgba(52,211,153,.8)" : isMe ? "rgba(124,173,238,.6)" : r.rank <= 3 ? `${RANK_TINT(r.rank)}66` : "rgba(255,255,255,.06)"}`,
+        transition: "border-color .4s",
       }}>
       <div className="flex items-center gap-1.5 px-2 py-1.5">
         <span className="w-4 text-center font-black text-[14px] tabular-nums" style={{ color: RANK_TINT(r.rank) }}>{r.rank}</span>
-        <span className="flex-1 min-w-0 flex items-center gap-1">
-          <span className="truncate min-w-[2.25rem] text-[13px] font-semibold text-slate-100">{r.name}</span>
-          {isMe && <span className="text-sky-300 text-[10px] font-bold flex-shrink-0">(את/ה)</span>}
-          {r.exact > 0 && <span className="text-[10px] flex-shrink-0 tabular-nums">🎯{r.exact > 1 ? <sub className="text-emerald-300 font-bold">{r.exact}</sub> : null}</span>}
-        </span>
+        <span className="flex-1 min-w-0 truncate text-[13px] font-semibold text-slate-100">{r.name}</span>
         <AnimatedNum value={r.night} className={`w-10 text-left text-[11px] font-bold tabular-nums ${r.night > 0 ? "text-emerald-300" : "text-slate-500"}`} prefix={r.night > 0 ? "+" : ""} />
         <AnimatedNum value={r.total} className="w-11 text-left text-[13px] font-black text-white tabular-nums" />
         <span className="w-7 flex justify-end"><DeltaTag delta={delta} /></span>
@@ -842,7 +857,6 @@ function RaceBar({ r, isMe, delta, scale }) {
         <span className="flex items-center gap-1.5 min-w-0">
           <b className="tabular-nums" style={{ color: RANK_TINT(r.rank) }}>{r.rank}</b>
           <span className="font-bold text-slate-100 truncate">{r.name}</span>
-          {isMe && <span className="text-sky-300 text-[10px] font-bold">(את/ה)</span>}
           <DeltaTag delta={delta} />
         </span>
         <AnimatedNum value={r.total} className="font-black text-white text-[12px] tabular-nums flex-shrink-0" />
@@ -850,11 +864,11 @@ function RaceBar({ r, isMe, delta, scale }) {
       <div className="h-[18px] rounded-l-full rounded-r-md" style={{ background: "rgba(255,255,255,.04)" }}>
         <motion.div className="relative h-full rounded-l-full rounded-r-md flex items-center overflow-hidden"
           initial={false} animate={{ width: `${w}%` }} transition={{ type: "spring", stiffness: 90, damping: 20 }}
-          style={{ background: `linear-gradient(270deg, ${col[0]}, ${col[1]})`, boxShadow: isMe ? "0 0 0 1.5px #7cadee, 0 0 14px rgba(124,173,238,.5)" : "none" }}>
+          style={{ background: `linear-gradient(270deg, ${col[0]}, ${col[1]})`, boxShadow: r.exact > 0 ? EXACT_GLOW : isMe ? "0 0 0 1.5px #7cadee, 0 0 14px rgba(124,173,238,.5)" : "none" }}>
           <motion.div className="absolute left-0 top-0 bottom-0" initial={false} animate={{ width: `${(gain / w) * 100}%` }} transition={{ type: "spring", stiffness: 90, damping: 20 }}
             style={{ background: "linear-gradient(90deg,#6ee7b7,#34d399)" }} />
           <span className="relative z-[1] mr-auto ml-1.5 text-[10px] font-black text-slate-900 whitespace-nowrap" dir="ltr">
-            {r.night > 0 ? `+${pts(r.night)}` : ""}{r.exact > 0 ? ` ${"🎯".repeat(Math.min(r.exact, 3))}` : ""}
+            {r.night > 0 ? `+${pts(r.night)}` : ""}
           </span>
         </motion.div>
       </div>
