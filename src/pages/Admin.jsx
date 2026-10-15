@@ -24,6 +24,7 @@ import AdminGeneralQuestions from "../components/admin/AdminGeneralQuestions";
 import AdminHallOfFame from "../components/admin/AdminHallOfFame";
 import AdminFinishCheck from "../components/admin/AdminFinishCheck";
 import AdminSendPush from "../components/admin/AdminSendPush";
+import AdminOddsDesigns from "../components/admin/AdminOddsDesigns";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -90,6 +91,7 @@ export default function Admin() {
       case 'hall-of-fame': return <AdminHallOfFame />;
       case 'finish-check': return <AdminFinishCheck />;
       case 'send-push': return <AdminSendPush />;
+      case 'odds-designs': return <AdminOddsDesigns />;
       default: return <AdminRounds />;
     }
   };
@@ -112,6 +114,7 @@ export default function Admin() {
     { id: 'hall-of-fame', label: '👑 היכל התהילה', icon: Award },
     { id: 'finish-check', label: '🧪 בדיקת סיום משחקים', icon: ShieldCheck },
     { id: 'send-push', label: '📣 שליחת התראה', icon: Radio },
+    { id: 'odds-designs', label: '🎨 עיצובי יחסים', icon: Sparkles },
   ];
 
   return (

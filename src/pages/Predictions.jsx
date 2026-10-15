@@ -1278,8 +1278,8 @@ export default function Predictions() {
             whileTap={{ scale: 0.96 }}
             className="w-full max-w-sm flex items-center justify-center gap-2.5 px-8 py-3 rounded-2xl font-bold text-base text-yellow-400 border border-yellow-500/40 bg-yellow-500/5 hover:bg-yellow-500/10 hover:border-yellow-500/70 transition-colors"
           >
-            <History className="w-5 h-5" />
             <span>הילוך חוזר למחזור</span>
+            <History className="w-5 h-5" />
           </motion.button>
         </div>
       )}
@@ -1311,9 +1311,9 @@ export default function Predictions() {
                     <span>שולח...</span>
                   </>
                 ) : submitted ? (
-                  <span>✎ עדכן ניחושים</span>
+                  <span>עדכן ניחושים ✎</span>
                 ) : (
-                  <span>✓ שלח ניחושים</span>
+                  <span>שלח ניחושים ✓</span>
                 )}
               </motion.button>
             ) : (

@@ -431,9 +431,9 @@ function ImpactPills({ e, mm, preds, small }) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {inNow > 0
-        ? <span className={cls} style={{ background: "rgba(52,211,153,.18)", color: "#a7f3d0" }}>🎯 {inNow} על התוצאה</span>
+        ? <span className={cls} style={{ background: "rgba(52,211,153,.18)", color: "#a7f3d0" }}>{inNow} על התוצאה 🎯</span>
         : <span className={cls} style={{ background: "rgba(255,255,255,.07)", color: "#94a3b8" }}>אף אחד לא על התוצאה</span>}
-      {out > 0 && <span className={cls} style={{ background: "rgba(248,113,113,.15)", color: "#fecaca" }}>⬇ {out} יצאו ממנה</span>}
+      {out > 0 && <span className={cls} style={{ background: "rgba(248,113,113,.15)", color: "#fecaca" }}>{out} יצאו ממנה ⬇</span>}
     </div>
   );
 }
@@ -499,7 +499,7 @@ function IntroHero({ night, count, clock, compact }) {
       style={{ background: "radial-gradient(90% 90% at 50% 0%, rgba(124,173,238,.25), transparent 70%), linear-gradient(160deg,#101c3a,#0a1226 70%)" }}>
       <span className="text-[11px] text-slate-400 font-semibold">{night?.round} · {count} משחקים</span>
       <span className={`font-black text-white tabular-nums ${compact ? "text-2xl" : "text-4xl"}`} dir="ltr">{clock}</span>
-      <span className="text-[12px] leading-snug text-sky-200/80 px-4">▶ לחצו על הפעלה כדי לראות את הערב מתגלגל</span>
+      <span className="text-[12px] leading-snug text-sky-200/80 px-4">לחצו על הפעלה כדי לראות את הערב מתגלגל ▶</span>
     </motion.div>
   );
 }
@@ -519,8 +519,8 @@ function EndHero({ rows, startRank, single }) {
       style={{ background: "radial-gradient(90% 90% at 50% 0%, rgba(192,132,252,.35), transparent 70%), linear-gradient(160deg,#1d1440,#0a1226 70%)" }}>
       <div className="text-white font-black text-[17px]">{single ? "סיום המשחק" : "סיום הערב"} 🏁</div>
       <div className="grid grid-cols-2 gap-3 text-[12px]">
-        <div><span className="text-slate-400">{single ? "מלך המשחק" : "מלך הערב"}</span><div className="text-white font-bold">👑 {best?.name} <span className="text-emerald-300" dir="ltr">+{pts(best?.night || 0)}</span></div></div>
-        <div><span className="text-slate-400">הטיפוס הגדול</span><div className="text-white font-bold">🚀 {climb > 0 ? `${climber.name} ↑${climb}` : "אין שינוי"}</div></div>
+        <div><span className="text-slate-400">{single ? "מלך המשחק" : "מלך הערב"}</span><div className="text-white font-bold">{best?.name} 👑 <span className="text-emerald-300" dir="ltr">+{pts(best?.night || 0)}</span></div></div>
+        <div><span className="text-slate-400">הטיפוס הגדול</span><div className="text-white font-bold">{climb > 0 ? `${climber.name} ↑${climb}` : "אין שינוי"} 🚀</div></div>
       </div>
     </motion.div>
   );
