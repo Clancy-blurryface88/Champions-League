@@ -52,7 +52,7 @@ export default function AdminNightReplay() {
   const [flashKey, setFlashKey] = useState(null); // event id just reached → glow
   const [preds, setPreds] = useState(null); // matchId → userId → prediction
   // which of the 6 layouts — remembered per browser
-  const [layout, setLayout] = useState(() => { try { return localStorage.getItem("replayLayout") || "broadcast"; } catch { return "broadcast"; } });
+  const [layout, setLayout] = useState(() => { try { return localStorage.getItem("replayLayout") || "combo"; } catch { return "combo"; } });
   const chooseLayout = (id) => { setLayout(id); try { localStorage.setItem("replayLayout", id); } catch { /* private mode */ } };
 
   // ── base data: matches, users, rounds ──────────────────────────────────────
@@ -265,11 +265,11 @@ export default function AdminNightReplay() {
   const wide = ["table-col", "race-col", "feed"].includes(layout);
 
   // shared pieces, arranged differently by each layout
-  const hero = (height) => (
+  const hero = (height, narrow = false) => (
     <div className="relative rounded-2xl overflow-hidden" style={{ height, border: "1px solid rgba(52,211,153,.22)", background: "#070d1c" }}>
       <AnimatePresence mode="wait">
         {reachedEnd ? <EndHero key="end" rows={rows} startRank={model.startRank} />
-          : lastEvent ? <GoalHero key={lastEvent.id} e={lastEvent} mm={active.find((m) => m.id === lastEvent.matchId)} preds={preds.map} compact={height < 120} />
+          : lastEvent ? <GoalHero key={lastEvent.id} e={lastEvent} mm={active.find((m) => m.id === lastEvent.matchId)} preds={preds.map} compact={height < 120} narrow={narrow} />
           : <IntroHero key="pre" night={night} count={active.length} clock={clockText} compact={height < 120} />}
       </AnimatePresence>
     </div>
@@ -296,6 +296,14 @@ export default function AdminNightReplay() {
 
   const body = () => {
     switch (layout) {
+      // matches down the right, the table on the left with the latest goal
+      // filling the space under it — the whole night on one phone screen
+      case "combo": return (
+        <div className="grid gap-3 items-start" style={{ gridTemplateColumns: "104px minmax(0,1fr)" }}>
+          {column}
+          <div className="min-w-0 flex flex-col gap-3">{table}{hero(172, true)}</div>
+        </div>
+      );
       case "table-col": return (<>
         <div className="mb-3">{hero(96)}</div>
         <div className="grid gap-3" style={{ gridTemplateColumns: "minmax(0,1fr) 104px" }}>{table}{column}</div>
@@ -427,6 +435,7 @@ export default function AdminNightReplay() {
 }
 
 const LAYOUTS = [
+  { id: "combo", label: "משולב" },
   { id: "broadcast", label: "שידור + מרוץ" },
   { id: "table-col", label: "טבלה + טור משחקים" },
   { id: "race-col", label: "מרוץ + טור משחקים" },
@@ -503,7 +512,7 @@ function ImpactPills({ e, mm, preds, small }) {
   );
 }
 
-function GoalHero({ e, mm, preds, compact }) {
+function GoalHero({ e, mm, preds, compact, narrow }) {
   if (!mm) return null;
   const team = e.side === "a" ? mm.m.team_a : mm.m.team_b;
   return (
@@ -540,14 +549,16 @@ function GoalHero({ e, mm, preds, compact }) {
             <div className="text-[12px] text-emerald-100/75 font-semibold mt-1">{team.trim()}</div>
           </motion.div>
           <div className="flex-1" />
-          <div className="flex items-end justify-between gap-2 relative">
-            <ImpactPills e={e} mm={mm} preds={preds} />
+          {/* narrow: score on its own line, pills under it */}
+          <div className={`relative ${narrow ? "flex flex-col items-start gap-2" : "flex items-end justify-between gap-2"}`}>
+            {!narrow && <ImpactPills e={e} mm={mm} preds={preds} />}
             <motion.div initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 260, damping: 16, delay: 0.12 }}
               className="flex items-center gap-2 flex-shrink-0" dir="ltr">
-              <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-8 h-8" animate={false} />
-              <span className="font-black text-white text-[34px] tabular-nums leading-none">{e.a}-{e.b}</span>
-              <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-8 h-8" animate={false} />
+              <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className={narrow ? "w-6 h-6" : "w-8 h-8"} animate={false} />
+              <span className={`font-black text-white tabular-nums leading-none ${narrow ? "text-[26px]" : "text-[34px]"}`}>{e.a}-{e.b}</span>
+              <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className={narrow ? "w-6 h-6" : "w-8 h-8"} animate={false} />
             </motion.div>
+            {narrow && <ImpactPills e={e} mm={mm} preds={preds} small />}
           </div>
         </>
       )}
@@ -790,8 +801,8 @@ function DeltaTag({ delta }) {
 
 function TableHead() {
   return (
-    <div className="flex items-center gap-2 px-2 mb-1.5 text-[10px] text-slate-500 font-semibold">
-      <span className="w-5" /><span className="flex-1">משתתף</span><span className="w-11 text-left">הערב</span><span className="w-12 text-left">סה״כ</span><span className="w-8" />
+    <div className="flex items-center gap-1.5 px-2 mb-1.5 text-[10px] text-slate-500 font-semibold">
+      <span className="w-4" /><span className="flex-1">משתתף</span><span className="w-10 text-left">הערב</span><span className="w-11 text-left">סה״כ</span><span className="w-7" />
     </div>
   );
 }
@@ -805,16 +816,16 @@ function Row({ r, isMe, delta, hot }) {
         background: isMe ? "linear-gradient(90deg,rgba(124,173,238,.22),rgba(124,173,238,.06))" : r.rank <= 3 ? "rgba(255,255,255,.055)" : "rgba(30,41,59,.55)",
         border: `1px solid ${isMe ? "rgba(124,173,238,.6)" : r.rank <= 3 ? `${RANK_TINT(r.rank)}66` : "rgba(255,255,255,.06)"}`,
       }}>
-      <div className="flex items-center gap-2 px-2 py-1.5">
-        <span className="w-5 text-center font-black text-[14px] tabular-nums" style={{ color: RANK_TINT(r.rank) }}>{r.rank}</span>
+      <div className="flex items-center gap-1.5 px-2 py-1.5">
+        <span className="w-4 text-center font-black text-[14px] tabular-nums" style={{ color: RANK_TINT(r.rank) }}>{r.rank}</span>
         <span className="flex-1 min-w-0 flex items-center gap-1">
-          <span className="truncate text-[13px] font-semibold text-slate-100">{r.name}</span>
+          <span className="truncate min-w-[2.25rem] text-[13px] font-semibold text-slate-100">{r.name}</span>
           {isMe && <span className="text-sky-300 text-[10px] font-bold flex-shrink-0">(את/ה)</span>}
-          {r.exact > 0 && <span className="text-[10px] flex-shrink-0">{"🎯".repeat(Math.min(r.exact, 3))}</span>}
+          {r.exact > 0 && <span className="text-[10px] flex-shrink-0 tabular-nums">🎯{r.exact > 1 ? <sub className="text-emerald-300 font-bold">{r.exact}</sub> : null}</span>}
         </span>
-        <AnimatedNum value={r.night} className={`w-11 text-left text-[11px] font-bold tabular-nums ${r.night > 0 ? "text-emerald-300" : "text-slate-500"}`} prefix={r.night > 0 ? "+" : ""} />
-        <AnimatedNum value={r.total} className="w-12 text-left text-[13px] font-black text-white tabular-nums" />
-        <span className="w-8 flex justify-end"><DeltaTag delta={delta} /></span>
+        <AnimatedNum value={r.night} className={`w-10 text-left text-[11px] font-bold tabular-nums ${r.night > 0 ? "text-emerald-300" : "text-slate-500"}`} prefix={r.night > 0 ? "+" : ""} />
+        <AnimatedNum value={r.total} className="w-11 text-left text-[13px] font-black text-white tabular-nums" />
+        <span className="w-7 flex justify-end"><DeltaTag delta={delta} /></span>
       </div>
     </motion.div>
   );
