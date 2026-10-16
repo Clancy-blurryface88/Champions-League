@@ -19,6 +19,25 @@ const parseOrder = (orderBy = 'created_at') => {
 };
 
 // ============================================
+// HELPER - טעינה בחלקים
+// Supabase מחזיר עד 1,000 שורות לבקשה, ובלי שום שגיאה אם יש יותר.
+// כאן מבקשים חלק אחרי חלק (range) עד שחוזר חלק לא מלא, ומחברים הכל.
+// מיון משני לפי id כדי שהחלוקה לחלקים תהיה יציבה (בלי כפילויות או חוסרים
+// כשלכמה שורות יש אותו created_at).
+// ============================================
+const PAGE_SIZE = 1000;
+
+const fetchAllPages = async (buildQuery, pageSize = PAGE_SIZE) => {
+  const rows = [];
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await buildQuery().range(from, from + pageSize - 1);
+    if (error) throw error;
+    rows.push(...data);
+    if (data.length < pageSize) return rows;
+  }
+};
+
+// ============================================
 // HELPER - מחזיר את המשתמש המחובר כרגע
 // ============================================
 const getCurrentUser = async () => {
@@ -261,14 +280,14 @@ export const Match = {
 // PREDICTION ENTITY
 // ============================================
 export const Prediction = {
-  list: async (orderBy = '-created_at') => {
+  // כל הניחושים, בחלקים של 1,000 (pageSize רק לבדיקות)
+  list: async (orderBy = '-created_at', { pageSize = PAGE_SIZE } = {}) => {
     const { column, ascending } = parseOrder(orderBy);
-    const { data, error } = await supabase
+    return fetchAllPages(() => supabase
       .from('predictions')
       .select('*')
-      .order(column, { ascending });
-    if (error) throw error;
-    return data;
+      .order(column, { ascending })
+      .order('id', { ascending: true }), pageSize);
   },
 
   filter: async (filters) => {
