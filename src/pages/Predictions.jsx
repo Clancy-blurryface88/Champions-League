@@ -1199,8 +1199,8 @@ export default function Predictions() {
                           animation: 'arena-glow-pulse 1.8s ease-in-out infinite',
                         }}
                       >
-                        <img src="/champions/arena-stadium.png" alt="" className="w-4 h-4 object-contain" />
                         <span style={{ animation: 'arena-text-glow 1.8s ease-in-out infinite' }}>זירת המשחק</span>
+                        <img src="/champions/arena-stadium.png" alt="" className="w-4 h-4 object-contain" />
                       </button>
                     </div>
 
