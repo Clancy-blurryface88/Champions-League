@@ -124,7 +124,7 @@ function Market({ title, items }) {
   const p = probOf(items);
   return (
     <div>
-      <div className="mb-1.5"><Skew bg="rgba(255,255,255,.12)">{title}</Skew></div>
+      <div className="mb-1.5 text-center"><Skew bg="rgba(255,255,255,.12)">{title}</Skew></div>
       <div className="flex gap-1">
         {items.map(([label, v], i) => (
           <div key={label} className="flex-1 text-center py-2" style={{ background: "rgba(255,255,255,.06)", transform: "skewX(-6deg)" }}>
