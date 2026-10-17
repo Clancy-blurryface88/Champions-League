@@ -59,7 +59,9 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
               exit={{ rotateX: 90, opacity: 0 }}
               transition={{ duration: 0.26, ease: 'easeOut' }}
               style={{
-                fontFamily: "'Bebas Neue', sans-serif",
+                // digits in Karantina (bold); the "?" placeholder keeps Bebas Neue
+                fontFamily: isUndefined ? "'Bebas Neue', sans-serif" : "'Karantina', sans-serif",
+                fontWeight: isUndefined ? undefined : 700,
                 display: 'inline-block',
                 ...(isUndefined ? {
                   backgroundImage: 'linear-gradient(135deg, #bbf7d0 0%, #4ade80 100%)',
