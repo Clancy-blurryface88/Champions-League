@@ -1274,7 +1274,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                 </span>
                 <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-6 h-6" rounded="sm" />
               </span>
-              <span className="truncate text-right text-white font-medium text-sm" dir="rtl">
+              <span className="truncate text-right text-white" dir="rtl" style={{ fontFamily: "'Fredoka', sans-serif", fontWeight: 600, fontSize: 15.5 }}>
                 {getUserDisplayName(prediction.user_id)}
               </span>
             </button>
