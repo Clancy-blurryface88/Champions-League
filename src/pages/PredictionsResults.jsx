@@ -1258,28 +1258,6 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
             }}
             className="relative">
 
-            {/* Shockwave ring — רק על המוביל */}
-            {index === 0 && shockwaveActive && (
-              <>
-                <motion.div
-                  key="ring1"
-                  initial={{ opacity: 0.8, scale: 1 }}
-                  animate={{ opacity: 0, scale: 2.2 }}
-                  transition={{ duration: 0.9, ease: 'easeOut' }}
-                  className="absolute inset-0 rounded-lg pointer-events-none"
-                  style={{ border: '2px solid rgba(9, 122, 220,0.7)', zIndex: 10 }}
-                />
-                <motion.div
-                  key="ring2"
-                  initial={{ opacity: 0.5, scale: 1 }}
-                  animate={{ opacity: 0, scale: 1.8 }}
-                  transition={{ duration: 0.7, delay: 0.15, ease: 'easeOut' }}
-                  className="absolute inset-0 rounded-lg pointer-events-none"
-                  style={{ border: '2px solid rgba(9, 122, 220,0.4)', zIndex: 10 }}
-                />
-              </>
-            )}
-
             {/* Cascade glow על כל הקלפים מתחת */}
             {shockwaveActive && (
               <motion.div
