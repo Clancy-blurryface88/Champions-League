@@ -162,15 +162,16 @@ function FormTab({ match, formA, formB }) {
   return (
     <div className="space-y-3" dir="ltr">
       <div className="flex gap-2">
-        <TeamHeaderCard logo={match.team_a_logo} name={match.team_a} avgGoals={formA.avgGoals} avgConceded={formA.avgConceded} />
+        {/* away on the left, home (team_a) on the right — same as the header plates */}
         <TeamHeaderCard logo={match.team_b_logo} name={match.team_b} avgGoals={formB.avgGoals} avgConceded={formB.avgConceded} />
+        <TeamHeaderCard logo={match.team_a_logo} name={match.team_a} avgGoals={formA.avgGoals} avgConceded={formA.avgConceded} />
       </div>
       <div className="space-y-1.5">
         {rows.map((r) => (
           <div key={r.md} className="flex items-center justify-center gap-1.5">
-            <FormCell item={r.a} />
+            <FormCell item={r.b} />
             <span className="w-11 flex-shrink-0 text-center text-[9.5px] text-slate-500 leading-tight" dir="rtl">מחזור<br />{r.md}</span>
-            <FormCell item={r.b} mirror />
+            <FormCell item={r.a} mirror />
           </div>
         ))}
       </div>
@@ -211,9 +212,9 @@ function OddsTab({ match }) {
     <div className="space-y-5">
       {probs && (
         <div className="flex gap-2" dir="ltr">
-          <ProbSquare label={match.team_a} logo={match.team_a_logo} pct={probs.home} best={probs.home === best} />
-          <ProbSquare label="תיקו" pct={probs.draw} best={probs.draw === best} />
           <ProbSquare label={match.team_b} logo={match.team_b_logo} pct={probs.away} best={probs.away === best} />
+          <ProbSquare label="תיקו" pct={probs.draw} best={probs.draw === best} />
+          <ProbSquare label={match.team_a} logo={match.team_a_logo} pct={probs.home} best={probs.home === best} />
         </div>
       )}
 
@@ -363,8 +364,8 @@ function AllCompsFormTab({ match, a, b }) {
       <Segmented value={venue} onChange={setVenue} options={[['all', 'הכל'], ['home', 'בית'], ['away', 'חוץ']]} />
       <div dir="ltr" className="space-y-3">
         <div className="flex gap-2">
-          <TeamHeaderCard logo={match.team_a_logo} name={match.team_a} avgGoals={sa.avgGoals} avgConceded={sa.avgConceded} />
           <TeamHeaderCard logo={match.team_b_logo} name={match.team_b} avgGoals={sb.avgGoals} avgConceded={sb.avgConceded} />
+          <TeamHeaderCard logo={match.team_a_logo} name={match.team_a} avgGoals={sa.avgGoals} avgConceded={sa.avgConceded} />
         </div>
         {(a.loading || b.loading) && !n
           ? <p className="text-center text-[11px] text-slate-500 py-4 animate-pulse">טוען...</p>
@@ -374,8 +375,8 @@ function AllCompsFormTab({ match, a, b }) {
               <div className="space-y-1.5">
                 {Array.from({ length: n }, (_, j) => (
                   <div key={j} className="flex items-center justify-center gap-1.5">
-                    <AllCompsCell item={ga[j]} />
-                    <AllCompsCell item={gb[j]} mirror />
+                    <AllCompsCell item={gb[j]} />
+                    <AllCompsCell item={ga[j]} mirror />
                   </div>
                 ))}
               </div>

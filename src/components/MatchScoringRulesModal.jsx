@@ -307,7 +307,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
                   {tab === "sim" && (
                     <div>
                       <div className="mb-2"><Skew>סימולטור · כמה שווה הניחוש שלך</Skew></div>
-                      <div key={m.id} className="flex items-center justify-center gap-3 py-3" dir="ltr" style={{ background: "rgba(255,255,255,.04)", borderTop: `3px solid ${CY}` }}>
+                      <div key={m.id} className="flex items-center justify-center gap-3 py-3" dir="rtl" style={{ background: "rgba(255,255,255,.04)", borderTop: `3px solid ${CY}` }}>
                         <div className="flex flex-col items-center gap-1 min-w-0" style={{ width: SZ.logo + 28 }}>
                           <TeamFlag logo={m.team_a_logo} name={m.team_a} size={SZ.logo} animate={false} />
                           <span className="font-bold text-center leading-tight line-clamp-2" style={{ fontSize: SZ.name }}>{m.team_a}</span>
