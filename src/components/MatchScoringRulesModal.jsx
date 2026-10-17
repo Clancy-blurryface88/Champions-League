@@ -1,12 +1,20 @@
 import TeamFlag from "@/components/TeamFlag";
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { getTeamColor } from "@/utils/teamColors";
 import { useModalBackButton } from "@/hooks/useModalBackButton";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Target, Trophy, Zap, Goal, ArrowLeft, Calculator } from "lucide-react";
-import { ShineBorder } from "@/components/magicui/shine-border";
 import OdometerValue from "@/components/OdometerValue";
 import { motion, AnimatePresence } from "framer-motion";
+
+// 1X2 panel in the "broadcast" look: the match card grows into a full-screen
+// panel (and shrinks back on close), three tabs — simulator, markets, exact
+// score (with a "draw diagonal" view). Numbers are Teko.
+
+const CY = "#00e0ff", MG = "#ff2e88", INK = "#070822", MUTED = "#9aa3d6";
+const NUM = "'Teko', sans-serif";
+const NUM_W = 0.46; // odometer cell width ÷ height for Teko digits
+const PANEL_BG = "linear-gradient(170deg,#1a1d5c 0%,#0d0f2e 40%,#070822 100%)";
+const EASE = [0.2, 0.8, 0.2, 1];
 
 function calcSimPoints(match, a, b) {
   if (a === null || b === null) return null;
@@ -88,27 +96,99 @@ function ScoreWheel({ value, onChange }) {
   );
 }
 
-// Tab bar: a coloured copy of the row is clip-path'ed to the active tab, so
-// the highlight slides with a perfect colour transition. Rectangular.
-function ClipTabs({ tabs, active, onChange }) {
-  const i = Math.max(0, tabs.findIndex((t) => t.id === active));
-  const step = 100 / tabs.length;
-  // RTL: tab 0 sits on the right
-  const clip = `inset(0 ${i * step}% 0 ${(tabs.length - 1 - i) * step}% round 8px)`;
-  const Row = ({ on }) => (
-    <div className={`flex rounded-lg ${on ? "bg-sky-500 text-white" : "text-slate-400"}`}>
-      {tabs.map((t) => (
-        <button key={t.id} type="button" onClick={() => onChange(t.id)} className="flex-1 py-2 text-[11px] font-semibold flex items-center justify-center gap-1">
-          <t.icon className="w-3.5 h-3.5" />{t.label}
-        </button>
+// 2 → 0 decimals, 1.5 → 1, 2.35 → 2 — so the odometer shows the value as-is.
+const decimalsOf = (v) => Math.min(2, (String(v ?? '').split('.')[1] || '').length);
+
+const Skew = ({ children, bg = MG, color = "#fff", deg = 12 }) => (
+  <span className="inline-block font-black text-[11px] px-2.5 py-0.5" style={{ background: bg, color, transform: `skewX(-${deg}deg)` }}>
+    <span className="inline-block" style={{ transform: `skewX(${deg}deg)` }}>{children}</span>
+  </span>
+);
+
+// Odometer roll (same effect as the tables) in the broadcast number font.
+const Odo = ({ v, h = 28, color = "#fff" }) => (
+  <span dir="ltr" style={{ color, fontFamily: NUM, fontWeight: 700, fontSize: h }}>
+    <OdometerValue target={Number(v) || 0} decimals={decimalsOf(v)} height={h} width={Math.round(h * NUM_W)} />
+  </span>
+);
+
+// implied probability inside one market (1/points, normalised)
+const probOf = (items) => {
+  const inv = items.map(([, v]) => (v > 0 ? 1 / v : 0));
+  const s = inv.reduce((a, b) => a + b, 0) || 1;
+  return inv.map((x) => Math.round((x / s) * 100));
+};
+
+function Market({ title, items }) {
+  const p = probOf(items);
+  return (
+    <div>
+      <div className="mb-1.5"><Skew bg="rgba(255,255,255,.12)">{title}</Skew></div>
+      <div className="flex gap-1">
+        {items.map(([label, v], i) => (
+          <div key={label} className="flex-1 text-center py-2" style={{ background: "rgba(255,255,255,.06)", transform: "skewX(-6deg)" }}>
+            <div style={{ transform: "skewX(6deg)" }}>
+              <Odo v={v} h={30} />
+              <div className="text-[11px] font-bold">{label}</div>
+              <span className="inline-block mt-1 px-1.5 text-[10px] font-black" style={{ background: CY, color: "#06102b" }}>{p[i]}%</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ExactColumns({ scores }) {
+  const cols = [
+    ["1", (s) => s.a > s.b, "#34d399", (x, y) => (x.a + x.b) - (y.a + y.b) || x.a - y.a],
+    ["X", (s) => s.a === s.b, "#facc15", (x, y) => x.a - y.a],
+    ["2", (s) => s.a < s.b, CY, (x, y) => (x.a + x.b) - (y.a + y.b) || x.b - y.b],
+  ];
+  return (
+    <div className="grid grid-cols-3 gap-1.5">
+      {cols.map(([label, filter, color, sort]) => (
+        <div key={label}>
+          <div className="text-center mb-1"><Skew bg={label === "X" ? MG : "rgba(255,255,255,.12)"}>{label}</Skew></div>
+          <div className="space-y-1">
+            {scores.filter(filter).sort(sort).map((s) => (
+              <div key={s.k} className="flex justify-between items-center px-2 py-1" style={{ background: "rgba(255,255,255,.05)", borderInlineStart: `3px solid ${color}` }}>
+                <span className="text-[17px] leading-none" style={{ fontFamily: NUM, fontWeight: 700, color }}>{s.v}</span>
+                <span className="text-white/75 text-xs font-bold" dir="ltr">{s.a}:{s.b}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       ))}
     </div>
   );
+}
+
+function ExactDiagonal({ scores, match }) {
+  const N = Math.min(6, Math.max(5, ...scores.map((s) => Math.max(s.a, s.b) + 1)));
+  const at = (a, b) => scores.find((s) => s.a === a && s.b === b);
   return (
-    <div className="relative rounded-lg bg-white/5 border border-white/10" dir="rtl">
-      <Row />
-      <div className="absolute inset-0" style={{ clipPath: clip, transition: "clip-path 260ms cubic-bezier(0.23,1,0.32,1)" }} aria-hidden>
-        <Row on />
+    <div>
+      <div className="flex justify-between text-[10px] font-bold mb-1" style={{ color: MUTED }} dir="ltr">
+        <span>↓ {match.team_a}</span><span>{match.team_b} →</span>
+      </div>
+      <div className="grid gap-[3px]" dir="ltr" style={{ gridTemplateColumns: `repeat(${N},1fr)` }}>
+        {[...Array(N)].flatMap((_, a) => [...Array(N)].map((_, b) => {
+          const s = at(a, b), d = a === b;
+          return (
+            <div key={`${a}:${b}`} className="text-center py-1.5" style={{ background: d ? MG : a > b ? "rgba(0,224,255,.16)" : "rgba(255,255,255,.05)", transform: "skewX(-6deg)" }}>
+              <div style={{ transform: "skewX(6deg)" }}>
+                <div className="text-[10px] font-bold text-white/70">{a}:{b}</div>
+                <div className="text-[18px] leading-none" style={{ fontFamily: NUM, fontWeight: 700 }}>{s ? s.v : "–"}</div>
+              </div>
+            </div>
+          );
+        }))}
+      </div>
+      <div className="flex justify-between text-[10px] font-bold mt-2">
+        <span style={{ color: CY }}>■ {match.team_a} מנצחת</span>
+        <span style={{ color: MG }}>■ תיקו</span>
+        <span className="text-white/60">■ {match.team_b} מנצחת</span>
       </div>
     </div>
   );
@@ -121,324 +201,191 @@ const tabSwap = {
   transition: { duration: 0.18, ease: [0.23, 1, 0.32, 1] },
 };
 
-const CARD_THEMES = {
-  emerald:     { text: "text-emerald-400", bg: "bg-emerald-500/8" },
-  blue:        { text: "text-blue-400",    bg: "bg-blue-500/8" },
-  rose:        { text: "text-rose-400",    bg: "bg-rose-500/8" },
-  sky:         { text: "text-sky-400",     bg: "bg-sky-500/8" },
-  amber:       { text: "text-sky-400",   bg: "bg-sky-500/8" },
-  muted:       { text: "text-slate-300",   bg: "bg-white/2" },
-  gold:        { text: "text-sky-400",   bg: "bg-sky-500/8" },
-  'blue-grad': { text: "text-blue-400",    bg: "bg-blue-500/8" },
-};
+// clip-path that covers exactly the given screen rect (the match card)
+const clipFor = (r) => r
+  ? `inset(${r.top}px ${window.innerWidth - r.right}px ${window.innerHeight - r.bottom}px ${r.left}px round 18px)`
+  : "inset(8% 6% 8% 6% round 18px)";
 
-// 2 → 0 decimals, 1.5 → 1, 2.35 → 2 — so the odometer shows the value as-is.
-const decimalsOf = (v) => Math.min(2, (String(v ?? '').split('.')[1] || '').length);
-
-function SegmentedGroup({ items, delay = 60 }) {
-  return (
-    <div
-      className="relative flex rounded-xl overflow-hidden border border-white/10 animate-in fade-in slide-in-from-bottom-2"
-      style={{ animationDuration: "220ms", animationFillMode: "both", animationTimingFunction: "cubic-bezier(0.23,1,0.32,1)", animationDelay: `${delay}ms` }}
-    >
-      <ShineBorder
-        borderRadius={12}
-        borderWidth={1.5}
-        duration={12}
-        shineColor={["#097adc", "#ffffff", "#097adc", "#ffffff"]}
-      />
-      {items.map((item, i) => {
-        const t = CARD_THEMES[item.theme || "muted"];
-        return (
-          <React.Fragment key={item.label}>
-            {i > 0 && <div className="w-px flex-shrink-0 bg-gradient-to-b from-transparent via-white/20 to-transparent self-stretch" />}
-            <div className={`flex flex-col items-center gap-1 py-3.5 flex-1 ${t.bg}`}>
-              {/* Odometer roll (same effect as the tables). Solid colour — a
-                  gradient clipped to text doesn't survive the rolling strips. */}
-              <span
-                className={`text-2xl font-bold tabular-nums leading-none ${
-                  item.theme === 'rose' ? 'text-rose-400' : item.theme === 'emerald' ? 'text-emerald-400' : 'text-sky-300'
-                }`}
-                dir="ltr"
-              >
-                <OdometerValue target={Number(item.pts) || 0} decimals={decimalsOf(item.pts)} height={26} width={14} />
-              </span>
-              <span className={`text-[11px] font-medium text-center leading-tight px-1 mt-0.5 ${
-                  item.theme === 'rose'    ? 'bg-gradient-to-br from-rose-400 to-red-600 bg-clip-text text-transparent' :
-                  item.theme === 'emerald' ? 'bg-gradient-to-br from-green-400 to-emerald-500 bg-clip-text text-transparent' :
-                  'bg-gradient-to-br from-sky-400 to-white bg-clip-text text-transparent'
-              }`}>{item.label}</span>
-            </div>
-          </React.Fragment>
-        );
-      })}
-    </div>
-  );
-}
-
-function SectionLabel({ title, icon: Icon, color }) {
-  return (
-    <div className={`flex items-center justify-center gap-1.5 ${color}`}>
-      {Icon && <Icon className="w-3.5 h-3.5 opacity-80" />}
-      <span className="text-[10px] uppercase tracking-[0.12em] font-semibold">{title}</span>
-    </div>
-  );
-}
-
-function Divider() {
-  return <div className="h-px bg-white/5" />;
-}
-
-export default function MatchScoringRulesModal({ isOpen, onClose, match }) {
+export default function MatchScoringRulesModal({ isOpen, onClose, match, originRect }) {
   // Both wheels start on "–"; the points breakdown opens once both are picked.
   const [simA, setSimA] = useState(null);
   const [simB, setSimB] = useState(null);
   const [tab, setTab] = useState("sim");
+  const [diag, setDiag] = useState(false);
+  const shown = useRef(null); // keeps the match while the close animation runs
 
+  // reset for a newly opened match (not on close, so the panel doesn't jump while it shrinks)
   useEffect(() => {
+    if (!match) return;
     setSimA(null);
     setSimB(null);
     setTab("sim");
+    setDiag(false);
   }, [match?.id]);
 
   useModalBackButton(isOpen, onClose);
 
-  if (!match) return null;
+  useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e) => e.key === "Escape" && onClose?.();
+    window.addEventListener("keydown", onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener("keydown", onKey); };
+  }, [isOpen, onClose]);
 
-  const hasOdds = match.score_odds && Object.keys(match.score_odds).length > 0;
-  const sim = calcSimPoints(match, simA, simB);
+  if (match) shown.current = { match, originRect };
+  const m = match || shown.current?.match;
+  const rect = (match ? originRect : shown.current?.originRect) || null;
+  if (!m) return null;
+
+  const hasOdds = m.score_odds && Object.keys(m.score_odds).length > 0;
+  const sim = calcSimPoints(m, simA, simB);
   const tabs = [
-    { id: "sim", label: "סימולטור", icon: Calculator },
-    { id: "markets", label: "יחסים", icon: Trophy },
-    ...(hasOdds ? [{ id: "exact", label: "תוצאה מדויקת", icon: Target }] : []),
+    ["sim", "סימולטור"],
+    ["markets", "יחסים"],
+    ...(hasOdds ? [["exact", "תוצאה מדויקת"]] : []),
   ];
+  const scores = hasOdds
+    ? Object.entries(m.score_odds).filter(([k]) => k !== "other").map(([k, v]) => { const [a, b] = k.split(":").map(Number); return { k, a, b, v }; })
+    : [];
+  const colorA = getTeamColor(m.team_a), colorB = getTeamColor(m.team_b);
 
-  const oddsColumns = [
-    {
-      label: '1',
-      filter: ([s]) => { if (s === 'other') return false; const [h, a] = s.split(':').map(Number); return h > a; },
-      sort: ([ka], [kb]) => { const [ah, aa] = ka.split(':').map(Number); const [bh, ba] = kb.split(':').map(Number); return (ah + aa) - (bh + ba) || ah - bh; },
-    },
-    {
-      label: 'X',
-      filter: ([s]) => { if (s === 'other') return false; const [h, a] = s.split(':').map(Number); return h === a; },
-      sort: ([ka], [kb]) => ka.split(':').map(Number)[0] - kb.split(':').map(Number)[0],
-    },
-    {
-      label: '2',
-      filter: ([s]) => { if (s === 'other') return false; const [h, a] = s.split(':').map(Number); return h < a; },
-      sort: ([ka], [kb]) => { const [ah, aa] = ka.split(':').map(Number); const [bh, ba] = kb.split(':').map(Number); return (ah + aa) - (bh + ba) || aa - ba; },
-    },
-  ];
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-[#0d1526] text-white p-0 fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-2xl border border-white/8 max-w-sm w-full max-h-[85vh] overflow-hidden flex flex-col [&>button:last-child]:hidden">
-
-        {/* Sticky header: close button + teams */}
-        <div className="flex-shrink-0">
-          {/* Close button */}
-          <div className="px-5 pt-4 pb-3 flex items-center">
-            <button
-              onClick={onClose}
-              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 backdrop-blur-sm text-white/70 hover:text-white transition-all">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Teams — dynamic banner gradient from flag colors */}
-          {(() => {
-            const colorA = getTeamColor(match.team_a);
-            const colorB = getTeamColor(match.team_b);
-            const toRgba = (hex, a) => {
-              const r = parseInt(hex.slice(1,3),16);
-              const g = parseInt(hex.slice(3,5),16);
-              const b = parseInt(hex.slice(5,7),16);
-              return `rgba(${r},${g},${b},${a})`;
-            };
-            return (
-          <div className="flex items-center justify-between px-5 py-4 mx-4 mb-1 rounded-2xl overflow-hidden relative"
-            style={{ background: `linear-gradient(90deg, ${toRgba(colorA,0.45)} 0%, rgba(15,23,42,0.85) 35%, rgba(15,23,42,0.85) 65%, ${toRgba(colorB,0.45)} 100%)`, border: "1px solid rgba(255,255,255,0.08)" }}>
-            <div className="flex flex-col items-center gap-1.5 flex-1">
-              <div style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.3))' }}>
-                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-12 h-12" />
-              </div>
-              <span className="text-xs font-bold leading-tight text-center text-white">
-                {match.team_a}
-              </span>
-              <span className="text-[10px] text-slate-300 leading-none">(בית)</span>
-            </div>
-            <span className="text-sm font-black tracking-widest mx-3 pb-5 bg-clip-text text-transparent"
-              style={{ backgroundImage: 'linear-gradient(180deg, #097adc 0%, #1e40af 100%)' }}>VS</span>
-            <div className="flex flex-col items-center gap-1.5 flex-1">
-              <div style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.3))' }}>
-                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-12 h-12" />
-              </div>
-              <span className="text-xs font-bold leading-tight text-center text-white">
-                {match.team_b}
-              </span>
-              <span className="text-[10px] text-slate-300 leading-none">(חוץ)</span>
-            </div>
-          </div>
-            );
-          })()}
-
-          <div className="mx-4 mt-3">
-            <ClipTabs tabs={tabs} active={tab} onChange={setTab} />
-          </div>
-        </div>
-
-        {/* Scrollable content — one tab at a time */}
-        <div className="flex-1 overflow-y-auto px-5 py-5">
-        <AnimatePresence mode="wait" initial={false}>
-        <motion.div key={tab} {...tabSwap} className="space-y-5">
-        {tab === "sim" && (
-
-          <div className="rounded-2xl border border-yellow-500/25 overflow-hidden"
-            style={{ background: 'linear-gradient(145deg, rgba(9, 122, 220,0.07) 0%, rgba(10,20,50,0.6) 100%)' }}>
-
-            <div className="px-4 pt-3 pb-1 text-center">
-              <span className="text-[10px] uppercase tracking-[0.14em] font-semibold text-yellow-400/80">סימולטור — כמה שווה הניחוש שלך</span>
+  return createPortal(
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          key="x12-panel"
+          className="fixed inset-0 z-[80] overflow-hidden text-white"
+          dir="rtl"
+          style={{ background: PANEL_BG }}
+          initial={{ clipPath: clipFor(rect) }}
+          animate={{ clipPath: "inset(0px 0px 0px 0px round 0px)" }}
+          exit={{ clipPath: clipFor(rect) }}
+          transition={{ duration: 0.42, ease: EASE }}
+        >
+          <motion.div
+            className="mx-auto flex h-full max-w-md flex-col"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, transition: { delay: 0.16, duration: 0.2 } }}
+            exit={{ opacity: 0, transition: { duration: 0.1 } }}
+          >
+            {/* header */}
+            <div className="flex items-center justify-between px-4 pt-4 pb-2">
+              <Skew bg={CY} color="#06102b"><span dir="ltr">1 X 2</span></Skew>
+              <button onClick={onClose} aria-label="סגירה" className="w-9 h-9 grid place-items-center text-white/80" style={{ background: "rgba(255,255,255,.08)", transform: "skewX(-10deg)" }}>
+                <span style={{ transform: "skewX(10deg)" }}>✕</span>
+              </button>
             </div>
 
-            {/* Picker wheels — each team's logo + name on the outer side of its wheel */}
-            <div key={match.id} className="flex items-center justify-center gap-3 pb-3 pt-1 px-3" dir="ltr">
-              <div className="flex flex-col items-center gap-1 w-16 min-w-0">
-                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-10 h-10" animate={false} />
-                <span className="text-[11px] text-white font-semibold text-center leading-tight line-clamp-2">{match.team_a}</span>
+            {/* teams as a broadcast score bug */}
+            <div className="mx-3 flex items-stretch h-14" dir="ltr">
+              <div className="flex-1 min-w-0 flex items-center gap-2 px-3" style={{ background: `linear-gradient(90deg,${colorA},rgba(255,255,255,.06))` }}>
+                <TeamFlag logo={m.team_a_logo} name={m.team_a} size={30} animate={false} />
+                <b className="text-[13px] truncate">{m.team_a}</b>
               </div>
-              <ScoreWheel value={simA} onChange={setSimA} />
-              <ScoreWheel value={simB} onChange={setSimB} />
-              <div className="flex flex-col items-center gap-1 w-16 min-w-0">
-                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-10 h-10" animate={false} />
-                <span className="text-[11px] text-white font-semibold text-center leading-tight line-clamp-2">{match.team_b}</span>
+              <div className="w-14 grid place-items-center flex-shrink-0" style={{ background: "#fff", color: INK, fontFamily: NUM, fontSize: 30, fontWeight: 700, clipPath: "polygon(12% 0,100% 0,88% 100%,0 100%)" }}>VS</div>
+              <div className="flex-1 min-w-0 flex items-center justify-end gap-2 px-3" style={{ background: `linear-gradient(270deg,${colorB},rgba(255,255,255,.06))` }}>
+                <b className="text-[13px] truncate">{m.team_b}</b>
+                <TeamFlag logo={m.team_b_logo} name={m.team_b} size={30} animate={false} />
               </div>
             </div>
 
-            {/* Breakdown */}
-            <AnimatePresence>
-              {sim && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-                  className="border-t border-yellow-500/15"
-                >
-                  <div className="px-4 py-3 space-y-1.5">
-                    {sim.breakdown.map((row) => (
-                      <div key={row.label} className="flex items-center justify-between">
-                        <span className={`text-xs ${row.hit ? 'text-white/80' : 'text-white/25 line-through'}`}>
-                          {row.label}
-                        </span>
-                        <span className={`text-xs font-bold tabular-nums ${row.hit ? 'text-yellow-400' : 'text-white/20'}`}>
-                          +{row.pts}
-                        </span>
+            {/* tabs */}
+            <div className="flex gap-1 mx-3 mt-3">
+              {tabs.map(([id, label]) => (
+                <button key={id} onClick={() => setTab(id)} className="flex-1 py-2 text-[12px] font-black" style={{ transform: "skewX(-12deg)", background: tab === id ? "#fff" : "rgba(255,255,255,.07)", color: tab === id ? INK : MUTED }}>
+                  <span className="inline-block" style={{ transform: "skewX(12deg)" }}>{label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* content — one tab at a time */}
+            <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-4">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div key={tab} {...tabSwap}>
+                  {tab === "sim" && (
+                    <div>
+                      <div className="mb-2"><Skew>סימולטור · כמה שווה הניחוש שלך</Skew></div>
+                      <div key={m.id} className="flex items-center justify-center gap-3 py-2" dir="ltr" style={{ background: "rgba(255,255,255,.04)", borderTop: `3px solid ${CY}` }}>
+                        <div className="flex flex-col items-center gap-1 w-16 min-w-0">
+                          <TeamFlag logo={m.team_a_logo} name={m.team_a} size={36} animate={false} />
+                          <span className="text-[11px] font-bold text-center leading-tight line-clamp-2">{m.team_a}</span>
+                        </div>
+                        <ScoreWheel value={simA} onChange={setSimA} />
+                        <ScoreWheel value={simB} onChange={setSimB} />
+                        <div className="flex flex-col items-center gap-1 w-16 min-w-0">
+                          <TeamFlag logo={m.team_b_logo} name={m.team_b} size={36} animate={false} />
+                          <span className="text-[11px] font-bold text-center leading-tight line-clamp-2">{m.team_b}</span>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                  <div className="mx-4 mb-3 rounded-xl flex items-center justify-center px-4 py-2.5"
-                    style={{ background: 'rgba(9, 122, 220,0.12)', border: '1px solid rgba(9, 122, 220,0.3)' }}>
-                    <motion.span
-                      key={sim.total}
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                      className="text-base font-bold text-yellow-400 tabular-nums"
-                    >
-                      {sim.total} PTS
-                    </motion.span>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        )}
-
-        {tab === "markets" && (
-          <>
-          {/* כיוון משחק */}
-          <div className="space-y-3">
-            <SectionLabel title="כיוון משחק" icon={Trophy} color="text-sky-400" />
-            <SegmentedGroup delay={60} items={[
-              { label: "ניצחון ביתי", pts: match.home_win_points || 0, theme: "gold" },
-              { label: "תיקו",        pts: match.draw_points || 0,      theme: "gold" },
-              { label: "ניצחון חוץ", pts: match.away_win_points || 0,  theme: "gold" },
-            ]} />
-          </div>
-
-          <Divider />
-
-          {/* שתי קבוצות כובשות */}
-          <div className="space-y-3">
-            <SectionLabel title="שתי קבוצות כובשות" icon={Zap} color="text-sky-400" />
-            <SegmentedGroup delay={80} items={[
-              { label: "כן", pts: match.btts_yes_points || 0, theme: "emerald" },
-              { label: "לא", pts: match.btts_no_points  || 0, theme: "rose"    },
-            ]} />
-          </div>
-
-          <Divider />
-
-          {/* טווח שערים */}
-          <div className="space-y-3">
-            <SectionLabel title="טווח שערים" icon={Goal} color="text-sky-400" />
-            <SegmentedGroup delay={100} items={[
-              { label: "0–2 שערים", pts: match.goals_0_2_points    || 0, theme: "blue-grad" },
-              { label: "3–4 שערים", pts: match.goals_3_4_points    || 0, theme: "blue-grad" },
-              { label: "5+ שערים",  pts: match.goals_5_plus_points || 0, theme: "blue-grad" },
-            ]} />
-          </div>
-
-          </>
-        )}
-
-          {/* פגיעה מדויקת */}
-          {tab === "exact" && hasOdds && (
-            <>
-              <div
-                className="space-y-3 animate-in fade-in"
-                style={{ animationDuration: "200ms", animationFillMode: "both", animationDelay: "140ms" }}
-              >
-                <SectionLabel title="פגיעה מדויקת" icon={Target} color="text-emerald-400/80" />
-
-                <div className="grid grid-cols-3 gap-2">
-                  {oddsColumns.map(({ label, filter, sort }) => {
-                    const cls = label === '1'
-                      ? { pill: 'bg-emerald-500/6 border-emerald-500/15', pts: 'text-emerald-400' }
-                      : label === 'X'
-                        ? { pill: 'bg-yellow-500/6 border-yellow-500/15', pts: 'text-yellow-400' }
-                        : { pill: 'bg-sky-500/6 border-sky-500/15', pts: 'text-sky-400' };
-                    return (
-                      <div key={label}>
-                        <div className="text-center text-xs font-bold text-white/55 uppercase tracking-widest mb-1.5">{label}</div>
-                        <div className="space-y-1">
-                          {Object.entries(match.score_odds).filter(filter).sort(sort).map(([score, pts]) => (
-                            <div key={score} className={`flex justify-between items-center rounded-lg border px-2 py-1.5 ${cls.pill}`}>
-                              <span className={`font-bold text-xs tabular-nums ${cls.pts}`}>{pts}</span>
-                              <span className="text-white/70 text-xs font-mono">{score}</span>
+                      {!sim && <p className="text-center text-[12px] mt-3" style={{ color: MUTED }}>גללו את שני הגלגלים כדי לראות כמה הניחוש שווה</p>}
+                      <AnimatePresence>
+                        {sim && (
+                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }} className="overflow-hidden">
+                            <div className="mt-2 space-y-1">
+                              {sim.breakdown.map((r) => (
+                                <div key={r.label} className="flex items-stretch h-8" style={{ background: "rgba(255,255,255,.05)", opacity: r.hit ? 1 : 0.35 }}>
+                                  <div className="w-1.5" style={{ background: r.hit ? CY : "transparent" }} />
+                                  <div className={`flex-1 flex items-center px-3 text-[12.5px] font-bold ${r.hit ? "" : "line-through"}`}>{r.label}</div>
+                                  <div className="w-16 grid place-items-center" style={{ fontFamily: NUM, fontSize: 24, fontWeight: 700, color: r.hit ? CY : MUTED }} dir="ltr">+{r.pts}</div>
+                                </div>
+                              ))}
                             </div>
+                            <div className="mt-2 flex items-stretch h-12">
+                              <div className="flex-1 flex items-center px-3 font-black text-[13px]" style={{ background: MG, transform: "skewX(-8deg)" }}>
+                                <span style={{ transform: "skewX(8deg)" }}>סה״כ לניחוש <span dir="ltr">{simA}:{simB}</span></span>
+                              </div>
+                              <div className="w-28 grid place-items-center" style={{ background: "#fff" }}>
+                                <Odo v={sim.total} h={34} color={INK} />
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
+
+                  {tab === "markets" && (
+                    <div className="space-y-4">
+                      <Market title="כיוון משחק" items={[["ניצחון בית", m.home_win_points || 0], ["תיקו", m.draw_points || 0], ["ניצחון חוץ", m.away_win_points || 0]]} />
+                      <Market title="שתי קבוצות כובשות" items={[["כן", m.btts_yes_points || 0], ["לא", m.btts_no_points || 0]]} />
+                      <Market title="טווח שערים" items={[["0–2", m.goals_0_2_points || 0], ["3–4", m.goals_3_4_points || 0], ["5+", m.goals_5_plus_points || 0]]} />
+                    </div>
+                  )}
+
+                  {tab === "exact" && hasOdds && (
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <Skew>פגיעה מדויקת</Skew>
+                        <div className="flex" style={{ background: "rgba(255,255,255,.07)" }}>
+                          {[[false, "עמודות", "1/X/2"], [true, "אלכסון התיקו", ""]].map(([v, label, extra]) => (
+                            <button key={label} onClick={() => setDiag(v)} className="text-[11px] font-black px-2.5 py-1.5" style={{ background: diag === v ? "#fff" : "transparent", color: diag === v ? INK : MUTED }}>
+                              {label} {extra && <span dir="ltr">{extra}</span>}
+                            </button>
                           ))}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-
-                {'other' in match.score_odds && (
-                  <div className="flex justify-between items-center rounded-lg bg-yellow-500/6 border border-yellow-500/15 px-3 py-2.5">
-                    <span className="text-yellow-400 font-bold text-sm tabular-nums">{match.score_odds['other']}</span>
-                    <span className="text-white/70 text-xs">כל תוצאה אחרת</span>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-
+                      <AnimatePresence mode="wait" initial={false}>
+                        <motion.div key={String(diag)} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
+                          {diag ? <ExactDiagonal scores={scores} match={m} /> : <ExactColumns scores={scores} />}
+                        </motion.div>
+                      </AnimatePresence>
+                      {"other" in m.score_odds && (
+                        <div className="mt-2 flex items-stretch h-9" style={{ background: "rgba(255,255,255,.05)" }}>
+                          <div className="flex-1 flex items-center px-3 text-[12px] font-bold">כל תוצאה אחרת</div>
+                          <div className="w-20 grid place-items-center" style={{ background: "#fff", color: INK, fontFamily: NUM, fontSize: 24, fontWeight: 700 }}>{m.score_odds.other}</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
         </motion.div>
-        </AnimatePresence>
-        </div>
-      </DialogContent>
-    </Dialog>
+      )}
+    </AnimatePresence>,
+    document.body
   );
 }

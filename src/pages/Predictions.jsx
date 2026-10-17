@@ -140,6 +140,7 @@ export default function Predictions() {
   const [showSubmissionSuccess, setShowSubmissionSuccess] = useState(false);
   // NEW: Add state for scoring rules modal
   const [showScoringRulesModal, setShowScoringRulesModal] = useState(false);
+  const [rulesOriginRect, setRulesOriginRect] = useState(null);
   const [selectedMatchForRules, setSelectedMatchForRules] = useState(null);
   // NEW: Add state for predictions modal
   const [showPredictionsModal, setShowPredictionsModal] = useState(false);
@@ -612,6 +613,8 @@ export default function Predictions() {
 
   // NEW: Handle scoring rules modal open
   const handleShowScoringRules = (match) => {
+    // the panel grows out of this match card
+    setRulesOriginRect(matchCardRefs.current[match.id]?.getBoundingClientRect() || null);
     setSelectedMatchForRules(match);
     setShowScoringRulesModal(true);
   };
@@ -1362,7 +1365,8 @@ export default function Predictions() {
         <MatchScoringRulesModal
           isOpen={showScoringRulesModal}
           onClose={handleCloseScoringRules}
-          match={selectedMatchForRules} />
+          match={selectedMatchForRules}
+          originRect={rulesOriginRect} />
 
 
         {/* NEW: Predictions Modal */}
