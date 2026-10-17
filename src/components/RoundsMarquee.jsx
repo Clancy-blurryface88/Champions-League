@@ -43,7 +43,7 @@ const RoundCard = ({ round, onClick, isNext }) => {
             alt=""
             draggable={false}
             className="absolute pointer-events-none select-none"
-            style={{ height: 78, left: -20, top: "50%", transform: `translateY(-50%) ${unskew}`, opacity: 0.5 }}
+            style={{ height: 78, left: -20, top: "50%", transform: `translateY(-50%) ${unskew}`, opacity: 0.75 }}
           />
           <span className="relative whitespace-nowrap" style={{ transform: unskew }}>{label}</span>
         </span>
