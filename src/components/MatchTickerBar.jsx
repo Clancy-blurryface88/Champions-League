@@ -165,7 +165,7 @@ export default function MatchTickerBar({ onClick }) {
       <style>{`
         .ticker-track {
           animation: ticker-scroll linear infinite;
-          animation-duration: ${Math.max(matches.length * 10, 20)}s;
+          animation-duration: ${Math.max(matches.length * 7, 14)}s;
         }
         @keyframes ticker-scroll {
           from { transform: translateX(100vw); }
