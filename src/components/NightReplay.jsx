@@ -37,7 +37,9 @@ function gameClock(elapsed, end) {
   return "90+'";
 }
 
-const RANK_TINT = (r) => (r === 1 ? "#facc15" : r === 2 ? "#cbd5e1" : r === 3 ? "#d6923f" : "rgba(255,255,255,.35)");
+// Score on the match tags only: gold dot-matrix digits ("Doto", loaded in index.html)
+const GOLD_SCORE = { fontFamily: "Doto, monospace", fontWeight: 900, color: "#f5c542", fontSize: "1.2em", lineHeight: 1, textShadow: "0 0 6px rgba(245,197,66,.55)" };
+const RANK_TINT = (r) =>(r === 1 ? "#facc15" : r === 2 ? "#cbd5e1" : r === 3 ? "#d6923f" : "rgba(255,255,255,.35)");
 
 // roundId limits the night chips to that round; initialDate (YYYY-MM-DD,
 // Israel date) opens that night, e.g. from the end-of-night push.
@@ -315,7 +317,7 @@ export default function NightReplay({ roundId = null, initialDate = null, onBack
             {model.matches.map((mm) => (
               <Chip key={mm.id} on={filter === mm.id} onClick={() => pick(mm.id)}>
                 <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-4 h-4" animate={false} />
-                <span className="tabular-nums" dir="ltr">{mm.final.a}-{mm.final.b}</span>
+                <span dir="ltr" style={GOLD_SCORE}>{mm.final.a}-{mm.final.b}</span>
                 <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-4 h-4" animate={false} />
               </Chip>
             ))}
@@ -542,7 +544,7 @@ function MatchColumn({ active, t, scoreAt, hotId, onPick }) {
               <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-4 h-4" animate={false} />
               <AnimatePresence mode="popLayout">
                 <motion.span key={s ? `${s.a}-${s.b}` : "pre"} initial={{ y: -8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 8, opacity: 0 }}
-                  className="text-white font-black text-[12px] tabular-nums">{s ? `${s.a}-${s.b}` : "–"}</motion.span>
+                  className="text-[12px]" style={GOLD_SCORE}>{s ? `${s.a}-${s.b}` : "–"}</motion.span>
               </AnimatePresence>
               <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-4 h-4" animate={false} />
             </span>
