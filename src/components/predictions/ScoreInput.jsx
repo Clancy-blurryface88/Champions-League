@@ -32,20 +32,18 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
         <ChevronUp className="w-6 h-6 text-yellow-400" strokeWidth={2.5} />
       </motion.button>
 
-      {/* תצוגת הספרה — קפסולה/גלולה */}
-      <div className="w-12 h-20 md:w-14 md:h-24 relative rounded-full overflow-hidden"
+      {/* תצוגת הספרה — מסגרת זכוכית (מלבן מעוגל) */}
+      <div className="w-12 h-20 md:w-14 md:h-24 relative rounded-[20px] md:rounded-[22px] overflow-hidden"
         style={{
           background: hasError && isUndefined
-            ? 'rgba(52,211,153,0.07)'
-            : 'rgba(255,255,255,0.06)',
-          backdropFilter: 'blur(16px) saturate(140%)',
-          WebkitBackdropFilter: 'blur(16px) saturate(140%)',
+            ? 'rgba(52,211,153,0.10)'
+            : 'rgba(255,255,255,0.10)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
           border: hasError && isUndefined
-            ? '1px solid rgba(52,211,153,0.35)'
-            : isUndefined
-              ? '1px solid rgba(255,255,255,0.10)'
-              : '1px solid rgba(255,255,255,0.18)',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.25)',
+            ? '1px solid rgba(52,211,153,0.45)'
+            : '1px solid rgba(255,255,255,0.30)',
+          boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.40)',
         }}>
         {/* glass top gloss */}
         <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"
@@ -54,10 +52,11 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
           <AnimatePresence mode="popLayout">
             <motion.span
               key={displayValue}
-              initial={{ rotateX: -90, opacity: 0 }}
-              animate={{ rotateX: 0, opacity: 1 }}
-              exit={{ rotateX: 90, opacity: 0 }}
-              transition={{ duration: 0.26, ease: 'easeOut' }}
+              // "rubber" change: the new digit squashes in and settles
+              initial={{ scaleX: 0.4, scaleY: 1.4, opacity: 0 }}
+              animate={{ scaleX: [0.4, 1.25, 0.92, 1], scaleY: [1.4, 0.8, 1.06, 1], opacity: 1 }}
+              exit={{ opacity: 0, transition: { duration: 0.08 } }}
+              transition={{ duration: 0.46, ease: 'easeOut', times: [0, 0.45, 0.75, 1], opacity: { duration: 0.1 } }}
               style={{
                 // digits in Karantina (bold); the "?" placeholder keeps Bebas Neue
                 fontFamily: isUndefined ? "'Bebas Neue', sans-serif" : "'Karantina', sans-serif",
