@@ -1034,7 +1034,7 @@ export default function Predictions() {
 
                         {/* Score — spans both rows, centered */}
                         <div className="flex items-center gap-2 px-1"
-                             style={{ gridColumn: 2, gridRow: '1 / 3', alignSelf: 'center' }}>
+                             style={{ gridColumn: 2, gridRow: '1 / 3', alignSelf: 'center', marginTop: -10 }}>
                           {!isLocked ? (
                             <>
                               <ScoreInput
