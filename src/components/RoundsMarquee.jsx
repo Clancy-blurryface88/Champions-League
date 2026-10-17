@@ -1,91 +1,59 @@
 import React, { useState, useCallback } from "react";
-import { cn } from "@/lib/utils";
 import { motion, useMotionValue, useAnimationFrame } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ShineBorder } from "@/components/magicui/shine-border";
 
+// "League Phase - 3" -> label "LEAGUE PHASE", number "3"
+const splitRoundName = (name = "") => {
+  const m = name.trim().match(/^(.*?)\s*-\s*(\d+)$/);
+  return m ? { label: m[1].toUpperCase(), num: m[2] } : { label: name.trim().toUpperCase(), num: null };
+};
+
+// Broadcast double plate (design 25.1): dark name plate with the ball as a watermark, white number plate
 const RoundCard = ({ round, onClick }) => {
-  const roundNameLower = round.name?.trim().toLowerCase() || "";
-  const isFinal = roundNameLower.includes("final") && !roundNameLower.includes("semi") && !roundNameLower.includes("quarter");
+  const { label, num } = splitRoundName(round.name);
 
   return (
-    <>
-    <style>{`
-      @keyframes final-twinkle {
-        0%, 100% { opacity: .15; transform: scale(.6); }
-        50% { opacity: 1; transform: scale(1.25); }
-      }
-      @keyframes final-ring {
-        0% { transform: scale(0.6); opacity: .8; }
-        100% { transform: scale(2); opacity: 0; }
-      }
-      @keyframes final-glow-breathe {
-        0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35), 0 0 6px 0px rgba(9, 122, 220,0.35); }
-        50% { box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35), 0 0 22px 4px rgba(9, 122, 220,0.75); }
-      }
-    `}</style>
     <div
-      className="relative group cursor-pointer mx-3 flex-shrink-0"
+      className="relative mx-3 h-16 w-60 flex-shrink-0 cursor-pointer flex items-center justify-center transition-[scale,filter] duration-150 ease-out active:scale-[.96] hover:brightness-110"
       onClick={() => onClick(round)}
     >
-      {/* Glow halo */}
-      <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-sky-400/60 via-white/20 to-sky-400/60 blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-      <figure
-        className="relative h-16 w-60 rounded-2xl flex items-center justify-center gap-4"
-        style={{
-          background: 'linear-gradient(135deg, rgba(8,22,42,0.55) 0%, rgba(3,10,20,0.45) 100%)',
-          border: '1px solid rgba(9, 122, 220,0.28)',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.35)',
-          transition: 'border-color 0.2s',
-          animation: isFinal ? 'final-glow-breathe 2.2s ease-in-out infinite' : undefined,
-        }}
-      >
-        <div className="absolute inset-0 rounded-2xl overflow-hidden">
-          <ShineBorder shineColor={["#097adc", "#ffffff", "#097adc"]} borderRadius={16} borderWidth={1} />
-        </div>
-
-        {isFinal && (
-          <>
-            {[...Array(10)].map((_, i) => (
-              <span
-                key={`spark-${i}`}
-                className="absolute rounded-full bg-sky-200 z-10"
-                style={{
-                  width: 2,
-                  height: 2,
-                  top: `${10 + (i * 9) % 80}%`,
-                  left: `${5 + (i * 15) % 90}%`,
-                  animation: `final-twinkle ${1.4 + (i % 4) * 0.3}s ease-in-out ${(i % 5) * 0.2}s infinite`,
-                }}
-              />
-            ))}
-            {[["30%", "15%"], ["65%", "80%"]].map(([top, left], i) => (
-              <span
-                key={`ring-${i}`}
-                className="absolute rounded-full z-10"
-                style={{ top, left, width: 4, height: 4, border: "2px solid #097adc", animation: `final-ring 2s ease-out ${i * 0.8}s infinite` }}
-              />
-            ))}
-          </>
-        )}
-
-        <div className="flex-shrink-0 relative z-20">
-          <img src="/champions/trophy-marquee.png" alt="CL2026" className="h-9 w-auto object-contain" />
-        </div>
-
-        <div className="text-center relative z-20">
-          <h3
-            className="text-white font-semibold text-base tracking-wide"
-            style={{ fontFamily: "'Outfit', sans-serif" }}
+      <div className="flex h-[42px]" dir="ltr">
+        <span
+          className="relative overflow-hidden flex items-center text-white"
+          style={{
+            background: "#0d0f2e",
+            font: "700 13px 'Outfit', sans-serif",
+            padding: num ? "0 14px 0 44px" : "0 22px 0 44px",
+            clipPath: "polygon(0 0,100% 0,92% 100%,0 100%)",
+          }}
+        >
+          <img
+            src="/champions/round-ball.png"
+            alt=""
+            draggable={false}
+            className="absolute pointer-events-none select-none"
+            style={{ height: 56, left: -12, top: "50%", transform: "translateY(-50%)", opacity: 0.22 }}
+          />
+          <span className="relative whitespace-nowrap">{label}</span>
+        </span>
+        {num && (
+          <span
+            className="grid place-items-center"
+            style={{
+              background: "#fff",
+              color: "#070822",
+              font: "700 28px 'Teko', sans-serif",
+              padding: "0 16px",
+              clipPath: "polygon(18% 0,100% 0,100% 100%,0 100%)",
+              marginLeft: -8,
+            }}
           >
-            {round.name}
-          </h3>
-        </div>
-      </figure>
+            {num}
+          </span>
+        )}
+      </div>
     </div>
-    </>
   );
 };
 
