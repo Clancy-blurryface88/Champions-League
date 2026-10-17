@@ -466,11 +466,8 @@ export default function MatchArenaSection({ match, allMatches, loading, onClose 
           <MatchupPlates match={match} className="mx-3 mt-2" />
         </div>
 
-        {/* Glass category tabs — one uniform color */}
-        <div
-          className="flex-shrink-0 mx-4 mb-3 p-1 flex gap-1 rounded-2xl"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(14px) saturate(160%)', WebkitBackdropFilter: 'blur(14px) saturate(160%)' }}
-        >
+        {/* Category tabs — same broadcast look as the 1X2 panel: skewed, white when active */}
+        <div className="flex-shrink-0 mx-3 mb-3 flex gap-1">
           {tabs.map((t) => {
             const on = tab === t.id;
             return (
@@ -478,18 +475,10 @@ export default function MatchArenaSection({ match, allMatches, loading, onClose 
                 key={t.id}
                 type="button"
                 onClick={() => setTab(t.id)}
-                className="relative flex-1 text-[10.5px] font-bold py-1.5 rounded-xl transition-colors"
-                style={{ color: on ? '#fff' : 'rgba(255,255,255,0.55)' }}
+                className="flex-1 py-2 text-[12px] font-bold"
+                style={{ transform: 'skewX(-12deg)', background: on ? '#fff' : 'rgba(255,255,255,.07)', color: on ? '#070822' : '#9aa3d6' }}
               >
-                {on && (
-                  <motion.span
-                    layoutId={`arena-tab-${match.id}`}
-                    className="absolute inset-0 rounded-xl"
-                    style={{ background: `rgba(${TAB_COLOR},0.22)`, border: `1px solid rgba(${TAB_COLOR},0.45)`, boxShadow: `inset 0 1px 0 rgba(255,255,255,0.18), 0 4px 14px rgba(${TAB_COLOR},0.18)`, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
-                    transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
-                  />
-                )}
-                <span className="relative">{t.label}</span>
+                <span className="inline-block" style={{ transform: 'skewX(12deg)' }}>{t.label}</span>
               </button>
             );
           })}

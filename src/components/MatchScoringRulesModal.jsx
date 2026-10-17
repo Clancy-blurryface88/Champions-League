@@ -200,8 +200,9 @@ function ExactDiagonal({ scores, match }) {
 const tabSwap = {};
 
 // Simulator breakdown: rows reveal one after another, then the total.
-const revealList = { hidden: {}, show: { transition: { staggerChildren: 0.09 } } };
-const revealRow = { hidden: { opacity: 0, x: 14 }, show: { opacity: 1, x: 0, transition: { duration: 0.22, ease: "easeOut" } } };
+const STAGGER = 0.2; // seconds between rows
+const revealList = { hidden: {}, show: { transition: { staggerChildren: STAGGER } } };
+const revealRow = { hidden: { opacity: 0, x: 18 }, show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" } } };
 
 // Grow/shrink between the match card and full screen with transform only
 // (translate + scale, run by the GPU). Animating clip-path redrew the whole
@@ -329,7 +330,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
                                 </motion.div>
                               ))}
                             </motion.div>
-                            <motion.div className="mt-2 flex items-stretch h-10" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.09 * sim.breakdown.length + 0.05, duration: 0.25, ease: "easeOut" } }}>
+                            <motion.div className="mt-2 flex items-stretch h-10" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0, transition: { delay: STAGGER * sim.breakdown.length + 0.15, duration: 0.4, ease: "easeOut" } }}>
                               <div className="flex-1 flex items-center px-3 font-bold text-[13px]" style={{ background: MG, transform: "skewX(-8deg)" }}>
                                 <span style={{ transform: "skewX(8deg)" }}>סה״כ ניקוד</span>
                               </div>
