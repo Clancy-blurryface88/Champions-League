@@ -29,11 +29,11 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
           hover:opacity-70 disabled:opacity-30 disabled:cursor-not-allowed
           transition-opacity duration-150"
       >
-        <ChevronUp className="w-6 h-6 text-yellow-400" strokeWidth={2.5} />
+        <ChevronUp className="w-7 h-7 text-yellow-400" strokeWidth={2.5} />
       </motion.button>
 
       {/* תצוגת הספרה — מסגרת זכוכית (מלבן מעוגל) */}
-      <div className="w-12 h-20 md:w-14 md:h-24 relative rounded-[20px] md:rounded-[22px] overflow-hidden"
+      <div className="w-[54px] h-[90px] md:w-16 md:h-[106px] relative rounded-[20px] md:rounded-[22px] overflow-hidden"
         style={{
           background: hasError && isUndefined
             ? 'rgba(52,211,153,0.10)'
@@ -73,7 +73,7 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
                   WebkitTextFillColor: 'transparent',
                 } : {}),
               }}
-              className={`tracking-wide select-none ${isUndefined ? 'text-6xl md:text-7xl' : 'text-[78px] md:text-[92px] text-white'}`}
+              className={`tracking-wide select-none ${isUndefined ? 'text-[66px] md:text-[80px]' : 'text-[86px] md:text-[100px] text-white'}`}
             >
               {displayValue}
             </motion.span>
@@ -90,7 +90,7 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
           hover:opacity-70 disabled:opacity-30 disabled:cursor-not-allowed
           transition-opacity duration-150"
       >
-        <ChevronDown className="w-6 h-6 text-yellow-400" strokeWidth={2.5} />
+        <ChevronDown className="w-7 h-7 text-yellow-400" strokeWidth={2.5} />
       </motion.button>
     </div>
   );
