@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Match } from "@/api/entities";
 import TeamFlag from "@/components/TeamFlag";
 
@@ -25,6 +25,69 @@ function formatDate(dateStr) {
   const day = String(d.getDate()).padStart(2, '0');
   const month = String(d.getMonth() + 1).padStart(2, '0');
   return `${day}/${month}`;
+}
+
+// Auto-scrolling strip that can also be dragged with a finger. It moves leftwards on
+// its own; a drag shifts it, and on release it carries on from where it was left.
+// A tap (no real drag) still triggers onClick.
+const DRAG_THRESHOLD = 6; // px before a touch counts as a swipe rather than a tap
+
+function SwipeTicker({ count, onClick, children }) {
+  const vpRef = useRef(null);
+  const trackRef = useRef(null);
+  const x = useRef(null);       // current offset (px)
+  const drag = useRef(null);    // { startX, startOffset, moved }
+  const hover = useRef(false);
+
+  useEffect(() => {
+    const vp = vpRef.current, tr = trackRef.current;
+    if (!vp || !tr) return;
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (x.current == null) x.current = vp.clientWidth;
+    let raf, last = performance.now();
+    const tick = (t) => {
+      const dt = Math.min(64, t - last) / 1000; last = t;
+      const vw = vp.clientWidth, tw = tr.scrollWidth;
+      // same pace as before: enter at the right edge, leave fully on the left, in max(n*7, 14)s
+      const speed = (vw + tw) / Math.max(count * 7, 14);
+      if (!drag.current && !hover.current && !reduce) x.current -= speed * dt;
+      // wrap around in both directions so a drag never runs out of matches
+      // (a drag in progress is shifted by the same amount so it stays continuous)
+      const wrap = x.current < -tw ? vw + tw : x.current > vw ? -(vw + tw) : 0;
+      if (wrap) { x.current += wrap; if (drag.current) drag.current.startOffset += wrap; }
+      tr.style.transform = `translateX(${x.current}px)`;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [count]);
+
+  const onDown = (e) => {
+    drag.current = { startX: e.clientX, startOffset: x.current, moved: false };
+    vpRef.current?.setPointerCapture?.(e.pointerId);
+  };
+  const onMove = (e) => {
+    const d = drag.current; if (!d) return;
+    const dx = e.clientX - d.startX;
+    if (Math.abs(dx) > DRAG_THRESHOLD) d.moved = true;
+    if (d.moved) x.current = d.startOffset + dx;
+  };
+  const onUp = () => {
+    const d = drag.current; drag.current = null;
+    if (d && !d.moved) onClick?.();
+  };
+
+  return (
+    <div ref={vpRef} className="flex-1 overflow-hidden h-full relative select-none" dir="ltr"
+      onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={() => (drag.current = null)}
+      onMouseEnter={() => (hover.current = true)} onMouseLeave={() => { hover.current = false; drag.current = null; }}
+      style={{ cursor: 'grab', touchAction: 'pan-y', WebkitTapHighlightColor: 'transparent' }}>
+      <div ref={trackRef}
+        style={{ position: 'absolute', top: 0, display: 'flex', alignItems: 'center', height: '100%', gap: '10px', whiteSpace: 'nowrap', willChange: 'transform' }}>
+        {children}
+      </div>
+    </div>
+  );
 }
 
 export default function MatchTickerBar({ onClick }) {
@@ -146,35 +209,15 @@ export default function MatchTickerBar({ onClick }) {
           <MatchItem match={matches[0]} i={0} />
         </div>
       ) : (
-        /* Multiple matches — scrolling, tappable */
-        <div onClick={onClick} className="flex-1 overflow-hidden h-full relative" dir="ltr"
-          style={{ cursor: 'pointer', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}>
-          <div
-            className="ticker-track"
-            style={{ position: 'absolute', top: 0, display: 'flex', alignItems: 'center', height: '100%', gap: '10px', whiteSpace: 'nowrap' }}
-          >
-            {matches.map((match, i) => (
-              <React.Fragment key={`${match.id}-${i}`}>
-                <MatchItem match={match} i={i} />
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
+        /* Multiple matches — auto-scrolling, swipeable, tappable */
+        <SwipeTicker count={matches.length} onClick={onClick}>
+          {matches.map((match, i) => (
+            <React.Fragment key={`${match.id}-${i}`}>
+              <MatchItem match={match} i={i} />
+            </React.Fragment>
+          ))}
+        </SwipeTicker>
       )}
-
-      <style>{`
-        .ticker-track {
-          animation: ticker-scroll linear infinite;
-          animation-duration: ${Math.max(matches.length * 7, 14)}s;
-        }
-        @keyframes ticker-scroll {
-          from { transform: translateX(100vw); }
-          to   { transform: translateX(-100%); }
-        }
-        .ticker-track:hover {
-          animation-play-state: paused;
-        }
-      `}</style>
     </div>
   );
 }
