@@ -38,7 +38,6 @@ function gameClock(elapsed, end) {
 }
 
 // Score on the top match-filter tags only: gold dot-matrix digits ("Doto", loaded in index.html)
-const GOLD_SCORE = { fontFamily: "Doto, monospace", fontWeight: 900, color: "#f5c542", fontSize: "1.2em", lineHeight: 1, textShadow: "0 0 6px rgba(245,197,66,.55)" };
 // watermark rank: medal colours for the top 3, light slate (not the faint white) for the rest
 const RANK_WM = (r) => (r <= 3 ? RANK_TINT(r) : "#94a3b8");
 const RANK_TINT = (r) => (r === 1 ? "#facc15" : r === 2 ? "#cbd5e1" : r === 3 ? "#d6923f" : "rgba(255,255,255,.35)");
@@ -276,6 +275,16 @@ export default function NightReplay({ roundId = null, initialDate = null, onBack
     </div>
   );
   const hotId = lastEvent && t - lastEvent.t < 4 ? lastEvent.matchId : null;
+  // users the last goal knocked off the exact score — their rows turn red while that goal card is up
+  const knocked = (() => {
+    if (!lastEvent || reachedEnd) return new Set();
+    const mm = active.find((m) => m.id === lastEvent.matchId);
+    if (!mm) return new Set();
+    const before = goalBefore(mm, lastEvent);
+    return new Set(Object.entries(preds.map[mm.id] || {})
+      .filter(([, p]) => p.predicted_score_a === before.a && p.predicted_score_b === before.b)
+      .map(([u]) => u));
+  })();
   const pick = (id) => setFilter(filter === id ? "all" : id);
 
   return (
@@ -322,7 +331,7 @@ export default function NightReplay({ roundId = null, initialDate = null, onBack
                     logos used to swap sides while the score stayed LTR, pairing each team with the other's goals */}
                 <span dir="ltr" className="flex items-center gap-1.5">
                   <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-4 h-4" animate={false} />
-                  <span style={GOLD_SCORE}>{mm.final.a}-{mm.final.b}</span>
+                  <span className="tabular-nums">{mm.final.a}-{mm.final.b}</span>
                   <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-4 h-4" animate={false} />
                 </span>
               </Chip>
@@ -335,7 +344,7 @@ export default function NightReplay({ roundId = null, initialDate = null, onBack
             <MatchColumn active={active} t={t} scoreAt={model.scoreAt} hotId={hotId} onPick={pick} />
             <div className="min-w-0 flex flex-col gap-3">
               <div className="min-w-0">
-                {rows.map((r) => <Row key={r.userId} r={r} isMe={r.userId === me} delta={model.startRank[r.userId] - r.rank} hot={overtakes.movers.has(r.userId)} />)}
+                {rows.map((r) => <Row key={r.userId} r={r} isMe={r.userId === me} delta={model.startRank[r.userId] - r.rank} hot={overtakes.movers.has(r.userId)} knocked={knocked.has(r.userId)} />)}
               </div>
               {hero}
             </div>
@@ -406,16 +415,18 @@ function Loading({ text }) {
   );
 }
 
+// Filter chip: slanted plate (1X2 / round-button geometry), green-to-cyan when selected
 function Chip({ on, onClick, children }) {
   return (
     <button onClick={onClick}
-      className="flex-shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold transition-all"
+      className="flex-shrink-0 rounded-[3px] px-3 py-1.5 text-[12px] font-bold transition-all"
       style={{
-        background: on ? "rgba(52,211,153,.16)" : "rgba(255,255,255,.04)",
-        border: `1px solid ${on ? "rgba(52,211,153,.55)" : "rgba(255,255,255,.08)"}`,
-        color: on ? "#a7f3d0" : "#cbd5e1",
+        transform: "skewX(-12deg)",
+        background: on ? "linear-gradient(135deg,#22c55e,#00e0ff)" : "linear-gradient(90deg,rgba(255,255,255,.14),rgba(255,255,255,.03))",
+        border: `0.5px solid ${on ? "transparent" : "rgba(255,255,255,.3)"}`,
+        color: on ? "#04201d" : "#e2e8f0",
       }}>
-      {children}
+      <span className="flex items-center gap-1.5" style={{ transform: "skewX(12deg)" }}>{children}</span>
     </button>
   );
 }
@@ -614,7 +625,8 @@ function DeltaTag({ delta }) {
 const EXACT_GLOW = "0 0 0 1px rgba(52,211,153,.85), 0 0 12px rgba(52,211,153,.55)";
 const NO_GLOW = "0 0 0 0px rgba(52,211,153,0), 0 0 0px rgba(52,211,153,0)";
 
-function Row({ r, isMe, delta, hot }) {
+// knocked: the last goal took this user off the exact score → red gradient, like the green frame for a hit
+function Row({ r, isMe, delta, hot, knocked }) {
   const glow = r.exact > 0 ? EXACT_GLOW : NO_GLOW;
   return (
     <motion.div layout initial={false}
@@ -622,9 +634,10 @@ function Row({ r, isMe, delta, hot }) {
       animate={{ boxShadow: hot ? [glow, "0 0 0 1px rgba(52,211,153,.9), 0 0 22px rgba(52,211,153,.8)", glow] : glow }}
       className="relative mb-1 rounded-lg overflow-hidden"
       style={{
-        background: isMe ? "linear-gradient(90deg,rgba(124,173,238,.22),rgba(124,173,238,.06))" : r.rank <= 3 ? "rgba(255,255,255,.055)" : "rgba(30,41,59,.55)",
-        border: `1px solid ${r.exact > 0 ? "rgba(52,211,153,.8)" : isMe ? "rgba(124,173,238,.6)" : r.rank <= 3 ? `${RANK_TINT(r.rank)}66` : "rgba(255,255,255,.06)"}`,
-        transition: "border-color .4s",
+        background: knocked ? "linear-gradient(90deg,rgba(239,68,68,.38),rgba(239,68,68,.06))"
+          : isMe ? "linear-gradient(90deg,rgba(124,173,238,.22),rgba(124,173,238,.06))" : r.rank <= 3 ? "rgba(255,255,255,.055)" : "rgba(30,41,59,.55)",
+        border: `1px solid ${r.exact > 0 ? "rgba(52,211,153,.8)" : knocked ? "rgba(248,113,113,.7)" : isMe ? "rgba(124,173,238,.6)" : r.rank <= 3 ? `${RANK_TINT(r.rank)}66` : "rgba(255,255,255,.06)"}`,
+        transition: "border-color .4s, background .4s",
       }}>
       {/* rank as a big slanted watermark at the right edge, cropped by the card */}
       <span aria-hidden className="absolute pointer-events-none select-none tabular-nums"
