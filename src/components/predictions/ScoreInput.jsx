@@ -71,7 +71,7 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
                   WebkitTextFillColor: 'transparent',
                 } : {}),
               }}
-              className={`text-6xl md:text-7xl tracking-wide select-none ${isUndefined ? '' : 'text-white'}`}
+              className={`tracking-wide select-none ${isUndefined ? 'text-6xl md:text-7xl' : 'text-[70px] md:text-[84px] text-white'}`}
             >
               {displayValue}
             </motion.span>
