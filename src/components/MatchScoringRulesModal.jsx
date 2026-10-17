@@ -10,7 +10,8 @@ import { motion, AnimatePresence } from "framer-motion";
 // panel (and shrinks back on close), three tabs — simulator, markets, exact
 // score (with a "draw diagonal" view). Numbers are Teko.
 
-const CY = "#00e0ff", MG = "#ff2e88", INK = "#070822", MUTED = "#9aa3d6";
+// accent: green gradient (was pink); GREEN for text/lines that need a solid colour
+const CY = "#00e0ff", MG = "linear-gradient(135deg,#22c55e,#059669)", GREEN = "#22c55e", INK = "#070822", MUTED = "#9aa3d6";
 const NUM = "'Teko', sans-serif";
 const NUM_W = 0.46; // odometer cell width ÷ height for Teko digits
 const PANEL_BG = "linear-gradient(170deg,#1a1d5c 0%,#0d0f2e 40%,#070822 100%)";
@@ -100,7 +101,7 @@ function ScoreWheel({ value, onChange }) {
 const decimalsOf = (v) => Math.min(2, (String(v ?? '').split('.')[1] || '').length);
 
 const Skew = ({ children, bg = MG, color = "#fff", deg = 12 }) => (
-  <span className="inline-block font-black text-[11px] px-2.5 py-0.5" style={{ background: bg, color, transform: `skewX(-${deg}deg)` }}>
+  <span className="inline-block font-bold text-[11px] px-2.5 py-0.5" style={{ background: bg, color, transform: `skewX(-${deg}deg)` }}>
     <span className="inline-block" style={{ transform: `skewX(${deg}deg)` }}>{children}</span>
   </span>
 );
@@ -108,7 +109,7 @@ const Skew = ({ children, bg = MG, color = "#fff", deg = 12 }) => (
 // Odometer roll (same effect as the tables) in the broadcast number font.
 const Odo = ({ v, h = 28, color = "#fff" }) => (
   <span dir="ltr" style={{ color, fontFamily: NUM, fontWeight: 700, fontSize: h }}>
-    <OdometerValue target={Number(v) || 0} decimals={decimalsOf(v)} height={h} width={Math.round(h * NUM_W)} />
+    <OdometerValue target={Number(v) || 0} decimals={decimalsOf(v)} height={h} width={Math.round(h * NUM_W)} alignDot />
   </span>
 );
 
@@ -130,7 +131,7 @@ function Market({ title, items }) {
             <div style={{ transform: "skewX(6deg)" }}>
               <Odo v={v} h={30} />
               <div className="text-[11px] font-bold">{label}</div>
-              <span className="inline-block mt-1 px-1.5 text-[10px] font-black" style={{ background: CY, color: "#06102b" }}>{p[i]}%</span>
+              <span className="inline-block mt-1 px-1.5 text-[10px] font-bold" style={{ background: CY, color: "#06102b" }}>{p[i]}%</span>
             </div>
           </div>
         ))}
@@ -187,7 +188,7 @@ function ExactDiagonal({ scores, match }) {
       </div>
       <div className="flex justify-between text-[10px] font-bold mt-2">
         <span style={{ color: CY }}>■ {match.team_a} מנצחת</span>
-        <span style={{ color: MG }}>■ תיקו</span>
+        <span style={{ color: GREEN }}>■ תיקו</span>
         <span className="text-white/60">■ {match.team_b} מנצחת</span>
       </div>
     </div>
@@ -294,7 +295,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
             {/* tabs */}
             <div className="flex gap-1 mx-3 mt-3">
               {tabs.map(([id, label]) => (
-                <button key={id} onClick={() => setTab(id)} className="flex-1 py-2 text-[12px] font-black" style={{ transform: "skewX(-12deg)", background: tab === id ? "#fff" : "rgba(255,255,255,.07)", color: tab === id ? INK : MUTED }}>
+                <button key={id} onClick={() => setTab(id)} className="flex-1 py-2 text-[12px] font-bold" style={{ transform: "skewX(-12deg)", background: tab === id ? "#fff" : "rgba(255,255,255,.07)", color: tab === id ? INK : MUTED }}>
                   <span className="inline-block" style={{ transform: "skewX(12deg)" }}>{label}</span>
                 </button>
               ))}
@@ -328,16 +329,16 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
                                 <div key={r.label} className="flex items-stretch h-8" style={{ background: "rgba(255,255,255,.05)", opacity: r.hit ? 1 : 0.35 }}>
                                   <div className="w-1.5" style={{ background: r.hit ? CY : "transparent" }} />
                                   <div className={`flex-1 flex items-center px-3 text-[12.5px] font-bold ${r.hit ? "" : "line-through"}`}>{r.label}</div>
-                                  <div className="w-16 grid place-items-center" style={{ fontFamily: NUM, fontSize: 24, fontWeight: 700, color: r.hit ? CY : MUTED }} dir="ltr">+{r.pts}</div>
+                                  <div className="w-16 grid place-items-center" style={{ fontFamily: NUM, fontSize: 19, fontWeight: 700, color: r.hit ? CY : MUTED }} dir="ltr">+{r.pts}</div>
                                 </div>
                               ))}
                             </div>
-                            <div className="mt-2 flex items-stretch h-12">
-                              <div className="flex-1 flex items-center px-3 font-black text-[13px]" style={{ background: MG, transform: "skewX(-8deg)" }}>
+                            <div className="mt-2 flex items-stretch h-10">
+                              <div className="flex-1 flex items-center px-3 font-bold text-[13px]" style={{ background: MG, transform: "skewX(-8deg)" }}>
                                 <span style={{ transform: "skewX(8deg)" }}>סה״כ לניחוש <span dir="ltr">{simA}:{simB}</span></span>
                               </div>
-                              <div className="w-28 grid place-items-center" style={{ background: "#fff" }}>
-                                <Odo v={sim.total} h={34} color={INK} />
+                              <div className="w-24 grid place-items-center" style={{ background: "#fff" }}>
+                                <Odo v={sim.total} h={26} color={INK} />
                               </div>
                             </div>
                           </motion.div>
@@ -360,7 +361,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
                         <Skew>פגיעה מדויקת</Skew>
                         <div className="flex" style={{ background: "rgba(255,255,255,.07)" }}>
                           {[[false, "עמודות", "1/X/2"], [true, "אלכסון התיקו", ""]].map(([v, label, extra]) => (
-                            <button key={label} onClick={() => setDiag(v)} className="text-[11px] font-black px-2.5 py-1.5" style={{ background: diag === v ? "#fff" : "transparent", color: diag === v ? INK : MUTED }}>
+                            <button key={label} onClick={() => setDiag(v)} className="text-[11px] font-bold px-2.5 py-1.5" style={{ background: diag === v ? "#fff" : "transparent", color: diag === v ? INK : MUTED }}>
                               {label} {extra && <span dir="ltr">{extra}</span>}
                             </button>
                           ))}
