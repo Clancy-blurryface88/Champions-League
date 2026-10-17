@@ -7,6 +7,7 @@ import { PitchLineup } from './MatchLineups';
 import { useModalBackButtonOnMount } from '@/hooks/useModalBackButton';
 import HeadToHead from './HeadToHead';
 import TeamFlag from '@/components/TeamFlag';
+import MatchupPlates from './MatchupPlates';
 import { goalTeamId } from '@/data/goalTeamIds';
 
 export function getTeamForm(allMatches, teamName) {
@@ -459,10 +460,10 @@ export default function MatchArenaSection({ match, allMatches, loading, onClose 
         style={{ height: '82vh', background: 'linear-gradient(180deg,#13265a,#0a1226)', borderTop: '1px solid rgba(255,255,255,0.18)' }}
         dir="rtl"
       >
-        {/* Drag handle — the only drag area, so the content scrolls freely.
-            No title: the gap above the tabs stays empty on purpose. */}
-        <div onPointerDown={(e) => dragControls.start(e)} className="flex-shrink-0 cursor-grab touch-none pt-2 pb-6">
+        {/* Drag handle + matchup header — the only drag area, so the content scrolls freely */}
+        <div onPointerDown={(e) => dragControls.start(e)} className="flex-shrink-0 cursor-grab touch-none pt-2 pb-3">
           <div className="flex justify-center"><div className="w-10 h-1 rounded-full bg-white/30" /></div>
+          <MatchupPlates match={match} className="mx-3 mt-2" />
         </div>
 
         {/* Glass category tabs — one uniform color */}
