@@ -1146,7 +1146,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
   // must gate the points-pill roll animation.
   const [revealedIds, setRevealedIds] = useState(() => new Set());
 
-  const REVEAL_DELAY = 0.45; // שניות בין חשיפת כל שחקן
+  const REVEAL_DELAY = 0.25; // שניות בין חשיפת כל שחקן
 
   // מיין מהגבוה לנמוך — הגבוה בראש, הנמוך בתחתית ומופיע ראשון
   const sortedPredictions = [...predictions].sort((a, b) => (b.points_earned || 0) - (a.points_earned || 0));
@@ -1210,7 +1210,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
             key={prediction.id}
             initial={{ opacity: 0, filter: 'blur(16px)', scale: 0.85 }}
             animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
-            transition={{ delay: revealDelay, duration: 0.45, ease: 'easeOut' }}
+            transition={{ delay: revealDelay, duration: 0.35, ease: 'easeOut' }}
             onAnimationComplete={() => {
               setRevealedIds(prev => prev.has(prediction.id) ? prev : new Set(prev).add(prediction.id));
             }}
