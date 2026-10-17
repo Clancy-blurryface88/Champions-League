@@ -10,54 +10,55 @@ const splitRoundName = (name = "") => {
   return m ? { label: m[1].toUpperCase(), num: m[2] } : { label: name.trim().toUpperCase(), num: null };
 };
 
-// Broadcast double plate (design 25.1): fading glass name plate with a thin frame with the ball as a watermark, silver number plate.
+// Broadcast double plate as rounded parallelograms (shapes25 #3): framed glass name plate with the
+// ball as a watermark, silver number plate. Both plates share one skew, so the break between them is
+// a constant gap with parallel edges.
 // The next round to predict (not finished yet) gets a green-to-cyan number plate.
+const SKEW = 13.5; // deg — 12px of slant over the 50px plate height
+const unskew = `skewX(${SKEW}deg)`;
+
 const RoundCard = ({ round, onClick, isNext }) => {
   const { label, num } = splitRoundName(round.name);
 
   return (
     <div
-      className="relative mx-3 h-16 w-64 flex-shrink-0 cursor-pointer flex items-center justify-center transition-[scale,filter] duration-150 ease-out active:scale-[.96] hover:brightness-110"
+      className="relative mx-3 h-16 w-[284px] flex-shrink-0 cursor-pointer flex items-center justify-center transition-[scale,filter] duration-150 ease-out active:scale-[.96] hover:brightness-110"
       onClick={() => onClick(round)}
     >
-      <div className="flex h-[50px]" dir="ltr">
+      <div className="flex h-[50px] gap-1" dir="ltr">
         <span
-          className="relative overflow-hidden flex items-center text-white"
+          className="relative overflow-hidden flex items-center text-white rounded"
           style={{
-            background: "linear-gradient(90deg,rgba(255,255,255,.2),rgba(255,255,255,.02))",
+            transform: `skewX(-${SKEW}deg)`,
+            background: "linear-gradient(90deg,rgba(255,255,255,.2),rgba(255,255,255,.03))",
             backdropFilter: "blur(12px)",
             WebkitBackdropFilter: "blur(12px)",
+            border: "1px solid rgba(255,255,255,.45)",
             font: "700 15.5px 'Outfit', sans-serif",
-            padding: num ? "0 17px 0 53px" : "0 26px 0 53px",
-            clipPath: "polygon(0 0,100% 0,92% 100%,0 100%)",
+            padding: num ? "0 20px 0 60px" : "0 28px 0 60px",
           }}
         >
-          {/* Thin frame along the slanted outline (half the stroke is clipped, so 2 shows as ~1px) */}
-          <svg className="absolute inset-0 h-full w-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <polygon points="0,0 100,0 92,100 0,100" fill="none" stroke="rgba(255,255,255,.45)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-          </svg>
           <img
             src="/champions/round-ball.png"
             alt=""
             draggable={false}
             className="absolute pointer-events-none select-none"
-            style={{ height: 66, left: -14, top: "50%", transform: "translateY(-50%)", opacity: 0.5 }}
+            style={{ height: 78, left: -20, top: "50%", transform: `translateY(-50%) ${unskew}`, opacity: 0.5 }}
           />
-          <span className="relative whitespace-nowrap">{label}</span>
+          <span className="relative whitespace-nowrap" style={{ transform: unskew }}>{label}</span>
         </span>
         {num && (
           <span
-            className="grid place-items-center"
+            className="grid place-items-center rounded"
             style={{
+              transform: `skewX(-${SKEW}deg)`,
               background: isNext ? "linear-gradient(135deg,#22c55e,#00e0ff)" : "linear-gradient(180deg,#f8fafc,#94a3b8)",
               color: isNext ? "#04201d" : "#0f172a",
               font: "700 34px 'Teko', sans-serif",
-              padding: "0 19px",
-              clipPath: "polygon(18% 0,100% 0,100% 100%,0 100%)",
-              marginLeft: -10,
+              width: 56,
             }}
           >
-            {num}
+            <span style={{ transform: unskew }}>{num}</span>
           </span>
         )}
       </div>
@@ -110,7 +111,7 @@ export function RoundsMarquee({ rounds, user, onRoundClick }) {
   }
 
   // Calculate total width of all cards for infinite scroll
-  const cardWidth = 256 + 24; // w-64 (256px) + mx-3 (24px total margin)
+  const cardWidth = 284 + 24; // w-[284px] + mx-3 (24px total margin)
   const totalWidth = displayedRounds.length * cardWidth;
 
   // Auto-scroll animation - always moving left
