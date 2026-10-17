@@ -17,18 +17,18 @@ const RoundCard = ({ round, onClick, isNext }) => {
 
   return (
     <div
-      className="relative mx-3 h-16 w-60 flex-shrink-0 cursor-pointer flex items-center justify-center transition-[scale,filter] duration-150 ease-out active:scale-[.96] hover:brightness-110"
+      className="relative mx-3 h-16 w-64 flex-shrink-0 cursor-pointer flex items-center justify-center transition-[scale,filter] duration-150 ease-out active:scale-[.96] hover:brightness-110"
       onClick={() => onClick(round)}
     >
-      <div className="flex h-[42px]" dir="ltr">
+      <div className="flex h-[50px]" dir="ltr">
         <span
           className="relative overflow-hidden flex items-center text-white"
           style={{
             background: "linear-gradient(90deg,rgba(255,255,255,.2),rgba(255,255,255,.02))",
             backdropFilter: "blur(12px)",
             WebkitBackdropFilter: "blur(12px)",
-            font: "700 13px 'Outfit', sans-serif",
-            padding: num ? "0 14px 0 44px" : "0 22px 0 44px",
+            font: "700 15.5px 'Outfit', sans-serif",
+            padding: num ? "0 17px 0 53px" : "0 26px 0 53px",
             clipPath: "polygon(0 0,100% 0,92% 100%,0 100%)",
           }}
         >
@@ -41,7 +41,7 @@ const RoundCard = ({ round, onClick, isNext }) => {
             alt=""
             draggable={false}
             className="absolute pointer-events-none select-none"
-            style={{ height: 56, left: -12, top: "50%", transform: "translateY(-50%)", opacity: 0.22 }}
+            style={{ height: 66, left: -14, top: "50%", transform: "translateY(-50%)", opacity: 0.22 }}
           />
           <span className="relative whitespace-nowrap">{label}</span>
         </span>
@@ -51,10 +51,10 @@ const RoundCard = ({ round, onClick, isNext }) => {
             style={{
               background: isNext ? "linear-gradient(135deg,#22c55e,#00e0ff)" : "linear-gradient(180deg,#f8fafc,#94a3b8)",
               color: isNext ? "#04201d" : "#0f172a",
-              font: "700 28px 'Teko', sans-serif",
-              padding: "0 16px",
+              font: "700 34px 'Teko', sans-serif",
+              padding: "0 19px",
               clipPath: "polygon(18% 0,100% 0,100% 100%,0 100%)",
-              marginLeft: -8,
+              marginLeft: -10,
             }}
           >
             {num}
@@ -110,7 +110,7 @@ export function RoundsMarquee({ rounds, user, onRoundClick }) {
   }
 
   // Calculate total width of all cards for infinite scroll
-  const cardWidth = 240 + 24; // w-60 (240px) + mx-3 (24px total margin)
+  const cardWidth = 256 + 24; // w-64 (256px) + mx-3 (24px total margin)
   const totalWidth = displayedRounds.length * cardWidth;
 
   // Auto-scroll animation - always moving left
