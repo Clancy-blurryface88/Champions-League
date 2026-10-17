@@ -37,9 +37,9 @@ function gameClock(elapsed, end) {
   return "90+'";
 }
 
-// Score on the match tags only: gold dot-matrix digits ("Doto", loaded in index.html)
+// Score on the top match-filter tags only: gold dot-matrix digits ("Doto", loaded in index.html)
 const GOLD_SCORE = { fontFamily: "Doto, monospace", fontWeight: 900, color: "#f5c542", fontSize: "1.2em", lineHeight: 1, textShadow: "0 0 6px rgba(245,197,66,.55)" };
-const RANK_TINT = (r) =>(r === 1 ? "#facc15" : r === 2 ? "#cbd5e1" : r === 3 ? "#d6923f" : "rgba(255,255,255,.35)");
+const RANK_TINT = (r) => (r === 1 ? "#facc15" : r === 2 ? "#cbd5e1" : r === 3 ? "#d6923f" : "rgba(255,255,255,.35)");
 
 // roundId limits the night chips to that round; initialDate (YYYY-MM-DD,
 // Israel date) opens that night, e.g. from the end-of-night push.
@@ -350,7 +350,8 @@ export default function NightReplay({ roundId = null, initialDate = null, onBack
               onScrub={(v) => { setPlaying(false); setT(v); }} />
             <div className="flex items-center justify-center gap-2 mt-2">
               <CtrlBtn onClick={() => { setPlaying(false); setT(range[0]); }} label="מההתחלה"><RotateCcw className="w-4 h-4" /></CtrlBtn>
-              <CtrlBtn onClick={() => jump(-1)} label="השער הקודם"><SkipForward className="w-4 h-4" /></CtrlBtn>
+              {/* RTL row: this one sits right of play, so it goes forward (the timeline runs left → right) */}
+              <CtrlBtn onClick={() => jump(1)} label="השער הבא"><SkipForward className="w-4 h-4" /></CtrlBtn>
               <motion.button whileTap={{ scale: 0.92 }}
                 onClick={() => { if (reachedEnd) setT(range[0]); setPlaying((p) => !p); }}
                 className="w-12 h-12 rounded-full flex items-center justify-center text-slate-900"
@@ -358,7 +359,7 @@ export default function NightReplay({ roundId = null, initialDate = null, onBack
                 aria-label={playing ? "השהיה" : "הפעלה"}>
                 {playing ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 -mr-0.5" />}
               </motion.button>
-              <CtrlBtn onClick={() => jump(1)} label="השער הבא"><SkipBack className="w-4 h-4" /></CtrlBtn>
+              <CtrlBtn onClick={() => jump(-1)} label="השער הקודם"><SkipBack className="w-4 h-4" /></CtrlBtn>
               <button onClick={() => setSpeed((s) => SPEEDS[(SPEEDS.indexOf(s) + 1) % SPEEDS.length])}
                 className="h-10 min-w-[48px] px-2 rounded-xl text-[13px] font-black text-emerald-300 tabular-nums"
                 style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)" }}
@@ -544,7 +545,7 @@ function MatchColumn({ active, t, scoreAt, hotId, onPick }) {
               <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-4 h-4" animate={false} />
               <AnimatePresence mode="popLayout">
                 <motion.span key={s ? `${s.a}-${s.b}` : "pre"} initial={{ y: -8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 8, opacity: 0 }}
-                  className="text-[12px]" style={GOLD_SCORE}>{s ? `${s.a}-${s.b}` : "–"}</motion.span>
+                  className="text-white font-black text-[12px] tabular-nums">{s ? `${s.a}-${s.b}` : "–"}</motion.span>
               </AnimatePresence>
               <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-4 h-4" animate={false} />
             </span>
