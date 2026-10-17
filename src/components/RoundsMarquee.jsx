@@ -1,7 +1,8 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { motion, useMotionValue, useAnimationFrame } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { Match } from "@/api/entities";
 
 // "League Phase - 3" -> label "LEAGUE PHASE", number "3"
 const splitRoundName = (name = "") => {
@@ -9,8 +10,9 @@ const splitRoundName = (name = "") => {
   return m ? { label: m[1].toUpperCase(), num: m[2] } : { label: name.trim().toUpperCase(), num: null };
 };
 
-// Broadcast double plate (design 25.1): dark name plate with the ball as a watermark, white number plate
-const RoundCard = ({ round, onClick }) => {
+// Broadcast double plate (design 25.1): fading glass name plate with a thin frame with the ball as a watermark, silver number plate.
+// The next round to predict (not finished yet) gets a green-to-cyan number plate.
+const RoundCard = ({ round, onClick, isNext }) => {
   const { label, num } = splitRoundName(round.name);
 
   return (
@@ -22,12 +24,18 @@ const RoundCard = ({ round, onClick }) => {
         <span
           className="relative overflow-hidden flex items-center text-white"
           style={{
-            background: "#0d0f2e",
+            background: "linear-gradient(90deg,rgba(255,255,255,.2),rgba(255,255,255,.02))",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
             font: "700 13px 'Outfit', sans-serif",
             padding: num ? "0 14px 0 44px" : "0 22px 0 44px",
             clipPath: "polygon(0 0,100% 0,92% 100%,0 100%)",
           }}
         >
+          {/* Thin frame along the slanted outline (half the stroke is clipped, so 2 shows as ~1px) */}
+          <svg className="absolute inset-0 h-full w-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <polygon points="0,0 100,0 92,100 0,100" fill="none" stroke="rgba(255,255,255,.45)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+          </svg>
           <img
             src="/champions/round-ball.png"
             alt=""
@@ -41,8 +49,8 @@ const RoundCard = ({ round, onClick }) => {
           <span
             className="grid place-items-center"
             style={{
-              background: "#fff",
-              color: "#070822",
+              background: isNext ? "linear-gradient(135deg,#22c55e,#00e0ff)" : "linear-gradient(180deg,#f8fafc,#94a3b8)",
+              color: isNext ? "#04201d" : "#0f172a",
               font: "700 28px 'Teko', sans-serif",
               padding: "0 16px",
               clipPath: "polygon(18% 0,100% 0,100% 100%,0 100%)",
@@ -62,6 +70,11 @@ export function RoundsMarquee({ rounds, user, onRoundClick }) {
   const baseX = useMotionValue(0);
   const [isDragging, setIsDragging] = useState(false);
   const [pauseAnimation, setPauseAnimation] = useState(false);
+  const [matches, setMatches] = useState([]);
+
+  useEffect(() => {
+    Match.list().then(setMatches).catch(() => setMatches([]));
+  }, []);
 
   const handleRoundClick = useCallback((round) => {
     if (!isDragging) {
@@ -76,6 +89,12 @@ export function RoundsMarquee({ rounds, user, onRoundClick }) {
   // Filter active rounds (hidden for everyone including admins if inactive)
   const displayedRounds = rounds.filter((r) => r.is_active);
 
+  // First round (by order) that still has an unfinished match
+  const nextRoundId = displayedRounds.find((r) => {
+    const rMatches = matches.filter((m) => m.round_id === r.id);
+    return rMatches.length > 0 && rMatches.some((m) => !m.is_finished);
+  })?.id;
+
   if (displayedRounds.length === 0) {
     return null;
   }
@@ -84,7 +103,7 @@ export function RoundsMarquee({ rounds, user, onRoundClick }) {
     return (
       <div className="relative flex w-full flex-col items-center justify-center overflow-hidden bg-transparent py-4">
         <div className="flex justify-center">
-          <RoundCard round={displayedRounds[0]} onClick={handleRoundClick} />
+          <RoundCard round={displayedRounds[0]} onClick={handleRoundClick} isNext={displayedRounds[0].id === nextRoundId} />
         </div>
       </div>
     );
@@ -166,7 +185,7 @@ export function RoundsMarquee({ rounds, user, onRoundClick }) {
           >
             {repeatedRounds.map((round, index) => (
               <div key={`${round.id}-${index}`} className="flex-shrink-0">
-                <RoundCard round={round} onClick={handleRoundClick} />
+                <RoundCard round={round} onClick={handleRoundClick} isNext={round.id === nextRoundId} />
               </div>
             ))}
           </motion.div>
