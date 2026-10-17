@@ -39,6 +39,8 @@ function gameClock(elapsed, end) {
 
 // Score on the top match-filter tags only: gold dot-matrix digits ("Doto", loaded in index.html)
 const GOLD_SCORE = { fontFamily: "Doto, monospace", fontWeight: 900, color: "#f5c542", fontSize: "1.2em", lineHeight: 1, textShadow: "0 0 6px rgba(245,197,66,.55)" };
+// watermark rank: medal colours for the top 3, light slate (not the faint white) for the rest
+const RANK_WM = (r) => (r <= 3 ? RANK_TINT(r) : "#94a3b8");
 const RANK_TINT = (r) => (r === 1 ? "#facc15" : r === 2 ? "#cbd5e1" : r === 3 ? "#d6923f" : "rgba(255,255,255,.35)");
 
 // roundId limits the night chips to that round; initialDate (YYYY-MM-DD,
@@ -333,7 +335,6 @@ export default function NightReplay({ roundId = null, initialDate = null, onBack
             <MatchColumn active={active} t={t} scoreAt={model.scoreAt} hotId={hotId} onPick={pick} />
             <div className="min-w-0 flex flex-col gap-3">
               <div className="min-w-0">
-                <TableHead />
                 {rows.map((r) => <Row key={r.userId} r={r} isMe={r.userId === me} delta={model.startRank[r.userId] - r.rank} hot={overtakes.movers.has(r.userId)} />)}
               </div>
               {hero}
@@ -609,14 +610,6 @@ function DeltaTag({ delta }) {
     : <Minus className="w-3.5 h-3.5 text-slate-600" />;
 }
 
-function TableHead() {
-  return (
-    <div className="flex items-center gap-1.5 px-2 mb-1.5 text-[10px] text-slate-500 font-semibold">
-      <span className="w-7" /><span className="flex-1">משתתף</span><span className="w-10 text-left">הערב</span><span className="w-11 text-left">סה״כ</span><span className="w-7" />
-    </div>
-  );
-}
-
 // Exact hit right now → the card glows green (no icon, no extra width).
 const EXACT_GLOW = "0 0 0 1px rgba(52,211,153,.85), 0 0 12px rgba(52,211,153,.55)";
 const NO_GLOW = "0 0 0 0px rgba(52,211,153,0), 0 0 0px rgba(52,211,153,0)";
@@ -635,7 +628,7 @@ function Row({ r, isMe, delta, hot }) {
       }}>
       {/* rank as a big slanted watermark at the right edge, cropped by the card */}
       <span aria-hidden className="absolute pointer-events-none select-none tabular-nums"
-        style={{ right: 4, top: "50%", transform: "translateY(-46%) skewX(-8deg)", fontFamily: "'Teko', sans-serif", fontSize: 44, fontWeight: 700, lineHeight: 1, color: RANK_TINT(r.rank), opacity: 0.3, textShadow: "2px 2px 0 rgba(0,0,0,.5)" }}>{r.rank}</span>
+        style={{ right: 4, top: "50%", transform: "translateY(-46%) skewX(-8deg)", fontFamily: "'Teko', sans-serif", fontSize: 44, fontWeight: 700, lineHeight: 1, color: RANK_WM(r.rank), opacity: 0.55, textShadow: "2px 2px 0 rgba(0,0,0,.5)" }}>{r.rank}</span>
       <div className="relative flex items-center gap-1.5 pl-2 pr-9 py-1.5">
         <span className="flex-1 min-w-0 truncate text-[13px] font-semibold text-slate-100">{r.name}</span>
         <AnimatedNum value={r.night} className={`w-10 text-left text-[11px] font-bold tabular-nums ${r.night > 0 ? "text-emerald-300" : "text-slate-500"}`} prefix={r.night > 0 ? "+" : ""} />
