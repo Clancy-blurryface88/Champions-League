@@ -18,6 +18,19 @@ const scoreVariants = {
 };
 import { Match } from "@/api/entities";
 
+// Row plates (broadcast style): one shared skew and the card's glass look
+const SKEW_T = 'skewX(-12deg)';
+const UNSKEW = 'skewX(12deg)';
+const PLATE = {
+  transform: SKEW_T,
+  borderRadius: 4,
+  border: '1px solid rgba(255,255,255,0.09)',
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
+  background: 'rgba(255,255,255,0.02)',
+  boxShadow: '4px 4px 10px rgba(0,0,0,0.45), -2px -2px 6px rgba(255,255,255,0.05), 0 8px 24px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.05)',
+};
+
 export default function PredictionSummary({ predictions, roundId, onConfirm, onCancel, saving }) {
   const [matches, setMatches] = useState([]);
   const [loadingMatches, setLoadingMatches] = useState(true);
@@ -111,59 +124,48 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                   initial="hidden"
                   whileInView="visible"
                   viewport={{ once: true, amount: 0.4, root: scrollRef }}
-                  style={{
-                    borderRadius: 0,
-                    background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.02) 50%)',
-                    border: '1px solid rgba(255,255,255,0.09)',
-                    borderLeft: '4px solid #22c55e',
-                    transform: 'skewX(-6deg)',
-                    overflow: 'hidden',
-                    backdropFilter: 'blur(8px)',
-                    WebkitBackdropFilter: 'blur(8px)',
-                    boxShadow: '4px 4px 10px rgba(0,0,0,0.45), -2px -2px 6px rgba(255,255,255,0.05), 0 8px 24px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.05)',
-                  }}
+                  className="flex items-stretch gap-1 px-1"
+                  style={{ height: 46 }}
                 >
-                  <div className="flex items-center gap-2 px-3" style={{ paddingTop: 10, paddingBottom: 10, transform: 'skewX(6deg)' }}>
-                    {/* Team A — נכנסת מימין */}
-                    <motion.div
-                      variants={teamAVariants}
-                      className="flex items-center gap-1.5 flex-1 min-w-0 justify-end"
-                    >
-                      <span className="text-white/80 text-xs font-semibold truncate text-right">{match.team_a}</span>
-                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-7 h-7 flex-shrink-0" />
-                    </motion.div>
-
-                    {/* Score pill — מופיע אחרי הדגלים */}
-                    <motion.div
-                      variants={scoreVariants}
-                      className="flex flex-col items-center flex-shrink-0 w-[78px]"
-                    >
-                      <div
-                        className="w-full flex items-center justify-center px-2 py-1.5 rounded-xl"
-                        style={{
-                          background: 'rgba(34,197,94,0.11)',
-                          border: '1px solid rgba(34,197,94,0.32)',
-                          boxShadow: '0 0 12px rgba(34,197,94,0.10)',
-                        }}
-                      >
-                        <span
-                          className="font-black text-base tabular-nums"
-                          style={{ color: '#4ade80' }}
-                        >
-                          {prediction.predicted_score_a} – {prediction.predicted_score_b}
-                        </span>
+                  {/* Broadcast plates: home plate, score slab, away plate — all on one skew, so the
+                      breaks between them are parallel. Colours and effects are the card's own. */}
+                  {/* Team A — נכנסת מימין */}
+                  {/* framer-motion owns the transform of the animated wrapper, so the skew sits on an inner plate */}
+                  <motion.div variants={teamAVariants} className="flex-1 min-w-0 flex">
+                    <div className="flex-1 min-w-0 flex items-center justify-end px-3" style={{ ...PLATE, borderLeft: '4px solid #60a5fa' }}>
+                      <div className="flex items-center gap-1.5 min-w-0" style={{ transform: UNSKEW }}>
+                        <span className="text-white/80 text-xs font-semibold truncate text-right">{match.team_a}</span>
+                        <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-7 h-7 flex-shrink-0" />
                       </div>
-                    </motion.div>
+                    </div>
+                  </motion.div>
 
-                    {/* Team B — נכנסת משמאל */}
-                    <motion.div
-                      variants={teamBVariants}
-                      className="flex items-center gap-1.5 flex-1 min-w-0 justify-start"
+                  {/* Score slab — מופיע אחרי הדגלים */}
+                  <motion.div variants={scoreVariants} className="flex-shrink-0 w-[74px] flex">
+                    <div
+                      className="flex-1 grid place-items-center"
+                      style={{
+                        transform: SKEW_T,
+                        borderRadius: 4,
+                        background: 'transparent',
+                        border: '1px solid rgba(96,165,250,0.6)',
+                      }}
                     >
-                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-7 h-7 flex-shrink-0" />
-                      <span className="text-white/80 text-xs font-semibold truncate">{match.team_b}</span>
-                    </motion.div>
-                  </div>
+                      <span className="font-black text-[19px] tabular-nums" style={{ color: '#93c5fd', transform: UNSKEW }}>
+                        {prediction.predicted_score_a} – {prediction.predicted_score_b}
+                      </span>
+                    </div>
+                  </motion.div>
+
+                  {/* Team B — נכנסת משמאל */}
+                  <motion.div variants={teamBVariants} className="flex-1 min-w-0 flex">
+                    <div className="flex-1 min-w-0 flex items-center justify-start px-3" style={PLATE}>
+                      <div className="flex items-center gap-1.5 min-w-0" style={{ transform: UNSKEW }}>
+                        <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-7 h-7 flex-shrink-0" />
+                        <span className="text-white/80 text-xs font-semibold truncate">{match.team_b}</span>
+                      </div>
+                    </div>
+                  </motion.div>
                 </motion.div>
               ))}
             </div>
@@ -175,23 +177,25 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
           className="px-4 pt-3 pb-6 space-y-2 flex-shrink-0 flex flex-col items-center"
           style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
         >
-          <div className="flex flex-col gap-2 w-52">
+          {/* side by side; reversed so the confirm button sits on the right */}
+          <div className="flex flex-row-reverse gap-3 w-full max-w-sm">
           <button
             onClick={onConfirm}
             disabled={saving || loadingMatches}
-            className="w-full py-3 rounded-2xl font-bold text-base transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 py-3 rounded font-bold text-base transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
+              transform: SKEW_T, // same plate geometry as the rows
               background: 'linear-gradient(rgba(4,10,22,0.98), rgba(4,10,22,0.98)) padding-box, linear-gradient(90deg, #16a34a, #22c55e) border-box',
               border: '1.5px solid transparent',
             }}
           >
             {saving ? (
-              <span className="flex items-center justify-center gap-2" style={{ color: '#4ade80' }}>
+              <span className="flex items-center justify-center gap-2" style={{ color: '#4ade80', transform: UNSKEW }}>
                 <OrbitSpinner size={18} />
                 שומר...
               </span>
             ) : (
-              <span style={{ color: '#4ade80' }}>
+              <span className="inline-block" style={{ color: '#4ade80', transform: UNSKEW }}>
                 אישור ושליחה
               </span>
             )}
@@ -200,13 +204,14 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
           <button
             onClick={onCancel}
             disabled={saving}
-            className="w-full py-3 rounded-2xl text-base font-bold transition-opacity disabled:opacity-40"
+            className="flex-1 py-3 rounded text-base font-bold transition-opacity disabled:opacity-40"
             style={{
+              transform: SKEW_T,
               background: 'linear-gradient(rgba(4,10,22,0.98), rgba(4,10,22,0.98)) padding-box, linear-gradient(90deg, #b91c1c, #ef4444) border-box',
               border: '1.5px solid transparent',
             }}
           >
-            <span style={{ background: 'linear-gradient(90deg, #b91c1c, #ef4444)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+            <span className="inline-block" style={{ transform: UNSKEW, background: 'linear-gradient(90deg, #b91c1c, #ef4444)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
               ביטול
             </span>
           </button>
