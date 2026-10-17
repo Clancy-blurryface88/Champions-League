@@ -1135,6 +1135,9 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
 }
 
 // רכיב נפרד לרשימת הניחושים עם פירוט הניקוד מתוקן
+// Prediction row card slant: 10px over the ~50px card height
+const ROW_SKEW = 11;
+
 function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeStatus, onAllRevealed }) {
   const [expandedPrediction, setExpandedPrediction] = useState(null);
   const [shockwaveActive, setShockwaveActive] = useState(false);
@@ -1211,8 +1214,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
             onAnimationComplete={() => {
               setRevealedIds(prev => prev.has(prediction.id) ? prev : new Set(prev).add(prediction.id));
             }}
-            className="relative rounded-xl overflow-hidden"
-            style={verdictStyle}>
+            className="relative">
 
             {/* Shockwave ring — רק על המוביל */}
             {index === 0 && shockwaveActive && (
@@ -1248,6 +1250,9 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
               />
             )}
 
+            {/* Card — rounded parallelogram (skewed plate, counter-skewed content) */}
+            <div className="relative overflow-hidden" style={{ ...verdictStyle, borderRadius: 5, transform: `skewX(-${ROW_SKEW}deg)` }}>
+            <div className="relative" style={{ transform: `skewX(${ROW_SKEW}deg)` }}>
             {/* Rank — big slanted watermark at the row's right edge (like the leaderboard), cropped by
                 the card. Anchored to a fixed offset so it stays put when the breakdown opens. */}
             <span
@@ -1278,6 +1283,8 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                 {getUserDisplayName(prediction.user_id)}
               </span>
             </button>
+            </div>
+            </div>
 
             {/* פירוט הניקוד - נפתח בלחיצה */}
             <AnimatePresence>
@@ -1287,7 +1294,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className={`border-t bg-black/20 ${
+                className={`mt-1 overflow-hidden rounded-[5px] border bg-black/25 ${
                   outcomeStatus?.type === 'exact'   ? 'border-emerald-400/35' :
                   outcomeStatus?.type === 'correct' ? 'border-sky-400/35' :
                   outcomeStatus?.type === 'wrong'   ? 'border-red-400/30' :
