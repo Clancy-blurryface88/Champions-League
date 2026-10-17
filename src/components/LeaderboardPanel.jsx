@@ -361,10 +361,10 @@ export default function LeaderboardPanel({ onClose, user }) {
                               ['#475569','#64748b','#475569']
                             }
                           />
-                          {/* Ghost rank number — anchored to a fixed offset (not 50%) so it
-                              doesn't sink lower as the card grows taller when the accordion
-                              opens; shadow deepened to make the rank pop more */}
-                          <span style={{ position:'absolute', left:12, top:24, transform:'translateY(-50%) skewX(6deg)', fontSize:38, fontWeight:900, color:getRankColor(position), opacity:0.18, lineHeight:1, userSelect:'none', pointerEvents:'none', textShadow:`0 3px 10px rgba(0,0,0,0.65), 0 0 22px ${getRankColor(position)}66` }}>
+                          {/* Ghost rank number — a big slanted watermark cropped by the card edges.
+                              Anchored to a fixed offset (not 50%) so it doesn't sink lower as the
+                              card grows taller when the accordion opens */}
+                          <span style={{ position:'absolute', left:4, top:26, transform:'translateY(-46%) skewX(-8deg)', fontFamily:"'Teko', sans-serif", fontSize:92, fontWeight:700, color:getRankColor(position), opacity:0.24, lineHeight:1, userSelect:'none', pointerEvents:'none', textShadow:'4px 4px 0 rgba(0,0,0,0.6)' }}>
                             {position}
                           </span>
 
