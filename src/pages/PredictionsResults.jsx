@@ -742,7 +742,7 @@ export default function PredictionsResults() {
 
                       {/* Chip strip — jump straight to any match, newest first */}
                       {finishedMatches.length > 1 &&
-                        <div ref={chipStripRef} className="flex gap-1.5 overflow-x-auto px-1 py-1 scrollbar-hide">
+                        <div ref={chipStripRef} className="flex gap-2 overflow-x-auto px-2 py-1 scrollbar-hide">
                           {finishedMatches.map((match, i) => i).reverse().map((i) => {
                             const match = finishedMatches[i];
                             const active = i === currentMatchIndex;
@@ -758,14 +758,15 @@ export default function PredictionsResults() {
                               <button
                                 key={match.id}
                                 onClick={() => goToMatch(i)}
-                                className="flex-none flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-bold transition-all"
-                                style={active
-                                  ? { background: 'rgba(255,255,255,0.08)', border: '1.5px solid #ffffff', boxShadow: hit ? '0 0 8px rgba(34,197,94,0.45)' : undefined }
-                                  : { background: 'rgba(255,255,255,0.08)', border, boxShadow: hit ? '0 0 8px rgba(34,197,94,0.45)' : undefined }}
+                                className="flex-none px-2.5 py-1.5 rounded text-xs font-bold transition-all"
+                                // slanted plate, like the round buttons; content is counter-skewed
+                                style={{ transform: 'skewX(-12deg)', background: 'rgba(255,255,255,0.08)', border: active ? '1.5px solid #ffffff' : border, boxShadow: hit ? '0 0 8px rgba(34,197,94,0.45)' : undefined }}
                               >
-                                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-6 h-6" rounded="sm" />
-                                <span className="tabular-nums" style={{ color: '#22d3ee' }}>{match.actual_score_a}-{match.actual_score_b}</span>
-                                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-6 h-6" rounded="sm" />
+                                <span className="flex items-center gap-1.5" style={{ transform: 'skewX(12deg)' }}>
+                                  <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-6 h-6" rounded="sm" />
+                                  <span className="tabular-nums" style={{ color: '#22d3ee' }}>{match.actual_score_a}-{match.actual_score_b}</span>
+                                  <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-6 h-6" rounded="sm" />
+                                </span>
                               </button>
                             );
                           })}
@@ -1257,50 +1258,36 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
               />
             )}
 
-            {/* פרטי הניחוש הבסיסיים */}
-            <div className="py-2 px-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setExpandedPrediction(isExpanded ? null : prediction.id)}
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-opacity hover:opacity-70 flex-shrink-0"
-                    style={rankStyle}>
-                    {index + 1}
-                  </button>
+            {/* Rank — big slanted watermark at the row's right edge (like the leaderboard), cropped by
+                the card. Anchored to a fixed offset so it stays put when the breakdown opens. */}
+            <span
+              aria-hidden
+              className="absolute pointer-events-none select-none"
+              style={{ right: 6, top: 36, transform: 'translateY(-46%) skewX(-8deg)', fontFamily: "'Teko', sans-serif", fontSize: 72, fontWeight: 700, lineHeight: 1, color: rankStyle.color, opacity: 0.24, textShadow: '3px 3px 0 rgba(0,0,0,0.55)' }}>
+              {index + 1}
+            </span>
 
-                  <div className="flex-1 flex flex-col items-center">
-                    <button
-                      onClick={() => setExpandedPrediction(isExpanded ? null : prediction.id)}
-                      className="text-white font-medium text-sm hover:text-blue-300 transition-colors text-center mb-0.5">
-                      {getUserDisplayName(prediction.user_id)}
-                    </button>
-                    <div className="text-slate-400 text-base flex items-center gap-1">
-                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5" rounded="sm" />
-                      <span className="text-slate-50 pr-2 pl-2 text-sm font-medium">{prediction.predicted_score_a} - {prediction.predicted_score_b}</span>
-                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5" rounded="sm" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-xs font-bold tabular-nums px-2.5 py-1 rounded-lg"
-                    style={ptsBadgeStyle}>
-                    <OdometerValue target={prediction.points_earned || 0} trigger={revealedIds.has(prediction.id)} /> PTS
-                  </span>
-                  {outcomeStatus?.type === 'exact'   && <span className="text-base">🎯</span>}
-                  {outcomeStatus?.type === 'correct' && (
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-lg"
-                      style={{ background:'rgba(251,191,36,0.15)', border:'1px solid rgba(251,191,36,0.35)' }}>
-                      <Check className="w-3.5 h-3.5 text-amber-400" strokeWidth={3} />
-                    </span>
-                  )}
-                  {outcomeStatus?.type === 'wrong' && (
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-lg text-sm"
-                      style={{ background:'rgba(239,68,68,0.15)', border:'1px solid rgba(248,113,113,0.3)', color:'rgba(248,113,113,0.9)' }}>✕</span>
-                  )}
-                </div>
-              </div>
-            </div>
+            {/* One grid for every row so they line up: points | score with teams | name | (rank on the right) */}
+            <button
+              type="button"
+              onClick={() => setExpandedPrediction(isExpanded ? null : prediction.id)}
+              aria-label={`מקום ${index + 1}`}
+              className="relative w-full grid items-center gap-2 py-2.5 pl-3 pr-14"
+              style={{ gridTemplateColumns: '62px 112px 1fr', direction: 'ltr' }}>
+              <span className="tabular-nums text-left" style={{ fontFamily: "'Teko', sans-serif", fontSize: 22, fontWeight: 600, lineHeight: 1, color: ptsBadgeStyle.color }}>
+                <OdometerValue target={prediction.points_earned || 0} trigger={revealedIds.has(prediction.id)} height={22} width={10} />
+              </span>
+              <span className="flex items-center justify-center gap-1.5">
+                <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-6 h-6" rounded="sm" />
+                <span className="tabular-nums text-white" style={{ fontFamily: "'Teko', sans-serif", fontSize: 28, fontWeight: 700, lineHeight: 1 }}>
+                  {prediction.predicted_score_a}:{prediction.predicted_score_b}
+                </span>
+                <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-6 h-6" rounded="sm" />
+              </span>
+              <span className="truncate text-right text-white font-medium text-sm" dir="rtl">
+                {getUserDisplayName(prediction.user_id)}
+              </span>
+            </button>
 
             {/* פירוט הניקוד - נפתח בלחיצה */}
             <AnimatePresence>
