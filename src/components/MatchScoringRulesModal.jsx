@@ -1,7 +1,7 @@
 import TeamFlag from "@/components/TeamFlag";
+import MatchupPlates from "@/components/predictions/MatchupPlates";
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { getTeamColor } from "@/utils/teamColors";
 import { useModalBackButton } from "@/hooks/useModalBackButton";
 import OdometerValue from "@/components/OdometerValue";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,8 +16,6 @@ const NUM = "'Teko', sans-serif";
 const NUM_W = 0.46; // odometer cell width ÷ height for Teko digits
 const PANEL_BG = "linear-gradient(170deg,#1a1d5c 0%,#0d0f2e 40%,#070822 100%)";
 const EASE = [0.2, 0.8, 0.2, 1];
-// parallelogram leaning like the VS slab (same 10px slant on every plate)
-const SLANT = "polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%)";
 
 function calcSimPoints(match, a, b) {
   if (a === null || b === null) return null;
@@ -254,7 +252,6 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
   const scores = hasOdds
     ? Object.entries(m.score_odds).filter(([k]) => k !== "other").map(([k, v]) => { const [a, b] = k.split(":").map(Number); return { k, a, b, v }; })
     : [];
-  const colorA = getTeamColor(m.team_a), colorB = getTeamColor(m.team_b);
 
   return createPortal(
     <AnimatePresence>
@@ -283,19 +280,8 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
               </button>
             </div>
 
-            {/* teams as a broadcast score bug: two slanted team plates in the teams'
-                colours (edges parallel to the VS slab), a little lower than the VS so it stands out */}
-            <div className="mx-3 flex items-center h-16" dir="ltr">
-              <div className="flex-1 min-w-0 h-12 flex items-center gap-1.5 pl-3 pr-4 -mr-2" style={{ background: `linear-gradient(90deg,${colorA},${colorA}bb)`, clipPath: SLANT }}>
-                <TeamFlag logo={m.team_a_logo} name={m.team_a} size={32} animate={false} />
-                <b className="text-[12px] leading-tight line-clamp-2 break-words" style={{ textShadow: "0 1px 2px rgba(0,0,0,.45)" }}>{m.team_a}</b>
-              </div>
-              <div className="relative z-10 w-[68px] h-16 grid place-items-center flex-shrink-0" style={{ background: "#fff", color: INK, fontFamily: NUM, fontSize: 38, fontWeight: 700, lineHeight: 1, clipPath: SLANT, filter: "drop-shadow(0 0 10px rgba(255,255,255,.35))" }}>VS</div>
-              <div className="flex-1 min-w-0 h-12 flex items-center justify-end gap-1.5 pr-3 pl-4 -ml-2" style={{ background: `linear-gradient(270deg,${colorB},${colorB}bb)`, clipPath: SLANT }}>
-                <b className="text-[12px] leading-tight line-clamp-2 break-words" style={{ textShadow: "0 1px 2px rgba(0,0,0,.45)" }}>{m.team_b}</b>
-                <TeamFlag logo={m.team_b_logo} name={m.team_b} size={32} animate={false} />
-              </div>
-            </div>
+            {/* teams: slanted plates in the clubs' colours around the VS */}
+            <MatchupPlates match={m} className="mx-3" />
 
             {/* tabs */}
             <div className="flex gap-1 mx-3 mt-3">
