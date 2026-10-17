@@ -438,9 +438,9 @@ function ImpactPills({ e, mm, preds, small }) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {inNow > 0
-        ? <span className={cls} style={{ background: "rgba(52,211,153,.18)", color: "#a7f3d0" }}>{inNow} על התוצאה 🎯</span>
-        : <span className={cls} style={{ background: "rgba(255,255,255,.07)", color: "#94a3b8" }}>אף אחד לא על התוצאה</span>}
-      {out > 0 && <span className={cls} style={{ background: "rgba(248,113,113,.15)", color: "#fecaca" }}>{out} יצאו ממנה ⬇</span>}
+        ? <span className={cls} style={{ background: "rgba(52,211,153,.18)", color: "#a7f3d0" }}>{inNow === 1 ? "משתתף אחד" : `${inNow} משתתפים`} 🎯</span>
+        : <span className={cls} style={{ background: "rgba(255,255,255,.07)", color: "#94a3b8" }}>אין פוגעים ❌</span>}
+      {out > 0 && <span className={cls} style={{ background: "rgba(248,113,113,.15)", color: "#fecaca" }}>{out === 1 ? "השער הפיל משתתף" : `השער הפיל ${out} משתתפים`} 😕</span>}
     </div>
   );
 }
