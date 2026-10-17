@@ -31,6 +31,7 @@ import { AnimatedList } from "@/components/magicui/animated-list";
 import ScoreAccuracyVisuals from "@/components/predictions/ScoreAccuracyVisuals";
 import { calculateMatchMaxPotentialPoints } from "../components/utils/calculateMatchMaxPotentialPoints";
 import OdometerValue from "@/components/OdometerValue";
+import SlotValue from "@/components/SlotValue";
 
 
 const OUTCOME_COLORS = {
@@ -689,44 +690,33 @@ export default function PredictionsResults() {
                 {/* Header with View Mode Toggle */}
                 <div className="px-4 py-3">
                   {/* Glass tab bar */}
-                  <div
-                    className="relative flex p-1 mb-2 rounded-2xl"
-                    style={{
-                      background: 'rgba(255,255,255,0.06)',
-                      backdropFilter: 'blur(20px) saturate(160%)',
-                      WebkitBackdropFilter: 'blur(20px) saturate(160%)',
-                      border: '1px solid rgba(34,197,94,0.45)',
-                    }}
-                  >
+                  {/* Tabs in the 1X2 panel's geometry: slanted plates, the active one white */}
+                  <div className="flex gap-1 mb-2 px-1">
                     {[
                       { key: 'all_predictions', label: 'כל הניחושים'  },
                       { key: 'my_predictions',  label: 'הניחושים שלי' },
                       { key: 'leaderboard',     label: 'דירוג המחזור' },
-                    ].map((tab, i, arr) => {
+                    ].map((tab) => {
                       const active = viewMode === tab.key;
                       return (
                         <button
                           key={tab.key}
                           onClick={() => setViewMode(tab.key)}
-                          className="relative flex-1 flex items-center justify-center py-1.5 px-1 rounded-xl transition-colors z-10"
-                          style={{
-                            color: '#fff',
-                            borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.14)' : 'none',
-                          }}
+                          className="relative flex-1 flex items-center justify-center py-2 px-1"
+                          style={{ transform: 'skewX(-12deg)', background: 'rgba(255,255,255,0.07)' }}
                         >
                           {active && (
                             <motion.div
                               layoutId="tab-pill"
-                              className="absolute inset-0 rounded-xl"
-                              style={{
-                                background: 'linear-gradient(135deg, #16a34a 0%, #097adc 100%)',
-                                boxShadow: '0 2px 12px rgba(22,163,74,0.35)',
-                                opacity: 0.88,
-                              }}
-                              transition={{ type: 'spring', bounce: 0.2, duration: 0.45 }}
+                              className="absolute inset-0"
+                              style={{ background: '#fff' }}
+                              transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
                             />
                           )}
-                          <span className="relative z-10 text-[11px] font-bold tracking-wide leading-tight text-center whitespace-nowrap">
+                          <span
+                            className="relative z-10 text-[12px] font-bold leading-tight text-center whitespace-nowrap transition-colors"
+                            style={{ transform: 'skewX(12deg)', color: active ? '#070822' : '#9aa3d6' }}
+                          >
                             {tab.label}
                           </span>
                         </button>
@@ -1275,7 +1265,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
               className="relative w-full grid items-center gap-2 py-2.5 pl-3 pr-14"
               style={{ gridTemplateColumns: '62px 112px 1fr', direction: 'ltr' }}>
               <span className="tabular-nums text-left" style={{ fontFamily: "'Teko', sans-serif", fontSize: 22, fontWeight: 600, lineHeight: 1, color: ptsBadgeStyle.color }}>
-                <OdometerValue target={prediction.points_earned || 0} trigger={revealedIds.has(prediction.id)} height={22} width={10} />
+                <SlotValue target={prediction.points_earned || 0} trigger={revealedIds.has(prediction.id)} />
               </span>
               <span className="flex items-center justify-center gap-1.5">
                 <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-6 h-6" rounded="sm" />
