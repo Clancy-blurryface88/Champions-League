@@ -195,11 +195,13 @@ function ExactDiagonal({ scores, match }) {
   );
 }
 
+// Tab swap: the new view replaces the old one at once and fades up from 35%.
+// No exit animation (that left ~100ms of fully transparent content between tabs)
+// and no blur filter (expensive on phones) — both read as flicker.
 const tabSwap = {
-  initial: { opacity: 0, filter: "blur(4px)" },
-  animate: { opacity: 1, filter: "blur(0px)" },
-  exit: { opacity: 0, filter: "blur(4px)" },
-  transition: { duration: 0.18, ease: [0.23, 1, 0.32, 1] },
+  initial: { opacity: 0.35 },
+  animate: { opacity: 1 },
+  transition: { duration: 0.14, ease: "easeOut" },
 };
 
 // clip-path that covers exactly the given screen rect (the match card)
@@ -303,8 +305,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
 
             {/* content — one tab at a time */}
             <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-4">
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div key={tab} {...tabSwap}>
+              <motion.div key={tab} {...tabSwap}>
                   {tab === "sim" && (
                     <div>
                       <div className="mb-2"><Skew>סימולטור · כמה שווה הניחוש שלך</Skew></div>
@@ -335,7 +336,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
                             </div>
                             <div className="mt-2 flex items-stretch h-10">
                               <div className="flex-1 flex items-center px-3 font-bold text-[13px]" style={{ background: MG, transform: "skewX(-8deg)" }}>
-                                <span style={{ transform: "skewX(8deg)" }}>סה״כ לניחוש <span dir="ltr">{simA}:{simB}</span></span>
+                                <span style={{ transform: "skewX(8deg)" }}>סה״כ ניקוד</span>
                               </div>
                               <div className="w-24 grid place-items-center" style={{ background: "#fff" }}>
                                 <Odo v={sim.total} h={26} color={INK} />
@@ -367,11 +368,9 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
                           ))}
                         </div>
                       </div>
-                      <AnimatePresence mode="wait" initial={false}>
-                        <motion.div key={String(diag)} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
-                          {diag ? <ExactDiagonal scores={scores} match={m} /> : <ExactColumns scores={scores} />}
-                        </motion.div>
-                      </AnimatePresence>
+                      <motion.div key={String(diag)} {...tabSwap}>
+                        {diag ? <ExactDiagonal scores={scores} match={m} /> : <ExactColumns scores={scores} />}
+                      </motion.div>
                       {"other" in m.score_odds && (
                         <div className="mt-2 flex items-stretch h-9" style={{ background: "rgba(255,255,255,.05)" }}>
                           <div className="flex-1 flex items-center px-3 text-[12px] font-bold">כל תוצאה אחרת</div>
@@ -380,8 +379,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
                       )}
                     </div>
                   )}
-                </motion.div>
-              </AnimatePresence>
+              </motion.div>
             </div>
           </motion.div>
         </motion.div>
