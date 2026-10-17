@@ -10,8 +10,8 @@ import { motion, AnimatePresence } from "framer-motion";
 // panel (and shrinks back on close), three tabs — simulator, markets, exact
 // score (with a "draw diagonal" view). Numbers are Teko.
 
-// accent: green gradient (was pink); GREEN for text/lines that need a solid colour
-const CY = "#00e0ff", MG = "linear-gradient(135deg,#22c55e,#059669)", GREEN = "#22c55e", INK = "#070822", MUTED = "#9aa3d6";
+// accent: dark green gradient (was pink) — dark enough for white text; GREEN for text/lines that need a solid colour
+const CY = "#00e0ff", MG = "linear-gradient(135deg,#15803d,#065f46)", GREEN = "#22c55e", INK = "#070822", MUTED = "#9aa3d6";
 const NUM = "'Teko', sans-serif";
 const NUM_W = 0.46; // odometer cell width ÷ height for Teko digits
 const PANEL_BG = "linear-gradient(170deg,#1a1d5c 0%,#0d0f2e 40%,#070822 100%)";
