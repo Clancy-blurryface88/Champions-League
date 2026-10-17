@@ -8,7 +8,7 @@ import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ChevronUp, ChevronDown, Eye, Check, X } from "lucide-react";
+import { ArrowLeft, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Eye, Check, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -236,6 +236,49 @@ function ScoreBreakdownAnimated({ prediction, match, outcomeType }) {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+// Round picker: the round number big in the middle, small arrows on the sides.
+// "League Phase - 3" -> 3 (falls back to the position in the list).
+const roundNumber = (r, i) => Number((r?.name || '').trim().match(/(\d+)\s*$/)?.[1]) || i + 1;
+
+function BigNumberRoundPicker({ rounds, value, onChange }) {
+  const idx = rounds.findIndex(r => r.id === value);
+  const current = rounds[idx];
+  const canPrev = idx > 0;
+  const canNext = idx < rounds.length - 1;
+  const arrow = {
+    background: 'rgba(255,255,255,0.06)',
+    border: '1px solid rgba(255,255,255,0.14)',
+    color: '#cbd5e1',
+  };
+  return (
+    <div className="flex items-center justify-center gap-6" dir="ltr">
+      <button onClick={() => canPrev && onChange(rounds[idx - 1].id)} disabled={!canPrev} aria-label="מחזור קודם"
+        className="w-9 h-9 grid place-items-center rounded-full transition-transform active:scale-90 disabled:opacity-25"
+        style={arrow}>
+        <ChevronLeft className="w-4 h-4" strokeWidth={2.5} />
+      </button>
+      <AnimatePresence mode="wait">
+        <motion.div key={current?.id}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          className="text-center min-w-[64px]">
+          <span className="block text-[11px] font-bold tracking-[0.14em]" style={{ color: '#4ade80', fontFamily: "'Outfit', sans-serif" }}>ROUND</span>
+          <span className="block text-white" style={{ fontFamily: "'Teko', sans-serif", fontWeight: 700, fontSize: 64, lineHeight: 0.85 }}>
+            {roundNumber(current, idx)}
+          </span>
+        </motion.div>
+      </AnimatePresence>
+      <button onClick={() => canNext && onChange(rounds[idx + 1].id)} disabled={!canNext} aria-label="מחזור הבא"
+        className="w-9 h-9 grid place-items-center rounded-full transition-transform active:scale-90 disabled:opacity-25"
+        style={arrow}>
+        <ChevronRight className="w-4 h-4" strokeWidth={2.5} />
+      </button>
     </div>
   );
 }
@@ -654,7 +697,7 @@ export default function PredictionsResults() {
         <>
             {/* Round Selector */}
             <div
-              className="mb-6 flex flex-col items-center gap-2 px-4 py-3 rounded-2xl relative overflow-hidden"
+              className="mb-6 flex flex-col items-center gap-2 px-4 py-1.5 rounded-2xl relative overflow-hidden"
               style={{
                 background: 'rgba(6,12,28,0.55)',
                 backdropFilter: 'blur(52px) saturate(200%)',
@@ -664,8 +707,7 @@ export default function PredictionsResults() {
               }}
             >
               <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-2xl" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 100%)' }} />
-              <span className="text-base uppercase tracking-[0.16em] font-bold" style={{ color: 'rgba(74,222,128,0.8)' }}>בחר מחזור</span>
-              <FlipBoardPicker
+              <BigNumberRoundPicker
                 rounds={availableRounds}
                 value={selectedRound}
                 onChange={handleRoundChange}
