@@ -195,19 +195,24 @@ function ExactDiagonal({ scores, match }) {
   );
 }
 
-// Tab swap: the new view replaces the old one at once and fades up from 35%.
-// No exit animation (that left ~100ms of fully transparent content between tabs)
-// and no blur filter (expensive on phones) — both read as flicker.
-const tabSwap = {
-  initial: { opacity: 0.35 },
-  animate: { opacity: 1 },
-  transition: { duration: 0.14, ease: "easeOut" },
-};
+// Tab swaps are instant: a fade on a heavy view (exact score, ~100 rows) is drawn
+// over several frames on a phone and reads as flicker.
+const tabSwap = {};
 
-// clip-path that covers exactly the given screen rect (the match card)
-const clipFor = (r) => r
-  ? `inset(${r.top}px ${window.innerWidth - r.right}px ${window.innerHeight - r.bottom}px ${r.left}px round 18px)`
-  : "inset(8% 6% 8% 6% round 18px)";
+// Simulator breakdown: rows reveal one after another, then the total.
+const revealList = { hidden: {}, show: { transition: { staggerChildren: 0.09 } } };
+const revealRow = { hidden: { opacity: 0, x: 14 }, show: { opacity: 1, x: 0, transition: { duration: 0.22, ease: "easeOut" } } };
+
+// Grow/shrink between the match card and full screen with transform only
+// (translate + scale, run by the GPU). Animating clip-path redrew the whole
+// panel every frame and dropped frames on phones.
+// keep the panel on its GPU layer after the animation ends (dropping it blanked a frame)
+const keepLayer = (_, generated) => (generated === "none" ? "translateZ(0)" : `${generated} translateZ(0)`);
+const fromCard = (r) => {
+  if (!r) return { x: 0, y: 24, scaleX: 0.94, scaleY: 0.94 };
+  const W = window.innerWidth, H = window.innerHeight;
+  return { x: r.left, y: r.top, scaleX: r.width / W, scaleY: r.height / H };
+};
 
 export default function MatchScoringRulesModal({ isOpen, onClose, match, originRect }) {
   // Both wheels start on "–"; the points breakdown opens once both are picked.
@@ -228,13 +233,14 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
 
   useModalBackButton(isOpen, onClose);
 
+  // No body scroll lock: the panel covers the whole screen and contains its own
+  // scrolling (overscroll-contain). Toggling body overflow made the browser redraw
+  // the page underneath on open and close — a visible jump on phones.
   useEffect(() => {
     if (!isOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     const onKey = (e) => e.key === "Escape" && onClose?.();
     window.addEventListener("keydown", onKey);
-    return () => { document.body.style.overflow = prev; window.removeEventListener("keydown", onKey); };
+    return () => window.removeEventListener("keydown", onKey);
   }, [isOpen, onClose]);
 
   if (match) shown.current = { match, originRect };
@@ -260,17 +266,17 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
           key="x12-panel"
           className="fixed inset-0 z-[80] overflow-hidden text-white"
           dir="rtl"
-          style={{ background: PANEL_BG }}
-          initial={{ clipPath: clipFor(rect) }}
-          animate={{ clipPath: "inset(0px 0px 0px 0px round 0px)" }}
-          exit={{ clipPath: clipFor(rect) }}
-          transition={{ duration: 0.42, ease: EASE }}
+          initial={{ ...fromCard(rect), opacity: 0, borderRadius: 18 }}
+          animate={{ x: 0, y: 0, scaleX: 1, scaleY: 1, opacity: 1, borderRadius: 0, transition: { duration: 0.4, ease: EASE, opacity: { duration: 0.14 } } }}
+          exit={{ ...fromCard(rect), opacity: 0, borderRadius: 18, transition: { duration: 0.3, ease: EASE, opacity: { duration: 0.28, ease: "easeIn" } } }}
+          style={{ background: PANEL_BG, transformOrigin: "0 0" }}
+          transformTemplate={keepLayer}
         >
           <motion.div
             className="mx-auto flex h-full max-w-md flex-col"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1, transition: { delay: 0.16, duration: 0.2 } }}
-            exit={{ opacity: 0, transition: { duration: 0.1 } }}
+            animate={{ opacity: 1, transition: { delay: 0.3, duration: 0.18 } }}
+            exit={{ opacity: 0, transition: { duration: 0.08 } }}
           >
             {/* header */}
             <div className="flex items-center justify-between px-4 pt-4 pb-2">
@@ -314,23 +320,23 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
                       <AnimatePresence>
                         {sim && (
                           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }} className="overflow-hidden">
-                            <div className="mt-2 space-y-1">
+                            <motion.div className="mt-2 space-y-1" variants={revealList} initial="hidden" animate="show">
                               {sim.breakdown.map((r) => (
-                                <div key={r.label} className="flex items-stretch h-8" style={{ background: "rgba(255,255,255,.05)", opacity: r.hit ? 1 : 0.35 }}>
+                                <motion.div variants={revealRow} key={r.label} className="flex items-stretch h-8" style={{ background: "rgba(255,255,255,.05)", opacity: r.hit ? 1 : 0.35 }}>
                                   <div className="w-1.5" style={{ background: r.hit ? CY : "transparent" }} />
                                   <div className={`flex-1 flex items-center px-3 text-[12.5px] font-bold ${r.hit ? "" : "line-through"}`}>{r.label}</div>
                                   <div className="w-16 grid place-items-center" style={{ fontFamily: NUM, fontSize: 19, fontWeight: 700, color: r.hit ? CY : MUTED }} dir="ltr">+{r.pts}</div>
-                                </div>
+                                </motion.div>
                               ))}
-                            </div>
-                            <div className="mt-2 flex items-stretch h-10">
+                            </motion.div>
+                            <motion.div className="mt-2 flex items-stretch h-10" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.09 * sim.breakdown.length + 0.05, duration: 0.25, ease: "easeOut" } }}>
                               <div className="flex-1 flex items-center px-3 font-bold text-[13px]" style={{ background: MG, transform: "skewX(-8deg)" }}>
                                 <span style={{ transform: "skewX(8deg)" }}>סה״כ ניקוד</span>
                               </div>
                               <div className="w-24 grid place-items-center" style={{ background: "#fff" }}>
                                 <Odo v={sim.total} h={26} color={INK} />
                               </div>
-                            </div>
+                            </motion.div>
                           </motion.div>
                         )}
                       </AnimatePresence>

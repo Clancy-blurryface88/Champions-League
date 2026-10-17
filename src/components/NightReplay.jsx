@@ -316,9 +316,13 @@ export default function NightReplay({ roundId = null, initialDate = null, onBack
             <Chip on={filter === "all"} onClick={() => setFilter("all")}>כל הערב</Chip>
             {model.matches.map((mm) => (
               <Chip key={mm.id} on={filter === mm.id} onClick={() => pick(mm.id)}>
-                <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-4 h-4" animate={false} />
-                <span dir="ltr" style={GOLD_SCORE}>{mm.final.a}-{mm.final.b}</span>
-                <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-4 h-4" animate={false} />
+                {/* one LTR row: home logo, home-away score, away logo — in the RTL chip the
+                    logos used to swap sides while the score stayed LTR, pairing each team with the other's goals */}
+                <span dir="ltr" className="flex items-center gap-1.5">
+                  <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-4 h-4" animate={false} />
+                  <span style={GOLD_SCORE}>{mm.final.a}-{mm.final.b}</span>
+                  <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-4 h-4" animate={false} />
+                </span>
               </Chip>
             ))}
           </div>
