@@ -96,7 +96,7 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
           <h2
             className="text-lg font-bold leading-tight"
             style={{
-              color: '#4ade80',
+              color: '#93c5fd', // same blue as the score digits
             }}
           >
             סיכום הניחושים שלך
