@@ -41,7 +41,7 @@ const RoundCard = ({ round, onClick, isNext }) => {
             alt=""
             draggable={false}
             className="absolute pointer-events-none select-none"
-            style={{ height: 66, left: -14, top: "50%", transform: "translateY(-50%)", opacity: 0.22 }}
+            style={{ height: 66, left: -14, top: "50%", transform: "translateY(-50%)", opacity: 0.5 }}
           />
           <span className="relative whitespace-nowrap">{label}</span>
         </span>
