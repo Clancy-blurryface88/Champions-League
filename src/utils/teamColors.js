@@ -50,5 +50,49 @@ export const TEAM_COLORS = {
   'Colombia':           '#FCD116',
 };
 
-export const getTeamColor = (teamName, fallback = '#1e3a5f') =>
-  TEAM_COLORS[teamName] || fallback;
+// Champions League clubs — main kit colour, dark enough to carry white text
+const CLUB_COLORS = {
+  'AEK Athens':          '#b8860b',
+  'AS Roma':             '#8e1f2f',
+  'Arsenal':             '#c8102e',
+  'Aston villa':         '#670e36',
+  'Atletico Madrid':     '#cb3524',
+  'Barcelona':           '#a50044',
+  'Bayern Munich':       '#dc052d',
+  'Bodø/Glimt':          '#b59a00',
+  'Club Brugge':         '#0067b1',
+  'Como':                '#0b3d91',
+  'Dortmund':            '#c9a400',
+  'Fenerbahce':          '#0b1f63',
+  'Feyenoord':           '#d4001a',
+  'Galatasaray':         '#a90432',
+  'Inter':               '#0068a8',
+  'LOSC LIlle':          '#c8102e',
+  'Lask':                '#2b2b2b',
+  'Leipzig':             '#dd0741',
+  'Liverpool':           '#c8102e',
+  'Manchaster City':     '#4a8fc7',
+  'Manchester City':     '#4a8fc7',
+  'Manchester United':   '#da291c',
+  'Napoli':              '#0a6ebd',
+  'PSV':                 '#d71920',
+  'Paris':               '#004170',
+  'Porto':               '#003f8a',
+  'RC Lens':             '#d81e05',
+  'Real Betis':          '#00954c',
+  'Real Madrid':         '#3d2e8c',
+  'Sabah FC':            '#c2186f',
+  'Shakhtar Donetsk':    '#e06a00',
+  'Slavia Prague':       '#c8102e',
+  'Slovan Bratislava':   '#1c5aa8',
+  'Sporting Lisbon':     '#007a3d',
+  'Stuttgart':           '#c8102e',
+  'Viking':              '#1b4d8c',
+  'Villarreal':          '#b8a000',
+};
+
+// Names in the DB sometimes carry trailing spaces ("Slavia Prague ")
+export const getTeamColor = (teamName, fallback = '#1e3a5f') => {
+  const n = (teamName || '').trim();
+  return TEAM_COLORS[teamName] || TEAM_COLORS[n] || CLUB_COLORS[n] || fallback;
+};
