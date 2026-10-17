@@ -2,7 +2,8 @@ import React from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function ScoreInput({ value, onChange, hasError, disabled }) {
+// locked: read-only view of a saved prediction — same frame and digits, arrows hidden (space kept so the frame sits where it does when open)
+export default function ScoreInput({ value, onChange, hasError, disabled, locked = false }) {
   const handleIncrement = () => {
     if (disabled) return;
     const currentValue = value === undefined || value === null ? -1 : value;
@@ -23,7 +24,9 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
       {/* חץ למעלה */}
       <motion.button
         onClick={handleIncrement}
-        disabled={disabled}
+        disabled={disabled || locked}
+        aria-hidden={locked || undefined}
+        style={locked ? { visibility: 'hidden' } : undefined}
         whileTap={{ scale: 0.85 }}
         className="flex items-center justify-center
           hover:opacity-70 disabled:opacity-30 disabled:cursor-not-allowed
@@ -84,7 +87,9 @@ export default function ScoreInput({ value, onChange, hasError, disabled }) {
       {/* חץ למטה */}
       <motion.button
         onClick={handleDecrement}
-        disabled={disabled || value === 0 || isUndefined}
+        disabled={disabled || locked || value === 0 || isUndefined}
+        aria-hidden={locked || undefined}
+        style={locked ? { visibility: 'hidden' } : undefined}
         whileTap={{ scale: 0.85 }}
         className="flex items-center justify-center
           hover:opacity-70 disabled:opacity-30 disabled:cursor-not-allowed

@@ -6,7 +6,7 @@ import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { User } from "@/api/entities";
 import { AiBrief } from "@/api/entities";
-import { ArrowLeft, Check, Lock, HelpCircle, Eye, Sparkles, ChevronDown, Dices, History } from "lucide-react";
+import { ArrowLeft, Check, Lock, HelpCircle, Eye, Sparkles, ChevronDown, Dices, History, Play } from "lucide-react";
 import AiBriefModal from "@/components/AiBriefModal"; // ADDED Eye icon
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -1049,31 +1049,10 @@ export default function Predictions() {
                             </>
                           ) : (
                             <>
-                              <div className="w-10 h-16 relative overflow-hidden flex items-center justify-center rounded-[14px]" style={{
-                                background: 'rgba(255,255,255,0.10)',
-                                backdropFilter: 'blur(40px) saturate(180%)',
-                                WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-                                border: '1px solid rgba(255,255,255,0.22)',
-                                boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 2px 0 rgba(255,255,255,0.50), inset 0 -1px 0 rgba(0,0,0,0.15)',
-                              }}>
-                                <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.22) 0%, transparent 100%)' }} />
-                                <span className="relative text-white text-lg font-bold">
-                                  {prediction.predicted_score_a !== undefined && prediction.predicted_score_a !== null ? prediction.predicted_score_a : '?'}
-                                </span>
-                              </div>
+                              {/* locked: the saved prediction in the same frame as the open picker, without arrows */}
+                              <ScoreInput value={prediction.predicted_score_a} locked />
                               <span className="text-slate-400 font-bold text-lg">-</span>
-                              <div className="w-10 h-16 relative overflow-hidden flex items-center justify-center rounded-[14px]" style={{
-                                background: 'rgba(255,255,255,0.10)',
-                                backdropFilter: 'blur(40px) saturate(180%)',
-                                WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-                                border: '1px solid rgba(255,255,255,0.22)',
-                                boxShadow: '0 8px 32px rgba(0,0,0,0.28), inset 0 2px 0 rgba(255,255,255,0.50), inset 0 -1px 0 rgba(0,0,0,0.15)',
-                              }}>
-                                <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.22) 0%, transparent 100%)' }} />
-                                <span className="relative text-white text-lg font-bold">
-                                  {prediction.predicted_score_b !== undefined && prediction.predicted_score_b !== null ? prediction.predicted_score_b : '?'}
-                                </span>
-                              </div>
+                              <ScoreInput value={prediction.predicted_score_b} locked />
                             </>
                           )}
                         </div>
@@ -1279,10 +1258,16 @@ export default function Predictions() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ type: 'spring', stiffness: 400, damping: 28 }}
             whileTap={{ scale: 0.96 }}
-            className="w-full max-w-sm flex items-center justify-center gap-2.5 px-8 py-3 rounded-2xl font-bold text-base text-yellow-400 border border-yellow-500/40 bg-yellow-500/5 hover:bg-yellow-500/10 hover:border-yellow-500/70 transition-colors"
+            // double plate, like the round buttons: gold play plate + glass text plate, both slanted
+            className="w-full max-w-sm flex items-stretch gap-1 h-[50px]"
+            dir="ltr"
           >
-            <History className="w-5 h-5" />
-            <span>הילוך חוזר למחזור</span>
+            <span className="w-[58px] grid place-items-center rounded" style={{ transform: 'skewX(-12deg)', background: 'linear-gradient(135deg,#fde047,#eab308)', color: '#3a2a00' }}>
+              <Play className="w-5 h-5" fill="currentColor" style={{ transform: 'skewX(12deg)' }} />
+            </span>
+            <span className="flex-1 grid place-items-center rounded font-extrabold text-base text-white" style={{ transform: 'skewX(-12deg)', background: 'linear-gradient(90deg,rgba(255,255,255,0.18),rgba(255,255,255,0.04))', border: '1px solid rgba(255,255,255,0.4)' }}>
+              <span style={{ transform: 'skewX(12deg)' }}>הילוך חוזר למחזור</span>
+            </span>
           </motion.button>
         </div>
       )}
