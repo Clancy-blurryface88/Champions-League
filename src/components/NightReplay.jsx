@@ -540,20 +540,27 @@ function MatchColumn({ active, t, scoreAt, hotId, onPick }) {
       <div className="text-[10px] text-slate-500 font-semibold text-center mb-0.5">משחקים</div>
       {active.map((mm) => {
         const s = scoreAt(mm, t), clock = gameClock(t - mm.ko, mm.end - mm.ko), live = clock && clock !== "סיום", hot = hotId === mm.id;
+        // how far into the match we are (0 before kickoff, 1 at full time) — drives the bar at the bottom
+        const progress = Math.max(0, Math.min(1, (t - mm.ko) / (mm.end - mm.ko)));
         return (
           <motion.button key={mm.id} onClick={() => onPick(mm.id)}
             animate={hot ? { scale: [1, 1.06, 1] } : { scale: 1 }} transition={{ duration: 0.6 }}
-            className="rounded-xl py-1.5 flex flex-col items-center gap-0.5"
+            className="relative overflow-hidden rounded-xl pt-1.5 pb-2 flex flex-col items-center gap-0.5"
             style={{ background: hot ? "rgba(52,211,153,.14)" : live ? "rgba(52,211,153,.06)" : "rgba(255,255,255,.035)", border: `1px solid ${hot ? "rgba(52,211,153,.6)" : live ? "rgba(52,211,153,.22)" : "rgba(255,255,255,.07)"}`, opacity: clock ? 1 : 0.5, boxShadow: hot ? "0 0 14px rgba(52,211,153,.45)" : "none" }}>
             <span className="flex items-center gap-1" dir="ltr">
               <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-4 h-4" animate={false} />
               <AnimatePresence mode="popLayout">
                 <motion.span key={s ? `${s.a}-${s.b}` : "pre"} initial={{ y: -8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 8, opacity: 0 }}
-                  className="text-white font-black text-[12px] tabular-nums">{s ? `${s.a}-${s.b}` : "–"}</motion.span>
+                  className="font-black text-[12px] tabular-nums leading-none rounded px-1.5 py-0.5"
+                  // score in a tag: green while the match is live, white otherwise
+                  style={{ background: live ? "#34d399" : "#fff", color: live ? "#062a1e" : "#070822" }}>{s ? `${s.a}-${s.b}` : "–"}</motion.span>
               </AnimatePresence>
               <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-4 h-4" animate={false} />
             </span>
-            <span className={`text-[9px] font-bold tabular-nums ${live ? "text-emerald-300" : "text-slate-500"}`}>{clock || ilClock(new Date(Date.parse(mm.m.match_date)))}</span>
+            <span dir="ltr" className={`text-[9px] font-bold tabular-nums ${live ? "text-emerald-300" : "text-slate-500"}`}>{clock || ilClock(new Date(Date.parse(mm.m.match_date)))}</span>
+            {/* minute progress */}
+            <span className="absolute bottom-0 left-0 h-[2px] transition-[width] duration-300 ease-linear"
+              style={{ width: `${progress * 100}%`, background: live ? "#34d399" : "#475569" }} />
           </motion.button>
         );
       })}
