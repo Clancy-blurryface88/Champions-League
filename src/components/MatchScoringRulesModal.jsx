@@ -60,7 +60,9 @@ function calcSimPoints(match, a, b) {
 // centred row is the value. The "–" row (index 0) means nothing picked
 // (value null). Scrolls to its initial value on mount only — remount (key)
 // to reset.
-const WHEEL_ITEM = 34;
+// Simulator sizes (larger wheels, logos, rows and total)
+const SZ = { item: 54, wheelW: 90, wheelFont: 40, logo: 56, name: 13.5, rowH: 44, rowFont: 15, rowNum: 26, totalH: 56, totalOdo: 36 };
+const WHEEL_ITEM = SZ.item;
 const WHEEL_ROWS = [null, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 function ScoreWheel({ value, onChange }) {
   const ref = useRef(null);
@@ -70,7 +72,7 @@ function ScoreWheel({ value, onChange }) {
     if (WHEEL_ROWS[idx] !== value) onChange(WHEEL_ROWS[idx]);
   };
   return (
-    <div className="relative w-16 rounded-xl bg-white/[0.03] border border-white/10" style={{ height: WHEEL_ITEM * 3 }}>
+    <div className="relative rounded-xl bg-white/[0.03] border border-white/10" style={{ width: SZ.wheelW, height: WHEEL_ITEM * 3 }}>
       <div className="absolute inset-x-1 rounded-lg bg-white/10 pointer-events-none" style={{ top: WHEEL_ITEM, height: WHEEL_ITEM }} />
       <div
         ref={ref}
@@ -85,7 +87,7 @@ function ScoreWheel({ value, onChange }) {
             <div
               key={n ?? "none"}
               className="snap-center flex items-center justify-center tabular-nums transition-[opacity,transform] duration-150"
-              style={{ height: WHEEL_ITEM, fontFamily: "'Bebas Neue', sans-serif", fontSize: 24, opacity: on ? (n === null ? 0.6 : 1) : 0.35, transform: `scale(${on ? 1 : 0.85})` }}
+              style={{ height: WHEEL_ITEM, fontFamily: "'Bebas Neue', sans-serif", fontSize: SZ.wheelFont, opacity: on ? (n === null ? 0.6 : 1) : 0.35, transform: `scale(${on ? 1 : 0.85})` }}
             >
               {n === null ? "–" : n}
             </div>
@@ -305,16 +307,16 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
                   {tab === "sim" && (
                     <div>
                       <div className="mb-2"><Skew>סימולטור · כמה שווה הניחוש שלך</Skew></div>
-                      <div key={m.id} className="flex items-center justify-center gap-3 py-2" dir="ltr" style={{ background: "rgba(255,255,255,.04)", borderTop: `3px solid ${CY}` }}>
-                        <div className="flex flex-col items-center gap-1 w-16 min-w-0">
-                          <TeamFlag logo={m.team_a_logo} name={m.team_a} size={36} animate={false} />
-                          <span className="text-[11px] font-bold text-center leading-tight line-clamp-2">{m.team_a}</span>
+                      <div key={m.id} className="flex items-center justify-center gap-3 py-3" dir="ltr" style={{ background: "rgba(255,255,255,.04)", borderTop: `3px solid ${CY}` }}>
+                        <div className="flex flex-col items-center gap-1 min-w-0" style={{ width: SZ.logo + 28 }}>
+                          <TeamFlag logo={m.team_a_logo} name={m.team_a} size={SZ.logo} animate={false} />
+                          <span className="font-bold text-center leading-tight line-clamp-2" style={{ fontSize: SZ.name }}>{m.team_a}</span>
                         </div>
                         <ScoreWheel value={simA} onChange={setSimA} />
                         <ScoreWheel value={simB} onChange={setSimB} />
-                        <div className="flex flex-col items-center gap-1 w-16 min-w-0">
-                          <TeamFlag logo={m.team_b_logo} name={m.team_b} size={36} animate={false} />
-                          <span className="text-[11px] font-bold text-center leading-tight line-clamp-2">{m.team_b}</span>
+                        <div className="flex flex-col items-center gap-1 min-w-0" style={{ width: SZ.logo + 28 }}>
+                          <TeamFlag logo={m.team_b_logo} name={m.team_b} size={SZ.logo} animate={false} />
+                          <span className="font-bold text-center leading-tight line-clamp-2" style={{ fontSize: SZ.name }}>{m.team_b}</span>
                         </div>
                       </div>
                       {!sim && <p className="text-center text-[12px] mt-3" style={{ color: MUTED }}>גללו את שני הגלגלים כדי לראות כמה הניחוש שווה</p>}
@@ -323,19 +325,19 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
                           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }} className="overflow-hidden">
                             <motion.div className="mt-2 space-y-1" variants={revealList} initial="hidden" animate="show">
                               {sim.breakdown.map((r) => (
-                                <motion.div variants={revealRow} key={r.label} className="flex items-stretch h-8" style={{ background: "rgba(255,255,255,.05)", opacity: r.hit ? 1 : 0.35 }}>
+                                <motion.div variants={revealRow} key={r.label} className="flex items-stretch" style={{ height: SZ.rowH, background: "rgba(255,255,255,.05)", opacity: r.hit ? 1 : 0.35 }}>
                                   <div className="w-1.5" style={{ background: r.hit ? CY : "transparent" }} />
-                                  <div className={`flex-1 flex items-center px-3 text-[12.5px] font-bold ${r.hit ? "" : "line-through"}`}>{r.label}</div>
-                                  <div className="w-16 grid place-items-center" style={{ fontFamily: NUM, fontSize: 19, fontWeight: 700, color: r.hit ? CY : MUTED }} dir="ltr">+{r.pts}</div>
+                                  <div className={`flex-1 flex items-center px-3 font-bold ${r.hit ? "" : "line-through"}`} style={{ fontSize: SZ.rowFont }}>{r.label}</div>
+                                  <div className="w-20 grid place-items-center" style={{ fontFamily: NUM, fontSize: SZ.rowNum, fontWeight: 700, color: r.hit ? CY : MUTED }} dir="ltr">+{r.pts}</div>
                                 </motion.div>
                               ))}
                             </motion.div>
-                            <motion.div className="mt-2 flex items-stretch h-10" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0, transition: { delay: STAGGER * sim.breakdown.length + 0.15, duration: 0.4, ease: "easeOut" } }}>
+                            <motion.div className="mt-2 flex items-stretch" style={{ height: SZ.totalH }} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0, transition: { delay: STAGGER * sim.breakdown.length + 0.15, duration: 0.4, ease: "easeOut" } }}>
                               <div className="flex-1 flex items-center px-3 font-bold text-[13px]" style={{ background: MG, transform: "skewX(-8deg)" }}>
                                 <span style={{ transform: "skewX(8deg)" }}>סה״כ ניקוד</span>
                               </div>
                               <div className="w-24 grid place-items-center" style={{ background: "#fff" }}>
-                                <Odo v={sim.total} h={26} color={INK} />
+                                <Odo v={sim.total} h={SZ.totalOdo} color={INK} />
                               </div>
                             </motion.div>
                           </motion.div>
