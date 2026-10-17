@@ -31,6 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ComparisonBar from "../components/stats/ComparisonBar";
 import CommonPredictionsStripe from "../components/stats/CommonPredictionsStripe";
 import GapTrackingTable from "../components/stats/GapTrackingTable";
+import StatsDashboard from "../components/stats/StatsDashboard";
 import RoundSummaryTable from "../components/stats/RoundSummaryTable";
 
 export default function MyStats() {
@@ -359,7 +360,8 @@ export default function MyStats() {
           chartPoints.push({
             round: displayRoundName,
             points: 0,
-            roundPoints: 0
+            roundPoints: 0,
+            played: false
           });
           chartExactHits.push({
             round: displayRoundName,
@@ -403,7 +405,8 @@ export default function MyStats() {
         chartPoints.push({
           round: displayRoundName,
           points: parseFloat(roundPoints.toFixed(2)),
-          roundPoints: parseFloat(roundPoints.toFixed(2))
+          roundPoints: parseFloat(roundPoints.toFixed(2)),
+          played: true
         });
 
         chartExactHits.push({
@@ -834,35 +837,21 @@ export default function MyStats() {
           </TabsContent>
 
           <TabsContent value="stats" forceMount className="space-y-6 data-[state=inactive]:hidden">
-            {/* World Cup Reel Button */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <div
-                onClick={() => window.dispatchEvent(new Event('openYearlySummaryPanel'))}
-                className="group relative grid w-full cursor-pointer overflow-hidden rounded-2xl px-4 py-5 shadow-[0_1000px_0_0_hsl(0_0%_20%)_inset] transition-colors duration-200"
-              >
-                <span>
-                  <span className="spark mask-gradient animate-flip before:animate-kitrotate absolute inset-0 h-[100%] w-[100%] overflow-hidden rounded-2xl [mask:linear-gradient(white,_transparent_50%)] before:absolute before:aspect-square before:w-[200%] before:rotate-[-90deg] before:bg-[conic-gradient(from_0deg,transparent_0_340deg,white_360deg)] before:content-[''] before:[inset:0_auto_auto_50%] before:[translate:-50%_-15%]" />
-                </span>
-                <span className="backdrop absolute inset-px rounded-[11px] bg-neutral-950 transition-colors duration-200" />
-                <div className="z-10 flex flex-col items-center gap-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-yellow-400 font-bold text-lg">Champions Reel</p>
-                    <span className="text-2xl">🏆</span>
-                  </div>
-                  <p className="text-slate-400 text-sm">הסיכום האישי שלך בטורניר</p>
-                </div>
-              </div>
-            </motion.div>
-
+            <StatsDashboard
+              averagePointsPerMatch={averagePointsPerMatch}
+              averagePointsPerRound={averagePointsPerRound}
+              bestMatch={bestMatch}
+              chartData={chartData}
+              pointsPercentageChartData={pointsPercentageChartData}
+              exactHitsChartData={exactHitsChartData}
+              totalExactHits={userStats?.exact_hits_count || 0}
+              panels={{
+            avg: (<>
             {/* Combined Average Statistics Cards */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.05 }}
               className="grid grid-cols-2 gap-6">
 
               {/* Avg per match — Apple Liquid Glass */}
@@ -902,7 +891,7 @@ export default function MyStats() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
+              transition={{ delay: 0.05 }}
               className="mt-6">
 
               {/* Liquid Mercury card */}
@@ -979,16 +968,13 @@ export default function MyStats() {
                 </div>
               </div>
             </motion.div>
-
-
-
-
-
-            {/* Combined Charts Card */}
+            </>),
+            pts: (
+            /* Combined Charts Card */
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
+              transition={{ delay: 0.05 }}
               className="mt-6">
               <div className="rounded-[20px] relative overflow-hidden" style={{
                 background: 'linear-gradient(160deg, rgba(200,200,210,0.18) 0%, rgba(120,120,135,0.10) 50%, rgba(200,200,210,0.16) 100%)',
@@ -1121,11 +1107,13 @@ export default function MyStats() {
               </div>
             </motion.div>
 
-            {/* Combined Hits Card */}
+            ),
+            hits: (
+            /* Combined Hits Card */
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
+              transition={{ delay: 0.05 }}
               className="mt-6">
               <div className="rounded-[20px] relative overflow-hidden" style={{
                 background: 'linear-gradient(160deg, rgba(200,200,210,0.18) 0%, rgba(120,120,135,0.10) 50%, rgba(200,200,210,0.16) 100%)',
@@ -1217,8 +1205,10 @@ export default function MyStats() {
               </div>
             </motion.div>
 
-            {/* Predictions Heatmap */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+            ),
+            map: (
+            /* Predictions Heatmap */
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
               <div className="rounded-[20px] relative overflow-hidden" style={{
                 background: 'linear-gradient(160deg, rgba(200,200,210,0.18) 0%, rgba(120,120,135,0.10) 50%, rgba(200,200,210,0.16) 100%)',
                 backdropFilter: 'blur(40px) saturate(140%)',
@@ -1227,15 +1217,14 @@ export default function MyStats() {
                 boxShadow: '0 8px 40px rgba(0,0,0,0.40), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.20)',
               }}>
                 <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none rounded-t-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 40%, transparent 100%)' }} />
-                <div className="relative px-6 pt-6 pb-4 text-center flex items-center justify-center gap-2">
-                  <span>🗺️</span>
-                  <h3 className="font-bold text-lg" style={{ color: '#E8E8E8' }}>מפת ניחושים</h3>
-                </div>
-                <div className="relative px-6 pb-6">
+                <div className="relative px-6 py-6">
                   <PredictionsHeatmap heatmapData={heatmapData} />
                 </div>
               </div>
             </motion.div>
+            ),
+              }}
+            />
           </TabsContent>
 
           <TabsContent value="head2head" forceMount className="space-y-6 data-[state=inactive]:hidden">
