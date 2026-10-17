@@ -122,12 +122,12 @@ const probOf = (items) => {
   return inv.map((x) => Math.round((x / s) * 100));
 };
 
-function Market({ title, items }) {
+function Market({ title, items, dir }) {
   const p = probOf(items);
   return (
     <div>
       <div className="mb-1.5 text-center"><Skew bg="rgba(255,255,255,.12)">{title}</Skew></div>
-      <div className="flex gap-1">
+      <div className="flex gap-1" dir={dir}>
         {items.map(([label, v], i) => (
           <div key={label} className="flex-1 text-center py-2" style={{ background: "rgba(255,255,255,.06)", transform: "skewX(-6deg)" }}>
             <div style={{ transform: "skewX(6deg)" }}>
@@ -149,9 +149,10 @@ function ExactColumns({ scores }) {
     ["2", (s) => s.a < s.b, CY, (x, y) => (x.a + x.b) - (y.a + y.b) || x.b - y.b],
   ];
   return (
-    <div className="grid grid-cols-3 gap-1.5">
+    // ltr so the "1" column sits under team_a (left of the header) and "2" under team_b; rows stay rtl
+    <div className="grid grid-cols-3 gap-1.5" dir="ltr">
       {cols.map(([label, filter, color, sort]) => (
-        <div key={label}>
+        <div key={label} dir="rtl">
           <div className="text-center mb-1"><Skew bg={label === "X" ? MG : "rgba(255,255,255,.12)"}>{label}</Skew></div>
           <div className="space-y-1">
             {scores.filter(filter).sort(sort).map((s) => (
@@ -348,7 +349,8 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
 
                   {tab === "markets" && (
                     <div className="space-y-4">
-                      <Market title="כיוון משחק" items={[["ניצחון בית", m.home_win_points || 0], ["תיקו", m.draw_points || 0], ["ניצחון חוץ", m.away_win_points || 0]]} />
+                      {/* ltr so home sits under team_a on the left of the header, away under team_b on the right */}
+                      <Market title="כיוון משחק" dir="ltr" items={[["ניצחון בית", m.home_win_points || 0], ["תיקו", m.draw_points || 0], ["ניצחון חוץ", m.away_win_points || 0]]} />
                       <Market title="שתי קבוצות כובשות" items={[["כן", m.btts_yes_points || 0], ["לא", m.btts_no_points || 0]]} />
                       <Market title="טווח שערים" items={[["0–2", m.goals_0_2_points || 0], ["3–4", m.goals_3_4_points || 0], ["5+", m.goals_5_plus_points || 0]]} />
                     </div>
