@@ -27,16 +27,20 @@ function formatDate(dateStr) {
   return `${day}/${month}`;
 }
 
-// Auto-scrolling strip that can also be dragged with a finger. It moves leftwards on
-// its own; a drag shifts it, and on release it carries on from where it was left.
-// A tap (no real drag) still triggers onClick.
+// Auto-scrolling strip that can also be swiped with a finger. It moves leftwards on
+// its own; a swipe shifts it and, on release, keeps gliding with the finger's speed
+// (decaying), then the auto-scroll takes over again. A tap (no real drag) still
+// triggers onClick. Hover pauses it for a mouse only — a finger has no "leave",
+// so treating a touch as hover froze the strip on phones.
 const DRAG_THRESHOLD = 6; // px before a touch counts as a swipe rather than a tap
+const FRICTION = 3.2;     // fling decay per second (higher = stops sooner)
 
 function SwipeTicker({ count, onClick, children }) {
   const vpRef = useRef(null);
   const trackRef = useRef(null);
   const x = useRef(null);       // current offset (px)
-  const drag = useRef(null);    // { startX, startOffset, moved }
+  const drag = useRef(null);    // { startX, startOffset, moved, lastX, lastT, v }
+  const fling = useRef(0);      // px/s left over from a swipe
   const hover = useRef(false);
 
   useEffect(() => {
@@ -48,9 +52,17 @@ function SwipeTicker({ count, onClick, children }) {
     const tick = (t) => {
       const dt = Math.min(64, t - last) / 1000; last = t;
       const vw = vp.clientWidth, tw = tr.scrollWidth;
-      // same pace as before: enter at the right edge, leave fully on the left, in max(n*7, 14)s
-      const speed = (vw + tw) / Math.max(count * 7, 14);
-      if (!drag.current && !hover.current && !reduce) x.current -= speed * dt;
+      // enter at the right edge, leave fully on the left, in max(n*4.5, 10)s
+      const speed = (vw + tw) / Math.max(count * 4.5, 10);
+      if (!drag.current) {
+        if (Math.abs(fling.current) > 20) {
+          x.current += fling.current * dt;
+          fling.current *= Math.exp(-FRICTION * dt);
+        } else {
+          fling.current = 0;
+          if (!hover.current && !reduce) x.current -= speed * dt;
+        }
+      }
       // wrap around in both directions so a drag never runs out of matches
       // (a drag in progress is shifted by the same amount so it stays continuous)
       const wrap = x.current < -tw ? vw + tw : x.current > vw ? -(vw + tw) : 0;
@@ -63,7 +75,8 @@ function SwipeTicker({ count, onClick, children }) {
   }, [count]);
 
   const onDown = (e) => {
-    drag.current = { startX: e.clientX, startOffset: x.current, moved: false };
+    fling.current = 0;
+    drag.current = { startX: e.clientX, startOffset: x.current, moved: false, lastX: e.clientX, lastT: performance.now(), v: 0 };
     vpRef.current?.setPointerCapture?.(e.pointerId);
   };
   const onMove = (e) => {
@@ -71,16 +84,23 @@ function SwipeTicker({ count, onClick, children }) {
     const dx = e.clientX - d.startX;
     if (Math.abs(dx) > DRAG_THRESHOLD) d.moved = true;
     if (d.moved) x.current = d.startOffset + dx;
+    // finger speed, smoothed, for the fling on release
+    const now = performance.now(), dt = (now - d.lastT) / 1000;
+    if (dt > 0) { d.v = 0.75 * ((e.clientX - d.lastX) / dt) + 0.25 * d.v; d.lastX = e.clientX; d.lastT = now; }
   };
   const onUp = () => {
     const d = drag.current; drag.current = null;
-    if (d && !d.moved) onClick?.();
+    if (!d) return;
+    if (!d.moved) { onClick?.(); return; }
+    // a finger held still before lifting means "stop here", not "fling"
+    fling.current = performance.now() - d.lastT < 80 ? Math.max(-2500, Math.min(2500, d.v)) : 0;
   };
 
   return (
     <div ref={vpRef} className="flex-1 overflow-hidden h-full relative select-none" dir="ltr"
       onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={() => (drag.current = null)}
-      onMouseEnter={() => (hover.current = true)} onMouseLeave={() => { hover.current = false; drag.current = null; }}
+      onPointerEnter={(e) => { if (e.pointerType === 'mouse') hover.current = true; }}
+      onPointerLeave={(e) => { if (e.pointerType === 'mouse') hover.current = false; }}
       style={{ cursor: 'grab', touchAction: 'pan-y', WebkitTapHighlightColor: 'transparent' }}>
       <div ref={trackRef}
         style={{ position: 'absolute', top: 0, display: 'flex', alignItems: 'center', height: '100%', gap: '10px', whiteSpace: 'nowrap', willChange: 'transform' }}>
@@ -164,9 +184,14 @@ export default function MatchTickerBar({ onClick }) {
     );
   };
 
+  // Touches on the bar stay here: Layout's page-wide swipe (right swipe → leaderboard)
+  // would otherwise fire on a ticker swipe and re-render the page on every move.
+  const keepTouch = (e) => e.stopPropagation();
+
   return (
     <div
       dir="rtl"
+      onTouchStart={keepTouch} onTouchMove={keepTouch} onTouchEnd={keepTouch}
       className="fixed top-0 left-0 right-0 z-50 flex items-center"
       style={{ height: '36px', background: 'rgba(3,13,26,0.97)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(9, 122, 220,0.22)', boxShadow: '0 1px 20px rgba(9, 122, 220,0.06)' }}
     >
