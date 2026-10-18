@@ -48,8 +48,8 @@ function SwipeTicker({ count, onClick, children }) {
     const tick = (t) => {
       const dt = Math.min(64, t - last) / 1000; last = t;
       const vw = vp.clientWidth, tw = tr.scrollWidth;
-      // same pace as before: enter at the right edge, leave fully on the left, in max(n*7, 14)s
-      const speed = (vw + tw) / Math.max(count * 7, 14);
+      // enter at the right edge, leave fully on the left, in max(n*4.5, 10)s
+      const speed = (vw + tw) / Math.max(count * 4.5, 10);
       if (!drag.current && !hover.current && !reduce) x.current -= speed * dt;
       // wrap around in both directions so a drag never runs out of matches
       // (a drag in progress is shifted by the same amount so it stays continuous)
