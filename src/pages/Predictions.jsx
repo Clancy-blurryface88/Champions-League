@@ -1289,20 +1289,19 @@ export default function Predictions() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.95 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                className="w-full max-w-sm flex items-center justify-center gap-2.5 px-8 py-3 rounded-2xl font-bold text-base text-yellow-400 border border-yellow-500/40 bg-yellow-500/5 hover:bg-yellow-500/10 hover:border-yellow-500/70 transition-colors"
-                style={{}}
+                // double plate, like the replay button: green icon plate + glass text plate, both slanted
+                className="w-full max-w-sm flex items-stretch gap-1 h-[50px] disabled:opacity-70"
+                dir="ltr"
                 whileTap={{ scale: 0.96 }}
               >
-                {saving ? (
-                  <>
-                    <OrbitSpinner size={18} />
-                    <span>שולח...</span>
-                  </>
-                ) : submitted ? (
-                  <span>✎ עדכן ניחושים</span>
-                ) : (
-                  <span>✓ שלח ניחושים</span>
-                )}
+                <span className="w-[58px] grid place-items-center rounded" style={{ transform: 'skewX(-12deg)', background: 'linear-gradient(135deg,#4ade80,#16a34a)', color: '#052e16' }}>
+                  <span className="text-[22px] font-black leading-none" style={{ transform: 'skewX(12deg)' }}>
+                    {saving ? <OrbitSpinner size={18} /> : submitted ? '✎' : '✓'}
+                  </span>
+                </span>
+                <span className="flex-1 grid place-items-center rounded font-extrabold text-base text-white" style={{ transform: 'skewX(-12deg)', background: 'linear-gradient(90deg,rgba(255,255,255,0.18),rgba(255,255,255,0.04))', border: '1px solid rgba(255,255,255,0.4)' }}>
+                  <span style={{ transform: 'skewX(12deg)' }}>{saving ? 'שולח...' : submitted ? 'עדכן ניחושים' : 'שלח ניחושים'}</span>
+                </span>
               </motion.button>
             ) : (
               <motion.div
@@ -1311,21 +1310,25 @@ export default function Predictions() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.25 }}
-                className="w-full max-w-sm rounded-2xl overflow-hidden"
-                style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.35)' }}
+                // same double plate as the send button: gold count plate (like the replay button) + glass plate that fills up
+                className="w-full max-w-sm flex items-stretch gap-1 h-[50px]"
+                dir="ltr"
               >
-                <div className="relative h-10 flex items-center px-4">
-                  <motion.div
-                    className="absolute inset-0 rounded-2xl origin-left"
+                <span className="w-[58px] grid place-items-center rounded" style={{ transform: 'skewX(-12deg)', background: 'linear-gradient(135deg,#fde047,#eab308)' }}>
+                  <span className="tabular-nums" style={{ transform: 'skewX(12deg)', fontFamily: "'Teko', sans-serif", fontWeight: 700, fontSize: 28, lineHeight: 1, color: '#3a2a00', paddingTop: 3 }}>{filled}</span>
+                </span>
+                <span className="relative flex-1 grid place-items-center rounded overflow-hidden" style={{ transform: 'skewX(-12deg)', background: 'linear-gradient(90deg,rgba(255,255,255,0.12),rgba(255,255,255,0.03))', border: '1px solid rgba(255,255,255,0.3)' }}>
+                  <motion.span
+                    className="absolute inset-0"
                     initial={false}
                     animate={{ scaleX: pct / 100 }}
                     transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-                    style={{ background: 'linear-gradient(90deg, rgba(16,185,129,0.25) 0%, rgba(16,185,129,0.45) 100%)', transformOrigin: 'left' }}
+                    style={{ background: 'linear-gradient(90deg, rgba(250,204,21,0.16) 0%, rgba(250,204,21,0.38) 100%)', transformOrigin: 'left' }}
                   />
-                  <span className="relative z-10 w-full text-center text-sm font-semibold text-white">
-                    {filled} / {total} ניחושים
+                  <span className="relative font-bold text-[15px] text-white" style={{ transform: 'skewX(12deg)' }} dir="rtl">
+                    <bdi dir="ltr">{filled} / {total}</bdi> ניחושים
                   </span>
-                </div>
+                </span>
               </motion.div>
             )}
           </AnimatePresence>

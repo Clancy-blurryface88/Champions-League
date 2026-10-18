@@ -643,7 +643,7 @@ function Row({ r, isMe, delta, hot, knocked }) {
       <span aria-hidden className="absolute pointer-events-none select-none tabular-nums"
         style={{ right: 4, top: "50%", transform: "translateY(-46%) skewX(-8deg)", fontFamily: "'Teko', sans-serif", fontSize: 44, fontWeight: 700, lineHeight: 1, color: RANK_WM(r.rank), opacity: 0.55, textShadow: "2px 2px 0 rgba(0,0,0,.5)" }}>{r.rank}</span>
       <div className="relative flex items-center gap-1.5 pl-2 pr-9 py-1.5">
-        <span className="flex-1 min-w-0 truncate text-[13px] font-semibold text-slate-100">{r.name}</span>
+        <span className="flex-1 min-w-0 truncate text-slate-100" style={{ fontFamily: "'Fredoka', sans-serif", fontWeight: 600, fontSize: 14.5 }}>{r.name}</span>
         <AnimatedNum value={r.night} className={`w-10 text-left text-[11px] font-bold tabular-nums ${r.night > 0 ? "text-emerald-300" : "text-slate-500"}`} prefix={r.night > 0 ? "+" : ""} />
         <AnimatedNum value={r.total} className="w-11 text-left text-[13px] font-black text-white tabular-nums" />
         <span className="w-7 flex justify-end"><DeltaTag delta={delta} /></span>
