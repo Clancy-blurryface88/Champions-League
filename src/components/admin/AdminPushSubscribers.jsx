@@ -19,6 +19,69 @@ const statusOf = (u) => {
   return { label: "לא רשום", cls: "text-slate-500" };
 };
 
+// What OneSignal knows on the device the admin is using right now, plus a
+// button that links it by hand and shows the error if linking fails.
+function ThisDevice() {
+  const [state, setState] = useState(null);
+  const [msg, setMsg] = useState(null);
+
+  const read = () => new Promise((resolve) => {
+    if (!window.OneSignalDeferred) return resolve({ sdk: false });
+    const timer = setTimeout(() => resolve({ sdk: false }), 5000);
+    window.OneSignalDeferred.push((OneSignal) => {
+      clearTimeout(timer);
+      resolve({
+        sdk: true,
+        permission: OneSignal.Notifications?.permission,
+        optedIn: OneSignal.User?.PushSubscription?.optedIn,
+        subscriptionId: OneSignal.User?.PushSubscription?.id,
+        onesignalId: OneSignal.User?.onesignalId,
+        externalId: OneSignal.User?.externalId,
+      });
+    });
+  });
+
+  const refresh = async () => setState(await read());
+  useEffect(() => { refresh(); }, []);
+
+  const link = async () => {
+    setMsg("מקשר...");
+    try {
+      const { data } = await supabase.auth.getSession();
+      const id = data.session?.user?.id;
+      if (!id) throw new Error("לא מחובר");
+      await new Promise((resolve, reject) => window.OneSignalDeferred.push((OneSignal) => OneSignal.login(id).then(resolve, reject)));
+      setMsg("קושר ✅");
+    } catch (e) {
+      setMsg(`הקישור נכשל: ${e?.message || e}`);
+    }
+    refresh();
+  };
+
+  const row = (label, value) => (
+    <p className="text-[11px] text-slate-400">{label}: <span className="font-mono text-slate-200 break-all" dir="ltr">{String(value ?? "—")}</span></p>
+  );
+
+  return (
+    <div className="rounded-2xl p-3 space-y-1" style={box}>
+      <p className="text-sm font-bold text-white mb-1">📱 המכשיר הזה</p>
+      {!state ? <p className="text-[11px] text-slate-500">בודק...</p> : !state.sdk ? (
+        <p className="text-[11px] text-red-300">OneSignal לא נטען במכשיר הזה</p>
+      ) : (
+        <>
+          {row("הרשאת התראות", state.permission)}
+          {row("רשום להתראות", state.optedIn)}
+          {row("מזהה מנוי", state.subscriptionId)}
+          {row("מזהה OneSignal", state.onesignalId)}
+          {row("מקושר למשתמש", state.externalId)}
+        </>
+      )}
+      <button type="button" onClick={link} className="mt-1 text-xs px-3 py-1.5 rounded-lg border border-sky-400/50 text-sky-200">קשר את המכשיר הזה אליי</button>
+      {msg && <p className="text-[11px] text-slate-300">{msg}</p>}
+    </div>
+  );
+}
+
 export default function AdminPushSubscribers() {
   const [users, setUsers] = useState(null);
   const [error, setError] = useState(null);
@@ -62,6 +125,8 @@ export default function AdminPushSubscribers() {
         </button>
       </div>
       <p className="text-[11px] text-slate-500">משתתף שנרשם לפני העדכון יופיע כרשום רק אחרי שייכנס שוב לאפליקציה.</p>
+
+      <ThisDevice />
 
       {error && <p className="text-sm text-red-300">הטעינה נכשלה: {error}</p>}
 

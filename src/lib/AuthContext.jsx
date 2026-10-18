@@ -24,9 +24,9 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(!!session);
       setIsLoadingAuth(false);
       if (session && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) {
-        window.OneSignalDeferred?.push((OneSignal) => OneSignal.login(session.user.id).catch(() => {}));
+        window.OneSignalDeferred?.push((OneSignal) => OneSignal.login(session.user.id).catch((e) => console.warn('[OneSignal.login]', e)));
       } else if (event === 'SIGNED_OUT') {
-        window.OneSignalDeferred?.push((OneSignal) => OneSignal.logout().catch(() => {}));
+        window.OneSignalDeferred?.push((OneSignal) => OneSignal.logout().catch((e) => console.warn('[OneSignal.logout]', e)));
       }
     });
 
