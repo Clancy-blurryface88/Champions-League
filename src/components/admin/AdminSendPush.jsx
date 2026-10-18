@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { supabase } from "@/api/supabase";
 
 // Manual push from the admin panel: pick one of the app's ready-made formats
@@ -36,6 +36,23 @@ export default function AdminSendPush() {
   const [confirming, setConfirming] = useState(false);
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState(null);
+  const [userId, setUserId] = useState("");
+  const [participants, setParticipants] = useState(null); // from admin-subscribers, loaded on first "user" pick
+
+  useEffect(() => {
+    if (target !== "user" || participants) return;
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        const r = await fetch("/api/football?source=admin-subscribers", { headers: { Authorization: `Bearer ${data.session?.access_token || ""}` } });
+        const j = await r.json();
+        const linked = (u) => u.subscriptions.some((s) => s.enabled);
+        setParticipants(r.ok ? [...j.users].sort((a, b) => linked(b) - linked(a)).map((u) => ({ ...u, ready: linked(u) })) : []);
+      } catch {
+        setParticipants([]);
+      }
+    })();
+  }, [target, participants]);
 
   const pick = (id) => {
     const t = TEMPLATES.find((x) => x.id === id);
@@ -47,7 +64,8 @@ export default function AdminSendPush() {
     setConfirming(false);
   };
 
-  const ready = heading.trim() && body.trim();
+  const ready = heading.trim() && body.trim() && (target !== "user" || userId);
+  const chosen = participants?.find((u) => u.id === userId);
 
   const send = async () => {
     setSending(true);
@@ -57,12 +75,14 @@ export default function AdminSendPush() {
       const r = await fetch("/api/football?source=admin-push", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${data.session?.access_token || ""}` },
-        body: JSON.stringify({ heading, body, link, target }),
+        body: JSON.stringify({ heading, body, link, target, userId: target === "user" ? userId : undefined }),
       });
       const j = await r.json().catch(() => ({}));
+      const okText = target === "all" ? "נשלח לכל המשתתפים ✅" : target === "user" ? `נשלח ל${chosen?.name || "משתתף"} ✅` : "נשלח למכשירי הבדיקה (Test Users) ✅";
+      const errors = j.sent?.body?.errors;
       setResult(r.ok && j.ok
-        ? { ok: true, text: target === "all" ? "נשלח לכל המשתתפים ✅" : "נשלח למכשירי הבדיקה (Test Users) ✅" }
-        : { ok: false, text: `השליחה נכשלה: ${j.error || j.sent?.body?.errors?.join(", ") || r.status}` });
+        ? { ok: true, text: okText }
+        : { ok: false, text: `השליחה נכשלה: ${j.error || (Array.isArray(errors) ? errors.join(", ") : errors && JSON.stringify(errors)) || (target === "user" ? "המשתתף לא מקושר להתראות" : r.status)}` });
     } catch (e) {
       setResult({ ok: false, text: `השליחה נכשלה: ${e.message}` });
     } finally {
@@ -104,8 +124,25 @@ export default function AdminSendPush() {
             className={`flex-1 text-xs py-1.5 rounded-lg border ${target === "test" ? "bg-emerald-500/20 border-emerald-400/60 text-white" : "border-white/15 text-slate-400"}`}>🧪 רק מכשירי בדיקה</button>
           <button type="button" onClick={() => { setTarget("all"); setConfirming(false); }}
             className={`flex-1 text-xs py-1.5 rounded-lg border ${target === "all" ? "bg-red-500/20 border-red-400/60 text-white" : "border-white/15 text-slate-400"}`}>👥 כל המשתתפים</button>
+          <button type="button" onClick={() => { setTarget("user"); setConfirming(false); }}
+            className={`flex-1 text-xs py-1.5 rounded-lg border ${target === "user" ? "bg-violet-500/20 border-violet-400/60 text-white" : "border-white/15 text-slate-400"}`}>👤 משתתף מסוים</button>
         </div>
         {target === "test" && <p className="text-[11px] text-slate-500">מגיע רק למכשירים שסומנו ב-OneSignal כ-Test Users (Audience → Subscriptions → Add to Test Users).</p>}
+        {target === "user" && (
+          !participants ? <p className="text-[11px] text-slate-500">טוען משתתפים...</p> : (
+            <>
+              <select value={userId} onChange={(e) => setUserId(e.target.value)} className={input}>
+                <option value="" className="bg-slate-900">בחר משתתף</option>
+                {participants.map((u) => (
+                  <option key={u.id} value={u.id} disabled={!u.ready} className="bg-slate-900">
+                    {u.ready ? "🔔" : "🔕"} {u.name}{u.ready ? "" : " (לא רשום)"}
+                  </option>
+                ))}
+              </select>
+              <p className="text-[11px] text-slate-500">אפשר לבחור רק משתתפים שרשומים להתראות (🔔). השאר יופיעו אחרי שייכנסו לאפליקציה.</p>
+            </>
+          )
+        )}
       </div>
 
       <div className="rounded-2xl p-4" style={box}>
@@ -119,7 +156,7 @@ export default function AdminSendPush() {
       {!confirming ? (
         <button type="button" disabled={!ready || sending} onClick={() => (target === "all" ? setConfirming(true) : send())}
           className="w-full py-2.5 rounded-xl font-bold text-sm text-black disabled:opacity-40" style={{ background: "linear-gradient(135deg,#f5c518,#fde68a)" }}>
-          {sending ? "שולח..." : target === "all" ? "שלח לכל המשתתפים" : "שלח למכשירי בדיקה"}
+          {sending ? "שולח..." : target === "all" ? "שלח לכל המשתתפים" : target === "user" ? `שלח ל${chosen?.name || "משתתף"}` : "שלח למכשירי בדיקה"}
         </button>
       ) : (
         <div className="rounded-xl p-3 border border-red-400/50 bg-red-500/10 space-y-2">
