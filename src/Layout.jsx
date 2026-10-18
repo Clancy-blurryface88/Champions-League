@@ -28,6 +28,7 @@ import { OdometerDigit } from "./components/OdometerScore";
 import TeamFlag from "./components/TeamFlag";
 import LiveLeaderboard from "./components/LiveLeaderboard";
 import FinalResultsOverlay from "./components/FinalResultsOverlay";
+import PushInvite, { PUSH_INVITE_SNOOZE_MS, pushInviteSnoozeKey } from "./components/PushInvite";
 
 // Measures a ref'd element's rendered box size, updating on resize (the live
 // card's width is responsive — min(370px, 92vw) — so the ring's actual
@@ -523,16 +524,44 @@ export default function Layout({ children, currentPageName }) {
     setUser(userWithStats);
     setAuthLoading(false);
 
-    // Show push banner if needed
-    const bannerKey = `push_banner_dismissed_${currentUser.id}`;
-    const bannerDismissed = localStorage.getItem(bannerKey);
-    const alreadyGranted = typeof Notification !== 'undefined' && Notification.permission === 'granted';
-    const isStandalonePWA = window.navigator.standalone === true;
-    // On iOS PWA: always show if not granted (ignore dismissed flag)
-    // On other platforms: show if not dismissed and not granted
-    if (!alreadyGranted && (isStandalonePWA || !bannerDismissed)) {
-      setShowPushBanner(true);
+    // Push invite: only devices that aren't subscribed, at most once per 24h
+    // ("אחר כך" snoozes it).
+    const snoozedAt = Number(localStorage.getItem(pushInviteSnoozeKey(currentUser.id)) || 0);
+    if (Date.now() - snoozedAt > PUSH_INVITE_SNOOZE_MS) {
+      isPushSubscribed().then((subscribed) => { if (!subscribed) setShowPushBanner(true); });
     }
+  };
+
+  // Subscribed = browser permission granted and OneSignal not opted out.
+  const isPushSubscribed = () => new Promise((resolve) => {
+    const perm = typeof Notification !== 'undefined' ? Notification.permission : 'default';
+    if (perm !== 'granted' || !window.OneSignalDeferred) return resolve(false);
+    const timer = setTimeout(() => resolve(true), 5000); // SDK slow to load: trust the permission
+    window.OneSignalDeferred.push((OneSignal) => {
+      clearTimeout(timer);
+      resolve(OneSignal.User?.PushSubscription?.optedIn !== false);
+    });
+  });
+
+  // Asks for permission (or re-opts in a device that has it but opted out).
+  const enablePush = async () => {
+    try {
+      const OneSignal = window.OneSignal;
+      if (OneSignal) {
+        if (Notification.permission === 'granted') await OneSignal.User.PushSubscription.optIn();
+        else await OneSignal.Notifications.requestPermission();
+      } else if (typeof Notification !== 'undefined') {
+        await Notification.requestPermission();
+      }
+    } catch (e) {}
+    const perm = typeof Notification !== 'undefined' ? Notification.permission : 'default';
+    setNotifPermission(perm);
+    return perm;
+  };
+
+  const closePushInvite = () => {
+    setShowPushBanner(false);
+    if (user?.id) localStorage.setItem(pushInviteSnoozeKey(user.id), String(Date.now()));
   };
 
   // CRITICAL CHANGE: Load user data from UserStats instead of User entity for points
@@ -1382,7 +1411,7 @@ export default function Layout({ children, currentPageName }) {
               onClick={async () => {
                 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
                 const isStandalone = window.navigator.standalone === true;
-                if (isIOS && !isStandalone) {
+                if ((isIOS && !isStandalone) || notifPermission === 'denied') {
                   setShowPushBanner(true);
                   return;
                 }
@@ -1822,68 +1851,18 @@ export default function Layout({ children, currentPageName }) {
 
         <MatchesByDateSheet isOpen={showDateSheet} onClose={() => setShowDateSheet(false)} />
 
-        {/* Push Notification Banner — held back until the full onboarding
-            chain (welcome name, general questions, intro video) is done,
-            same reasoning as the live/next-match intro overlays below. */}
+        {/* Push invite — held back until the full onboarding chain (welcome
+            name, general questions, intro video) is done, same reasoning as
+            the live/next-match intro overlays below. */}
         <AnimatePresence>
-          {showPushBanner && !showWelcomeModal && !showGeneralPredictionsOnboarding && !showIntroVideo && (() => {
-            const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-            const isStandalone = window.navigator.standalone === true;
-            const isIOSBrowser = isIOS && !isStandalone;
-            const bannerKey = `push_banner_dismissed_${user?.id}`;
-
-            return (
-              <motion.div
-                initial={{ y: 100, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 100, opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                className="fixed bottom-6 left-4 right-4 z-50 mx-auto max-w-sm"
-              >
-                <div className="bg-slate-900 border border-yellow-400/40 rounded-2xl px-4 py-3 shadow-2xl flex items-center gap-3">
-                  <span className="text-2xl">{isIOSBrowser ? '📲' : '🔔'}</span>
-                  <div className="flex-1 min-w-0">
-                    {isIOSBrowser ? (
-                      <>
-                        <p className="text-white text-sm font-semibold leading-tight">להפעלת התראות</p>
-                        <p className="text-slate-400 text-xs mt-0.5">הוסף למסך הבית ופתח משם ⬇️ שתף</p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-white text-sm font-semibold leading-tight">רוצה להישאר מעודכן?</p>
-                        <p className="text-slate-400 text-xs mt-0.5">קבל התראות על משחקים ותוצאות</p>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    {!isIOSBrowser && (
-                      <button
-                        onClick={async () => {
-                          setShowPushBanner(false);
-                          localStorage.setItem(bannerKey, 'true');
-                          if (window.OneSignal) {
-                            try { await window.OneSignal.Notifications.requestPermission(); } catch (e) {}
-                          }
-                        }}
-                        className="bg-yellow-400 text-black text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"
-                      >
-                        הפעל
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        setShowPushBanner(false);
-                        if (!isIOSBrowser) localStorage.setItem(bannerKey, 'true');
-                      }}
-                      className="text-slate-500 text-xs text-center"
-                    >
-                      {isIOSBrowser ? 'סגור' : 'אחר כך'}
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })()}
+          {showPushBanner && !showWelcomeModal && !showGeneralPredictionsOnboarding && !showIntroVideo && (
+            <PushInvite
+              mode={/iphone|ipad|ipod/i.test(navigator.userAgent) && window.navigator.standalone !== true ? "ios"
+                : notifPermission === "denied" ? "denied" : "default"}
+              onEnable={enablePush}
+              onLater={closePushInvite}
+            />
+          )}
         </AnimatePresence>
       </div>
     </>
