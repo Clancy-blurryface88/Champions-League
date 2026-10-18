@@ -3,7 +3,8 @@
 // The caller must be a signed-in admin: the Supabase access token is checked
 // against Supabase Auth and profiles.is_admin. The OneSignal key never leaves
 // the server. target 'test' → only Test Users devices, 'all' → everyone,
-// 'user' + userId → one participant's devices.
+// 'user' + userId → one participant's devices, 'onesignal' + onesignalId →
+// one OneSignal user (from the OneSignal dashboard; works before linking).
 import { push, supa, ONESIGNAL_APP_ID } from './_goalWebhook.js';
 
 const SITE = 'https://champions-league-2026.vercel.app';
@@ -84,20 +85,25 @@ export async function adminPushHandler(req, res) {
     const heading = String(body.heading || '').trim().slice(0, 120);
     const text = String(body.body || '').trim().slice(0, 300);
     if (!heading || !text) return res.status(400).json({ error: 'heading and body are required' });
-    const userId = body.target === 'user' ? String(body.userId || '') : null;
-    if (userId !== null && !/^[0-9a-f-]{36}$/i.test(userId)) return res.status(400).json({ error: 'userId is required' });
-    const mode = body.target === 'all' || userId ? 'live' : 'test';
+    const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const userId = body.target === 'user' ? String(body.userId || '').trim() : null;
+    const onesignalId = body.target === 'onesignal' ? String(body.onesignalId || '').trim() : null;
+    if (userId !== null && !UUID.test(userId)) return res.status(400).json({ error: 'userId is required' });
+    if (onesignalId !== null && !UUID.test(onesignalId)) return res.status(400).json({ error: 'מזהה OneSignal לא תקין' });
+    const single = userId || onesignalId;
+    const mode = body.target === 'all' || single ? 'live' : 'test';
     const url = `${SITE}${LINKS[body.link] || LINKS.home}`;
 
     // Unique key per send: a manual push is always intentional, never deduped.
     const sent = await push({
       heading, body: text, url, key: `manual:${admin.id}:${Date.now()}`, mode,
       externalIds: userId ? [userId] : undefined,
+      onesignalIds: onesignalId ? [onesignalId] : undefined,
     });
     // OneSignal answers 200 with no id when nobody matched (user not linked).
     const delivered = sent.status === 200 && !!sent.body?.id;
-    console.log('[admin-push]', userId ? `user ${userId}` : mode, heading, sent.status);
-    return res.status(200).json({ ok: delivered, target: userId ? 'user' : mode === 'live' ? 'all' : 'test', sent });
+    console.log('[admin-push]', single ? `${body.target} ${single}` : mode, heading, sent.status);
+    return res.status(200).json({ ok: delivered, target: single ? body.target : mode === 'live' ? 'all' : 'test', sent });
   } catch (e) {
     console.error('[admin-push]', e.message);
     return res.status(500).json({ error: e.message });

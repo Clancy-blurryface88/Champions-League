@@ -37,6 +37,7 @@ export default function AdminSendPush() {
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState(null);
   const [userId, setUserId] = useState("");
+  const [onesignalId, setOnesignalId] = useState("");
   const [participants, setParticipants] = useState(null); // from admin-subscribers, loaded on first "user" pick
 
   useEffect(() => {
@@ -64,7 +65,8 @@ export default function AdminSendPush() {
     setConfirming(false);
   };
 
-  const ready = heading.trim() && body.trim() && (target !== "user" || userId);
+  const validOsId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(onesignalId.trim());
+  const ready = heading.trim() && body.trim() && (target !== "user" || userId) && (target !== "onesignal" || validOsId);
   const chosen = participants?.find((u) => u.id === userId);
 
   const send = async () => {
@@ -75,14 +77,21 @@ export default function AdminSendPush() {
       const r = await fetch("/api/football?source=admin-push", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${data.session?.access_token || ""}` },
-        body: JSON.stringify({ heading, body, link, target, userId: target === "user" ? userId : undefined }),
+        body: JSON.stringify({
+          heading, body, link, target,
+          userId: target === "user" ? userId : undefined,
+          onesignalId: target === "onesignal" ? onesignalId.trim() : undefined,
+        }),
       });
       const j = await r.json().catch(() => ({}));
-      const okText = target === "all" ? "נשלח לכל המשתתפים ✅" : target === "user" ? `נשלח ל${chosen?.name || "משתתף"} ✅` : "נשלח למכשירי הבדיקה (Test Users) ✅";
+      const okText = target === "all" ? "נשלח לכל המשתתפים ✅"
+        : target === "user" ? `נשלח ל${chosen?.name || "משתתף"} ✅`
+        : target === "onesignal" ? "נשלח למזהה OneSignal ✅"
+        : "נשלח למכשירי הבדיקה (Test Users) ✅";
       const errors = j.sent?.body?.errors;
       setResult(r.ok && j.ok
         ? { ok: true, text: okText }
-        : { ok: false, text: `השליחה נכשלה: ${j.error || (Array.isArray(errors) ? errors.join(", ") : errors && JSON.stringify(errors)) || (target === "user" ? "המשתתף לא מקושר להתראות" : r.status)}` });
+        : { ok: false, text: `השליחה נכשלה: ${j.error || (Array.isArray(errors) ? errors.join(", ") : errors && JSON.stringify(errors)) || (target === "user" ? "המשתתף לא מקושר להתראות" : target === "onesignal" ? "לא נמצא מכשיר רשום למזהה הזה" : r.status)}` });
     } catch (e) {
       setResult({ ok: false, text: `השליחה נכשלה: ${e.message}` });
     } finally {
@@ -119,14 +128,26 @@ export default function AdminSendPush() {
         </div>
 
         <label className="block text-xs text-slate-400">למי לשלוח</label>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <button type="button" onClick={() => { setTarget("test"); setConfirming(false); }}
             className={`flex-1 text-xs py-1.5 rounded-lg border ${target === "test" ? "bg-emerald-500/20 border-emerald-400/60 text-white" : "border-white/15 text-slate-400"}`}>🧪 רק מכשירי בדיקה</button>
           <button type="button" onClick={() => { setTarget("all"); setConfirming(false); }}
             className={`flex-1 text-xs py-1.5 rounded-lg border ${target === "all" ? "bg-red-500/20 border-red-400/60 text-white" : "border-white/15 text-slate-400"}`}>👥 כל המשתתפים</button>
           <button type="button" onClick={() => { setTarget("user"); setConfirming(false); }}
             className={`flex-1 text-xs py-1.5 rounded-lg border ${target === "user" ? "bg-violet-500/20 border-violet-400/60 text-white" : "border-white/15 text-slate-400"}`}>👤 משתתף מסוים</button>
+          <button type="button" onClick={() => { setTarget("onesignal"); setConfirming(false); }}
+            className={`flex-1 text-xs py-1.5 rounded-lg border ${target === "onesignal" ? "bg-violet-500/20 border-violet-400/60 text-white" : "border-white/15 text-slate-400"}`}>🆔 לפי מזהה OneSignal</button>
         </div>
+        {target === "onesignal" && (
+          <>
+            <input value={onesignalId} onChange={(e) => setOnesignalId(e.target.value)} dir="ltr"
+              className={`${input} font-mono`} placeholder="3bed3a29-a08b-401e-9f01-e0b95fea610c" />
+            <p className="text-[11px] text-slate-500">
+              הדבק OneSignal ID מלוח הבקרה של OneSignal (Audience → Users). עובד גם למכשירים שעוד לא מקושרים למשתתף.
+              {onesignalId.trim() && !validOsId && <span className="text-red-300"> · המזהה לא תקין</span>}
+            </p>
+          </>
+        )}
         {target === "test" && <p className="text-[11px] text-slate-500">מגיע רק למכשירים שסומנו ב-OneSignal כ-Test Users (Audience → Subscriptions → Add to Test Users).</p>}
         {target === "user" && (
           !participants ? <p className="text-[11px] text-slate-500">טוען משתתפים...</p> : (
@@ -156,7 +177,7 @@ export default function AdminSendPush() {
       {!confirming ? (
         <button type="button" disabled={!ready || sending} onClick={() => (target === "all" ? setConfirming(true) : send())}
           className="w-full py-2.5 rounded-xl font-bold text-sm text-black disabled:opacity-40" style={{ background: "linear-gradient(135deg,#f5c518,#fde68a)" }}>
-          {sending ? "שולח..." : target === "all" ? "שלח לכל המשתתפים" : target === "user" ? `שלח ל${chosen?.name || "משתתף"}` : "שלח למכשירי בדיקה"}
+          {sending ? "שולח..." : target === "all" ? "שלח לכל המשתתפים" : target === "user" ? `שלח ל${chosen?.name || "משתתף"}` : target === "onesignal" ? "שלח למזהה הזה" : "שלח למכשירי בדיקה"}
         </button>
       ) : (
         <div className="rounded-xl p-3 border border-red-400/50 bg-red-500/10 space-y-2">

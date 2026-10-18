@@ -86,14 +86,17 @@ function uuidFrom(str) {
 // Users in OneSignal (never deduped, so a test can be re-sent) · 'dry' →
 // build the payload, send nothing. sendAfter (Date) schedules delivery.
 // externalIds (Supabase user ids) → only those users' devices, instead of a
-// segment (needs OneSignal.login to have linked them).
-export async function push({ heading, body, url, key, mode = 'live', sendAfter, externalIds }) {
+// segment (needs OneSignal.login to have linked them). onesignalIds → those
+// OneSignal users' devices (works for unlinked users too).
+export async function push({ heading, body, url, key, mode = 'live', sendAfter, externalIds, onesignalIds }) {
   const payload = {
     app_id: ONESIGNAL_APP_ID,
     target_channel: 'push',
     ...(externalIds?.length
       ? { include_aliases: { external_id: externalIds } }
-      : { included_segments: [mode === 'test' ? 'Test Users' : 'Total Subscriptions'] }),
+      : onesignalIds?.length
+        ? { include_aliases: { onesignal_id: onesignalIds } }
+        : { included_segments: [mode === 'test' ? 'Test Users' : 'Total Subscriptions'] }),
     headings: { en: heading, he: heading },
     contents: { en: body, he: body },
     url,
