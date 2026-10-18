@@ -14,7 +14,7 @@ import { TEAM_BY_GOAL_ID } from '../src/data/goalTeamIds.js';
 
 const GOAL_BASE = 'https://api.goal-api.com/v1';
 const CL_LEAGUE = 'cmr77dw3900f5rx06j05wgzv4';
-const ONESIGNAL_APP_ID = '9c8b733e-9d73-41bb-b092-ae462aa5cdb1';
+export const ONESIGNAL_APP_ID ='9c8b733e-9d73-41bb-b092-ae462aa5cdb1';
 const SITE = 'https://champions-league-2026.vercel.app';
 
 const norm = (s) => (s || '').trim().toLowerCase();

@@ -3,7 +3,7 @@
 // The caller must be a signed-in admin: the Supabase access token is checked
 // against Supabase Auth and profiles.is_admin. The OneSignal key never leaves
 // the server. target 'test' → only Test Users devices, 'all' → everyone.
-import { push, supa } from './_goalWebhook.js';
+import { push, supa, ONESIGNAL_APP_ID } from './_goalWebhook.js';
 
 const SITE = 'https://champions-league-2026.vercel.app';
 const LINKS = { home: '/', live: '/?open=live', leaderboard: '/?open=leaderboard' };
@@ -18,6 +18,57 @@ async function adminFromToken(token) {
   if (!user?.id) return null;
   const rows = await supa(`profiles?select=is_admin&id=eq.${user.id}`);
   return rows[0]?.is_admin ? user : null;
+}
+
+// One user's OneSignal subscriptions, looked up by external_id (= Supabase
+// user id, set by OneSignal.login in AuthContext). null → not linked yet
+// (the user hasn't opened the app since login was added, or never allowed push).
+async function oneSignalUser(userId) {
+  const r = await fetch(`https://api.onesignal.com/apps/${ONESIGNAL_APP_ID}/users/by/external_id/${userId}`, {
+    headers: { Authorization: `Key ${process.env.ONESIGNAL_REST_API_KEY}` },
+  });
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error(`OneSignal user ${userId}: ${r.status}`);
+  const j = await r.json();
+  return (j.subscriptions || [])
+    .filter((s) => /push/i.test(s.type || ''))
+    .map((s) => ({
+      id: s.id,
+      type: s.type,
+      // notification_types > 0 → permission granted and not unsubscribed
+      enabled: s.enabled !== false && (s.notification_types ?? 1) > 0,
+      device: [s.device_model, s.device_os].filter(Boolean).join(' '),
+      lastActive: s.last_active ? new Date(s.last_active * 1000).toISOString() : null,
+    }));
+}
+
+// GET /api/football?source=admin-subscribers — every profile with its push
+// subscriptions, for the admin panel. Admins only.
+export async function adminSubscribersHandler(req, res) {
+  res.setHeader('Cache-Control', 'no-store');
+  try {
+    const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (!(await adminFromToken(token))) return res.status(401).json({ error: 'admins only' });
+
+    const profiles = await supa('profiles?select=id,display_name,email&order=display_name');
+    const users = [];
+    // Small batches — OneSignal rate-limits per app.
+    for (let i = 0; i < profiles.length; i += 10) {
+      const batch = profiles.slice(i, i + 10);
+      const subs = await Promise.all(batch.map((p) => oneSignalUser(p.id).catch((e) => ({ error: e.message }))));
+      batch.forEach((p, k) => {
+        const s = subs[k];
+        users.push({
+          id: p.id, name: p.display_name || p.email, email: p.email,
+          error: s?.error, linked: Array.isArray(s), subscriptions: Array.isArray(s) ? s : [],
+        });
+      });
+    }
+    return res.status(200).json({ users });
+  } catch (e) {
+    console.error('[admin-subscribers]', e.message);
+    return res.status(500).json({ error: e.message });
+  }
 }
 
 export async function adminPushHandler(req, res) {

@@ -4,7 +4,7 @@ import { getUefaLiveMatches, getUefaMatchesByDate } from './_uefaContext.js';
 import { goalHandler } from './_goal.js';
 import { goalWebhookHandler } from './_goalWebhook.js';
 import { remindersHandler } from './_reminders.js';
-import { adminPushHandler } from './_adminPush.js';
+import { adminPushHandler, adminSubscribersHandler } from './_adminPush.js';
 import { replayHandler } from './_replay.js';
 
 export default async function handler(req, res) {
@@ -12,6 +12,7 @@ export default async function handler(req, res) {
   if (req.query.source === 'reminders') return remindersHandler(req, res);
   if (req.query.source === 'goal') return goalHandler(req, res);
   if (req.query.source === 'admin-push') return adminPushHandler(req, res);
+  if (req.query.source === 'admin-subscribers') return adminSubscribersHandler(req, res);
   if (req.query.source === 'replay') return replayHandler(req, res);
 
   const { competition = TOURNAMENT_CODE, filter = 'LIVE', type } = req.query;

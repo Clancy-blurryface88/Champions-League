@@ -17,9 +17,17 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Ties this device's push subscription to the user (OneSignal external_id
+    // = Supabase user id), so the admin panel can show who is subscribed.
+    // Runs once the SDK has loaded (OneSignalDeferred queue).
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setIsAuthenticated(!!session);
       setIsLoadingAuth(false);
+      if (session && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) {
+        window.OneSignalDeferred?.push((OneSignal) => OneSignal.login(session.user.id).catch(() => {}));
+      } else if (event === 'SIGNED_OUT') {
+        window.OneSignalDeferred?.push((OneSignal) => OneSignal.logout().catch(() => {}));
+      }
     });
 
     return () => subscription.unsubscribe();
