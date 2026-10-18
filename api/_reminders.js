@@ -9,8 +9,9 @@
 //     "lineups are out, want to update?" (falls back to "matches start soon")
 // Every reminder opens the predictions page of its round.
 //
-// Triggered every ~10 min by .github/workflows/reminders.yml (Vercel Hobby
-// cron runs only once a day). A reminder is created when the trigger lands
+// Triggered every 5 min by the Supabase pg_cron job "prediction-reminders"
+// (Vercel Hobby cron runs only once a day; .github/workflows/reminders.yml is
+// a backup — GitHub delays scheduled runs by hours). A reminder is created when the trigger lands
 // within 25 min before its time and scheduled with send_after, so it arrives
 // on the minute. Every reminder has a fixed
 // idempotency key, so extra or overlapping triggers can never double-send —

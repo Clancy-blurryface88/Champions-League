@@ -1,6 +1,8 @@
-# Triggers the "go predict" reminder pushes (api/_reminders.js). Vercel Hobby
-# cron can only run once a day, so GitHub pings the endpoint every 10 min;
-# the endpoint decides what's due and dedupes, so extra runs are harmless.
+# Backup trigger for the "go predict" reminder pushes (api/_reminders.js).
+# The main trigger is the Supabase pg_cron job "prediction-reminders" (every
+# 5 min) — GitHub's scheduled runs get delayed by hours, so they can't be
+# relied on. The endpoint decides what's due and dedupes, so extra runs are
+# harmless.
 name: Prediction reminders
 
 on:
