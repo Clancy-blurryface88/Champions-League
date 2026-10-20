@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, TrendingUp, TrendingDown, Minus, WifiOff } from "lucide-react";
-import { ShineBorder } from "@/components/magicui/shine-border";
 import OdometerValue from "@/components/OdometerValue";
 import TeamFlag from "@/components/TeamFlag";
+import { teamCode } from "@/utils/teamCodes";
 import { Match, Prediction, UserStats, PublicProfile } from "@/api/entities";
+import { supabase } from "@/api/supabase";
 import { TOURNAMENT_CODE } from "@/config/tournament";
 
 // ── Live leaderboard helpers ──────────────────────────────────────────────────
@@ -65,19 +66,14 @@ function normTeam(n = '') {
   const base = n.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9א-ת]/g, '');
   return TEAM_ALIASES[base] ?? base;
 }
-function teamsMatch(a, b) { const na = normTeam(a), nb = normTeam(b); return na === nb || na.includes(nb) || nb.includes(na); }
+// An empty name (e.g. a missing shortName) matches nothing — "x".includes("") is
+// true, which used to tie every live match to the first DB match.
+function teamsMatch(a, b) { const na = normTeam(a), nb = normTeam(b); if (!na || !nb) return false; return na === nb || na.includes(nb) || nb.includes(na); }
 function findDbMatch(apiMatch, dbMatches) {
   const h = apiMatch.homeTeam?.name || '', hS = apiMatch.homeTeam?.shortName || '';
   const a = apiMatch.awayTeam?.name || '', aS = apiMatch.awayTeam?.shortName || '';
   return dbMatches.find(m => (teamsMatch(h, m.team_a) || teamsMatch(hS, m.team_a)) && (teamsMatch(a, m.team_b) || teamsMatch(aS, m.team_b))) || null;
 }
-
-const RANK_COLOR  = r => r === 1 ? '#7cadee' : r === 2 ? '#C0C0C0' : r === 3 ? '#CD7F32' : 'rgba(255,255,255,.45)';
-const RANK_BORDER = r => r === 1 ? '#7cadee' : r === 2 ? '#D1D5DB' : r === 3 ? '#D97706' : '#475569';
-const RANK_BG     = r => r === 1 ? 'linear-gradient(135deg,rgba(124, 173, 238,.22),rgba(9, 122, 220,.22))'
-                       : r === 2 ? 'linear-gradient(135deg,rgba(209,213,219,.18),rgba(156,163,175,.18))'
-                       : r === 3 ? 'linear-gradient(135deg,rgba(9, 122, 220,.20),rgba(217,119,6,.20))'
-                       : 'rgba(30,41,59,.60)';
 
 function DeltaIcon({ delta }) {
   return (
@@ -90,21 +86,6 @@ function DeltaIcon({ delta }) {
           : <Minus className="w-3.5 h-3.5 text-slate-600"/>}
       </motion.div>
     </AnimatePresence>
-  );
-}
-
-// Fixed width regardless of content (0 icons, 1 icon, several icons) — same
-// slot as DeltaIcon's fixed w-8 box — so a row with prediction icons never
-// pushes the flexible name column to a different width than a row without
-// them, which used to shift the score/delta columns left-right per row.
-function PredictionBadge({ matchPredictions }) {
-  const exactCount = matchPredictions?.filter(mp => mp.isExact).length || 0;
-  const hitCount   = matchPredictions?.filter(mp => mp.isHit && !mp.isExact).length || 0;
-  return (
-    <div className="flex items-center gap-0.5 flex-shrink-0 flex-nowrap justify-end" style={{ width: 64 }}>
-      {Array.from({ length: exactCount }).map((_, i) => <span key={`e${i}`} style={{ fontSize: 10, lineHeight: 1 }}>🎯</span>)}
-      {Array.from({ length: hitCount }).map((_, i) => <span key={`h${i}`} style={{ fontSize: 10, lineHeight: 1 }}>✅</span>)}
-    </div>
   );
 }
 
@@ -127,7 +108,54 @@ function inPlayCards(matches) {
   return cards.length ? cards : null;
 }
 
-function RankCard({ row, index, total, isInitial, onOpen }) {
+// ── Scoreboard strip (broadcast style) ───────────────────────────────────────
+// All live matches in one row of narrow cells, like a stadium scoreboard:
+// home code + goals on top, away below. A cell whose score just changed lights
+// up gold for a few seconds. Up to 7 cells per row; more wrap to a second row.
+const GOAL_FLASH_MS = 3500;
+function ScoreboardStrip({ cards }) {
+  const prev = useRef({});
+  const [flash, setFlash] = useState({});
+  useEffect(() => {
+    const changed = {};
+    cards.forEach((c) => {
+      const k = `${c.home}|${c.away}`;
+      if (prev.current[k] != null && prev.current[k] !== c.score) changed[k] = Date.now();
+      prev.current[k] = c.score;
+    });
+    if (!Object.keys(changed).length) return;
+    setFlash((f) => ({ ...f, ...changed }));
+    const t = setTimeout(() => setFlash((f) => Object.fromEntries(Object.entries(f).filter(([, at]) => Date.now() - at < GOAL_FLASH_MS))), GOAL_FLASH_MS + 50);
+    return () => clearTimeout(t);
+  }, [cards]);
+
+  const cols = cards.length <= 7 ? cards.length : Math.ceil(cards.length / 2);
+  return (
+    <div className="mb-3 grid gap-[3px]" dir="ltr" style={{ gridTemplateColumns: `repeat(${Math.max(cols, 1)}, minmax(0, 1fr))`, maxWidth: cols <= 3 ? 240 : undefined, marginInline: 'auto' }}>
+      {cards.map((c) => {
+        const [ga, gb] = String(c.score).split(/[–-]/).map((s) => s.trim());
+        const lit = flash[`${c.home}|${c.away}`] != null;
+        const line = (logo, name, goals, first) => (
+          <div className="flex items-center justify-between gap-1 px-1" style={{ height: 20, borderTop: first ? 'none' : '1px solid rgba(255,255,255,.07)' }}>
+            <span style={{ font: "700 11px 'Outfit', sans-serif", letterSpacing: '.2px', color: '#dbe2ff' }}>{teamCode(name)}</span>
+            <span className="tabular-nums" style={{ fontFamily: "'Teko', sans-serif", fontWeight: 700, fontSize: 16, lineHeight: 1, color: lit ? '#e8c46a' : '#fff' }}>{goals ?? '–'}</span>
+          </div>
+        );
+        return (
+          <motion.div key={`${c.home}|${c.away}`} layout
+            animate={lit ? { boxShadow: ['0 0 0 rgba(232,196,106,0)', '0 0 14px rgba(232,196,106,.55)', '0 0 0 rgba(232,196,106,0)'] } : { boxShadow: '0 0 0 rgba(0,0,0,0)' }}
+            transition={lit ? { duration: 1.4, repeat: 1 } : { duration: 0.3 }}
+            style={{ background: lit ? 'rgba(232,196,106,.12)' : '#0a1235', border: '1px solid rgba(255,255,255,.1)', borderTop: `2px solid ${lit ? '#e8c46a' : '#e11d48'}`, transition: 'background .4s, border-color .4s' }}>
+            {line(c.homeLogo, c.home, ga, true)}
+            {line(c.awayLogo, c.away, gb, false)}
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
+
+function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
   const delta = row.officialRank - row.liveRank;
   const rankFromBottom = total - 1 - index;
   const cardDelay   = isInitial ? Math.pow(rankFromBottom, 1.4) * 0.13 + (row.liveRank === 1 ? 0.2 : 0) : 0;
@@ -137,6 +165,28 @@ function RankCard({ row, index, total, isInitial, onOpen }) {
   // cards that mount after the initial reveal (isInitial already false) have
   // no entrance to wait for, so they roll immediately.
   const [revealed, setRevealed] = useState(!isInitial);
+  // gold flash when this participant climbs
+  const lastRank = useRef(row.liveRank);
+  const [climbed, setClimbed] = useState(false);
+  useEffect(() => {
+    if (row.liveRank < lastRank.current) {
+      setClimbed(true);
+      const t = setTimeout(() => setClimbed(false), 1800);
+      lastRank.current = row.liveRank;
+      return () => clearTimeout(t);
+    }
+    lastRank.current = row.liveRank;
+  }, [row.liveRank]);
+
+  // Broadcast look: white rank plate · name plate (gold for you) · points plate,
+  // all slanted like a TV graphic. Per live match: gold = exact, green = right
+  // direction, grey = not (now).
+  const SK = 'skewX(-12deg)', UN = 'skewX(12deg)';
+  const marks = (row.matchPredictions || []).map((mp, i) => (
+    <span key={i} style={{ width: 8, height: 8, borderRadius: 2, flexShrink: 0,
+      background: mp.isExact ? '#e8c46a' : mp.isHit ? '#34d399' : 'rgba(255,255,255,.14)',
+      boxShadow: mp.isExact ? '0 0 6px rgba(232,196,106,.7)' : 'none' }} />
+  ));
   return (
     <motion.div layout layoutId={`lb-${row.userId}`}
       initial={isInitial ? { opacity: 0, y: 14 } : false}
@@ -144,37 +194,23 @@ function RankCard({ row, index, total, isInitial, onOpen }) {
       onAnimationComplete={() => setRevealed(true)}
       transition={{ layout: { type: 'spring', stiffness: 9, damping: 20 }, ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}) }}
       onClick={() => onOpen?.()}
-      className="relative mb-1 cursor-pointer select-none">
-      <div style={{ transform: 'skewX(-6deg)', borderRadius: 8, overflow: 'hidden', border: `2px solid ${RANK_BORDER(row.liveRank)}`, background: RANK_BG(row.liveRank), transition: 'border-color .5s ease, background .5s ease', position: 'relative' }}>
-        <ShineBorder
-          borderRadius={8}
-          borderWidth={1}
-          duration={row.liveRank === 1 ? 6 : row.liveRank === 2 ? 7 : row.liveRank === 3 ? 8 : 12}
-          shineColor={
-            row.liveRank === 1 ? ['#7cadee','#fff','#097adc'] :
-            row.liveRank === 2 ? ['#C0C0C0','#fff','#94a3b8'] :
-            row.liveRank === 3 ? ['#CD7F32','#fff','#D97706'] :
-            ['#475569','#64748b','#475569']
-          }
-        />
-        <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%) skewX(6deg)', fontSize: 32, fontWeight: 900, color: RANK_COLOR(row.liveRank), opacity: 0.15, lineHeight: 1, userSelect: 'none', pointerEvents: 'none', transition: 'color .5s ease' }}>
-          {row.liveRank}
+      className="relative cursor-pointer select-none flex"
+      style={{ height: 40, marginBottom: 5, zIndex: climbed ? 2 : 1 }}>
+      <div style={{ width: 38, display: 'grid', placeItems: 'center', background: '#fff', color: '#0a1235', transform: SK, flexShrink: 0 }}>
+        <span style={{ transform: UN, fontFamily: "'Teko', sans-serif", fontWeight: 700, fontSize: 26, lineHeight: 1 }}>{row.liveRank}</span>
+      </div>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', marginInlineStart: 3, transform: SK,
+        background: isMe ? 'linear-gradient(90deg,#8a6a12,#3b2b06)' : 'linear-gradient(90deg,#1a2a78,#0e1850)',
+        boxShadow: climbed ? '0 0 0 2px rgba(232,196,106,.9), 0 0 24px rgba(232,196,106,.45)' : 'none', transition: 'box-shadow .5s ease' }}>
+        <span className="truncate" style={{ transform: UN, fontWeight: 800, fontSize: 14, color: '#fff', minWidth: 0,
+          ...(isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}) }}>{row.name}</span>
+        {marks.length > 0 && <span style={{ transform: UN, display: 'flex', gap: 2, flexShrink: 0 }}>{marks}</span>}
+        <span style={{ transform: UN, marginInlineStart: 'auto', flexShrink: 0 }}><DeltaIcon delta={delta} /></span>
+      </div>
+      <div style={{ width: 76, display: 'grid', placeItems: 'center', marginInlineStart: 3, transform: SK, flexShrink: 0, background: '#0a1235', border: '1px solid rgba(255,255,255,.12)' }}>
+        <span className="tabular-nums" style={{ transform: UN, fontFamily: "'Teko', sans-serif", fontWeight: 700, fontSize: 21, lineHeight: 1, color: '#fff' }}>
+          <OdometerValue target={row.total} height={20} width={9} decimals={2} trigger={revealed} />
         </span>
-        <div style={{ transform: 'skewX(6deg)', padding: '13px 14px 13px 32px' }}>
-          <div className="flex items-center gap-2.5">
-            <p className="flex-1 min-w-0 truncate text-[13px] font-semibold text-slate-200 text-center"
-              style={isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}}>
-              {row.name}
-            </p>
-            <span className="text-[12px] font-bold text-emerald-400 tabular-nums flex-shrink-0 text-right" style={{ minWidth: 40 }}>
-              <OdometerValue target={row.total} height={15} width={7.5} decimals={2} trigger={revealed} />
-            </span>
-            <div className="flex-shrink-0 w-8 flex justify-end">
-              <DeltaIcon delta={delta} />
-            </div>
-            <PredictionBadge matchPredictions={row.matchPredictions} />
-          </div>
-        </div>
       </div>
     </motion.div>
   );
@@ -182,6 +218,9 @@ function RankCard({ row, index, total, isInitial, onOpen }) {
 
 export default function LiveLeaderboard() {
   const [rows, setRows]                   = useState([]);
+  // the signed-in participant's row is drawn in gold
+  const [myId, setMyId]                   = useState(null);
+  useEffect(() => { supabase.auth.getSession().then(({ data }) => setMyId(data.session?.user?.id ?? null)).catch(() => {}); }, []);
   const [status, setStatus]               = useState('loading');
   const [liveInfo, setLiveInfo]           = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -346,34 +385,14 @@ export default function LiveLeaderboard() {
     <div>
       <style>{`@keyframes lb-blur-focus { from { filter: blur(6px); opacity: 0; } to { filter: blur(0); opacity: 1; } }`}</style>
 
-      {/* live match cards — logos + score only (no names/minute), 3-column
-          grid so many concurrent matches stay compact instead of stacking
-          into a tall list; caps at ~3 rows visible, scrolls beyond that.
-          Exactly 7 matches → symmetric 2-3-2: a 6-column grid where each card
-          spans 2, and the first card of the top and bottom rows starts at
-          column 2 so those rows sit centered. */}
-      {liveInfo && liveInfo.length > 0 && (
-        <div className={`mb-3 grid ${liveInfo.length === 7 ? 'grid-cols-6' : 'grid-cols-3'} gap-2 overflow-y-auto`} style={{ maxHeight: 156 }}>
-          <AnimatePresence>
-            {liveInfo.map((info, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className={`relative flex items-center justify-center gap-1.5 py-2 rounded-xl ${liveInfo.length === 7 ? `col-span-2${i === 0 || i === 5 ? ' col-start-2' : ''}` : ''}`}
-                style={{ background: 'rgba(52,211,153,.08)', border: '1px solid rgba(52,211,153,.25)' }}>
-                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                <TeamFlag logo={info.homeLogo} name={info.home} className="w-5 h-5 flex-shrink-0" />
-                <span className="font-bold text-[11px] text-white tabular-nums">{info.score}</span>
-                <TeamFlag logo={info.awayLogo} name={info.away} className="w-5 h-5 flex-shrink-0" />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      )}
+      {/* live matches: one-row scoreboard */}
+      {liveInfo && liveInfo.length > 0 && <ScoreboardStrip cards={liveInfo} />}
 
-      <div style={{ maxWidth: 262, margin: '0 auto' }}>
+      <div style={{ maxWidth: 380, margin: '0 auto' }}>
         <AnimatePresence>
           {rows.map((row, idx) => (
             <RankCard key={row.userId} row={row} index={idx} total={rows.length} isInitial={isInitialLoad}
+              isMe={row.userId === myId}
               onOpen={() => setOpenPlayer(row.userId)} />
           ))}
         </AnimatePresence>
