@@ -1273,12 +1273,13 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
             {/* Card — rounded parallelogram (skewed plate, counter-skewed content) */}
             <div className="relative overflow-hidden" style={{ ...verdictStyle, borderRadius: 5, transform: `skewX(-${ROW_SKEW}deg)` }}>
             <div className="relative" style={{ transform: `skewX(${ROW_SKEW}deg)` }}>
-            {/* Rank — big slanted watermark at the row's right edge (like the leaderboard), cropped by
-                the card. Anchored to a fixed offset so it stays put when the breakdown opens. */}
+            {/* Rank — big slanted watermark at the row's right edge (like the leaderboard), filling the
+                48px row with a 4px gap above and below. Anchored to the closed row's centre so it
+                stays put when the breakdown opens. */}
             <span
               aria-hidden
               className="absolute pointer-events-none select-none"
-              style={{ right: 6, top: 36, transform: 'translateY(-46%) skewX(-8deg)', fontFamily: "var(--num-font)", fontSize: 72, fontWeight: 700, lineHeight: 1, color: rankStyle.color, opacity: 0.24, textShadow: '3px 3px 0 rgba(0,0,0,0.55)' }}>
+              style={{ right: 6, top: 24, transform: 'translateY(-48.5%) skewX(-8deg)', fontFamily: "var(--num-font)", fontSize: 50, fontWeight: 800, lineHeight: 1, color: rankStyle.color, opacity: 0.24, textShadow: '3px 3px 0 rgba(0,0,0,0.55)' }}>
               {index + 1}
             </span>
 
