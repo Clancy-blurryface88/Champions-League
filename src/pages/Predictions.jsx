@@ -205,6 +205,21 @@ export default function Predictions() {
     return now >= lockTime;
   };
 
+  // Replay availability: a round is played over several evenings (Israel dates).
+  // An evening counts as over once every one of its matches is finished or kicked
+  // off 2.5h+ ago — the same rule the replay page uses to list its nights.
+  const roundOver = matches.length > 0 && matches.every((match) => match.is_finished);
+  const lastOverNight = useMemo(() => {
+    const ilDate = (d) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(d);
+    const played = (m) => m.is_finished || Date.parse(m.match_date) < Date.now() - 2.5 * 3600e3;
+    const byNight = new Map();
+    matches.forEach((m) => { if (!m.match_date) return; const k = ilDate(new Date(m.match_date)); byNight.set(k, [...(byNight.get(k) || []), m]); });
+    const over = [...byNight].filter(([, list]) => list.every(played)).map(([k]) => k).sort();
+    return over.length ? over[over.length - 1] : null;
+  }, [matches]);
+  const nightLabel = (key) => `${key.slice(8, 10)}/${key.slice(5, 7)}`;
+  const openNightReplay = () => navigate(createPageUrl(`Replay?round_id=${roundId}&date=${lastOverNight}`));
+
   // Load all match data on mount: team positions + form history
   useEffect(() => {
     const loadMatchData = async () => {
@@ -1250,7 +1265,7 @@ export default function Predictions() {
       </div>
 
       {/* Round over → gold "replay" button in the same bottom bar as "send predictions" */}
-      {matches.length > 0 && matches.every((match) => match.is_finished) && (
+      {roundOver && (
         <div className="absolute bottom-0 left-0 right-0 flex justify-center px-4 py-2 border-t border-white/[0.08] z-20 rounded-t-3xl" style={{ background: 'rgba(10,18,40,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)' }}>
           <motion.button
             onClick={() => navigate(createPageUrl(`Replay?round_id=${roundId}`))}
@@ -1272,6 +1287,29 @@ export default function Predictions() {
         </div>
       )}
 
+      {/* An evening of the round is over but nothing is left to predict (the next evening's
+          matches are all locked and still running) → the same gold button, for that evening */}
+      {!roundOver && lastOverNight && !matches.some((match) => !isMatchLocked(match.match_date)) && (
+        <div className="absolute bottom-0 left-0 right-0 flex justify-center px-4 py-2 border-t border-white/[0.08] z-20 rounded-t-3xl" style={{ background: 'rgba(10,18,40,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)' }}>
+          <motion.button
+            onClick={openNightReplay}
+            initial={{ opacity: 0, y: 16, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+            whileTap={{ scale: 0.96 }}
+            className="w-full max-w-sm flex items-stretch gap-1 h-[50px]"
+            dir="ltr"
+          >
+            <span className="w-[58px] grid place-items-center rounded" style={{ transform: 'skewX(-12deg)', background: 'linear-gradient(135deg,#fde047,#eab308)', color: '#3a2a00' }}>
+              <History className="w-5 h-5" strokeWidth={2.4} style={{ transform: 'skewX(12deg)' }} />
+            </span>
+            <span className="flex-1 grid place-items-center rounded font-extrabold text-base text-white" style={{ transform: 'skewX(-12deg)', background: 'linear-gradient(90deg,rgba(255,255,255,0.18),rgba(255,255,255,0.04))', border: '1px solid rgba(255,255,255,0.4)' }}>
+              <span style={{ transform: 'skewX(12deg)' }} dir="rtl">הילוך חוזר לערב <bdi dir="ltr">{nightLabel(lastOverNight)}</bdi></span>
+            </span>
+          </motion.button>
+        </div>
+      )}
+
       {/* Submit Button — תמיד גלוי, מחוץ לאזור הגלילה */}
       {matches.some((match) => !isMatchLocked(match.match_date)) && (() => {
         const { filled, total } = predictionProgress();
@@ -1279,6 +1317,10 @@ export default function Predictions() {
         const pct = total > 0 ? (filled / total) * 100 : 0;
         return (
           <div className="absolute bottom-0 left-0 right-0 flex justify-center px-4 py-2 border-t border-white/[0.08] z-20 rounded-t-3xl" style={{ background: 'rgba(10,18,40,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)' }}>
+          {/* the send/update button, and — once an evening of the round is over — a gold
+              replay square for that evening at its end, in the same slanted-plate style */}
+          <div className="w-full max-w-sm flex items-stretch gap-1 h-[50px]" dir="ltr">
+          <div className="flex-1 min-w-0 flex">
           <AnimatePresence mode="wait">
             {allDone || submitted ? (
               <motion.button
@@ -1332,6 +1374,23 @@ export default function Predictions() {
               </motion.div>
             )}
           </AnimatePresence>
+          </div>
+          {lastOverNight && (
+            <motion.button
+              onClick={openNightReplay}
+              aria-label={`הילוך חוזר לערב ${nightLabel(lastOverNight)}`}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+              whileTap={{ scale: 0.92 }}
+              className="w-[58px] flex-shrink-0 grid place-items-center rounded"
+              // skew via framer's own value — a CSS transform here would be replaced by its scale animation
+              style={{ skewX: -12, background: 'linear-gradient(135deg,#fde047,#eab308)', color: '#3a2a00' }}
+            >
+              <History className="w-5 h-5" strokeWidth={2.4} style={{ transform: 'skewX(12deg)' }} />
+            </motion.button>
+          )}
+          </div>
         </div>
         );
       })()}
