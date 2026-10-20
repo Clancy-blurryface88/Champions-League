@@ -549,7 +549,6 @@ function EndHero({ rows, startRank, single }) {
 function MatchColumn({ active, t, scoreAt, hotId, onPick }) {
   return (
     <div className="flex flex-col gap-1.5 min-w-0">
-      <div className="text-[10px] text-slate-500 font-semibold text-center mb-0.5">משחקים</div>
       {active.map((mm) => {
         const s = scoreAt(mm, t), clock = gameClock(t - mm.ko, mm.end - mm.ko), live = clock && clock !== "סיום", hot = hotId === mm.id;
         // how far into the match we are (0 before kickoff, 1 at full time) — drives the bar at the bottom

@@ -65,12 +65,13 @@ function OdometerDigit({ digit, delay = 0, height = 16, width = 8, trigger }) {
 
 // alignDot: put the decimal point in a cell like the digits, so it sits on their baseline
 // (opt-in, so the existing tables keep their look)
-export default function OdometerValue({ target, height = 16, width = 8, trigger, decimals = 2, alignDot = false }) {
+// font: the number font by default; a caller can pass another (e.g. the main table uses the base font)
+export default function OdometerValue({ target, height = 16, width = 8, trigger, decimals = 2, alignDot = false, font = 'var(--num-font)' }) {
   const [ref, autoInView] = useInViewOnce();
   const active = trigger !== undefined ? trigger : autoInView;
   const str = (target || 0).toFixed(decimals);
   return (
-    <span ref={trigger === undefined ? ref : undefined} style={{ display: 'inline-flex', fontFamily: 'var(--num-font)' }}>
+    <span ref={trigger === undefined ? ref : undefined} style={{ display: 'inline-flex', fontFamily: font }}>
       {str.split('').map((c, i) =>
         c === '.'
           ? <span key={i} style={alignDot ? { height, display: 'flex', alignItems: 'center' } : undefined}>.</span>
