@@ -29,7 +29,6 @@ import TeamFlag from "./components/TeamFlag";
 import LiveLeaderboard from "./components/LiveLeaderboard";
 import FinalResultsOverlay from "./components/FinalResultsOverlay";
 import PushInvite, { PUSH_INVITE_SNOOZE_MS, pushInviteSnoozeKey } from "./components/PushInvite";
-import { useAppIntroDone } from "@/lib/AppIntroContext";
 
 // Measures a ref'd element's rendered box size, updating on resize (the live
 // card's width is responsive — min(370px, 92vw) — so the ring's actual
@@ -430,7 +429,6 @@ export default function Layout({ children, currentPageName }) {
   const [tournamentEnded, setTournamentEnded] = useState(false);
   const [showFinalResults, setShowFinalResults] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
-  const appIntroDone = useAppIntroDone();
   const [showYearlySummary, setShowYearlySummary] = useState(false); // NEW: State for YearlySummaryPanel
   const [showPushBanner, setShowPushBanner] = useState(false);
   const [notifPermission, setNotifPermission] = useState(
@@ -758,7 +756,6 @@ export default function Layout({ children, currentPageName }) {
   // it shows again on every fresh app load, while still only firing once
   // per continuous visit even if hasLiveMatch/nextMatch change mid-session.
   useEffect(() => {
-    if (!appIntroDone) return; // the app renders under the opening video — wait until it's seen
     if (authLoading || !liveCheckDone || !nextMatchChecked) return;
     if (showWelcomeModal || showGeneralPredictionsOnboarding || showIntroVideo) return;
     if (hasLiveMatch && livePredictionLoading) return; // wait so the card appears complete, prediction included
@@ -779,7 +776,7 @@ export default function Layout({ children, currentPageName }) {
         try { localStorage.setItem(seenKey, today); } catch {}
       }
     }
-  }, [appIntroDone, authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading, showWelcomeModal, showGeneralPredictionsOnboarding, showIntroVideo, tournamentEnded]);
+  }, [authLoading, liveCheckDone, nextMatchChecked, hasLiveMatch, nextMatch, livePredictionLoading, showWelcomeModal, showGeneralPredictionsOnboarding, showIntroVideo, tournamentEnded]);
 
   // "משחקי היום" shows the day's matches as a typewriter-revealed list right
   // away — no solo "המשחק הקרוב" screen first (the ticker bar already covers
@@ -1810,7 +1807,7 @@ export default function Layout({ children, currentPageName }) {
           onDone={handleGeneralPredictionsOnboardingDone} />
 
         <IntroVideoModal
-          isOpen={showIntroVideo && appIntroDone}
+          isOpen={showIntroVideo}
           onDone={handleIntroVideoDone} />
 
         <AnimatePresence>
@@ -1858,7 +1855,7 @@ export default function Layout({ children, currentPageName }) {
             name, general questions, intro video) is done, same reasoning as
             the live/next-match intro overlays below. */}
         <AnimatePresence>
-          {showPushBanner && appIntroDone && !showWelcomeModal && !showGeneralPredictionsOnboarding && !showIntroVideo && (
+          {showPushBanner && !showWelcomeModal && !showGeneralPredictionsOnboarding && !showIntroVideo && (
             <PushInvite
               mode={/iphone|ipad|ipod/i.test(navigator.userAgent) && window.navigator.standalone !== true ? "ios"
                 : notifPermission === "denied" ? "denied" : "default"}
