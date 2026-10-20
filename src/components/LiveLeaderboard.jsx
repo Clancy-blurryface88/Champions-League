@@ -259,8 +259,13 @@ export default function LiveLeaderboard() {
         const known = inPlayCards(data.matches);
         if (known) setLiveInfo(known);
         setStatus('done');
-        // wait for reveal animation to complete before live update
-        const revealWait = Math.pow(Math.max(official.length - 1, 0), 1.4) * 0.13 + 1.2;
+        // Let the official table settle completely before the live update:
+        // the top card's entrance (last in the stagger, see RankCard's cardDelay
+        // + 0.5s), then its points odometer roll (~1.6s), then a short beat
+        // with everything at rest — only then do the live points land and the
+        // cards swap.
+        const lastCardIn = Math.pow(Math.max(official.length - 1, 0), 1.4) * 0.13 + 0.2 + 0.5;
+        const revealWait = lastCardIn + 1.6 + 0.6;
         await new Promise(resolve => setTimeout(resolve, revealWait * 1000));
       }
 
