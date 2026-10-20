@@ -181,8 +181,8 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
     lastRank.current = row.liveRank;
   }, [row.liveRank]);
 
-  // Broadcast look: white rank plate · name plate (green for you, like the
-  // selected round) · points plate, all slanted like a TV graphic.
+  // Broadcast look: rank plate (white; green→cyan for you, like the next round
+  // in the rounds marquee) · name plate · points plate, slanted like a TV graphic.
   const SK = 'skewX(-12deg)', UN = 'skewX(12deg)';
   return (
     <motion.div layout layoutId={`lb-${row.userId}`}
@@ -193,11 +193,11 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
       onClick={() => onOpen?.()}
       className="relative cursor-pointer select-none flex"
       style={{ height: 40, marginBottom: 5, zIndex: climbed ? 2 : 1 }}>
-      <div style={{ width: 38, display: 'grid', placeItems: 'center', background: '#fff', color: '#0a1235', transform: SK, flexShrink: 0 }}>
+      <div style={{ width: 38, display: 'grid', placeItems: 'center', background: isMe ? 'linear-gradient(135deg,#22c55e,#00e0ff)' : '#fff', color: isMe ? '#04201d' : '#0a1235', transform: SK, flexShrink: 0 }}>
         <span style={{ transform: UN, fontFamily: "'Teko', sans-serif", fontWeight: 700, fontSize: 26, lineHeight: 1 }}>{row.liveRank}</span>
       </div>
       <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', marginInlineStart: 3, transform: SK,
-        background: isMe ? 'linear-gradient(90deg,#15803d,#063b1c)' : 'linear-gradient(90deg,#1a2a78,#0e1850)',
+        background: 'linear-gradient(90deg,#1a2a78,#0e1850)',
         boxShadow: climbed ? '0 0 0 2px rgba(232,196,106,.9), 0 0 24px rgba(232,196,106,.45)' : 'none', transition: 'box-shadow .5s ease' }}>
         <span className="truncate" style={{ transform: UN, fontFamily: "'Fredoka', sans-serif", fontWeight: 600, fontSize: 15.5, color: '#fff', minWidth: 0,
           ...(isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}) }}>{row.name}</span>
@@ -214,7 +214,7 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
 
 export default function LiveLeaderboard() {
   const [rows, setRows]                   = useState([]);
-  // the signed-in participant's row is drawn in green
+  // the signed-in participant's rank plate is drawn green→cyan
   const [myId, setMyId]                   = useState(null);
   useEffect(() => { supabase.auth.getSession().then(({ data }) => setMyId(data.session?.user?.id ?? null)).catch(() => {}); }, []);
   const [status, setStatus]               = useState('loading');
