@@ -408,7 +408,7 @@ export default function LiveDataPanel({ onClose }) {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
               <div className="relative">
-                <img src="/champions/ch-trophy.png" alt="trophy" className="w-7 h-7 object-contain"
+                <img src="/champions/ch-trophy.webp" alt="trophy" className="w-7 h-7 object-contain"
                   onError={e => { e.target.style.display='none'; }} />
               </div>
               <div>

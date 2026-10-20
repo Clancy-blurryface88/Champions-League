@@ -116,7 +116,7 @@ export default function WelcomeModal({ isOpen, onSave, userEmail, currentUser })
                 style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
               >
                 <motion.img
-                  src="/champions/ch-trophy.png"
+                  src="/champions/ch-trophy.webp"
                   alt="Trophy"
                   className="w-24 h-auto mx-auto mb-6"
                   initial={{ opacity: 0, scale: 0.75, y: 6 }}

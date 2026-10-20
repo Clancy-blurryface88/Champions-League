@@ -122,7 +122,7 @@ export default function GeneralPredictionsBoard() {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <h1 className="text-xl font-bold text-white flex items-center gap-2">
-          <img src="/champions/ch-trophy.png" alt="" className="h-6 w-auto object-contain" />
+          <img src="/champions/ch-trophy.webp" alt="" className="h-6 w-auto object-contain" />
           ניחושים כלליים
         </h1>
       </div>

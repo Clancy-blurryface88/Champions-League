@@ -938,7 +938,7 @@ export default function Predictions() {
                       variants by card position so a grid of matches isn't visually flat */}
                   <div className="absolute inset-0 pointer-events-none"
                     style={{
-                      backgroundImage: `url(/champions/${index % 2 === 0 ? 'match-card-bg-2.png' : 'match-card-bg-3.png'})`,
+                      backgroundImage: `url(/champions/${index % 2 === 0 ? 'match-card-bg-2.webp' : 'match-card-bg-3.webp'})`,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       opacity: 0.35,

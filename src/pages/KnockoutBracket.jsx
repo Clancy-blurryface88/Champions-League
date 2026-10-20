@@ -427,7 +427,7 @@ export default function KnockoutBracket() {
               <div style={{ position:'relative' }}>
                 <div style={{ position:'absolute', top:-78, left:0, right:0, textAlign:'center', pointerEvents:'none' }}>
                   <img
-                    src="/champions/ch-trophy.png"
+                    src="/champions/ch-trophy.webp"
                     alt="Champions League Trophy"
                     style={{ width:56, height:72, objectFit:'contain', display:'inline-block', filter:'drop-shadow(0 0 12px rgba(9, 122, 220,0.7)) drop-shadow(0 0 4px rgba(9, 122, 220,0.4))' }}
                   />

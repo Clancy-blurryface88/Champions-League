@@ -28,7 +28,7 @@ export default function TournamentHeader() {
         transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
       >
         <img
-          src="/champions/ch-trophy.png"
+          src="/champions/ch-trophy.webp"
           alt="Champions League Trophy"
           className="w-[224px] md:w-[276px] h-auto object-contain"
         />
