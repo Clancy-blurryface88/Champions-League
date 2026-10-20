@@ -47,7 +47,7 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import { lazy } from 'react';
+import { lazyPage } from './utils/lazyPage';
 import Dashboard from './pages/Dashboard';
 import GeneralPredictionsBoard from './pages/GeneralPredictionsBoard';
 import HallOfFame from './pages/HallOfFame';
@@ -60,8 +60,9 @@ import __Layout from './Layout.jsx';
 
 // Loaded on demand, each in its own file: the admin panel (admins only) and
 // the stats page (charts library) — the two heaviest screens most visits never open.
-const Admin = lazy(() => import('./pages/Admin'));
-const MyStats = lazy(() => import('./pages/MyStats'));
+// lazyPage reloads into the new build if a deploy has replaced their files.
+const Admin = lazyPage(() => import('./pages/Admin'));
+const MyStats = lazyPage(() => import('./pages/MyStats'));
 
 
 export const PAGES = {

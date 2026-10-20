@@ -10,13 +10,21 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { PageLoader, PageErrorBoundary } from '@/utils/lazyPage';
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 
+// A page that loads on demand waits (or fails) inside the layout, so the header,
+// ticker and menus stay on screen and working meanwhile.
+const PageSlot = ({ children }) => (
+  <PageErrorBoundary>
+    <React.Suspense fallback={<PageLoader />}>{children}</React.Suspense>
+  </PageErrorBoundary>
+);
 const LayoutWrapper = ({ children, currentPageName }) => Layout ?
-  <Layout currentPageName={currentPageName}>{children}</Layout>
-  : <>{children}</>;
+  <Layout currentPageName={currentPageName}><PageSlot>{children}</PageSlot></Layout>
+  : <PageSlot>{children}</PageSlot>;
 
 // The clip is a 3s segment of the original intro, cut to fit the screen:
 // portrait for phones, landscape for wide screens (~0.4MB instead of 3.3MB).

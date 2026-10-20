@@ -4,6 +4,9 @@ import App from '@/App.jsx'
 import '@/index.css'
 import 'flag-icons/css/flag-icons.min.css'
 import { GlobalLoaderProvider } from '@/contexts/LoadingContext'
+import { reloadOnceForNewBuild } from '@/utils/lazyPage'
+// a file that loads on demand failed (usually: replaced by a newer deploy) — reload into the new build
+window.addEventListener('vite:preloadError', (e) => { if (reloadOnceForNewBuild()) e.preventDefault(); })
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 window.OneSignalDeferred.push(async function(OneSignal) {
   await OneSignal.init({
