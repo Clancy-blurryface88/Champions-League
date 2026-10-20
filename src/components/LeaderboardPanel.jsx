@@ -60,33 +60,23 @@ export default function LeaderboardPanel({ onClose, user }) {
     setRevealedIds(new Set());
 
     try {
-      const currentUser = await User.me();
-
-      // CRITICAL CHANGE: Load data primarily from UserStats
-      let userStats = [];
-      try {
-        userStats = await UserStats.list();
-        console.log(`🔄 LeaderboardPanel: Loaded ${userStats.length} user stats records`);
-      } catch (error) {
-        console.log("Error loading UserStats:", error.message);
-      }
-
-      // Real per-user "כיוונים" (correct-outcome count) and "רצף" (current
-      // streak of correct-outcome hits) for the row-expand accordion — not
-      // tracked as an aggregate anywhere else, so computed here from the raw
-      // predictions + match dates, same approach as CategoryLeaderboards.jsx.
-      let predictions = [];
-      try {
-        predictions = await Prediction.list();
-      } catch (error) {
-        console.log("Error loading predictions:", error.message);
-      }
-      let matches = [];
-      try {
-        matches = await Match.list();
-      } catch (error) {
-        console.log("Error loading matches:", error.message);
-      }
+      // All requests go out together (they used to wait for each other, one
+      // round trip after another, before the first row could show). Each keeps
+      // its own fallback, so one failing doesn't block the rest. The signed-in
+      // user comes from Layout when it has it, saving a round trip.
+      // userStats → the table; predictions + matches → the real per-user
+      // "כיוונים" (correct-outcome count) and "רצף" (current streak) for the
+      // row-expand accordion, same approach as CategoryLeaderboards.jsx;
+      // public profiles → display names.
+      const settle = (promise, label) => promise.catch((error) => { console.log(`Error loading ${label}:`, error?.message); return []; });
+      const [currentUser, userStats, predictions, matches, allProfiles] = await Promise.all([
+        user?.id ? Promise.resolve(user) : User.me(),
+        settle(UserStats.list(), 'UserStats'),
+        settle(Prediction.list(), 'predictions'),
+        settle(Match.list(), 'matches'),
+        settle(PublicProfile.list(), 'profiles'),
+      ]);
+      console.log(`🔄 LeaderboardPanel: Loaded ${userStats.length} user stats records`);
       const matchDateMap = {};
       matches.forEach((m) => { matchDateMap[m.id] = m.match_date; });
 
@@ -123,16 +113,8 @@ export default function LeaderboardPanel({ onClose, user }) {
       };
 
       const userIdsWithStats = userStats.map((stat) => stat.user_id);
-      let publicProfiles = [];
-      try {
-        if (userIdsWithStats.length > 0) {
-          const allProfiles = await PublicProfile.list();
-          publicProfiles = allProfiles.filter(p => userIdsWithStats.includes(p.user_id));
-          console.log(`🔄 LeaderboardPanel: Loaded ${publicProfiles.length} profiles for users with stats`);
-        }
-      } catch (error) {
-        console.log("Error loading profiles:", error.message);
-      }
+      const publicProfiles = allProfiles.filter(p => userIdsWithStats.includes(p.user_id));
+      console.log(`🔄 LeaderboardPanel: Loaded ${publicProfiles.length} profiles for users with stats`);
 
       // Create profile map
       const profileMap = {};
