@@ -47,17 +47,21 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Admin from './pages/Admin';
+import { lazy } from 'react';
 import Dashboard from './pages/Dashboard';
 import GeneralPredictionsBoard from './pages/GeneralPredictionsBoard';
 import HallOfFame from './pages/HallOfFame';
 import KnockoutBracket from './pages/KnockoutBracket';
-import MyStats from './pages/MyStats';
 import Predictions from './pages/Predictions';
 import PredictionsResults from './pages/PredictionsResults';
 import Replay from './pages/Replay';
 import RoundsList from './pages/RoundsList';
 import __Layout from './Layout.jsx';
+
+// Loaded on demand, each in its own file: the admin panel (admins only) and
+// the stats page (charts library) — the two heaviest screens most visits never open.
+const Admin = lazy(() => import('./pages/Admin'));
+const MyStats = lazy(() => import('./pages/MyStats'));
 
 
 export const PAGES = {

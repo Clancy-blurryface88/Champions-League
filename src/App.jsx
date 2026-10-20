@@ -90,8 +90,9 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Render the main app
+  // Render the main app (Admin and MyStats load on demand — LoadingScreen while they do)
   return (
+    <React.Suspense fallback={<LoadingScreen />}>
     <Routes>
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
@@ -111,6 +112,7 @@ const AuthenticatedApp = () => {
       ))}
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </React.Suspense>
   );
 };
 
