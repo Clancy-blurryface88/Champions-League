@@ -25,6 +25,7 @@ import AdminHallOfFame from "../components/admin/AdminHallOfFame";
 import AdminFinishCheck from "../components/admin/AdminFinishCheck";
 import AdminSendPush from "../components/admin/AdminSendPush";
 import AdminPushSubscribers from "../components/admin/AdminPushSubscribers";
+import AdminLiveIntroPreview from "../components/admin/AdminLiveIntroPreview";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -92,6 +93,7 @@ export default function Admin() {
       case 'finish-check': return <AdminFinishCheck />;
       case 'send-push': return <AdminSendPush />;
       case 'push-subscribers': return <AdminPushSubscribers />;
+      case 'live-intro': return <AdminLiveIntroPreview />;
       default: return <AdminRounds />;
     }
   };
@@ -115,6 +117,7 @@ export default function Admin() {
     { id: 'finish-check', label: '🧪 בדיקת סיום משחקים', icon: ShieldCheck },
     { id: 'send-push', label: '📣 שליחת התראה', icon: Radio },
     { id: 'push-subscribers', label: '🔔 מי רשום להתראות', icon: Users },
+    { id: 'live-intro', label: '🎬 תצוגת כניסת לייב', icon: Radio },
   ];
 
   return (

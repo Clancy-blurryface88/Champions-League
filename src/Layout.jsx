@@ -24,315 +24,14 @@ import { TOURNAMENT_CODE } from "@/config/tournament";
 import LiveDataPanel from "./components/LiveDataPanel"; // Added: Import LiveDataPanel
 import MatchTickerBar from "./components/MatchTickerBar";
 import YearlySummaryPanel from "./components/YearlySummaryPanel"; // NEW: YearlySummaryPanel
-import { OdometerDigit } from "./components/OdometerScore";
+import LiveIntroBoard, { liveIntroDuration } from "./components/LiveIntroBoard";
 import TeamFlag from "./components/TeamFlag";
 import LiveLeaderboard from "./components/LiveLeaderboard";
 import FinalResultsOverlay from "./components/FinalResultsOverlay";
 import PushInvite, { PUSH_INVITE_SNOOZE_MS, pushInviteSnoozeKey } from "./components/PushInvite";
 
-// Measures a ref'd element's rendered box size, updating on resize (the live
-// card's width is responsive — min(370px, 92vw) — so the ring's actual
-// dimensions aren't known ahead of render).
 function localDayKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
-
-function useElementSize(ref) {
-  const [size, setSize] = useState({ width: 0, height: 0 });
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const update = () => setSize({ width: el.offsetWidth, height: el.offsetHeight });
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [ref]);
-  return size;
-}
-
-// Where a ray from the box's center at `angleDeg` (0° = top, clockwise —
-// matching CSS conic-gradient's own angle convention) exits a rounded
-// rectangle of the given half-width/half-height/corner-radius. This is what
-// lets the minute chip ride exactly on the ring's visual edge instead of
-// tracing a plain circle that doesn't match the card's actual rounded-rect
-// shape.
-function roundedRectEdgePoint(angleDeg, halfW, halfH, r) {
-  const rad = (angleDeg * Math.PI) / 180;
-  const dx = Math.sin(rad);
-  const dy = -Math.cos(rad);
-  if (halfW <= 0 || halfH <= 0) return { x: 0, y: 0 };
-  const rr = Math.min(r, halfW, halfH);
-
-  if (Math.abs(dx) < 1e-6) return { x: 0, y: dy > 0 ? halfH : -halfH };
-  if (Math.abs(dy) < 1e-6) return { x: dx > 0 ? halfW : -halfW, y: 0 };
-
-  const signX = dx > 0 ? 1 : -1;
-  const signY = dy > 0 ? 1 : -1;
-
-  // Straight vertical edge (x = ±halfW)
-  {
-    const t = (signX * halfW) / dx;
-    const y = dy * t;
-    if (Math.abs(y) <= halfH - rr) return { x: signX * halfW, y };
-  }
-  // Straight horizontal edge (y = ±halfH)
-  {
-    const t = (signY * halfH) / dy;
-    const x = dx * t;
-    if (Math.abs(x) <= halfW - rr) return { x, y: signY * halfH };
-  }
-  // Rounded corner — nearest circle centered at (±(halfW-rr), ±(halfH-rr))
-  const cx = signX * (halfW - rr);
-  const cy = signY * (halfH - rr);
-  const B = -2 * (dx * cx + dy * cy);
-  const C = cx * cx + cy * cy - rr * rr;
-  const disc = Math.max(B * B - 4 * C, 0);
-  const t = (-B + Math.sqrt(disc)) / 2;
-  return { x: dx * t, y: dy * t };
-}
-
-// Real, continuously-live match progress (0→1 over a 90-minute match).
-// Anchors to the API's own `minute` whenever it provides one (accounts for
-// stoppage time, delayed kickoffs, etc. — far more accurate than assuming
-// elapsed-since-scheduled-kickoff), then extrapolates smoothly every second
-// between polls, re-anchoring (self-correcting) every time a fresh poll comes
-// in. Only falls back to a naive elapsed-since-kickoff estimate when the API
-// genuinely has no minute for this match. Eases in from 0 on first mount.
-function useLiveMinuteProgress(liveMatch) {
-  const [progress, setProgress] = useState(0);
-  // Increments each time the ring finishes "catching up" to the real minute
-  // (first mount, or after re-anchoring on a fresh poll) — lets the UI flash
-  // the minute number right as the ring settles into place.
-  const [settledTick, setSettledTick] = useState(0);
-  const startedRef = useRef(false);
-
-  useEffect(() => {
-    if (!liveMatch) { setProgress(0); return; }
-    const anchorAt = Date.now();
-    const anchorMinute = liveMatch.minute != null
-      ? liveMatch.minute
-      : (liveMatch.utcDate ? Math.max(0, (anchorAt - new Date(liveMatch.utcDate).getTime()) / 60000) : 0);
-    // Only extrapolate forward while the ball is actually rolling — at half-time
-    // (status 'PAUSED') the clock is stopped, so keep the ring/minute frozen at
-    // the last-known minute instead of drifting ahead by the real time elapsed.
-    const compute = () => {
-      // Half-time always sits exactly on the halfway mark, however much
-      // first-half stoppage time there was (the API minute can read 45+5).
-      if (liveMatch.status === 'PAUSED') return 0.5;
-      const elapsed = liveMatch.status === 'IN_PLAY' ? (Date.now() - anchorAt) / 60000 : 0;
-      return Math.max(0, Math.min((anchorMinute + elapsed) / 90, 1));
-    };
-
-    let raf, iv;
-    const beginLiveTicking = () => {
-      setProgress(compute());
-      iv = setInterval(() => setProgress(compute()), 1000);
-    };
-
-    if (!startedRef.current) {
-      startedRef.current = true;
-      const target = compute();
-      const revealDuration = 2200;
-      // Anchor the reveal's t=0 to the first rAF callback's own timestamp,
-      // not to a performance.now() read beforehand — any delay between
-      // scheduling this effect and the browser's next paint (Layout mounts a
-      // lot at once) would otherwise already eat into revealDuration before
-      // the first frame ever renders, making the ring appear to "jump" to
-      // its target instead of visibly filling from empty.
-      setProgress(0);
-      let revealStart = null;
-      const tick = (now) => {
-        if (revealStart === null) revealStart = now;
-        const p = Math.min((now - revealStart) / revealDuration, 1);
-        const eased = 1 - Math.pow(1 - p, 3);
-        setProgress(target * eased);
-        if (p < 1) raf = requestAnimationFrame(tick);
-        else {
-          beginLiveTicking();
-          setSettledTick((t) => t + 1);
-        }
-      };
-      raf = requestAnimationFrame(tick);
-    } else {
-      beginLiveTicking();
-      setSettledTick((t) => t + 1);
-    }
-
-    return () => { if (raf) cancelAnimationFrame(raf); if (iv) clearInterval(iv); };
-  }, [liveMatch]);
-
-  return { progress, settledTick };
-}
-
-// The live-match intro card: sized/margined like the Next Match card (never
-// touches the screen edges on narrow phones), ringed by a conic-gradient
-// border that fills clockwise from the top according to the match minute
-// (out of 90), with its content flipping in on a 3D Y-axis. No layoutId here
-// — sharing it with the small corner LIVE chip made framer-motion interpolate
-// their very different border-radii and left the chip looking squared-off.
-function LiveMatchCard({ liveMatch, liveUserPrediction, compact = false, centeredWidth = false }) {
-  const { progress, settledTick } = useLiveMinuteProgress(liveMatch);
-  const minute = liveMatch ? Math.floor(progress * 90) : null;
-  const isHalftime = liveMatch?.status === 'PAUSED';
-  const homeScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.home ?? 0) || 0, 0), 9);
-  const awayScore = Math.min(Math.max(Number(liveMatch?.score?.fullTime?.away ?? 0) || 0, 0), 9);
-  // Hold the digits at 0 until the ring finishes its reveal — the roll to the
-  // real score then plays right as/after the minute settles into place,
-  // instead of racing ahead on its own fixed timer.
-  const displayHomeScore = settledTick > 0 ? homeScore : 0;
-  const displayAwayScore = settledTick > 0 ? awayScore : 0;
-
-  const RING_RADIUS = compact ? 13 : 20;
-  const ringRef = useRef(null);
-  const ringSize = useElementSize(ringRef);
-  const marker = roundedRectEdgePoint(progress * 360, ringSize.width / 2, ringSize.height / 2, RING_RADIUS);
-  const digitScale = compact ? 0.36 : 0.8;
-
-  return (
-    <motion.div
-      ref={ringRef}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1, transition: { duration: 0.3 } }}
-      exit={{
-        scale: 0.15, x: '38vw', y: '-42vh', opacity: 0,
-        transition: { duration: 0.55, ease: [0.4, 0, 0.2, 1] },
-      }}
-      className={compact ? "rounded-xl" : "rounded-2xl"}
-      style={{
-        position: 'relative',
-        padding: compact ? 1.5 : 2.5,
-        borderRadius: RING_RADIUS,
-        maxWidth: compact ? (centeredWidth ? 'calc(50% - 6px)' : '100%') : 'min(370px, 92vw)',
-        background: `conic-gradient(from 0deg, #ef4444 ${progress * 360}deg, rgba(255,255,255,0.08) ${progress * 360}deg 360deg)`,
-        boxShadow: compact ? '0 0 14px rgba(239,68,68,0.18)' : '0 0 30px rgba(239,68,68,0.2)',
-      }}
-    >
-      {minute != null && ringSize.width > 0 && (
-        <motion.div
-          key={settledTick}
-          animate={settledTick > 0 ? { scale: [1, 1.5, 1] } : { scale: 1 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          style={{
-            position: 'absolute',
-            left: ringSize.width / 2 + marker.x,
-            top: ringSize.height / 2 + marker.y,
-            transform: 'translate(-50%, -50%)',
-            background: '#7cadee', color: '#000', fontWeight: 900, fontSize: compact ? 8 : 11,
-            borderRadius: 999, padding: compact ? '1px 4px' : '2px 7px', whiteSpace: 'nowrap',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.5), 0 0 0 2px #030d1a',
-            zIndex: 5,
-          }}
-        >
-          {isHalftime ? 'HT' : `${minute}'`}
-        </motion.div>
-      )}
-      <div
-        className={compact ? "rounded-xl" : "rounded-2xl"}
-        style={{
-          background: 'rgba(8,18,32,0.95)',
-          backdropFilter: 'blur(28px)',
-          boxShadow: compact ? '0 0 24px rgba(239,68,68,0.14), 0 8px 24px rgba(0,0,0,0.6)' : '0 0 60px rgba(239,68,68,0.18), 0 20px 60px rgba(0,0,0,0.7)',
-          overflow: 'hidden',
-        }}
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.94 }}
-          animate={{ opacity: 1, scale: 1, transition: { duration: 0.4, ease: 'easeOut' } }}
-        >
-            <div className={compact ? "px-2 py-2.5 flex flex-col items-center gap-1.5" : "px-6 py-6 flex flex-col items-center gap-4"}>
-              <div className={compact ? "flex items-center gap-1 px-1.5 py-0.5 rounded-full" : "flex items-center gap-2 px-3 py-1 rounded-full"} style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)' }}>
-                <span className={compact ? "relative flex h-1.5 w-1.5 flex-shrink-0" : "relative flex h-2.5 w-2.5 flex-shrink-0"}>
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                  <span className={compact ? "relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" : "relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"} />
-                </span>
-                <span className={compact ? "text-red-400 text-[8px] font-bold tracking-widest uppercase" : "text-red-400 text-xs font-bold tracking-widest uppercase"}>Live</span>
-              </div>
-              {liveMatch && (
-                <div className="flex flex-col items-center gap-1">
-                  {/* Flags flank the score directly, vertically centered on the digits (the
-                      team-code label is absolutely positioned so it doesn't push the flag
-                      itself up relative to the shorter digit boxes) */}
-                  <div className={compact ? "flex items-center gap-1" : "flex items-center gap-3"} dir="ltr">
-                    <div className="relative flex flex-col items-center">
-                      <TeamFlag logo={liveMatch.homeTeam?.crest} name={liveMatch.homeTeam?.name} className={compact ? "w-6 h-6" : "w-12 h-12"} animate={false} />
-                      {!compact && <span className="absolute top-full mt-1 text-slate-400 text-[10px] whitespace-nowrap">{liveMatch.homeTeam?.tla}</span>}
-                    </div>
-                    <div style={{ width: compact ? 15 : 34, height: compact ? 23 : 50, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
-                      <div style={{ transform: `scale(${digitScale})`, transformOrigin: 'top left', width: 42, height: 64 }}>
-                        <OdometerDigit target={displayHomeScore} delayMs={150} />
-                      </div>
-                    </div>
-                    <span style={{ color: '#475569', fontSize: compact ? 15 : 34, fontWeight: 900 }}>-</span>
-                    <div style={{ width: compact ? 15 : 34, height: compact ? 23 : 50, overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
-                      <div style={{ transform: `scale(${digitScale})`, transformOrigin: 'top left', width: 42, height: 64 }}>
-                        <OdometerDigit target={displayAwayScore} delayMs={400} />
-                      </div>
-                    </div>
-                    <div className="relative flex flex-col items-center">
-                      <TeamFlag logo={liveMatch.awayTeam?.crest} name={liveMatch.awayTeam?.name} className={compact ? "w-6 h-6" : "w-12 h-12"} animate={false} />
-                      {!compact && <span className="absolute top-full mt-1 text-slate-400 text-[10px] whitespace-nowrap">{liveMatch.awayTeam?.tla}</span>}
-                    </div>
-                  </div>
-                  {liveUserPrediction && (
-                    <div className={compact ? "flex flex-col items-center gap-0.5 mt-0.5" : "flex flex-col items-center gap-1 mt-2"}>
-                      {!compact && <span className="text-slate-400 text-xs">הניחוש שלי</span>}
-                      <span className={compact ? "text-sky-400 text-[8px] font-bold" : "text-sky-400 text-sm font-bold"} dir="ltr">
-                        ({liveUserPrediction.predicted_score_a} - {liveUserPrediction.predicted_score_b})
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-        </motion.div>
-      </div>
-    </motion.div>
-  );
-}
-
-function LiveMatchesGrid({ liveMatches, liveUserPredictions, compact = false }) {
-  const visibleCount = liveMatches.length;
-
-  if (liveMatches.length === 0) {
-    return <LiveMatchCard liveMatch={null} liveUserPrediction={null} />;
-  }
-
-  return (
-    <motion.div
-      layout
-      className={compact ? "grid gap-3 justify-items-stretch" : "flex flex-col items-center gap-4"}
-      style={{
-        ...(compact ? { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', width: 'min(560px, 94vw)' } : {}),
-        maxHeight: '86vh',
-        overflowY: 'auto',
-        // The minute chip rides ON the ring's edge (half poking outside the
-        // card's own box — see the marker math above), so clipping X here
-        // was cutting it off whenever its swept position landed on the
-        // ring's left/right edge during the reveal. Visible + generous
-        // padding gives it room; vertical scrolling (for many stacked
-        // matches) still works since that only needs overflowY.
-        overflowX: 'visible',
-        pointerEvents: 'auto',
-        padding: 16,
-      }}
-    >
-      <AnimatePresence>
-        {liveMatches.slice(0, visibleCount).map((m, idx) => {
-          // An odd match count leaves a lone card on the final row — instead
-          // of it stretching to the row's full width, span both columns and
-          // center it at a normal single-column width so it reads as a
-          // deliberate centered card, not a stray half-empty row.
-          const isLastOdd = compact && liveMatches.length % 2 === 1 && idx === liveMatches.length - 1;
-          return (
-            <div key={m.id} style={isLastOdd ? { gridColumn: '1 / -1', display: 'flex', justifyContent: 'center' } : undefined}>
-              <LiveMatchCard liveMatch={m} liveUserPrediction={liveUserPredictions[m.id] || null} compact={compact} centeredWidth={isLastOdd} />
-            </div>
-          );
-        })}
-      </AnimatePresence>
-    </motion.div>
-  );
 }
 
 // The small chip that normally sits alone in the top-right corner
@@ -791,7 +490,7 @@ export default function Layout({ children, currentPageName }) {
   }, [showNextMatchIntro]);
 
   // Fetch the user's prediction for every concurrently live match (not just
-  // the first one) — keyed by the API match id so LiveMatchesGrid can look
+  // the first one) — keyed by the API match id so LiveIntroBoard can look
   // each one up per tile.
   const liveMatchIdsKey = liveMatches.map(m => m.id).join(',');
   useEffect(() => {
@@ -827,21 +526,20 @@ export default function Layout({ children, currentPageName }) {
     return () => { cancelled = true; };
   }, [liveMatchIdsKey, user?.id]);
 
-  // Auto-dismiss the live intro — but only start the countdown once we know
-  // whether there's a prediction to show, so it never disappears mid-fetch.
-  // All live tiles animate in together now (no per-tile stagger), so this
-  // no longer needs to scale with match count.
+  // Auto-dismiss the live intro a moment after the board's row-by-row reveal
+  // ends (it reports back) — its length depends on how many matches are live.
+  const [liveIntroRevealed, setLiveIntroRevealed] = useState(false);
+  useEffect(() => { if (showLiveIntro) setLiveIntroRevealed(false); }, [showLiveIntro]);
   useEffect(() => {
-    if (!showLiveIntro || livePredictionLoading) return;
-    const t = setTimeout(() => setShowLiveIntro(false), 3500);
+    if (!showLiveIntro || !liveIntroRevealed) return;
+    const t = setTimeout(() => setShowLiveIntro(false), 1600);
     return () => clearTimeout(t);
-  }, [showLiveIntro, livePredictionLoading]);
+  }, [showLiveIntro, liveIntroRevealed]);
 
-  // Hard safety cap — never let the overlay block the UI indefinitely even
-  // if the prediction fetch hangs.
+  // Hard safety cap — never let the overlay block the UI indefinitely.
   useEffect(() => {
     if (!showLiveIntro) return;
-    const cap = setTimeout(() => setShowLiveIntro(false), 8000);
+    const cap = setTimeout(() => setShowLiveIntro(false), liveIntroDuration(liveMatches.length) + 6000);
     return () => clearTimeout(cap);
   }, [showLiveIntro]);
 
@@ -1644,10 +1342,10 @@ export default function Layout({ children, currentPageName }) {
                 onClick={() => setShowLiveIntro(false)}
               />
               <div className="fixed inset-0 z-[56] flex items-center justify-center pointer-events-none">
-                <LiveMatchesGrid
-                  liveMatches={liveMatches}
-                  liveUserPredictions={liveUserPredictions}
-                  compact={liveMatches.length > 1}
+                <LiveIntroBoard
+                  matches={liveMatches}
+                  predictions={liveUserPredictions}
+                  onDone={() => setLiveIntroRevealed(true)}
                 />
               </div>
             </>
