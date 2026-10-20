@@ -108,6 +108,25 @@ function PredictionBadge({ matchPredictions }) {
   );
 }
 
+// Match cards for the matches in play by the DB alone — kicked off within the
+// last 2.5h and not finished — with the score the DB has so far. Used before
+// the live API answers (and when it reports nothing live) so the card strip
+// already takes its place and the table below doesn't jump. null → none.
+const IN_PLAY_MS = 2.5 * 3600e3;
+function inPlayCards(matches) {
+  const now = Date.now();
+  const cards = matches
+    .filter(m => !m.is_finished && new Date(m.match_date).getTime() <= now && now - new Date(m.match_date).getTime() < IN_PLAY_MS)
+    .sort((a, b) => new Date(a.match_date) - new Date(b.match_date))
+    .map(m => ({
+      home: m.team_a, away: m.team_b,
+      homeLogo: m.team_a_logo ?? null, awayLogo: m.team_b_logo ?? null,
+      score: m.actual_score_a != null && m.actual_score_b != null ? `${m.actual_score_a}–${m.actual_score_b}` : '–',
+      minute: null,
+    }));
+  return cards.length ? cards : null;
+}
+
 function RankCard({ row, index, total, isInitial, onOpen }) {
   const delta = row.officialRank - row.liveRank;
   const rankFromBottom = total - 1 - index;
@@ -214,6 +233,10 @@ export default function LiveLeaderboard() {
         hasShownInitial.current = true;
         setIsInitialLoad(true);   // reveal animation
         setRows(official);
+        // The live match cards normally arrive only in phase 2 and then push the
+        // table down — show the ones already known to be in play right away.
+        const known = inPlayCards(data.matches);
+        if (known) setLiveInfo(known);
         setStatus('done');
         // wait for reveal animation to complete before live update
         const revealWait = Math.pow(Math.max(official.length - 1, 0), 1.4) * 0.13 + 1.2;
@@ -227,7 +250,9 @@ export default function LiveLeaderboard() {
       const liveMatches = json.matches || [];
       setLastUpdate(new Date());
 
-      if (liveMatches.length === 0) { setLiveInfo(null); return; }
+      // Nothing live per the API (e.g. half-time, or a slow feed): keep the cards
+      // of matches still within their playing window so the table doesn't jump.
+      if (liveMatches.length === 0) { setLiveInfo(inPlayCards(data.matches)); return; }
 
       // Collect ALL live DB matches (not just the first one)
       const unfinished = data.matches.filter(m => !m.is_finished);
