@@ -38,6 +38,37 @@ const fetchAllPages = async (buildQuery, pageSize = PAGE_SIZE) => {
 };
 
 // ============================================
+// HELPER - זיכרון קצר לקריאות (list / filter)
+// כמה רכיבים מבקשים את אותם נתונים כמעט באותו רגע (למשל רשימת המשחקים
+// ביקשה 6 פעמים בפתיחת מסך הניחושים). כאן בקשה זהה בתוך 15 שניות מקבלת
+// את אותה תשובה בלי לפנות שוב לשרת, ובקשות שיוצאות באותו רגע מתאחדות
+// לבקשה אחת. כל כתיבה (create / update / delete) מנקה את הזיכרון של אותה
+// טבלה. בפאנל הניהול הזיכרון כבוי ומתנקה, כי שם יש גם כתיבות ישירות
+// לבסיס הנתונים שלא עוברות כאן (חישוב ניקוד, איפוס ועוד).
+// כל קורא מקבל עותק משלו, כך ששינוי במערך אצל רכיב אחד לא משפיע על אחר.
+// ============================================
+const CACHE_MS = 15000;
+const readCache = new Map(); // `${table}|${key}` -> { at, promise }
+
+const copy = (data) => (typeof structuredClone === 'function' ? structuredClone(data) : JSON.parse(JSON.stringify(data)));
+const inAdmin = () => typeof window !== 'undefined' && window.location.pathname.startsWith('/Admin');
+
+const cached = (table, key, load) => {
+  if (inAdmin()) { readCache.clear(); return load(); }
+  const k = `${table}|${key}`;
+  const hit = readCache.get(k);
+  if (hit && Date.now() - hit.at < CACHE_MS) return hit.promise.then(copy);
+  const promise = load();
+  readCache.set(k, { at: Date.now(), promise });
+  promise.catch(() => { if (readCache.get(k)?.promise === promise) readCache.delete(k); });
+  return promise.then(copy);
+};
+
+const invalidate = (...tables) => {
+  for (const k of readCache.keys()) if (tables.some((t) => k.startsWith(`${t}|`))) readCache.delete(k);
+};
+
+// ============================================
 // HELPER - מחזיר את המשתמש המחובר כרגע
 // ============================================
 const getCurrentUser = async () => {
@@ -664,3 +695,31 @@ export const GeneralPrediction = {
     return data;
   },
 };
+
+// ============================================
+// חיבור הזיכרון הקצר לטבלאות
+// קריאות (list / filter) עוברות דרך cached; כתיבות (create / update /
+// delete) מנקות את הזיכרון של הטבלה שלהן. User.me (המשתמש המחובר) לא נשמר.
+// ============================================
+const withCache = (entity, table, alsoClears = []) => {
+  ['list', 'filter'].forEach((m) => {
+    const read = entity[m];
+    if (read) entity[m] = (...args) => cached(table, m + JSON.stringify(args), () => read(...args));
+  });
+  ['create', 'update', 'delete', 'updateMyUserData'].forEach((m) => {
+    const write = entity[m];
+    if (write) entity[m] = async (...args) => { try { return await write(...args); } finally { invalidate(table, ...alsoClears); } };
+  });
+};
+
+withCache(User, 'profiles', ['public_profiles']);
+withCache(Round, 'rounds');
+withCache(Match, 'matches');
+withCache(Prediction, 'predictions');
+withCache(UserStats, 'user_stats');
+withCache(PublicProfile, 'public_profiles');
+withCache(TeamLogo, 'team_logos');
+withCache(AppSettings, 'app_settings');
+withCache(GeneralQuestion, 'general_questions');
+withCache(HallOfFame, 'hall_of_fame');
+withCache(GeneralPrediction, 'general_predictions');
