@@ -9,7 +9,6 @@ window.OneSignalDeferred.push(async function(OneSignal) {
   await OneSignal.init({
     appId: '9c8b733e-9d73-41bb-b092-ae462aa5cdb1',
     notifyButton: { enable: false },
-    defaultIcon: '/champions/app-icon.jpg',
   });
 });
 
