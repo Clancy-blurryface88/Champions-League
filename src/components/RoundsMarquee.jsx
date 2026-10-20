@@ -54,7 +54,7 @@ const RoundCard = ({ round, onClick, isNext }) => {
               transform: `skewX(-${SKEW}deg)`,
               background: isNext ? "linear-gradient(135deg,#22c55e,#00e0ff)" : "linear-gradient(180deg,#f8fafc,#94a3b8)",
               color: isNext ? "#04201d" : "#0f172a",
-              font: "700 34px 'Teko', sans-serif",
+              font: "700 34px var(--num-font)",
               width: 56,
             }}
           >

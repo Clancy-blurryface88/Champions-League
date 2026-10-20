@@ -104,7 +104,7 @@ function Tile({ match, prediction, stage, timing, width, centred }) {
       </div>
       <div dir="ltr" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
         <TeamFlag logo={match.homeTeam?.crest} name={match.homeTeam?.name} size={24} animate={false} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: "'Teko', sans-serif", fontWeight: 700, fontSize: 38, lineHeight: 1, color: '#fff' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: "var(--num-font)", fontWeight: 700, fontSize: 38, lineHeight: 1, color: '#fff' }}>
           <Digit value={home} ms={rollMs} />
           <span style={{ color: 'rgba(255,255,255,.35)', fontSize: 28 }}>–</span>
           <Digit value={away} ms={rollMs} />
@@ -112,7 +112,7 @@ function Tile({ match, prediction, stage, timing, width, centred }) {
         <TeamFlag logo={match.awayTeam?.crest} name={match.awayTeam?.name} size={24} animate={false} />
       </div>
       {prediction && (
-        <div dir="ltr" style={{ font: "700 13px 'Teko', sans-serif", color: 'rgba(255,255,255,.7)', lineHeight: 1 }}>
+        <div dir="ltr" style={{ font: "700 13px var(--num-font)", color: 'rgba(255,255,255,.7)', lineHeight: 1 }}>
           {prediction.predicted_score_a}–{prediction.predicted_score_b}
         </div>
       )}

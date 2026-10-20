@@ -8,11 +8,11 @@ import { motion, AnimatePresence } from "framer-motion";
 
 // 1X2 panel in the "broadcast" look: the match card grows into a full-screen
 // panel (and shrinks back on close), three tabs — simulator, markets, exact
-// score (with a "draw diagonal" view). Numbers are Teko.
+// score (with a "draw diagonal" view). Numbers use the app's number font.
 
 // accent: dark green gradient (was pink) — dark enough for white text; GREEN for text/lines that need a solid colour
 const CY = "#00e0ff", MG = "linear-gradient(135deg,#15803d,#065f46)", GREEN = "#22c55e", INK = "#070822", MUTED = "#9aa3d6";
-const NUM = "'Teko', sans-serif";
+const NUM = "var(--num-font)";
 const NUM_W = 0.46; // odometer cell width ÷ height for Teko digits
 const PANEL_BG = "linear-gradient(170deg,#1a1d5c 0%,#0d0f2e 40%,#070822 100%)";
 const EASE = [0.2, 0.8, 0.2, 1];
@@ -87,7 +87,7 @@ function ScoreWheel({ value, onChange }) {
             <div
               key={n ?? "none"}
               className="snap-center flex items-center justify-center tabular-nums transition-[opacity,transform] duration-150"
-              style={{ height: WHEEL_ITEM, fontFamily: "'Bebas Neue', sans-serif", fontSize: SZ.wheelFont, opacity: on ? (n === null ? 0.6 : 1) : 0.35, transform: `scale(${on ? 1 : 0.85})` }}
+              style={{ height: WHEEL_ITEM, fontFamily: "var(--num-font)", fontSize: SZ.wheelFont, opacity: on ? (n === null ? 0.6 : 1) : 0.35, transform: `scale(${on ? 1 : 0.85})` }}
             >
               {n === null ? "–" : n}
             </div>

@@ -141,7 +141,7 @@ function ScoreboardStrip({ cards, myPreds = [] }) {
         const line = (logo, name, goals, first) => (
           <div className="flex items-center justify-between gap-1 px-1" style={{ height: 20, borderTop: first ? 'none' : '1px solid rgba(255,255,255,.07)' }}>
             <TeamFlag logo={logo} name={name} size={16} />
-            <span className="tabular-nums" style={{ fontFamily: "'Teko', sans-serif", fontWeight: 700, fontSize: 16, lineHeight: 1, color: lit ? '#e8c46a' : '#fff' }}>{goals ?? '–'}</span>
+            <span className="tabular-nums" style={{ fontFamily: "var(--num-font)", fontWeight: 700, fontSize: 16, lineHeight: 1, color: lit ? '#e8c46a' : '#fff' }}>{goals ?? '–'}</span>
           </div>
         );
         return (
@@ -192,7 +192,7 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
       className="relative cursor-pointer select-none flex"
       style={{ height: 40, marginBottom: 5, zIndex: moved.current > 0 ? 3 : moved.current < 0 ? 1 : 2 }}>
       <div style={{ width: 38, display: 'grid', placeItems: 'center', background: isMe ? 'linear-gradient(135deg,#22c55e,#00e0ff)' : '#fff', color: isMe ? '#04201d' : '#0a1235', transform: SK, flexShrink: 0 }}>
-        <span style={{ transform: UN, fontFamily: "'Teko', sans-serif", fontWeight: 700, fontSize: 26, lineHeight: 1 }}>{row.liveRank}</span>
+        <span style={{ transform: UN, fontFamily: "var(--num-font)", fontWeight: 700, fontSize: 26, lineHeight: 1 }}>{row.liveRank}</span>
       </div>
       <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', marginInlineStart: 3, transform: SK,
         background: 'linear-gradient(90deg,#1a2a78,#0e1850)' }}>
@@ -201,7 +201,7 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
         <span style={{ transform: UN, marginInlineStart: 'auto', flexShrink: 0 }}><DeltaIcon delta={delta} /></span>
       </div>
       <div style={{ width: 76, display: 'grid', placeItems: 'center', marginInlineStart: 3, transform: SK, flexShrink: 0, background: '#0a1235', border: '1px solid rgba(255,255,255,.12)' }}>
-        <span className="tabular-nums" style={{ transform: UN, fontFamily: "'Teko', sans-serif", fontWeight: 700, fontSize: 21, lineHeight: 1, color: '#fff' }}>
+        <span className="tabular-nums" style={{ transform: UN, fontFamily: "var(--num-font)", fontWeight: 700, fontSize: 21, lineHeight: 1, color: '#fff' }}>
           <OdometerValue target={row.total} height={20} width={9} decimals={2} trigger={revealed} />
         </span>
       </div>

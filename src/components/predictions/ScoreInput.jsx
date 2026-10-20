@@ -61,9 +61,9 @@ export default function ScoreInput({ value, onChange, hasError, disabled, locked
               exit={{ opacity: 0, transition: { duration: 0.08 } }}
               transition={{ duration: 0.46, ease: 'easeOut', times: [0, 0.45, 0.75, 1], opacity: { duration: 0.1 } }}
               style={{
-                // digits in Karantina (bold); the "?" placeholder keeps Bebas Neue
-                fontFamily: isUndefined ? "'Bebas Neue', sans-serif" : "'Karantina', sans-serif",
-                fontWeight: isUndefined ? undefined : 700,
+                // digits in the app's number font; the "?" placeholder keeps Bebas Neue
+                fontFamily: isUndefined ? "'Bebas Neue', sans-serif" : "var(--num-font)",
+                fontWeight: isUndefined ? undefined : 800,
                 // Karantina digits sit low in their line box (measured: 20.5px above vs 12.5px below at 78px);
                 // lift by half the difference so the gap to the frame is the same top and bottom
                 y: isUndefined ? 0 : '-0.051em',

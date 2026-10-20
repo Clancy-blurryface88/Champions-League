@@ -70,7 +70,7 @@ export default function OdometerValue({ target, height = 16, width = 8, trigger,
   const active = trigger !== undefined ? trigger : autoInView;
   const str = (target || 0).toFixed(decimals);
   return (
-    <span ref={trigger === undefined ? ref : undefined} style={{ display: 'inline-flex' }}>
+    <span ref={trigger === undefined ? ref : undefined} style={{ display: 'inline-flex', fontFamily: 'var(--num-font)' }}>
       {str.split('').map((c, i) =>
         c === '.'
           ? <span key={i} style={alignDot ? { height, display: 'flex', alignItems: 'center' } : undefined}>.</span>

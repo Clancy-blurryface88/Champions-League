@@ -1315,7 +1315,7 @@ export default function Predictions() {
                 dir="ltr"
               >
                 <span className="w-[58px] grid place-items-center rounded" style={{ transform: 'skewX(-12deg)', background: 'linear-gradient(135deg,#fde047,#eab308)' }}>
-                  <span className="tabular-nums" style={{ transform: 'skewX(12deg)', fontFamily: "'Teko', sans-serif", fontWeight: 700, fontSize: 28, lineHeight: 1, color: '#3a2a00', paddingTop: 3 }}>{filled}</span>
+                  <span className="tabular-nums" style={{ transform: 'skewX(12deg)', fontFamily: "var(--num-font)", fontWeight: 700, fontSize: 28, lineHeight: 1, color: '#3a2a00', paddingTop: 3 }}>{filled}</span>
                 </span>
                 <span className="relative flex-1 grid place-items-center rounded overflow-hidden" style={{ transform: 'skewX(-12deg)', background: 'linear-gradient(90deg,rgba(255,255,255,0.12),rgba(255,255,255,0.03))', border: '1px solid rgba(255,255,255,0.3)' }}>
                   <motion.span

@@ -37,7 +37,7 @@ export default function MatchupPlates({ match, className = "" }) {
         <TeamFlag logo={match.team_a_logo} name={match.team_a} size={28} animate={false} />
         <TeamName name={match.team_a} />
       </div>
-      <div className="relative z-10 w-[68px] h-16 grid place-items-center flex-shrink-0" style={{ background: "#fff", color: "#070822", fontFamily: "'Teko', sans-serif", fontSize: 38, fontWeight: 700, lineHeight: 1, clipPath: SLANT, filter: "drop-shadow(0 0 10px rgba(255,255,255,.35))" }}>VS</div>
+      <div className="relative z-10 w-[68px] h-16 grid place-items-center flex-shrink-0" style={{ background: "#fff", color: "#070822", fontFamily: "var(--num-font)", fontSize: 38, fontWeight: 700, lineHeight: 1, clipPath: SLANT, filter: "drop-shadow(0 0 10px rgba(255,255,255,.35))" }}>VS</div>
       <div className="flex-1 min-w-0 h-12 flex items-center justify-end gap-1.5 pr-3 pl-4 -ml-2" style={{ background: `linear-gradient(270deg,${colorB},${colorB}bb)`, clipPath: SLANT }}>
         <TeamName name={match.team_b} align="right" />
         <TeamFlag logo={match.team_b_logo} name={match.team_b} size={28} animate={false} />

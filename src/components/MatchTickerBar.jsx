@@ -168,7 +168,7 @@ export default function MatchTickerBar({ onClick }) {
           </span>
         </span>
         <span style={{ ...plate, background: match.is_finished ? '#22d3ee' : '#4ade80', height: '100%' }}>
-          <span className="text-xs font-bold tabular-nums" style={{ transform: UNSKEW, color: '#04201d' }}>
+          <span className="tabular-nums" style={{ transform: UNSKEW, color: '#04201d', fontFamily: 'var(--num-font)', fontWeight: 800, fontSize: 15, lineHeight: 1 }}>
             {match.is_finished ? `${match.actual_score_a ?? '-'}-${match.actual_score_b ?? '-'}` : time}
           </span>
         </span>

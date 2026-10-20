@@ -269,7 +269,7 @@ function BigNumberRoundPicker({ rounds, value, onChange }) {
           transition={{ duration: 0.2, ease: 'easeOut' }}
           className="text-center min-w-[64px]">
           <span className="block text-[11px] font-bold tracking-[0.14em]" style={{ color: '#4ade80', fontFamily: "'Outfit', sans-serif" }}>ROUND</span>
-          <span className="block text-white" style={{ fontFamily: "'Teko', sans-serif", fontWeight: 700, fontSize: 64, lineHeight: 0.85 }}>
+          <span className="block text-white" style={{ fontFamily: "var(--num-font)", fontWeight: 700, fontSize: 64, lineHeight: 0.85 }}>
             {roundNumber(current, idx)}
           </span>
         </motion.div>
@@ -796,7 +796,7 @@ export default function PredictionsResults() {
                               >
                                 <span className="flex items-center gap-1.5" style={{ transform: 'skewX(12deg)' }}>
                                   <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-6 h-6" rounded="sm" />
-                                  <span className="tabular-nums" style={{ color: '#22d3ee' }}>{match.actual_score_a}-{match.actual_score_b}</span>
+                                  <span className="tabular-nums" style={{ color: '#22d3ee', fontFamily: 'var(--num-font)', fontSize: 16, lineHeight: 1 }}>{match.actual_score_a}-{match.actual_score_b}</span>
                                   <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-6 h-6" rounded="sm" />
                                 </span>
                               </button>
@@ -1278,7 +1278,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
             <span
               aria-hidden
               className="absolute pointer-events-none select-none"
-              style={{ right: 6, top: 36, transform: 'translateY(-46%) skewX(-8deg)', fontFamily: "'Teko', sans-serif", fontSize: 72, fontWeight: 700, lineHeight: 1, color: rankStyle.color, opacity: 0.24, textShadow: '3px 3px 0 rgba(0,0,0,0.55)' }}>
+              style={{ right: 6, top: 36, transform: 'translateY(-46%) skewX(-8deg)', fontFamily: "var(--num-font)", fontSize: 72, fontWeight: 700, lineHeight: 1, color: rankStyle.color, opacity: 0.24, textShadow: '3px 3px 0 rgba(0,0,0,0.55)' }}>
               {index + 1}
             </span>
 
@@ -1289,12 +1289,12 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
               aria-label={`מקום ${index + 1}`}
               className="relative w-full grid items-center gap-2 py-2.5 pl-3 pr-14"
               style={{ gridTemplateColumns: '62px 112px 1fr', direction: 'ltr' }}>
-              <span className="tabular-nums text-left" style={{ fontFamily: "'Teko', sans-serif", fontSize: 22, fontWeight: 600, lineHeight: 1, color: ptsBadgeStyle.color }}>
+              <span className="tabular-nums text-left" style={{ fontFamily: "var(--num-font)", fontSize: 22, fontWeight: 600, lineHeight: 1, color: ptsBadgeStyle.color }}>
                 <SlotValue target={prediction.points_earned || 0} trigger={revealedIds.has(prediction.id)} />
               </span>
               <span className="flex items-center justify-center gap-1.5">
                 <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-6 h-6" rounded="sm" />
-                <span className="tabular-nums text-white" style={{ fontFamily: "'Teko', sans-serif", fontSize: 28, fontWeight: 700, lineHeight: 1 }}>
+                <span className="tabular-nums text-white" style={{ fontFamily: "var(--num-font)", fontSize: 28, fontWeight: 700, lineHeight: 1 }}>
                   {prediction.predicted_score_a}:{prediction.predicted_score_b}
                 </span>
                 <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-6 h-6" rounded="sm" />
