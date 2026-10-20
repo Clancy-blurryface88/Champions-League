@@ -168,19 +168,6 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
   // cards that mount after the initial reveal (isInitial already false) have
   // no entrance to wait for, so they roll immediately.
   const [revealed, setRevealed] = useState(!isInitial);
-  // gold flash when this participant climbs
-  const lastRank = useRef(row.liveRank);
-  const [climbed, setClimbed] = useState(false);
-  useEffect(() => {
-    if (row.liveRank < lastRank.current) {
-      setClimbed(true);
-      const t = setTimeout(() => setClimbed(false), 1800);
-      lastRank.current = row.liveRank;
-      return () => clearTimeout(t);
-    }
-    lastRank.current = row.liveRank;
-  }, [row.liveRank]);
-
   // Broadcast look: rank plate (white; green→cyan for you, like the next round
   // in the rounds marquee) · name plate · points plate, slanted like a TV graphic.
   const SK = 'skewX(-12deg)', UN = 'skewX(12deg)';
@@ -192,13 +179,12 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
       transition={{ layout: { type: 'spring', stiffness: 9, damping: 20 }, ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}) }}
       onClick={() => onOpen?.()}
       className="relative cursor-pointer select-none flex"
-      style={{ height: 40, marginBottom: 5, zIndex: climbed ? 2 : 1 }}>
+      style={{ height: 40, marginBottom: 5, zIndex: delta > 0 ? 2 : 1 }}>
       <div style={{ width: 38, display: 'grid', placeItems: 'center', background: isMe ? 'linear-gradient(135deg,#22c55e,#00e0ff)' : '#fff', color: isMe ? '#04201d' : '#0a1235', transform: SK, flexShrink: 0 }}>
         <span style={{ transform: UN, fontFamily: "'Teko', sans-serif", fontWeight: 700, fontSize: 26, lineHeight: 1 }}>{row.liveRank}</span>
       </div>
       <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', marginInlineStart: 3, transform: SK,
-        background: 'linear-gradient(90deg,#1a2a78,#0e1850)',
-        boxShadow: climbed ? '0 0 0 2px rgba(232,196,106,.9), 0 0 24px rgba(232,196,106,.45)' : 'none', transition: 'box-shadow .5s ease' }}>
+        background: 'linear-gradient(90deg,#1a2a78,#0e1850)' }}>
         <span className="truncate" style={{ transform: UN, fontFamily: "'Fredoka', sans-serif", fontWeight: 600, fontSize: 15.5, color: '#fff', minWidth: 0,
           ...(isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}) }}>{row.name}</span>
         <span style={{ transform: UN, marginInlineStart: 'auto', flexShrink: 0 }}><DeltaIcon delta={delta} /></span>
