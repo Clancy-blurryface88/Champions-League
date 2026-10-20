@@ -111,8 +111,10 @@ function inPlayCards(matches) {
 // All live matches in one row of narrow cells, like a stadium scoreboard:
 // home logo + goals on top, away below. A cell whose score just changed lights
 // up gold for a few seconds. Up to 7 cells per row; more wrap to a second row.
+// The cell's top bar is the viewer's own prediction for that match right now:
+// green = exact, yellow = right direction, red = neither (or no prediction).
 const GOAL_FLASH_MS = 3500;
-function ScoreboardStrip({ cards }) {
+function ScoreboardStrip({ cards, myPreds = [] }) {
   const prev = useRef({});
   const [flash, setFlash] = useState({});
   useEffect(() => {
@@ -134,6 +136,8 @@ function ScoreboardStrip({ cards }) {
       {cards.map((c) => {
         const [ga, gb] = String(c.score).split(/[–-]/).map((s) => s.trim());
         const lit = flash[`${c.home}|${c.away}`] != null;
+        const mine = myPreds.find((mp) => teamsMatch(mp.home, c.home) && teamsMatch(mp.away, c.away));
+        const bar = mine?.isExact ? '#4ade80' : mine?.isHit ? '#facc15' : '#e11d48';
         const line = (logo, name, goals, first) => (
           <div className="flex items-center justify-between gap-1 px-1" style={{ height: 20, borderTop: first ? 'none' : '1px solid rgba(255,255,255,.07)' }}>
             <TeamFlag logo={logo} name={name} size={16} />
@@ -144,7 +148,7 @@ function ScoreboardStrip({ cards }) {
           <motion.div key={`${c.home}|${c.away}`} layout
             animate={lit ? { boxShadow: ['0 0 0 rgba(232,196,106,0)', '0 0 14px rgba(232,196,106,.55)', '0 0 0 rgba(232,196,106,0)'] } : { boxShadow: '0 0 0 rgba(0,0,0,0)' }}
             transition={lit ? { duration: 1.4, repeat: 1 } : { duration: 0.3 }}
-            style={{ background: lit ? 'rgba(232,196,106,.12)' : '#0a1235', border: '1px solid rgba(255,255,255,.1)', borderTop: `2px solid ${lit ? '#e8c46a' : '#e11d48'}`, transition: 'background .4s, border-color .4s' }}>
+            style={{ background: lit ? 'rgba(232,196,106,.12)' : '#0a1235', border: '1px solid rgba(255,255,255,.1)', borderTop: `3px solid ${lit ? '#e8c46a' : bar}`, transition: 'background .4s, border-color .4s' }}>
             {line(c.homeLogo, c.home, ga, true)}
             {line(c.awayLogo, c.away, gb, false)}
           </motion.div>
@@ -178,14 +182,8 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
   }, [row.liveRank]);
 
   // Broadcast look: white rank plate · name plate (green for you, like the
-  // selected round) · points plate, all slanted like a TV graphic. Per live
-  // match a square: green = exact hit, grey = not (now); direction isn't shown.
+  // selected round) · points plate, all slanted like a TV graphic.
   const SK = 'skewX(-12deg)', UN = 'skewX(12deg)';
-  const marks = (row.matchPredictions || []).map((mp, i) => (
-    <span key={i} style={{ width: 8, height: 8, borderRadius: 2, flexShrink: 0,
-      background: mp.isExact ? '#4ade80' : 'rgba(255,255,255,.14)',
-      boxShadow: mp.isExact ? '0 0 6px rgba(74,222,128,.7)' : 'none' }} />
-  ));
   return (
     <motion.div layout layoutId={`lb-${row.userId}`}
       initial={isInitial ? { opacity: 0, y: 14 } : false}
@@ -203,7 +201,6 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
         boxShadow: climbed ? '0 0 0 2px rgba(232,196,106,.9), 0 0 24px rgba(232,196,106,.45)' : 'none', transition: 'box-shadow .5s ease' }}>
         <span className="truncate" style={{ transform: UN, fontFamily: "'Fredoka', sans-serif", fontWeight: 600, fontSize: 15.5, color: '#fff', minWidth: 0,
           ...(isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}) }}>{row.name}</span>
-        {marks.length > 0 && <span style={{ transform: UN, display: 'flex', gap: 2, flexShrink: 0 }}>{marks}</span>}
         <span style={{ transform: UN, marginInlineStart: 'auto', flexShrink: 0 }}><DeltaIcon delta={delta} /></span>
       </div>
       <div style={{ width: 76, display: 'grid', placeItems: 'center', marginInlineStart: 3, transform: SK, flexShrink: 0, background: '#0a1235', border: '1px solid rgba(255,255,255,.12)' }}>
@@ -385,7 +382,7 @@ export default function LiveLeaderboard() {
       <style>{`@keyframes lb-blur-focus { from { filter: blur(6px); opacity: 0; } to { filter: blur(0); opacity: 1; } }`}</style>
 
       {/* live matches: one-row scoreboard */}
-      {liveInfo && liveInfo.length > 0 && <ScoreboardStrip cards={liveInfo} />}
+      {liveInfo && liveInfo.length > 0 && <ScoreboardStrip cards={liveInfo} myPreds={rows.find((r) => r.userId === myId)?.matchPredictions} />}
 
       <div style={{ maxWidth: 380, margin: '0 auto' }}>
         <AnimatePresence>
