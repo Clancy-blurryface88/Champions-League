@@ -22,7 +22,7 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 // portrait for phones, landscape for wide screens (~0.4MB instead of 3.3MB).
 // It plays clean (nothing drawn over it) and loops while auth is still
 // loading; the app renders only once it has finished.
-const INTRO_END = 2.9; // just before the clip's own end, so it never stops on its last frame
+const INTRO_END = 2.2; // cut the 3s clip short — the intro plays for 2.2s
 const INTRO_MAX_MS = 9000; // a video that can't play (autoplay blocked, load error) never holds the app longer
 const PRELOAD_IMAGES = ['/champions/ch-logo.png', '/champions/ch-trophy.webp', '/champions/match-card-bg-2.webp', '/champions/match-card-bg-3.webp'];
 const introSrc = () => (window.innerWidth < window.innerHeight ? '/champions/intro-portrait.mp4' : '/champions/intro-landscape.mp4');
