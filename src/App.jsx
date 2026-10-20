@@ -24,6 +24,7 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 // loading; the app renders only once it has finished.
 const INTRO_END = 2.9; // just before the clip's own end, so it never stops on its last frame
 const INTRO_MAX_MS = 9000; // a video that can't play (autoplay blocked, load error) never holds the app longer
+const PRELOAD_IMAGES = ['/champions/ch-logo.png', '/champions/ch-trophy.webp', '/champions/match-card-bg-2.webp', '/champions/match-card-bg-3.webp'];
 const introSrc = () => (window.innerWidth < window.innerHeight ? '/champions/intro-portrait.mp4' : '/champions/intro-landscape.mp4');
 
 const IntroVideo = ({ appReady, onDone }) => {
@@ -42,6 +43,11 @@ const IntroVideo = ({ appReady, onDone }) => {
   React.useEffect(() => {
     const t = setTimeout(() => { if (appReadyRef.current) finish(); }, INTRO_MAX_MS);
     return () => clearTimeout(t);
+  }, []);
+  // fetch the first screens' big images while the clip plays, so they're
+  // already there when the app appears
+  React.useEffect(() => {
+    PRELOAD_IMAGES.forEach((src) => { const img = new Image(); img.src = src; });
   }, []);
   // past the time cap and the app just became ready → go
   const startRef = React.useRef(Date.now());
