@@ -688,8 +688,9 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('dashboardReload', handleDashboardReload);
   }, [user]);
 
-  // Push-notification deep links (api/_goalWebhook.js): ?open=live opens the
-  // live panel (live leaderboard), ?open=leaderboard the main table. The param
+  // Push-notification deep links (api/_goalWebhook.js, api/_adminPush.js):
+  // ?open=live opens the live panel (live leaderboard), ?open=leaderboard the
+  // main table, ?open=hits the exact-hits panel. The param
   // is stripped right away so a refresh doesn't reopen it.
   useEffect(() => {
     if (!user) return;
@@ -698,6 +699,7 @@ export default function Layout({ children, currentPageName }) {
     if (!target) return;
     if (target === 'live') setShowLiveData(true);
     if (target === 'leaderboard') setShowLeaderboard(true);
+    if (target === 'hits') setShowExactHits(true);
     params.delete('open');
     const qs = params.toString();
     window.history.replaceState(null, '', window.location.pathname + (qs ? `?${qs}` : '') + window.location.hash);

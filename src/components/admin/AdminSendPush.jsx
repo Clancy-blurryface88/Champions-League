@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/api/supabase";
+import { Round, Match } from "@/api/entities";
 
 // Manual push from the admin panel: pick one of the app's ready-made formats
 // (the same wording the automatic pushes use — numbers/teams are editable
@@ -18,10 +19,20 @@ const TEMPLATES = [
   { id: "nightlate", label: "🏁 סיכום ערב (למחרת)", heading: "🏁 סיכום ערב ליגת האלופות של אתמול", body: "🎯 4 פגיעות מדויקות אתמול — כנסו לראות את הטבלה העדכנית 👉", link: "leaderboard" },
 ];
 
+// Where a tap on the push lands. round: true → a round picker appears and the
+// link carries its round_id. Keep in sync with LINKS in api/_adminPush.js.
 const LINKS = [
   ["home", "מסך הבית"],
-  ["live", "טבלת הלייב"],
+  ["round", "ניחושי מחזור", true],
+  ["results", "ניחושים ותוצאות"],
   ["leaderboard", "טבלת הדירוג"],
+  ["live", "טבלת הלייב"],
+  ["hits", "פגיעות מדויקות"],
+  ["replay", "הילוך חוזר למחזור", true],
+  ["stats", "סטטיסטיקה"],
+  ["knockout", "שלב הנוקאאוט"],
+  ["general", "ניחושים כלליים"],
+  ["halloffame", "היכל התהילה"],
 ];
 
 const box = { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" };
@@ -39,6 +50,21 @@ export default function AdminSendPush() {
   const [userId, setUserId] = useState("");
   const [onesignalId, setOnesignalId] = useState("");
   const [participants, setParticipants] = useState(null); // from admin-subscribers, loaded on first "user" pick
+  const [rounds, setRounds] = useState(null); // loaded when a round link is picked
+  const [roundId, setRoundId] = useState("");
+  const needsRound = LINKS.find(([id]) => id === link)?.[2];
+
+  useEffect(() => {
+    if (!needsRound || rounds) return;
+    Promise.all([Round.list("order"), Match.list("match_date")]).then(([list, matches]) => {
+      setRounds(list);
+      // default: the round of the nearest match not yet over (kickoff within the
+      // last ~3h counts as still on), else the last round
+      const cutoff = Date.now() - 3 * 3600e3;
+      const next = matches.find((m) => new Date(m.match_date).getTime() > cutoff);
+      setRoundId(next?.round_id || list[list.length - 1]?.id || "");
+    }).catch(() => setRounds([]));
+  }, [needsRound, rounds]);
 
   useEffect(() => {
     if (target !== "user" || participants) return;
@@ -66,7 +92,7 @@ export default function AdminSendPush() {
   };
 
   const validOsId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(onesignalId.trim());
-  const ready = heading.trim() && body.trim() && (target !== "user" || userId) && (target !== "onesignal" || validOsId);
+  const ready = heading.trim() && body.trim() && (target !== "user" || userId) && (target !== "onesignal" || validOsId) && (!needsRound || roundId);
   const chosen = participants?.find((u) => u.id === userId);
 
   const send = async () => {
@@ -79,6 +105,7 @@ export default function AdminSendPush() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${data.session?.access_token || ""}` },
         body: JSON.stringify({
           heading, body, link, target,
+          roundId: needsRound ? roundId : undefined,
           userId: target === "user" ? userId : undefined,
           onesignalId: target === "onesignal" ? onesignalId.trim() : undefined,
         }),
@@ -120,12 +147,19 @@ export default function AdminSendPush() {
         <textarea value={body} maxLength={300} rows={3} onChange={(e) => setBody(e.target.value)} className={input} placeholder="מה כתוב בהתראה" />
 
         <label className="block text-xs text-slate-400">לחיצה על ההתראה פותחת</label>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {LINKS.map(([id, label]) => (
             <button key={id} type="button" onClick={() => setLink(id)}
-              className={`flex-1 text-xs py-1.5 rounded-lg border ${link === id ? "bg-sky-500/20 border-sky-400/60 text-white" : "border-white/15 text-slate-400"}`}>{label}</button>
+              className={`text-xs py-1.5 px-2 rounded-lg border ${link === id ? "bg-sky-500/20 border-sky-400/60 text-white" : "border-white/15 text-slate-400"}`}>{label}</button>
           ))}
         </div>
+        {needsRound && (
+          !rounds ? <p className="text-[11px] text-slate-500">טוען מחזורים...</p> : (
+            <select value={roundId} onChange={(e) => setRoundId(e.target.value)} className={input}>
+              {rounds.map((r) => <option key={r.id} value={r.id} className="bg-slate-900">{r.name}</option>)}
+            </select>
+          )
+        )}
 
         <label className="block text-xs text-slate-400">למי לשלוח</label>
         <div className="grid grid-cols-2 gap-2">

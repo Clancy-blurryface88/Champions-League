@@ -8,7 +8,20 @@
 import { push, supa, ONESIGNAL_APP_ID } from './_goalWebhook.js';
 
 const SITE = 'https://champions-league-2026.vercel.app';
-const LINKS = { home: '/', live: '/?open=live', leaderboard: '/?open=leaderboard' };
+// Where a tap on the push lands (keep in sync with LINKS in AdminSendPush.jsx).
+// A function → needs the round_id the admin picked.
+const LINKS = {
+  home: '/', live: '/?open=live', leaderboard: '/?open=leaderboard', hits: '/?open=hits',
+  results: '/PredictionsResults', stats: '/MyStats', knockout: '/KnockoutBracket',
+  general: '/GeneralPredictionsBoard', halloffame: '/HallOfFame',
+  round: (id) => `/Predictions?round_id=${id}`, replay: (id) => `/Replay?round_id=${id}`,
+};
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const linkPath = (link, roundId) => {
+  const l = LINKS[link];
+  if (typeof l === 'function') return UUID_RE.test(String(roundId || '')) ? l(roundId) : LINKS.home;
+  return l || LINKS.home;
+};
 
 async function adminFromToken(token) {
   if (!token) return null;
@@ -92,7 +105,7 @@ export async function adminPushHandler(req, res) {
     if (onesignalId !== null && !UUID.test(onesignalId)) return res.status(400).json({ error: 'מזהה OneSignal לא תקין' });
     const single = userId || onesignalId;
     const mode = body.target === 'all' || single ? 'live' : 'test';
-    const url = `${SITE}${LINKS[body.link] || LINKS.home}`;
+    const url = `${SITE}${linkPath(body.link, body.roundId)}`;
 
     // Unique key per send: a manual push is always intentional, never deduped.
     const sent = await push({
