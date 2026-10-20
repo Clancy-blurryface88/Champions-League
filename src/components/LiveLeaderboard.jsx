@@ -168,6 +168,17 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
   // cards that mount after the initial reveal (isInitial already false) have
   // no entrance to wait for, so they roll immediately.
   const [revealed, setRevealed] = useState(!isInitial);
+  // While cards swap, the one that just went up always slides over the ones it
+  // passes (and one that dropped, under). Based on this update's move, not on
+  // the official rank — otherwise a card retaking its official place would
+  // slide under the card it passes.
+  const prevRank = useRef(row.liveRank);
+  const moved = useRef(0);
+  if (row.liveRank !== prevRank.current) {
+    moved.current = row.liveRank < prevRank.current ? 1 : -1;
+    prevRank.current = row.liveRank;
+  }
+
   // Broadcast look: rank plate (white; green→cyan for you, like the next round
   // in the rounds marquee) · name plate · points plate, slanted like a TV graphic.
   const SK = 'skewX(-12deg)', UN = 'skewX(12deg)';
@@ -179,7 +190,7 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
       transition={{ layout: { type: 'spring', stiffness: 9, damping: 20 }, ...(isInitial ? { delay: cardDelay, duration: 0.5, ease: 'easeOut' } : {}) }}
       onClick={() => onOpen?.()}
       className="relative cursor-pointer select-none flex"
-      style={{ height: 40, marginBottom: 5, zIndex: delta > 0 ? 2 : 1 }}>
+      style={{ height: 40, marginBottom: 5, zIndex: moved.current > 0 ? 3 : moved.current < 0 ? 1 : 2 }}>
       <div style={{ width: 38, display: 'grid', placeItems: 'center', background: isMe ? 'linear-gradient(135deg,#22c55e,#00e0ff)' : '#fff', color: isMe ? '#04201d' : '#0a1235', transform: SK, flexShrink: 0 }}>
         <span style={{ transform: UN, fontFamily: "'Teko', sans-serif", fontWeight: 700, fontSize: 26, lineHeight: 1 }}>{row.liveRank}</span>
       </div>
