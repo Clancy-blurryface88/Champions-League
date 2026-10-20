@@ -238,6 +238,34 @@ export default function NightReplay({ roundId = null, initialDate = null, onBack
     return () => cancelAnimationFrame(raf);
   }, [playing, speed, events, range]);
 
+  // once the night is built, bring the replay itself to the top of the screen
+  // (match tags, table, match column and player all in view), just below the
+  // app's fixed header — only the first time, not on every night switch
+  const replayTopRef = useRef(null), gridRef = useRef(null), playerRef = useRef(null);
+  const scrolledIn = useRef(false);
+  // Size the match cards so the whole column ends just above the sticky player,
+  // on whatever screen height — measured as if scrolled to the replay top.
+  const [cardH, setCardH] = useState(null);
+  const activeCount = model && !model.empty ? model.matches.filter((mm) => filter === "all" || mm.id === filter).length : 0;
+  useEffect(() => {
+    if (!activeCount) return;
+    const fit = () => {
+      const top = replayTopRef.current, grid = gridRef.current, player = playerRef.current;
+      if (!top || !grid || !player) return;
+      const colTop = REPLAY_TOP + (grid.getBoundingClientRect().top - top.getBoundingClientRect().top);
+      const room = window.innerHeight - 8 - player.offsetHeight - 10 - colTop; // 8 = the player's bottom offset, 10 = breathing room
+      setCardH(Math.max(26, Math.min(50, Math.floor((room - CARD_GAP * (activeCount - 1)) / activeCount))));
+    };
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, [activeCount]);
+  useEffect(() => {
+    if (!model || model.empty || scrolledIn.current) return;
+    scrolledIn.current = true;
+    requestAnimationFrame(() => requestAnimationFrame(() => replayTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })));
+  }, [model]);
+
   // confetti once at the end of a full play-through
   const celebrated = useRef(false);
   useEffect(() => {
@@ -323,7 +351,7 @@ export default function NightReplay({ roundId = null, initialDate = null, onBack
       ) : (
         <>
           {/* match filter */}
-          <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: "none" }}>
+          <div ref={replayTopRef} className="flex gap-1.5 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: "none", scrollMarginTop: REPLAY_TOP }}>
             <Chip on={filter === "all"} onClick={() => setFilter("all")}>כל הערב</Chip>
             {model.matches.map((mm) => (
               <Chip key={mm.id} on={filter === mm.id} onClick={() => pick(mm.id)}>
@@ -340,8 +368,8 @@ export default function NightReplay({ roundId = null, initialDate = null, onBack
 
           {/* matches down the right, the table on the left with the latest goal
               under it — the whole night on one phone screen */}
-          <div className="grid gap-3 items-start" style={{ gridTemplateColumns: "104px minmax(0,1fr)" }}>
-            <MatchColumn active={active} t={t} scoreAt={model.scoreAt} hotId={hotId} onPick={pick} />
+          <div ref={gridRef} className="grid gap-3 items-start" style={{ gridTemplateColumns: "104px minmax(0,1fr)" }}>
+            <MatchColumn active={active} t={t} scoreAt={model.scoreAt} hotId={hotId} onPick={pick} cardH={cardH} />
             <div className="min-w-0 flex flex-col gap-3">
               <div className="min-w-0">
                 {rows.map((r) => <Row key={r.userId} r={r} isMe={r.userId === me} delta={model.startRank[r.userId] - r.rank} hot={overtakes.movers.has(r.userId)} knocked={knocked.has(r.userId)} />)}
@@ -351,7 +379,7 @@ export default function NightReplay({ roundId = null, initialDate = null, onBack
           </div>
 
           {/* player */}
-          <div className="sticky bottom-2 z-10 rounded-2xl px-3 pt-2.5 pb-3 mt-3"
+          <div ref={playerRef} className="sticky bottom-2 z-10 rounded-2xl px-3 pt-2 pb-2 mt-3"
             style={{ background: "rgba(5,10,22,.92)", border: "1px solid rgba(255,255,255,.08)", backdropFilter: "blur(12px)" }}>
             <div className="flex items-center justify-between mb-1.5">
               <span className="flex items-center gap-1.5 text-[11px] text-slate-400 font-semibold">
@@ -362,13 +390,13 @@ export default function NightReplay({ roundId = null, initialDate = null, onBack
             </div>
             <Timeline t={t} range={range} events={events} matches={active} t0={model.t0} flashKey={flashKey}
               onScrub={(v) => { setPlaying(false); setT(v); }} />
-            <div className="flex items-center justify-center gap-2 mt-2">
+            <div className="flex items-center justify-center gap-2 mt-1.5">
               <CtrlBtn onClick={() => { setPlaying(false); setT(range[0]); }} label="מההתחלה"><RotateCcw className="w-4 h-4" /></CtrlBtn>
               {/* RTL row: this one sits right of play, so it goes forward (the timeline runs left → right) */}
               <CtrlBtn onClick={() => jump(1)} label="השער הבא"><SkipForward className="w-4 h-4" /></CtrlBtn>
               <motion.button whileTap={{ scale: 0.92 }}
                 onClick={() => { if (reachedEnd) setT(range[0]); setPlaying((p) => !p); }}
-                className="w-12 h-12 rounded-full flex items-center justify-center text-slate-900"
+                className="w-11 h-11 rounded-full flex items-center justify-center text-slate-900"
                 style={{ background: "linear-gradient(135deg,#a7f3d0,#34d399 50%,#7cadee)", boxShadow: "0 0 24px rgba(52,211,153,.45)" }}
                 aria-label={playing ? "השהיה" : "הפעלה"}>
                 {playing ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 -mr-0.5" />}
@@ -387,6 +415,8 @@ export default function NightReplay({ roundId = null, initialDate = null, onBack
 }
 
 const SPEEDS = [0.5, 1, 1.5, 2, 4];
+const REPLAY_TOP = 96; // where the replay sits after the auto-scroll: just under the app's fixed header
+const CARD_GAP = 6;
 
 // Who climbed past whom between two consecutive tables.
 function overtakesBetween(prev, cur) {
@@ -546,9 +576,10 @@ function EndHero({ rows, startRank, single }) {
 }
 
 // Matches stacked in a narrow column, next to the table.
-function MatchColumn({ active, t, scoreAt, hotId, onPick }) {
+function MatchColumn({ active, t, scoreAt, hotId, onPick, cardH }) {
+  const tight = cardH != null && cardH < 38; // no room for the minute line — the bar at the bottom still shows it
   return (
-    <div className="flex flex-col gap-1.5 min-w-0">
+    <div className="flex flex-col min-w-0" style={{ gap: CARD_GAP }}>
       {active.map((mm) => {
         const s = scoreAt(mm, t), clock = gameClock(t - mm.ko, mm.end - mm.ko), live = clock && clock !== "סיום", hot = hotId === mm.id;
         // how far into the match we are (0 before kickoff, 1 at full time) — drives the bar at the bottom
@@ -556,8 +587,8 @@ function MatchColumn({ active, t, scoreAt, hotId, onPick }) {
         return (
           <motion.button key={mm.id} onClick={() => onPick(mm.id)}
             animate={hot ? { scale: [1, 1.06, 1] } : { scale: 1 }} transition={{ duration: 0.6 }}
-            className="relative overflow-hidden rounded-xl pt-1.5 pb-2 flex flex-col items-center gap-0.5"
-            style={{ background: hot ? "rgba(52,211,153,.14)" : live ? "rgba(52,211,153,.06)" : "rgba(255,255,255,.035)", border: `1px solid ${hot ? "rgba(52,211,153,.6)" : live ? "rgba(52,211,153,.22)" : "rgba(255,255,255,.07)"}`, opacity: clock ? 1 : 0.5, boxShadow: hot ? "0 0 14px rgba(52,211,153,.45)" : "none" }}>
+            className="relative overflow-hidden rounded-xl flex flex-col items-center justify-center gap-0.5"
+            style={{ background: hot ? "rgba(52,211,153,.14)" : live ? "rgba(52,211,153,.06)" : "rgba(255,255,255,.035)", border: `1px solid ${hot ? "rgba(52,211,153,.6)" : live ? "rgba(52,211,153,.22)" : "rgba(255,255,255,.07)"}`, opacity: clock ? 1 : 0.5, height: cardH ?? 46, boxShadow: hot ? "0 0 14px rgba(52,211,153,.45)" : "none" }}>
             <span className="flex items-center gap-1" dir="ltr">
               <TeamFlag logo={mm.m.team_a_logo} name={mm.m.team_a} className="w-4 h-4" animate={false} />
               <AnimatePresence mode="popLayout">
@@ -568,7 +599,7 @@ function MatchColumn({ active, t, scoreAt, hotId, onPick }) {
               </AnimatePresence>
               <TeamFlag logo={mm.m.team_b_logo} name={mm.m.team_b} className="w-4 h-4" animate={false} />
             </span>
-            <span dir="ltr" className={`text-[9px] font-bold tabular-nums ${live ? "text-emerald-300" : "text-slate-500"}`}>{clock || ilClock(new Date(Date.parse(mm.m.match_date)))}</span>
+            {!tight && <span dir="ltr" className={`text-[9px] font-bold tabular-nums ${live ? "text-emerald-300" : "text-slate-500"}`}>{clock || ilClock(new Date(Date.parse(mm.m.match_date)))}</span>}
             {/* minute progress */}
             <span className="absolute bottom-0 left-0 h-[2px] transition-[width] duration-300 ease-linear"
               style={{ width: `${progress * 100}%`, background: live ? "#34d399" : "#475569" }} />
