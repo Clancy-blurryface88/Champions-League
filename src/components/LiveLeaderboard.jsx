@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Clock, TrendingUp, TrendingDown, Minus, WifiOff } from "lucide-react";
 import OdometerValue from "@/components/OdometerValue";
 import TeamFlag from "@/components/TeamFlag";
-import { teamCode } from "@/utils/teamCodes";
 import { Match, Prediction, UserStats, PublicProfile } from "@/api/entities";
 import { supabase } from "@/api/supabase";
 import { TOURNAMENT_CODE } from "@/config/tournament";
@@ -110,7 +109,7 @@ function inPlayCards(matches) {
 
 // ── Scoreboard strip (broadcast style) ───────────────────────────────────────
 // All live matches in one row of narrow cells, like a stadium scoreboard:
-// home code + goals on top, away below. A cell whose score just changed lights
+// home logo + goals on top, away below. A cell whose score just changed lights
 // up gold for a few seconds. Up to 7 cells per row; more wrap to a second row.
 const GOAL_FLASH_MS = 3500;
 function ScoreboardStrip({ cards }) {
@@ -137,7 +136,7 @@ function ScoreboardStrip({ cards }) {
         const lit = flash[`${c.home}|${c.away}`] != null;
         const line = (logo, name, goals, first) => (
           <div className="flex items-center justify-between gap-1 px-1" style={{ height: 20, borderTop: first ? 'none' : '1px solid rgba(255,255,255,.07)' }}>
-            <span style={{ font: "700 11px 'Outfit', sans-serif", letterSpacing: '.2px', color: '#dbe2ff' }}>{teamCode(name)}</span>
+            <TeamFlag logo={logo} name={name} size={16} />
             <span className="tabular-nums" style={{ fontFamily: "'Teko', sans-serif", fontWeight: 700, fontSize: 16, lineHeight: 1, color: lit ? '#e8c46a' : '#fff' }}>{goals ?? '–'}</span>
           </div>
         );
@@ -178,14 +177,14 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
     lastRank.current = row.liveRank;
   }, [row.liveRank]);
 
-  // Broadcast look: white rank plate · name plate (gold for you) · points plate,
-  // all slanted like a TV graphic. Per live match: gold = exact, green = right
-  // direction, grey = not (now).
+  // Broadcast look: white rank plate · name plate (green for you, like the
+  // selected round) · points plate, all slanted like a TV graphic. Per live
+  // match a square: green = exact hit, grey = not (now); direction isn't shown.
   const SK = 'skewX(-12deg)', UN = 'skewX(12deg)';
   const marks = (row.matchPredictions || []).map((mp, i) => (
     <span key={i} style={{ width: 8, height: 8, borderRadius: 2, flexShrink: 0,
-      background: mp.isExact ? '#e8c46a' : mp.isHit ? '#34d399' : 'rgba(255,255,255,.14)',
-      boxShadow: mp.isExact ? '0 0 6px rgba(232,196,106,.7)' : 'none' }} />
+      background: mp.isExact ? '#4ade80' : 'rgba(255,255,255,.14)',
+      boxShadow: mp.isExact ? '0 0 6px rgba(74,222,128,.7)' : 'none' }} />
   ));
   return (
     <motion.div layout layoutId={`lb-${row.userId}`}
@@ -200,9 +199,9 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
         <span style={{ transform: UN, fontFamily: "'Teko', sans-serif", fontWeight: 700, fontSize: 26, lineHeight: 1 }}>{row.liveRank}</span>
       </div>
       <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', marginInlineStart: 3, transform: SK,
-        background: isMe ? 'linear-gradient(90deg,#8a6a12,#3b2b06)' : 'linear-gradient(90deg,#1a2a78,#0e1850)',
+        background: isMe ? 'linear-gradient(90deg,#15803d,#063b1c)' : 'linear-gradient(90deg,#1a2a78,#0e1850)',
         boxShadow: climbed ? '0 0 0 2px rgba(232,196,106,.9), 0 0 24px rgba(232,196,106,.45)' : 'none', transition: 'box-shadow .5s ease' }}>
-        <span className="truncate" style={{ transform: UN, fontWeight: 800, fontSize: 14, color: '#fff', minWidth: 0,
+        <span className="truncate" style={{ transform: UN, fontFamily: "'Fredoka', sans-serif", fontWeight: 600, fontSize: 15.5, color: '#fff', minWidth: 0,
           ...(isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}) }}>{row.name}</span>
         {marks.length > 0 && <span style={{ transform: UN, display: 'flex', gap: 2, flexShrink: 0 }}>{marks}</span>}
         <span style={{ transform: UN, marginInlineStart: 'auto', flexShrink: 0 }}><DeltaIcon delta={delta} /></span>
@@ -218,7 +217,7 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
 
 export default function LiveLeaderboard() {
   const [rows, setRows]                   = useState([]);
-  // the signed-in participant's row is drawn in gold
+  // the signed-in participant's row is drawn in green
   const [myId, setMyId]                   = useState(null);
   useEffect(() => { supabase.auth.getSession().then(({ data }) => setMyId(data.session?.user?.id ?? null)).catch(() => {}); }, []);
   const [status, setStatus]               = useState('loading');
