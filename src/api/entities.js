@@ -67,6 +67,9 @@ const cached = (table, key, load) => {
 const invalidate = (...tables) => {
   for (const k of readCache.keys()) if (tables.some((t) => k.startsWith(`${t}|`))) readCache.delete(k);
 };
+// לשימוש מבחוץ: כשמגיעה הודעה מהשרת שטבלה השתנתה (Realtime), הקריאה הבאה
+// צריכה להגיע מהשרת ולא מהזיכרון.
+export const forgetCached = invalidate;
 
 // ============================================
 // HELPER - מחזיר את המשתמש המחובר כרגע

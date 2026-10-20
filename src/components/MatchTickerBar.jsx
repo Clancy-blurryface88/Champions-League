@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Match } from "@/api/entities";
+import { Match, forgetCached } from "@/api/entities";
+import { supabase } from "@/api/supabase";
 import TeamFlag from "@/components/TeamFlag";
 
 const SKEW = 12;
@@ -128,9 +129,36 @@ export default function MatchTickerBar({ onClick }) {
         }
       }).catch(() => {});
     };
+    // No polling: the server tells us when a match changes (Supabase Realtime on
+    // the matches table) — a result, a kickoff time — and we reload then, past
+    // the shared 15s read memory. Bursts (scoring touches many rows) collapse
+    // into one reload. Also reload when the app comes back to the screen (the
+    // phone may have dropped the connection meanwhile) and at local midnight
+    // (the day flips without any row changing).
+    const fresh = () => { forgetCached('matches'); load(); };
+    let burst;
+    const channel = supabase
+      .channel('ticker-matches')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => {
+        clearTimeout(burst);
+        burst = setTimeout(fresh, 800);
+      })
+      .subscribe();
+    const onVisible = () => { if (document.visibilityState === 'visible') fresh(); };
+    document.addEventListener('visibilitychange', onVisible);
+    let midnight;
+    const scheduleMidnight = () => {
+      const next = new Date(); next.setHours(24, 0, 5, 0);
+      midnight = setTimeout(() => { fresh(); scheduleMidnight(); }, next - Date.now());
+    };
+    scheduleMidnight();
     load();
-    const interval = setInterval(load, 60000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(burst);
+      clearTimeout(midnight);
+      document.removeEventListener('visibilitychange', onVisible);
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   if (matches.length === 0) return null;
