@@ -1388,7 +1388,7 @@ export default function Layout({ children, currentPageName }) {
                 transition={{ duration: 0.4 }}
                 onClick={() => { setShowLiveLeaderboard(false); navigate(createPageUrl("Dashboard")); }}
               />
-              <div className="fixed inset-0 z-[56] flex items-center justify-center px-4 pointer-events-none">
+              <div className="fixed inset-0 z-[56] flex items-center justify-center px-2 pointer-events-none">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.94, y: 12 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -1396,7 +1396,8 @@ export default function Layout({ children, currentPageName }) {
                   transition={{ duration: 0.35, ease: 'easeOut' }}
                   className="pointer-events-auto rounded-2xl w-full flex flex-col"
                   style={{
-                    maxWidth: 'min(400px, 92vw)',
+                    // wide enough for a 7-match scoreboard row with the larger crests
+                    maxWidth: 'min(560px, 98vw)',
                     maxHeight: '82vh',
                     background: 'rgba(8,18,32,0.95)',
                     backdropFilter: 'blur(28px)',
@@ -1413,7 +1414,7 @@ export default function Layout({ children, currentPageName }) {
                       <X className="w-4 h-4" />
                     </button>
                   </div>
-                  <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-white/10">
+                  <div className="flex-1 overflow-y-auto px-2 py-3 scrollbar-thin scrollbar-thumb-white/10">
                     <LiveLeaderboard />
                   </div>
                 </motion.div>
