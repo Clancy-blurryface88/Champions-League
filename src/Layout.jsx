@@ -1313,7 +1313,7 @@ export default function Layout({ children, currentPageName }) {
                     </span>
                     <span className="text-white text-[14px] leading-none font-extrabold tracking-[0.14em]" style={{ fontFamily: "'Outfit', sans-serif" }}>LIVE</span>
                   </span>
-                  <span className="flex-1 flex items-center justify-center h-full" style={{ background: '#0a1235' }}>
+                  <span className="flex-1 flex items-center justify-center h-full px-3" style={{ background: '#0a1235', minWidth: 64 }}>
                     <span style={{ fontFamily: 'var(--num-font)', fontWeight: 800, fontSize: 18, lineHeight: 1, color: '#ef4444' }}>{liveChipMinute}</span>
                   </span>
                 </motion.button>
