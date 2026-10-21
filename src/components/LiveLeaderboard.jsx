@@ -139,9 +139,10 @@ function ScoreboardStrip({ cards, myPreds = [] }) {
         const mine = myPreds.find((mp) => teamsMatch(mp.home, c.home) && teamsMatch(mp.away, c.away));
         const bar = mine?.isExact ? '#4ade80' : mine?.isHit ? '#facc15' : '#e11d48';
         const line = (logo, name, goals, first) => (
-          <div className="flex items-center justify-between gap-1 px-1" style={{ height: 20, borderTop: first ? 'none' : '1px solid rgba(255,255,255,.07)' }}>
-            <TeamFlag logo={logo} name={name} size={16} />
-            <span className="tabular-nums" style={{ fontFamily: "var(--num-font)", fontWeight: 700, fontSize: 16, lineHeight: 1, color: lit ? '#e8c46a' : '#fff' }}>{goals ?? '–'}</span>
+          // taller lines (not wider) so the logos read better, however many matches are on
+          <div className="flex items-center justify-between gap-1 px-1.5" style={{ height: 30, borderTop: first ? 'none' : '1px solid rgba(255,255,255,.07)' }}>
+            <TeamFlag logo={logo} name={name} size={22} />
+            <span className="tabular-nums" style={{ fontFamily: "var(--num-font)", fontWeight: 800, fontSize: 20, lineHeight: 1, color: lit ? '#e8c46a' : '#fff' }}>{goals ?? '–'}</span>
           </div>
         );
         return (

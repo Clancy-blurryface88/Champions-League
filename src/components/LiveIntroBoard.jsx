@@ -29,8 +29,8 @@ function matchMinute(m) {
 const goals = (v) => Math.min(Math.max(Number(v ?? 0) || 0, 0), 9);
 const brake = (x) => (x >= 1 ? 1 : 1 - Math.pow(2, -9 * x)); // fast, then a long braking tail
 
-const TICKS = 31; // one every 3', taller each 15' and at 0/45/90
-const tickHeight = (min) => (min % 45 === 0 ? 7 : min % 15 === 0 ? 5 : 3);
+const TICKS = 31; // one every 3', taller each 15' and at 0/45/90 — thick (2px) and tall so they read at a glance
+const tickHeight = (min) => (min % 45 === 0 ? 12 : min % 15 === 0 ? 9 : 6);
 const TICK_OFF = 'rgba(255,255,255,.2)';
 // the lit notches' colour (and optionally the minute number's); the admin preview can try others
 export const MINUTE_COLOR = '#ef4444';
@@ -64,12 +64,12 @@ function Tile({ match, prediction, stage, timing, width, centred, minuteColor, m
       if (t0 === null) t0 = now;
       const k = Math.min(1, (now - t0) / dur), v = brake(k) * value;
       let lastOn = -1;
-      ticks.forEach((el, j) => { const on = v > 0 && j * 3 <= v; if (on) lastOn = j; el.style.background = on ? minuteColor : TICK_OFF; el.style.boxShadow = on ? `0 0 4px ${glow(minuteColor, .7)}` : 'none'; });
+      ticks.forEach((el, j) => { const on = v > 0 && j * 3 <= v; if (on) lastOn = j; el.style.background = on ? minuteColor : TICK_OFF; el.style.boxShadow = on ? `0 0 7px ${glow(minuteColor, .85)}` : 'none'; });
       const n = Math.floor(v);
       if (tensRef.current) tensRef.current.style.transform = `translateY(${-Math.floor(n / 10)}em)`;
       if (onesRef.current) onesRef.current.style.transform = `translateY(${-(n % 10)}em)`;
       if (k < 1) { raf = requestAnimationFrame(frame); return; }
-      ticks[lastOn]?.animate([{ transform: 'scaleY(1)' }, { transform: 'scaleY(2)', boxShadow: `0 0 10px ${glow(minuteColor, 1)}` }, { transform: 'scaleY(1)' }], { duration: 450 });
+      ticks[lastOn]?.animate([{ transform: 'scaleY(1)' }, { transform: 'scaleY(1.6)', boxShadow: `0 0 12px ${glow(minuteColor, 1)}` }, { transform: 'scaleY(1)' }], { duration: 450 });
       if (ht) setHtLabel(true);
     };
     raf = requestAnimationFrame(frame);
@@ -97,12 +97,12 @@ function Tile({ match, prediction, stage, timing, width, centred, minuteColor, m
       transition: 'opacity .45s, filter .45s, transform .45s cubic-bezier(.22,1,.36,1)',
     }}>
       {/* minute notches along the top edge */}
-      <div ref={ticksRef} style={{ position: 'absolute', left: 14, right: 14, top: 0, height: 8, direction: 'ltr' }}>
+      <div ref={ticksRef} style={{ position: 'absolute', left: 14, right: 14, top: 0, height: 12, direction: 'ltr' }}>
         {Array.from({ length: TICKS }, (_, j) => (
-          <span key={j} style={{ position: 'absolute', top: 0, left: `${(j / (TICKS - 1)) * 100}%`, width: 1, height: tickHeight(j * 3), background: TICK_OFF, transformOrigin: 'top', transition: 'background .12s, box-shadow .12s' }} />
+          <span key={j} style={{ position: 'absolute', top: 0, left: `${(j / (TICKS - 1)) * 100}%`, width: 2, marginLeft: -1, height: tickHeight(j * 3), background: TICK_OFF, transformOrigin: 'top', transition: 'background .12s, box-shadow .12s' }} />
         ))}
       </div>
-      <div dir="ltr" style={{ display: 'inline-flex', marginTop: 6, font: "600 10px 'Outfit', sans-serif", letterSpacing: '.1em', color: minuteText ? minuteColor : '#7d89a6', height: 10, lineHeight: 1 }}>
+      <div dir="ltr" style={{ display: 'inline-flex', marginTop: 10, font: "600 11px 'Outfit', sans-serif", letterSpacing: '.1em', color: minuteText ? minuteColor : '#cbd3e6', height: 11, lineHeight: 1 }}>
         {htLabel ? <span>HT</span> : <>{counterCol(tensRef)}{counterCol(onesRef)}<span>'</span></>}
       </div>
       <div dir="ltr" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
