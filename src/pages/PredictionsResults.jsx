@@ -31,6 +31,7 @@ import { AnimatedList } from "@/components/magicui/animated-list";
 import ScoreAccuracyVisuals from "@/components/predictions/ScoreAccuracyVisuals";
 import { calculateMatchMaxPotentialPoints } from "../components/utils/calculateMatchMaxPotentialPoints";
 import OdometerValue from "@/components/OdometerValue";
+import OutlineNumber from "@/components/OutlineNumber";
 import SlotValue from "@/components/SlotValue";
 
 
@@ -919,7 +920,8 @@ function TiltCard({ entry, place, index, onRevealed }) {
       <span style={{ fontFamily: 'var(--num-font)', fontWeight: 800, fontSize: big ? 50 : 28, lineHeight: 1, color: color || 'rgba(255,255,255,.6)', transform: 'translateZ(30px)' }}>{place}</span>
       <span className="truncate" style={{ fontSize: big ? 20 : 15, fontWeight: 600, color: '#fff', transform: 'translateZ(20px)' }}>{entry.displayName}</span>
       <span style={{ fontWeight: 800, fontSize: big ? 30 : 20, lineHeight: 1, color: '#fff', transform: 'translateZ(25px)' }}>
-        <OdometerValue target={entry.points} height={big ? 30 : 20} width={big ? 15 : 10} trigger={entry.revealed} />
+        {/* outline drawn, then filled — once the card has landed */}
+        <OutlineNumber text={(entry.points || 0).toFixed(2)} size={big ? 34 : 22} trigger={entry.revealed} />
       </span>
     </motion.div>
   );

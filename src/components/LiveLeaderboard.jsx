@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import OutlineNumber from "@/components/OutlineNumber";
 import { Clock, TrendingUp, TrendingDown, Minus, WifiOff } from "lucide-react";
 import OdometerValue from "@/components/OdometerValue";
 import TeamFlag from "@/components/TeamFlag";
@@ -128,7 +129,8 @@ function ScoreboardStrip({ cards, myPreds = [] }) {
           // taller lines (not wider) so the logos read better, however many matches are on
           <div className="flex items-center justify-between gap-1 px-1.5" style={{ height: 30, borderTop: first ? 'none' : '1px solid rgba(255,255,255,.07)' }}>
             <TeamFlag logo={logo} name={name} size={22} />
-            <span className="tabular-nums" style={{ fontFamily: "var(--num-font)", fontWeight: 800, fontSize: 20, lineHeight: 1, color: lit ? '#e8c46a' : '#fff' }}>{goals ?? '–'}</span>
+            {/* outline drawn, then filled — on load and again for each new goal */}
+            <OutlineNumber text={goals ?? '–'} size={20} color={lit ? '#e8c46a' : '#fff'} align="middle" />
           </div>
         );
         return (
