@@ -75,11 +75,15 @@ function DeltaIcon({ delta }) {
 // the live API answers (and when it reports nothing live) so the card strip
 // already takes its place and the table below doesn't jump. null → none.
 const IN_PLAY_MS = 2.5 * 3600e3;
+// One fixed order for the scoreboard cells — kickoff, then home team name — so
+// they never trade places between the DB pass and the live feed (which lists
+// matches in no particular order) or from one refresh to the next.
+const byKickoffThenHome = (a, b) => (new Date(a.match_date) - new Date(b.match_date)) || String(a.team_a).localeCompare(String(b.team_a));
 function inPlayCards(matches) {
   const now = Date.now();
   const cards = matches
     .filter(m => !m.is_finished && new Date(m.match_date).getTime() <= now && now - new Date(m.match_date).getTime() < IN_PLAY_MS)
-    .sort((a, b) => new Date(a.match_date) - new Date(b.match_date))
+    .sort(byKickoffThenHome)
     .map(m => ({
       home: m.team_a, away: m.team_b,
       homeLogo: m.team_a_logo ?? null, awayLogo: m.team_b_logo ?? null,
@@ -295,6 +299,9 @@ export default function LiveLeaderboard() {
         if (f) liveDbMatches.push({ dbMatch: f, apiMatch: lm });
       }
       if (liveDbMatches.length === 0) return;
+      // fixed order here already, so each row's per-match marks (and the exact-hit
+      // shake key built from them) keep their order too
+      liveDbMatches.sort((x, y) => byKickoffThenHome(x.dbMatch, y.dbMatch));
 
       const confirmedMap = {};
       data.userStats.forEach(s => { confirmedMap[s.user_id] = s.total_points || 0; });
