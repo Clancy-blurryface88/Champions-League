@@ -48,43 +48,38 @@ function Digit({ value, ms, instant = false }) {
 }
 
 // stage: 0 waiting (dimmed) · 1 minutes running · 2 minutes stopped (0–0) · 3 home rolled · 4 away rolled · 5 settled
-function Tile({ match, prediction, stage, timing, width, centred, minuteColor, minuteText }) {
+function Tile({ match, prediction, stage, timing, width, centred, minuteColor }) {
   const ticksRef = useRef(null);
-  const tensRef = useRef(null), onesRef = useRef(null);
-  const [htLabel, setHtLabel] = useState(false);
+  // the minute itself shows up only once the notches have braked to a stop — "pushed" out by them, in red
+  const [minuteLabel, setMinuteLabel] = useState(null);
 
-  // the minute run: notches light up to the minute and the counter rolls with them, braking at the end
+  // the minute run: notches light up to the minute, braking at the end. It runs to
+  // its end even though the row moves on to the next stage at the same moment —
+  // only unmounting stops it (otherwise its last frame, the pulse and the minute, gets cut).
+  const rafRef = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
   useEffect(() => {
     if (stage !== 1 || !ticksRef.current) return;
     const { value, ht } = matchMinute(match);
     const ticks = [...ticksRef.current.children];
     const dur = timing.minutes * 1000;
-    let raf, t0 = null;
+    let t0 = null;
     const frame = (now) => {
       if (t0 === null) t0 = now;
       const k = Math.min(1, (now - t0) / dur), v = brake(k) * value;
       let lastOn = -1;
       ticks.forEach((el, j) => { const on = v > 0 && j * 3 <= v; if (on) lastOn = j; el.style.background = on ? minuteColor : TICK_OFF; el.style.boxShadow = on ? `0 0 7px ${glow(minuteColor, .85)}` : 'none'; });
-      const n = Math.floor(v);
-      if (tensRef.current) tensRef.current.style.transform = `translateY(${-Math.floor(n / 10)}em)`;
-      if (onesRef.current) onesRef.current.style.transform = `translateY(${-(n % 10)}em)`;
-      if (k < 1) { raf = requestAnimationFrame(frame); return; }
+      if (k < 1) { rafRef.current = requestAnimationFrame(frame); return; }
       ticks[lastOn]?.animate([{ transform: 'scaleY(1)' }, { transform: 'scaleY(1.6)', boxShadow: `0 0 12px ${glow(minuteColor, 1)}` }, { transform: 'scaleY(1)' }], { duration: 450 });
-      if (ht) setHtLabel(true);
+      setMinuteLabel(ht ? 'HT' : `${value}'`);
     };
-    raf = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(raf);
+    rafRef.current = requestAnimationFrame(frame);
   }, [stage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const home = stage >= 3 ? goals(match.score?.fullTime?.home) : 0;
   const away = stage >= 4 ? goals(match.score?.fullTime?.away) : 0;
   const lit = stage === 3 || stage === 4;
   const rollMs = timing.roll * 1000;
-  const counterCol = (ref) => (
-    <span style={{ display: 'inline-block', height: '1em', overflow: 'hidden', lineHeight: 1 }}>
-      <span ref={ref} style={{ display: 'flex', flexDirection: 'column' }}>{[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => <span key={n} style={{ height: '1em' }}>{n}</span>)}</span>
-    </span>
-  );
 
   return (
     <div style={{
@@ -102,8 +97,16 @@ function Tile({ match, prediction, stage, timing, width, centred, minuteColor, m
           <span key={j} style={{ position: 'absolute', top: 0, left: `${(j / (TICKS - 1)) * 100}%`, width: 2, marginLeft: -1, height: tickHeight(j * 3), background: TICK_OFF, transformOrigin: 'top', transition: 'background .12s, box-shadow .12s' }} />
         ))}
       </div>
-      <div dir="ltr" style={{ display: 'inline-flex', marginTop: 10, font: "600 11px 'Outfit', sans-serif", letterSpacing: '.1em', color: minuteText ? minuteColor : '#cbd3e6', height: 11, lineHeight: 1 }}>
-        {htLabel ? <span>HT</span> : <>{counterCol(tensRef)}{counterCol(onesRef)}<span>'</span></>}
+      <div dir="ltr" style={{ marginTop: 10, height: 12, lineHeight: 1 }}>
+        {minuteLabel && (
+          <motion.span
+            initial={{ opacity: 0, y: -10, scale: 0.5 }}
+            animate={{ opacity: 1, y: 0, scale: [0.5, 1.25, 1] }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            style={{ display: 'inline-block', font: "700 12px 'Outfit', sans-serif", letterSpacing: '.08em', color: minuteColor, textShadow: `0 0 8px ${glow(minuteColor, .6)}` }}>
+            {minuteLabel}
+          </motion.span>
+        )}
       </div>
       <div dir="ltr" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
         <TeamFlag logo={match.homeTeam?.crest} name={match.homeTeam?.name} size={24} animate={false} />
@@ -123,7 +126,7 @@ function Tile({ match, prediction, stage, timing, width, centred, minuteColor, m
   );
 }
 
-export default function LiveIntroBoard({ matches, predictions = {}, timing = LIVE_INTRO_TIMING, onDone, minuteColor = MINUTE_COLOR, minuteText = false }) {
+export default function LiveIntroBoard({ matches, predictions = {}, timing = LIVE_INTRO_TIMING, onDone, minuteColor = MINUTE_COLOR }) {
   const [stages, setStages] = useState(() => matches.map(() => 0));
   const doneRef = useRef(onDone); doneRef.current = onDone;
   const key = matches.map((m) => m.id).join(',');
@@ -166,7 +169,7 @@ export default function LiveIntroBoard({ matches, predictions = {}, timing = LIV
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: single ? '1fr' : '1fr 1fr', gap: 10, width: '100%', justifyItems: single ? 'center' : undefined }}>
         {matches.map((m, i) => (
-          <Tile key={m.id} match={m} prediction={predictions[m.id] || null} stage={stages[i] ?? 0} timing={timing} minuteColor={minuteColor} minuteText={minuteText}
+          <Tile key={m.id} match={m} prediction={predictions[m.id] || null} stage={stages[i] ?? 0} timing={timing} minuteColor={minuteColor}
             width={tileW} centred={!single && matches.length % 2 === 1 && i === matches.length - 1} />
         ))}
       </div>
