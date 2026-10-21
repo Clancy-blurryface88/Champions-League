@@ -2,15 +2,17 @@
 // us at 12 functions) — receives GOAL API webhooks and sends OneSignal pushes:
 //   goal.scored    → "⚽ גול! …" + how many players currently hold the exact score
 //   score.changed  → correction push (goal ruled out by VAR) with the new count
-//   match.finished → once the night's last CL match ends, a summary push that
-//                    congratulates the exact-score hitters (by name if ≤3),
-//                    delivered at 23:59 Israel time; opens that night's
-//                    replay (/Replay?date=).
-// Pushes go to every subscriber (no per-user targeting yet). Each push carries
+//   match.finished → once the night's last CL match ends, a personal summary to
+//                    each participant — their points tonight, places moved, and
+//                    where they stand — delivered at 23:59 Israel time; opens
+//                    that night's replay (/Replay?date=).
+// Goal pushes go to every subscriber; the night summary is per user (_personal.js). Each push carries
 // an idempotency key, so GOAL's retries (and two matches finishing together)
 // never send the same push twice.
 import crypto from 'crypto';
 import { TEAM_BY_GOAL_ID } from '../src/data/goalTeamIds.js';
+import { calculateScore } from '../src/utils/scoring.js';
+import { participants, latestPredictions, sendPersonal } from './_personal.js';
 
 const GOAL_BASE = 'https://api.goal-api.com/v1';
 const CL_LEAGUE = 'cmr77dw3900f5rx06j05wgzv4';
@@ -71,10 +73,6 @@ function ilEndOfNight(d) {
   // Israel is ahead of UTC, so 23:59Z shows as 01:59/02:59 the next day.
   return new Date(guess.getTime() - (shown + 24 - 23) % 24 * 3600e3);
 }
-
-// "דני", "דני ויוסי", "דני, יוסי ומיכל"
-const joinNames = (names) => (names.length < 2 ? names.join('')
-  : `${names.slice(0, -1).join(', ')} ו${names[names.length - 1]}`);
 
 // Deterministic UUID from a string — OneSignal's idempotency_key must be a UUID.
 function uuidFrom(str) {
@@ -230,29 +228,51 @@ async function onFinished(fixtureId, mode, sendAfter, late = false) {
   const night = await goal(`/fixtures/date/${date}?leagueId=${CL_LEAGUE}&limit=100`);
   if (night.some((f) => f.matchStatus !== 'FINISHED')) return { skipped: 'night not over yet' };
 
-  let hits = 0;
-  const hitters = new Set();
+  // Tonight's matches in our DB, with their final scores (in our team_a/team_b order).
+  const games = [];
   for (const f of night) {
     const our = await findOurMatch(f);
     if (!our) continue;
-    const ids = await exactHitters(our, Number(f.homeTeamScore), Number(f.awayTeamScore));
-    hits += ids.length;
-    ids.forEach((id) => hitters.add(id));
+    const [h, w] = [Number(f.homeTeamScore), Number(f.awayTeamScore)];
+    games.push({ id: our.match.id, a: our.swapped ? w : h, b: our.swapped ? h : w });
   }
-  // Up to 3 hitters → congratulate them by name; more → a general cheer
-  // with the night's exact-hit count.
-  let body;
-  if (hits === 0) {
-    body = `אף פגיעה מדויקת ${late ? 'אתמול' : 'הערב'} 😟 — כנסו לראות את הטבלה העדכנית 👉`;
-  } else if (hitters.size <= 3) {
-    const profiles = await supa(`profiles?select=id,display_name&id=in.(${[...hitters].join(',')})`);
-    const names = [...hitters].map((id) => profiles.find((p) => p.id === id)?.display_name?.trim()).filter(Boolean);
-    body = names.length
-      ? `👏 כל הכבוד ל${joinNames(names)} על 🎯 כנסו לטבלה העדכנית 👉`
-      : `👏 כל הכבוד לפוגעים, ${hits === 1 ? 'פגיעה מדויקת אחת' : `${hits} פגיעות מדויקות`} 🎯, כנסו לטבלה העדכנית 👉`;
-  } else {
-    body = `👏 כל הכבוד לפוגעים, ${hits} פגיעות מדויקות 🎯, כנסו לטבלה העדכנית 👉`;
-  }
+  if (!games.length) return { skipped: 'no matches of ours tonight' };
+  // Scoring fields for the points calculation (same function as the app).
+  const rows = await supa(`matches?select=*&id=in.(${games.map((g) => g.id).join(',')})`);
+  const people = await participants();
+  const preds = await latestPredictions(games.map((g) => g.id), 'user_id,match_id,created_at,predicted_score_a,predicted_score_b,points_earned');
+
+  // Per participant: tonight's points (computed from the final scores), what of
+  // tonight is already inside their stored total (if scores were calculated
+  // already), and exact hits — so "before" = stored total − tonight-as-counted.
+  const me = people.map((p) => {
+    let tonight = 0, counted = 0, exact = 0, played = 0;
+    games.forEach((g) => {
+      const pr = preds[p.id]?.[g.id];
+      if (!pr) return;
+      played++;
+      const m = rows.find((r) => r.id === g.id);
+      tonight += m ? calculateScore(pr, { ...m, actual_score_a: g.a, actual_score_b: g.b }).totalPoints : 0;
+      counted += Number(pr.points_earned) || 0;
+      if (pr.predicted_score_a === g.a && pr.predicted_score_b === g.b) exact++;
+    });
+    const before = p.total - counted;
+    return { ...p, tonight, exact, played, before, after: before + tonight };
+  });
+  // places (ties share a place), before and after tonight
+  const place = (key) => { const sorted = [...me].sort((x, y) => y[key] - x[key]); const at = {};
+    sorted.forEach((x, i) => { at[x.id] = i > 0 && Math.abs(x[key] - sorted[i - 1][key]) < 1e-9 ? at[sorted[i - 1].id] : i + 1; }); return at; };
+  const was = place('before'), now = place('after');
+  const pts = (n) => (Math.round(n * 100) / 100).toFixed(2);
+  const moved = (d) => (d > 1 ? `עלית ${d} מקומות` : d === 1 ? 'עלית מקום אחד' : d < -1 ? `ירדת ${-d} מקומות` : d === -1 ? 'ירדת מקום אחד' : 'נשארת באותו מקום');
+  const evening = late ? 'אתמול' : 'הערב';
+  const list = me.map((p) => ({
+    userId: p.id, name: p.name,
+    heading: `🏁 ${late ? 'סיכום ערב ליגת האלופות של אתמול' : 'ערב ליגת האלופות הסתיים!'}`,
+    body: p.played
+      ? `סיימת את ${evening} עם ${pts(p.tonight)} נק׳${p.exact ? ` · 🎯 ${p.exact === 1 ? 'פגיעה מדויקת' : `${p.exact} פגיעות מדויקות`}` : ''} · ${moved(was[p.id] - now[p.id])} · מקום ${now[p.id]} בטבלה 👉`
+      : `לא ניחשת ${evening} · מקום ${now[p.id]} בטבלה. כנסו לראות מה קרה 👉`,
+  }));
   // Delivered at 23:59 Israel time of the match night (OneSignal send_after);
   // if the night runs past that, push() sends right away. A manual &at= or a
   // test/late re-send keeps its own timing.
@@ -260,7 +280,7 @@ async function onFinished(fixtureId, mode, sendAfter, late = false) {
     const lastKickoff = new Date(Math.max(...night.map((f) => new Date(f.kickoffUtc).getTime())));
     sendAfter = ilEndOfNight(lastKickoff);
   }
-  return push({ heading: late ? '🏁 סיכום ערב ליגת האלופות של אתמול' : '🏁 ערב ליגת האלופות הסתיים!', body, url: `${SITE}/Replay?date=${String(date).slice(0, 10)}`, key: `night:${date}`, mode, sendAfter });
+  return sendPersonal(list, { url: `${SITE}/Replay?date=${String(date).slice(0, 10)}`, key: `night:${date}`, mode, sendAfter });
 }
 
 async function readRaw(req) {

@@ -1,12 +1,16 @@
-// Handler (mounted via GET /api/football?source=reminders) — "go predict"
-// pushes, to every subscriber:
-//   • 12:00 Israel time two days before and the day before a round starts
-//     (a match day whose previous day had no matches) — "new round open for
-//     predictions"; the two-days one names the weekday and date
+// Handler (mounted via GET /api/football?source=reminders) — "go predict" pushes:
+//   • 12:00 Israel time two days before a round starts (a match day whose
+//     previous day had no matches) — "new round open for predictions", to
+//     every subscriber; names the weekday and date
+//   • 12:00 the day before — personal: only to participants still missing
+//     predictions for that day ("חסרים לך 3 ניחושים למשחקי מחר"). When there's
+//     no two-days announcement (back-to-back rounds), this one is the
+//     announcement and goes to everyone.
 //   • 2h15m before the round's first kickoff (19:45 → 17:30), first day only
-//     — "reminder: matches start at 19:45"
-//   • before each kickoff slot — 19:00 for 19:45, 21:00 for 22:00 —
-//     "lineups are out, want to update?" (falls back to "matches start soon")
+//     — personal, to whoever is still missing that evening's predictions
+//   • before each kickoff slot — 19:00 for 19:45, 21:00 for 22:00 — personal,
+//     to whoever is missing that slot's predictions; says the lineups are out
+//     when they are (falls back to "matches start soon")
 // Every reminder opens the predictions page of its round.
 //
 // Triggered every 5 min by the Supabase pg_cron job "prediction-reminders"
@@ -17,6 +21,7 @@
 // idempotency key, so extra or overlapping triggers can never double-send —
 // which is also why this needs no secret.
 import { supa, push } from './_goalWebhook.js';
+import { participants, latestPredictions, missingText, sendPersonal } from './_personal.js';
 import { PREDICTION_LOCK_MINUTES } from '../src/config/tournament.js';
 import { getLineupsForMatch } from './_uefaContext.js';
 
@@ -72,27 +77,27 @@ async function plannedReminders(now) {
     if (!byDay.has(addDays(day, -1))) {
       // Skipped when two days before is itself a match day — that noon
       // belongs to the previous round.
-      if (!byDay.has(addDays(day, -2))) {
+      const announced = !byDay.has(addDays(day, -2));
+      if (announced) {
         out.push({
           key: `rem:twodays:${day}`, at: ilNoon(addDays(day, -2)), url: roundUrl,
           heading: '📅 מחזור חדש פורסם ופתוח לניחוש!',
           body: `המשחקים מתחילים ב${ilDayLabel(first)} ב-${ilTime(first)} — כנסו לנחש 👉`,
         });
       }
+      out.push(announced
+        ? { kind: 'missing', key: `rem:daybefore:${day}`, at: ilNoon(addDays(day, -1)), url: roundUrl, matches: list,
+            heading: '⏰ המחזור מתחיל מחר', personalBody: (n) => `${missingText(n)} למשחקי מחר · מתחילים ב-${ilTime(first)} 👉` }
+        : { key: `rem:daybefore:${day}`, at: ilNoon(addDays(day, -1)), url: roundUrl,
+            heading: '📅 מחזור חדש פורסם ופתוח לניחוש!', body: `המשחקים מתחילים מחר ב-${ilTime(first)} — כנסו לנחש 👉` });
       out.push({
-        key: `rem:daybefore:${day}`, at: ilNoon(addDays(day, -1)), url: roundUrl,
-        heading: '📅 מחזור חדש פורסם ופתוח לניחוש!',
-        body: `המשחקים מתחילים מחר ב-${ilTime(first)} — כנסו לנחש 👉`,
-      });
-      out.push({
-        key: `rem:first:${day}`, at: new Date(slots[0] - 135 * 60e3), url: roundUrl,
-        heading: '⏰ תזכורת',
-        body: `המשחקים מתחילים ב-${ilTime(first)} — כנסו לנחש 👉`,
+        kind: 'missing', key: `rem:first:${day}`, at: new Date(slots[0] - 135 * 60e3), url: roundUrl, matches: list,
+        heading: '⏰ תזכורת', personalBody: (n) => `${missingText(n)} למשחקי הערב · מתחילים ב-${ilTime(first)} 👉`,
       });
     }
     slots.forEach((t, i) => {
-      // Everyone has predicted by now — these are about updating, hooked on
-      // UEFA publishing the lineups (~1h before kickoff). First slot 45 min
+      // Hooked on UEFA publishing the lineups (~1h before kickoff), only to
+      // whoever still misses a prediction for this slot. First slot 45 min
       // before (19:45 → 19:00), later slots 1h before (22:00 → 21:00).
       const slotMatches = list.filter((m) => new Date(m.match_date).getTime() === t);
       out.push({
@@ -104,6 +109,13 @@ async function plannedReminders(now) {
   }
   return out;
 }
+
+// Participants missing at least one prediction among `matches`, with how many.
+async function missingFor(matches) {
+  const [people, preds] = await Promise.all([participants(), latestPredictions(matches.map((m) => m.id))]);
+  return people.map((p) => ({ ...p, missing: matches.filter((m) => !preds[p.id]?.[m.id]).length })).filter((p) => p.missing > 0);
+}
+const toPersonal = (list, heading, bodyOf) => list.map((p) => ({ userId: p.id, name: p.name, heading, body: bodyOf(p.missing) }));
 
 export async function remindersHandler(req, res) {
   // Manual check (keyed): &now=<ISO> to simulate a time, &send=test to
@@ -127,11 +139,16 @@ export async function remindersHandler(req, res) {
           results.push({ key: r.key, waiting: 'lineups not published yet' });
           continue;
         }
-        const msg = published
-          ? { heading: `📋 ההרכבים למשחקי ${r.kickoff} פורסמו!`, body: `רוצים לעדכן ניחוש? אפשר עד ${r.lock} 👉` }
-          : { heading: `⏰ משחקי ${r.kickoff} מתחילים בקרוב`, body: `רוצים לעדכן ניחוש? אפשר עד ${r.lock} 👉` };
-        const sent = await push({ ...msg, url: r.url, key: r.key, mode, sendAfter: r.at });
+        const heading = published ? `📋 ההרכבים למשחקי ${r.kickoff} פורסמו!` : `⏰ משחקי ${r.kickoff} מתחילים בקרוב`;
+        const missing = await missingFor(r.slotMatches);
+        const sent = await sendPersonal(toPersonal(missing, heading, (n) => `${missingText(n)} למשחקי ${r.kickoff} · אפשר עד ${r.lock} 👉`), { url: r.url, key: r.key, mode, sendAfter: r.at });
         results.push({ key: r.key, at: r.at.toISOString(), lineups: published, sent });
+        continue;
+      }
+      if (r.kind === 'missing') {
+        const missing = await missingFor(r.matches);
+        const sent = await sendPersonal(toPersonal(missing, r.heading, r.personalBody), { url: r.url, key: r.key, mode, sendAfter: r.at });
+        results.push({ key: r.key, at: r.at.toISOString(), sent });
         continue;
       }
       const sent = await push({ heading: r.heading, body: r.body, url: r.url, key: r.key, mode, sendAfter: r.at });
