@@ -879,68 +879,57 @@ export default function PredictionsResults() {
 
 }
 
-function PodiumStand({ entry, position, isCurrentUser, baseDelay = 0 }) {
-  const rankColor  = position === 1 ? '#facc15' : position === 2 ? '#cbd5e1' : '#e3a869';
-  const rankBg     = position === 1 ? 'rgba(250,204,21,0.1)'   : position === 2 ? 'rgba(203,213,225,0.08)' : 'rgba(227,168,105,0.1)';
-  const rankBorder = position === 1 ? 'rgba(250,204,21,0.35)'  : position === 2 ? 'rgba(203,213,225,0.25)' : 'rgba(227,168,105,0.3)';
-  const rankGlow   = position === 1 ? 'rgba(250,204,21,0.4)'   : position === 2 ? 'rgba(203,213,225,0.2)'  : 'rgba(227,168,105,0.3)';
-  const heights    = { 1: 56, 2: 38, 3: 28 };
-  const [revealed, setRevealed] = useState(false);
+// Round ranking as thick glass cards that tilt in 3D towards the finger, with a
+// sheen that follows it. First place is a bigger card. A switch on top shows the
+// whole round or a single evening of it (ranked by that evening's points only).
+const MEDAL = ['#facc15', '#cbd5e1', '#d6923f'];
+const NIGHT_DAY = (k) => new Intl.DateTimeFormat('he-IL', { weekday: 'long', timeZone: 'Asia/Jerusalem' }).format(new Date(`${k}T12:00:00Z`)).replace('יום ', '');
 
-  if (!entry) return <div className="flex-1" />;
-
-  const podiumDelay = baseDelay + (position === 1 ? 0.7 : position === 2 ? 0.35 : 0.1);
-
+function TiltCard({ entry, place, index, onRevealed }) {
+  const ref = useRef(null);
+  const [tilt, setTilt] = useState(null); // { x, y } 0–1 while touched
+  const big = place === 1;
+  const color = MEDAL[place - 1];
+  const move = (e) => { const r = ref.current.getBoundingClientRect(); setTilt({ x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height }); };
   return (
     <motion.div
-      className="flex-1 flex flex-col items-center gap-1"
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: podiumDelay, duration: 0.55, ease: [0.23, 1, 0.32, 1] }}
-      onAnimationComplete={() => setRevealed(true)}
+      ref={ref}
+      initial={{ opacity: 0, rotateX: -60 }}
+      animate={{ opacity: 1, rotateX: tilt ? (0.5 - tilt.y) * 18 : 0, rotateY: tilt ? (tilt.x - 0.5) * 16 : 0 }}
+      transition={tilt ? { duration: 0.15 } : { delay: index * 0.08, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      onAnimationComplete={onRevealed}
+      onPointerMove={move} onPointerDown={move} onPointerLeave={() => setTilt(null)} onPointerUp={() => setTilt(null)}
+      className="relative overflow-hidden select-none"
+      style={{
+        height: big ? 86 : 52, borderRadius: 16, marginBottom: 8, padding: '0 14px', transformStyle: 'preserve-3d', touchAction: 'pan-y',
+        display: 'grid', gridTemplateColumns: `${big ? 56 : 40}px 1fr auto`, alignItems: 'center', gap: 10,
+        background: 'linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.035))',
+        backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)',
+        border: `1px solid ${color ? `${color}88` : 'rgba(255,255,255,.14)'}`,
+        boxShadow: entry.isCurrentUser
+          ? '0 0 0 1px rgba(124,173,238,.75), 0 0 18px rgba(124,173,238,.25), 0 8px 24px rgba(0,0,0,.3)'
+          : 'inset 0 1px 0 rgba(255,255,255,.14), 0 8px 24px rgba(0,0,0,.3)',
+      }}
     >
-      {/* Name — rank color */}
-      <span style={{ color: rankColor, fontSize: 11, fontWeight: 800, textAlign: 'center',
-        maxWidth: 72, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-        display: 'block', lineHeight: 1.3 }}>
-        {entry.displayName}
+      {/* sheen that follows the finger */}
+      <span aria-hidden className="absolute inset-0 pointer-events-none" style={{
+        opacity: tilt ? 1 : 0, transition: 'opacity .25s',
+        background: tilt ? `radial-gradient(circle at ${tilt.x * 100}% ${tilt.y * 100}%, rgba(255,255,255,.22), transparent 45%)` : 'none',
+      }} />
+      <span style={{ fontFamily: 'var(--num-font)', fontWeight: 800, fontSize: big ? 50 : 28, lineHeight: 1, color: color || 'rgba(255,255,255,.6)', transform: 'translateZ(30px)' }}>{place}</span>
+      <span className="truncate" style={{ fontSize: big ? 20 : 15, fontWeight: 600, color: '#fff', transform: 'translateZ(20px)' }}>{entry.displayName}</span>
+      <span style={{ fontWeight: 800, fontSize: big ? 30 : 20, lineHeight: 1, color: '#fff', transform: 'translateZ(25px)' }}>
+        <OdometerValue target={entry.points} height={big ? 30 : 20} width={big ? 15 : 10} trigger={entry.revealed} />
       </span>
-      {/* Points — rank color, slightly dimmer */}
-      <span style={{ color: rankColor, opacity: 0.72, fontSize: 11, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>
-        <OdometerValue target={entry.totalPoints} height={14} width={7} trigger={revealed} />
-      </span>
-      {/* Olympic Classic platform */}
-      <div style={{
-        width: '100%',
-        height: heights[position],
-        position: 'relative',
-        overflow: 'hidden',
-        background: rankBg,
-        borderTop: `3px solid ${rankColor}`,
-        borderLeft: `1px solid ${rankBorder}`,
-        borderRight: `1px solid ${rankBorder}`,
-        borderRadius: '4px 4px 0 0',
-        boxShadow: `0 -4px 16px ${rankGlow}, inset 0 2px 8px rgba(255,255,255,0.04)`,
-        ...(isCurrentUser ? { outline: '2px solid rgba(96,165,250,0.45)', outlineOffset: 2 } : {}),
-      }}>
-        {/* Ghost rank number */}
-        <span style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 36, fontWeight: 900,
-          color: rankColor, opacity: 0.15,
-          lineHeight: 1, userSelect: 'none', pointerEvents: 'none',
-        }}>
-          {position}
-        </span>
-      </div>
     </motion.div>
   );
 }
 
-function LeaderboardView({ roundLeaderboard, loading, user }) {
-  const [revealedRanks, setRevealedRanks] = useState(() => new Set());
-  useEffect(() => { setRevealedRanks(new Set()); }, [roundLeaderboard]);
+function LeaderboardView({ roundLeaderboard, loading }) {
+  const [period, setPeriod] = useState('all');
+  const [revealed, setRevealed] = useState(() => new Set());
+  useEffect(() => { setPeriod('all'); }, [roundLeaderboard]);
+  useEffect(() => { setRevealed(new Set()); }, [roundLeaderboard, period]);
 
   if (loading) {
     return (
@@ -958,63 +947,36 @@ function LeaderboardView({ roundLeaderboard, loading, user }) {
     );
   }
 
-  const REVEAL_DELAY = 0.35;
-
-  const participants = roundLeaderboard.allParticipants;
-  const top3 = [1, 2, 3].map(r => participants.find(e => e.rank === r));
-  const rest  = participants.filter(e => e.rank > 3).sort((a, b) => a.rank - b.rank);
-
-  // הפודיום מופיע אחרי כל השורות
-  const podiumBaseDelay = rest.length * REVEAL_DELAY + 0.3;
+  // the ranking for the chosen period — the whole round, or one evening's points only (ties share a place)
+  const nights = roundLeaderboard.nights || [];
+  const rows = roundLeaderboard.allParticipants
+    .map((e) => ({ ...e, points: period === 'all' ? e.totalPoints : (e.nights?.[period] || 0) }))
+    .sort((a, b) => b.points - a.points);
+  rows.forEach((r, i) => { r.place = i > 0 && r.points === rows[i - 1].points ? rows[i - 1].place : i + 1; r.revealed = revealed.has(r.userId); });
 
   return (
-    <div className="space-y-4">
-      {/* Podium — מופיע אחרון */}
-      <div className="pt-2 pb-1">
-        <div className="flex items-end justify-center gap-2 px-4">
-          <PodiumStand entry={top3[1]} position={2} isCurrentUser={top3[1]?.isCurrentUser} baseDelay={podiumBaseDelay} />
-          <PodiumStand entry={top3[0]} position={1} isCurrentUser={top3[0]?.isCurrentUser} baseDelay={podiumBaseDelay} />
-          <PodiumStand entry={top3[2]} position={3} isCurrentUser={top3[2]?.isCurrentUser} baseDelay={podiumBaseDelay} />
-        </div>
-        <div className="h-2 bg-gradient-to-r from-transparent via-white/10 to-transparent rounded-full mx-4" />
-      </div>
-
-      {/* שאר המשתתפים — נחשפים מהאחרון לראשון */}
-      {rest.length > 0 && (
-        <div className="space-y-1.5">
-          {rest.map((entry, i) => {
-            // אינדקס הפוך: האחרון (i = rest.length-1) מקבל delay=0, מקום 4 (i=0) מקבל delay הכי גדול
-            const delay = (rest.length - 1 - i) * REVEAL_DELAY;
-            return (
-              <motion.div
-                key={entry.rank}
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay, duration: 0.35, ease: 'easeOut' }}
-                onAnimationComplete={() => setRevealedRanks(prev => prev.has(entry.rank) ? prev : new Set(prev).add(entry.rank))}
-                className={`flex items-center justify-between text-sm px-3 py-2 rounded-xl ${
-                  entry.isCurrentUser
-                    ? 'bg-blue-600/20 border border-blue-400/30'
-                    : 'bg-slate-700/40 border border-white/5'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="w-6 h-6 rounded-full bg-slate-600 flex items-center justify-center text-xs font-bold text-white/70">
-                    {entry.rank}
-                  </span>
-                  <span className="text-white font-medium">{entry.displayName}</span>
-                </div>
-                <span className="text-green-400 font-bold tabular-nums">
-                  <OdometerValue target={entry.totalPoints} height={17} width={9} trigger={revealedRanks.has(entry.rank)} />
-                </span>
-              </motion.div>
-            );
-          })}
+    <div>
+      {nights.length > 1 && (
+        <div className="flex gap-1 mb-3">
+          {[['all', 'כל המחזור'], ...nights.map((k, i) => [k, `ערב ${i + 1} · ${NIGHT_DAY(k)}`])].map(([k, label]) => (
+            <button key={k} onClick={() => setPeriod(k)}
+              className="flex-1 rounded-full py-1.5 text-xs transition-all"
+              style={{ border: `1px solid ${period === k ? 'rgba(255,255,255,.4)' : 'rgba(255,255,255,.12)'}`, background: period === k ? 'rgba(255,255,255,.1)' : 'transparent', color: period === k ? '#fff' : '#7d89a6' }}>
+              {label}
+            </button>
+          ))}
         </div>
       )}
+      <div key={period} style={{ perspective: 700 }}>
+        {rows.map((entry, i) => (
+          <TiltCard key={entry.userId} entry={entry} place={entry.place} index={i}
+            onRevealed={() => setRevealed((prev) => (prev.has(entry.userId) ? prev : new Set(prev).add(entry.userId)))} />
+        ))}
+      </div>
     </div>
   );
 }
+
 
 // NEW: Updated MyRoundPredictions WITHOUT leaderboard section
 function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, roundLeaderboard, matches, getUserDisplayName, getOutcomeStatus }) {

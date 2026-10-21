@@ -39,6 +39,11 @@ export const getRoundLeaderboard = async ({ roundId, currentUserId }) => {
             };
         }
 
+        // Evenings of the round (Israel dates), so the ranking can also be shown per evening
+        const ilDate = (d) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(new Date(d));
+        const nightOf = Object.fromEntries(roundMatches.map(m => [m.id, ilDate(m.match_date)]));
+        const nights = [...new Set(Object.values(nightOf))].sort();
+
         // Get unique user IDs who have predictions in this round
         const roundPredictions = allPredictions.filter(p => 
             roundMatches.some(m => m.id === p.match_id)
@@ -78,9 +83,12 @@ export const getRoundLeaderboard = async ({ roundId, currentUserId }) => {
 
                 // Calculate total points for this user in this round
                 let totalRoundPoints = 0;
+                const byNight = {};
                 for (const prediction of uniquePredictions) {
                     // Use points_earned from prediction (already calculated)
                     totalRoundPoints += prediction.points_earned || 0;
+                    const k = nightOf[prediction.match_id];
+                    byNight[k] = (byNight[k] || 0) + (prediction.points_earned || 0);
                 }
 
                 const profile = publicProfiles.find(p => p.user_id === userId);
@@ -90,6 +98,7 @@ export const getRoundLeaderboard = async ({ roundId, currentUserId }) => {
                     userId: userId,
                     displayName: displayName,
                     totalPoints: parseFloat(totalRoundPoints.toFixed(2)),
+                    nights: Object.fromEntries(Object.entries(byNight).map(([k, v]) => [k, parseFloat(v.toFixed(2))])),
                     isCurrentUser: userId === currentUserId
                 });
 
@@ -133,11 +142,13 @@ export const getRoundLeaderboard = async ({ roundId, currentUserId }) => {
                 displayName: currentUserScore.displayName
             } : null,
             totalParticipants: userScores.length,
+            nights,
             allParticipants: userScores.map(score => ({
                 rank: score.rank,
                 displayName: score.displayName,
                 totalPoints: score.totalPoints,
                 userId: score.userId,
+                nights: score.nights,
                 isCurrentUser: score.isCurrentUser
             })),
             top3: userScores.slice(0, 3).map(score => ({
