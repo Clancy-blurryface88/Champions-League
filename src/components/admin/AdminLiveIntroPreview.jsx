@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Match } from "@/api/entities";
-import LiveIntroBoard, { LIVE_INTRO_TIMING, liveIntroDuration } from "@/components/LiveIntroBoard";
+import LiveIntroBoard, { LIVE_INTRO_TIMING, MINUTE_COLOR, liveIntroDuration } from "@/components/LiveIntroBoard";
 
 // Plays the live-matches intro on made-up matches (real team logos) so it can
 // be checked when nothing is live: pick how many matches, edit or shuffle the
@@ -9,6 +9,14 @@ import LiveIntroBoard, { LIVE_INTRO_TIMING, liveIntroDuration } from "@/componen
 // only affect this preview — the app uses LIVE_INTRO_TIMING.
 const rnd = (n) => Math.floor(Math.random() * n);
 const randGoals = () => [0, 0, 1, 1, 1, 2, 2, 3, 4][rnd(9)];
+
+// 50 candidate colours for the minute notches — reds, greens, blues, whites (1–50)
+const MINUTE_COLORS = [
+  ['אדום', ['#ef4444', '#dc2626', '#b91c1c', '#f87171', '#fb7185', '#e11d48', '#ff3b30', '#ff5a5f', '#f43f5e', '#c81e1e', '#ff6b6b', '#ff1744', '#d62828']],
+  ['ירוק', ['#22c55e', '#16a34a', '#4ade80', '#34d399', '#10b981', '#00e676', '#39ff14', '#2ecc71', '#00c853', '#86efac', '#a3e635', '#14b8a6', '#5eead4']],
+  ['כחול', ['#3b82f6', '#2563eb', '#60a5fa', '#7cadee', '#38bdf8', '#0ea5e9', '#22d3ee', '#06b6d4', '#1d4ed8', '#4f46e5', '#818cf8', '#00b4ff', '#93c5fd']],
+  ['לבן', ['#ffffff', '#f8fafc', '#e2e8f0', '#cbd5e1', '#f1f5f9', '#fefce8', '#fff7ed', '#f0f9ff', '#ecfdf5', '#d1d5db', '#e5e7eb']],
+];
 
 const TIMING_CTL = [
   ['minutes', 'ריצת הדקות בכל שורה', 0.3, 2.5, 0.05],
@@ -23,6 +31,8 @@ export default function AdminLiveIntroPreview() {
   const [count, setCount] = useState(7);
   const [rows, setRows] = useState([]);
   const [timing, setTiming] = useState(LIVE_INTRO_TIMING);
+  const [minuteColor, setMinuteColor] = useState(MINUTE_COLOR);
+  const [minuteText, setMinuteText] = useState(false);
   const [playing, setPlaying] = useState(0); // run counter; 0 = closed
   const [revealed, setRevealed] = useState(false);
 
@@ -133,6 +143,31 @@ export default function AdminLiveIntroPreview() {
         <p className="text-slate-400 text-sm mt-3">משך החשיפה עם {count} משחקים: <b className="text-white" dir="ltr">{(liveIntroDuration(count, timing) / 1000).toFixed(1)}s</b>, ועוד 1.6 שניות עד שהחלון נסגר.</p>
       </div>
 
+      <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <span className="font-semibold">צבע דקת המשחק (רק לתצוגה הזו)</span>
+          <button onClick={() => setMinuteColor(MINUTE_COLOR)} className="text-xs text-slate-400 underline">חזרה לצבע האפליקציה</button>
+        </div>
+        {(() => { let n = 0; return MINUTE_COLORS.map(([group, list]) => (
+          <div key={group} className="mb-3">
+            <div className="text-xs text-slate-400 mb-1.5">{group}</div>
+            <div className="flex flex-wrap gap-1.5">
+              {list.map((c) => { n += 1; const num = n, on = c.toLowerCase() === minuteColor.toLowerCase();
+                return (
+                  <button key={c} onClick={() => setMinuteColor(c)} title={c}
+                    className="relative w-10 h-10 rounded-lg grid place-items-center text-[11px] font-bold"
+                    style={{ background: c, color: '#0b1328', boxShadow: on ? '0 0 0 2px #0b1328, 0 0 0 4px #fff' : 'inset 0 0 0 1px rgba(0,0,0,.25)' }}>{num}</button>
+                ); })}
+            </div>
+          </div>
+        )); })()}
+        <div className="flex flex-wrap items-center gap-4 mt-2 text-sm">
+          <span>נבחר: <b dir="ltr">{minuteColor}</b> · מספר <b>{MINUTE_COLORS.flatMap(([, l]) => l).findIndex((c) => c.toLowerCase() === minuteColor.toLowerCase()) + 1 || '—'}</b></span>
+          <label className="flex items-center gap-2"><input type="checkbox" checked={minuteText} onChange={(e) => setMinuteText(e.target.checked)} /> לצבוע גם את מספר הדקה</label>
+          <span className="flex items-center gap-1 text-slate-400" dir="ltr">{Array.from({ length: 16 }, (_, j) => <i key={j} style={{ width: 2, height: j % 5 === 0 ? 12 : 7, background: j < 11 ? minuteColor : 'rgba(255,255,255,.2)', boxShadow: j < 11 ? `0 0 4px ${minuteColor}` : 'none' }} />)}</span>
+        </div>
+      </div>
+
       <button onClick={play} disabled={!rows.length} className="w-full py-3 rounded-full bg-white text-slate-900 font-bold text-lg disabled:opacity-50">▶ הצג כמו באפליקציה</button>
 
       <AnimatePresence>
@@ -141,7 +176,7 @@ export default function AdminLiveIntroPreview() {
             <motion.div key="bg" className="fixed inset-0 z-[60]" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }} onClick={close} />
             <div key="board" className="fixed inset-0 z-[61] flex items-center justify-center pointer-events-none">
-              <LiveIntroBoard key={playing} matches={apiMatches} predictions={predictions} timing={timing} onDone={() => setRevealed(true)} />
+              <LiveIntroBoard key={playing} matches={apiMatches} predictions={predictions} timing={timing} minuteColor={minuteColor} minuteText={minuteText} onDone={() => setRevealed(true)} />
             </div>
           </>
         )}
