@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
-import { User, UserStats, Match, Prediction, GeneralQuestion, GeneralPrediction } from "@/api/entities";
+import { User, UserStats, Match, Prediction, GeneralQuestion, GeneralPrediction, Round, PublicProfile, AppSettings } from "@/api/entities";
 import { Settings, LogOut, PlayCircle, Bell, BellOff, X, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MatchesByDateSheet from "./components/MatchesByDateSheet";
@@ -28,6 +28,8 @@ import LiveIntroBoard, { liveIntroDuration } from "./components/LiveIntroBoard";
 import TeamFlag from "./components/TeamFlag";
 import LiveLeaderboard from "./components/LiveLeaderboard";
 import FinalResultsOverlay from "./components/FinalResultsOverlay";
+import RoundSummaryReveal from "./components/roundSummary/RoundSummaryReveal";
+import { computeRoundSummary } from "./utils/roundSummary";
 import PushInvite, { PUSH_INVITE_SNOOZE_MS, pushInviteSnoozeKey } from "./components/PushInvite";
 
 function localDayKey(date) {
@@ -108,6 +110,7 @@ export default function Layout({ children, currentPageName }) {
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
   const [touchStartY, setTouchStartY] = useState(null);
+  const [roundSummary, setRoundSummary] = useState(null); // { summary, variant } — opened from the round-summary push
   const [showExactHits, setShowExactHits] = useState(false); // Kept, but its functionality is replaced for swipe
   const [showLiveData, setShowLiveData] = useState(false); // Added: New state for LiveDataPanel
   const [hasLiveMatch, setHasLiveMatch] = useState(false);
@@ -387,6 +390,22 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('dashboardReload', handleDashboardReload);
   }, [user]);
 
+  // ?open=summary&round=<id> (the round-summary push): the cinematic summary,
+  // shown once per round per user — a second tap on the push just opens the app.
+  const openRoundSummary = async (roundId) => {
+    const seenKey = `round-summary-seen:${user.id}:${roundId || 'last'}`;
+    try { if (localStorage.getItem(seenKey)) return; } catch { /* storage blocked */ }
+    try {
+      const [rounds, matches, predictions, profiles, settings] = await Promise.all([Round.list('order'), Match.list(), Prediction.list(), PublicProfile.list(), AppSettings.list()]);
+      const summary = computeRoundSummary(user.id, { rounds, matches, predictions, profiles }, roundId || undefined);
+      if (!summary) return;
+      try { localStorage.setItem(seenKey, '1'); } catch { /* storage blocked */ }
+      setRoundSummary({ summary, variant: settings?.[0]?.round_summary_variant || undefined });
+    } catch (e) {
+      console.error('round summary', e);
+    }
+  };
+
   // Push-notification deep links (api/_goalWebhook.js, api/_adminPush.js):
   // ?open=live opens the live panel (live leaderboard), ?open=leaderboard the
   // main table, ?open=hits the exact-hits panel. The param
@@ -399,7 +418,9 @@ export default function Layout({ children, currentPageName }) {
     if (target === 'live') setShowLiveData(true);
     if (target === 'leaderboard') setShowLeaderboard(true);
     if (target === 'hits') setShowExactHits(true);
+    if (target === 'summary') openRoundSummary(params.get('round'));
     params.delete('open');
+    params.delete('round');
     const qs = params.toString();
     window.history.replaceState(null, '', window.location.pathname + (qs ? `?${qs}` : '') + window.location.hash);
   }, [user]);
@@ -1482,6 +1503,7 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Final Results Overlay — shown once per session once every match in
             the tournament is finished, in place of the live/next-match intro. */}
+        {roundSummary && <RoundSummaryReveal summary={roundSummary.summary} variant={roundSummary.variant} onClose={() => setRoundSummary(null)} />}
         <AnimatePresence>
           {showFinalResults && (
             <FinalResultsOverlay onClose={() => setShowFinalResults(false)} />

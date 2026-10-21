@@ -74,6 +74,34 @@ function ilEndOfNight(d) {
   return new Date(guess.getTime() - (shown + 24 - 23) % 24 * 3600e3);
 }
 
+// `hour`:00 Israel time, `days` days after the Israel date of d.
+export function ilAt(d, days, hour) {
+  const TZ = 'Asia/Jerusalem';
+  const ymd = new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date(d.getTime() + days * 864e5));
+  const guess = new Date(`${ymd}T${String(hour).padStart(2, '0')}:00:00Z`);
+  const shown = Number(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', hourCycle: 'h23' }).format(guess));
+  return new Date(guess.getTime() - ((shown - hour + 24) % 24) * 3600e3);
+}
+
+// Round-summary push: when tonight was the round's last night, everyone gets
+// "your round summary is ready" at 10:00 the next morning; the tap opens the
+// cinematic summary (?open=summary). The wording is the one saved in the admin
+// panel (app_settings.round_summary_push) — none saved → nothing is sent.
+async function roundSummaryPush(rows, lastKickoff, mode) {
+  const roundId = rows[0]?.round_id;
+  if (!roundId) return { skipped: 'no round' };
+  const all = await supa(`matches?select=match_date&round_id=eq.${roundId}`);
+  const last = Math.max(...all.map((m) => new Date(m.match_date).getTime()));
+  if (last > lastKickoff.getTime() + 60e3) return { skipped: 'round not over' };
+  const [cfg] = await supa('app_settings?select=round_summary_push&limit=1');
+  const t = cfg?.round_summary_push;
+  if (!t?.heading || !t?.body) return { skipped: 'no wording saved' };
+  return push({
+    heading: t.heading, body: t.body, url: `${SITE}/?open=summary&round=${roundId}`,
+    key: `round-summary:${roundId}`, mode, sendAfter: mode === 'test' ? undefined : ilAt(lastKickoff, 1, 10),
+  });
+}
+
 // Deterministic UUID from a string — OneSignal's idempotency_key must be a UUID.
 function uuidFrom(str) {
   const h = crypto.createHash('sha1').update(str).digest('hex');
@@ -276,11 +304,11 @@ async function onFinished(fixtureId, mode, sendAfter, late = false) {
   // Delivered at 23:59 Israel time of the match night (OneSignal send_after);
   // if the night runs past that, push() sends right away. A manual &at= or a
   // test/late re-send keeps its own timing.
-  if (!sendAfter && !late && mode !== 'test') {
-    const lastKickoff = new Date(Math.max(...night.map((f) => new Date(f.kickoffUtc).getTime())));
-    sendAfter = ilEndOfNight(lastKickoff);
-  }
-  return sendPersonal(list, { url: `${SITE}/Replay?date=${String(date).slice(0, 10)}`, key: `night:${date}`, mode, sendAfter });
+  const lastKickoff = new Date(Math.max(...night.map((f) => new Date(f.kickoffUtc).getTime())));
+  if (!sendAfter && !late && mode !== 'test') sendAfter = ilEndOfNight(lastKickoff);
+  const out = await sendPersonal(list, { url: `${SITE}/Replay?date=${String(date).slice(0, 10)}`, key: `night:${date}`, mode, sendAfter });
+  out.roundSummary = late ? { skipped: 'late re-send' } : await roundSummaryPush(rows, lastKickoff, mode).catch((e) => ({ error: e.message }));
+  return out;
 }
 
 async function readRaw(req) {

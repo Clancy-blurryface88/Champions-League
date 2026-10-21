@@ -14,7 +14,7 @@ const LINKS = {
   home: '/', live: '/?open=live', leaderboard: '/?open=leaderboard', hits: '/?open=hits',
   results: '/PredictionsResults', stats: '/MyStats', knockout: '/KnockoutBracket',
   general: '/GeneralPredictionsBoard', halloffame: '/HallOfFame',
-  round: (id) => `/Predictions?round_id=${id}`, replay: (id) => `/Replay?round_id=${id}`,
+  round: (id) => `/Predictions?round_id=${id}`, summary: (id) => `/?open=summary&round=${id}`, replay: (id) => `/Replay?round_id=${id}`,
 };
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const linkPath = (link, roundId) => {
