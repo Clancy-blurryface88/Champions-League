@@ -550,6 +550,12 @@ export default function Layout({ children, currentPageName }) {
   // Auto-dismiss the live intro a moment after the board's row-by-row reveal
   // ends (it reports back) — its length depends on how many matches are live.
   const [liveIntroRevealed, setLiveIntroRevealed] = useState(false);
+  // LIVE chip minute: the furthest-along match in play (several kick off together); all at the break → HT
+  const liveChipMinute = (() => {
+    const playing = liveMatches.filter((m) => m.status === 'IN_PLAY' && Number.isFinite(Number(m.minute)));
+    if (playing.length) return `${Math.max(...playing.map((m) => Number(m.minute)))}'`;
+    return liveMatches.length ? 'HT' : '';
+  })();
   useEffect(() => { if (showLiveIntro) setLiveIntroRevealed(false); }, [showLiveIntro]);
   useEffect(() => {
     if (!showLiveIntro || !liveIntroRevealed) return;
@@ -1294,21 +1300,22 @@ export default function Layout({ children, currentPageName }) {
                   }}
                   onTouchEnd={() => clearTimeout(liveChipLongPressTimer.current)}
                   onContextMenu={(e) => e.preventDefault()}
-                  className="relative flex items-center justify-center gap-1.5 px-3 py-2 rounded-full cursor-pointer"
-                  style={{
-                    background: 'rgba(239,68,68,0.12)',
-                    border: '1px solid rgba(239,68,68,0.45)',
-                    backdropFilter: 'blur(28px) saturate(1.6)',
-                    WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 20px rgba(0,0,0,0.5)',
-                    width: '100%',
-                  }}
+                  // TV scoreboard bug: red LIVE plate | the match minute, with a breathing red glow
+                  className="relative flex cursor-pointer overflow-hidden live-chip-glow"
+                  dir="ltr"
+                  style={{ width: '100%', height: 34, borderRadius: 4, border: '1px solid rgba(255,255,255,0.2)', padding: 0 }}
                 >
-                  <span className="relative flex h-2 w-2 flex-shrink-0">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                  <style>{'@keyframes liveChipGlow { 0%, 100% { filter: drop-shadow(0 0 3px rgba(239,68,68,.4)); } 50% { filter: drop-shadow(0 0 12px rgba(239,68,68,.95)); } } .live-chip-glow { animation: liveChipGlow 1.8s ease-in-out infinite; }'}</style>
+                  <span className="flex items-center gap-1.5 px-2.5 h-full" style={{ background: '#e11d48' }}>
+                    <span className="relative flex h-2 w-2 flex-shrink-0">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+                    </span>
+                    <span className="text-white text-[14px] leading-none font-extrabold tracking-[0.14em]" style={{ fontFamily: "'Outfit', sans-serif" }}>LIVE</span>
                   </span>
-                  <span className="text-red-400 text-[14px] leading-none font-bold tracking-widest uppercase animate-pulse">Live</span>
+                  <span className="flex-1 flex items-center justify-center h-full" style={{ background: '#0a1235' }}>
+                    <span style={{ fontFamily: 'var(--num-font)', fontWeight: 800, fontSize: 18, lineHeight: 1, color: '#ef4444' }}>{liveChipMinute}</span>
+                  </span>
                 </motion.button>
               )}
             </AnimatePresence>
