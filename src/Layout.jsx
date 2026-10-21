@@ -1303,17 +1303,14 @@ export default function Layout({ children, currentPageName }) {
                   // TV scoreboard bug: red LIVE plate | the match minute, with a breathing red glow
                   className="relative flex cursor-pointer overflow-hidden live-chip-glow"
                   dir="ltr"
-                  style={{ width: '100%', height: 34, borderRadius: 4, border: '1px solid rgba(255,255,255,0.2)', padding: 0 }}
+                  // same width as the name pill above it (grid stretch) and the same pill shape
+                  style={{ width: '100%', minWidth: 0, height: 34, borderRadius: 999, border: '1px solid rgba(255,255,255,0.2)', padding: 0 }}
                 >
                   <style>{'@keyframes liveChipGlow { 0%, 100% { filter: drop-shadow(0 0 3px rgba(239,68,68,.4)); } 50% { filter: drop-shadow(0 0 12px rgba(239,68,68,.95)); } } .live-chip-glow { animation: liveChipGlow 1.8s ease-in-out infinite; }'}</style>
-                  <span className="flex items-center gap-1.5 px-2.5 h-full" style={{ background: '#e11d48' }}>
-                    <span className="relative flex h-2 w-2 flex-shrink-0">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
-                    </span>
-                    <span className="text-white text-[14px] leading-none font-extrabold tracking-[0.14em]" style={{ fontFamily: "'Outfit', sans-serif" }}>LIVE</span>
+                  <span className="flex items-center pl-3 pr-2 h-full" style={{ background: '#e11d48' }}>
+                    <span className="text-white text-[14px] leading-none font-extrabold tracking-[0.1em]" style={{ fontFamily: "'Outfit', sans-serif" }}>LIVE</span>
                   </span>
-                  <span className="flex-1 flex items-center justify-center h-full px-3" style={{ background: '#0a1235', minWidth: 64 }}>
+                  <span className="flex-1 flex items-center justify-center h-full pr-1" style={{ background: '#0a1235', minWidth: 0 }}>
                     <span style={{ fontFamily: 'var(--num-font)', fontWeight: 800, fontSize: 18, lineHeight: 1, color: '#ef4444' }}>{liveChipMinute}</span>
                   </span>
                 </motion.button>
