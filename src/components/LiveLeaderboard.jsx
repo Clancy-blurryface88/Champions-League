@@ -180,6 +180,12 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
     prevRank.current = row.liveRank;
   }
 
+  // Exact hits right now: a green bar on the name plate's edge, "EXACT", and the
+  // score they called (home crest + score) next to the name. Keyed by which matches
+  // are exact, so it fades in again (with a short flash) whenever a new one lands.
+  const exacts = (row.matchPredictions || []).filter((mp) => mp.isExact);
+  const exactKey = exacts.map((mp) => `${mp.home}|${mp.predicted}`).join(',');
+
   // Broadcast look: rank plate (white; green→cyan for you, like the next round
   // in the rounds marquee) · name plate · points plate, slanted like a TV graphic.
   const SK = 'skewX(-12deg)', UN = 'skewX(12deg)';
@@ -195,12 +201,27 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
       <div style={{ width: 38, display: 'grid', placeItems: 'center', background: isMe ? 'linear-gradient(135deg,#22c55e,#00e0ff)' : '#fff', color: isMe ? '#04201d' : '#0a1235', transform: SK, flexShrink: 0 }}>
         <span style={{ transform: UN, fontFamily: "var(--num-font)", fontWeight: 700, fontSize: 26, lineHeight: 1 }}>{row.liveRank}</span>
       </div>
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', marginInlineStart: 3, transform: SK,
+      <motion.div key={exactKey || 'none'} initial={exacts.length ? { filter: 'brightness(1.7)' } : false} animate={{ filter: 'brightness(1)' }} transition={{ duration: 0.8 }}
+        style={{ position: 'relative', overflow: 'hidden', flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', marginInlineStart: 3, transform: SK,
         background: 'linear-gradient(90deg,#1a2a78,#0e1850)' }}>
+        {exacts.length > 0 && <span aria-hidden style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: '#4ade80', boxShadow: '0 0 10px #4ade80' }} />}
         <span className="truncate" style={{ transform: UN, fontFamily: "'Fredoka', sans-serif", fontWeight: 600, fontSize: 15.5, color: '#fff', minWidth: 0,
           ...(isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}) }}>{row.name}</span>
+        {exacts.length > 0 && (
+          <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
+            style={{ transform: UN, display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+            <span style={{ font: "800 10px 'Outfit', sans-serif", letterSpacing: '.15em', color: '#facc15' }}>EXACT</span>
+            {exacts.slice(0, 2).map((mp, k) => (
+              <span key={k} dir="ltr" style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '2px 5px', borderRadius: 5, background: 'rgba(74,222,128,.16)', border: '1px solid rgba(74,222,128,.55)', color: '#bbf7d0' }}>
+                <TeamFlag logo={mp.homeLogo} name={mp.home} size={13} />
+                <span style={{ fontFamily: 'var(--num-font)', fontWeight: 800, fontSize: 13, lineHeight: 1 }}>{String(mp.predicted).replace('-', '–')}</span>
+              </span>
+            ))}
+            {exacts.length > 2 && <span style={{ fontSize: 11, fontWeight: 700, color: '#bbf7d0' }}>+{exacts.length - 2}</span>}
+          </motion.span>
+        )}
         <span style={{ transform: UN, marginInlineStart: 'auto', flexShrink: 0 }}><DeltaIcon delta={delta} /></span>
-      </div>
+      </motion.div>
       <div style={{ width: 76, display: 'grid', placeItems: 'center', marginInlineStart: 3, transform: SK, flexShrink: 0, background: '#0a1235', border: '1px solid rgba(255,255,255,.12)' }}>
         <span className="tabular-nums" style={{ transform: UN, fontFamily: "var(--num-font)", fontWeight: 700, fontSize: 21, lineHeight: 1, color: '#fff' }}>
           <OdometerValue target={row.total} height={20} width={9} decimals={2} trigger={revealed} />
