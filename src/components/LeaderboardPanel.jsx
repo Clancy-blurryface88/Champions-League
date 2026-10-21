@@ -359,12 +359,12 @@ export default function LeaderboardPanel({ onClose, user }) {
                             }}>
                               {participant.full_name}
                             </p>
-                            {/* points in the base font (Outfit), bold and gold — only here; elsewhere they use the number font */}
-                            <span style={{ color:'#facc15', fontSize:16, fontWeight:700 }}>
+                            {/* points in the base font (Outfit), bold green — only here; elsewhere they use the number font */}
+                            <span style={{ color:'#4ade80', fontSize:14, fontWeight:700 }}>
                               <OdometerValue
                                 target={participant.total_points}
-                                height={19}
-                                width={9.5}
+                                height={17}
+                                width={8.4}
                                 font="'Outfit', sans-serif"
                                 alignDot
                                 trigger={revealedIds.has(participant.id)} />
