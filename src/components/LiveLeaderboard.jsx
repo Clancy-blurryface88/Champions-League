@@ -182,12 +182,15 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
       <div style={{ width: 38, display: 'grid', placeItems: 'center', background: isMe ? 'linear-gradient(135deg,#22c55e,#00e0ff)' : '#fff', color: isMe ? '#04201d' : '#0a1235', transform: SK, flexShrink: 0 }}>
         <span style={{ transform: UN, fontFamily: "var(--num-font)", fontWeight: 700, fontSize: 26, lineHeight: 1 }}>{row.liveRank}</span>
       </div>
-      {/* a new exact hit lands like a ball hitting the post: a short sideways shake with a flash */}
+      {/* a new exact hit lands like a ball hitting the post: a short sideways shake with a flash and a green fill */}
       <motion.div key={exactKey || 'none'}
         animate={exacts.length ? { x: [0, -5, 5, -3, 2, 0], filter: ['brightness(2)', 'brightness(1.6)', 'brightness(1.3)', 'brightness(1.15)', 'brightness(1.05)', 'brightness(1)'] } : { x: 0, filter: 'brightness(1)' }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
         style={{ position: 'relative', overflow: 'hidden', flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', marginInlineStart: 3, skewX: -12,
         background: 'linear-gradient(90deg,#1a2a78,#0e1850)' }}>
+        {/* with the shake, the plate fills green for a moment and fades back (~2.5s) */}
+        {exacts.length > 0 && <motion.span aria-hidden initial={{ opacity: 0.85 }} animate={{ opacity: 0 }} transition={{ delay: 0.8, duration: 1.7, ease: 'easeOut' }}
+          style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg,#16a34a,#065f46)', pointerEvents: 'none' }} />}
         {exacts.length > 0 && <span aria-hidden style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: '#4ade80', boxShadow: '0 0 10px #4ade80' }} />}
         <span className="truncate" style={{ transform: UN, fontFamily: "'Fredoka', sans-serif", fontWeight: 600, fontSize: 15.5, color: '#fff', minWidth: 0,
           ...(isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}) }}>{row.name}</span>
