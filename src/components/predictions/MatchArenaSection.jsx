@@ -189,6 +189,23 @@ const PROB_CSS = `
 @keyframes prob-wave{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @keyframes prob-breathe{0%,100%{box-shadow:0 0 0 1px var(--pc),0 0 16px -2px var(--pc)}50%{box-shadow:0 0 0 1px var(--pc),0 0 30px 2px var(--pc)}}`;
 
+// Dark blues vanish on our navy background, so blue clubs fill with the
+// ticker's result cyan; any other very dark colour is lifted toward white.
+const RESULT_CYAN = '#22d3ee';
+function liquidColor(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+  if (!m) return hex;
+  const n = parseInt(m[1], 16), r = (n >> 16) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+  const hue = d === 0 ? 0 : max === r ? 60 * (((g - b) / d) % 6) : max === g ? 60 * ((b - r) / d + 2) : 60 * ((r - g) / d + 4);
+  const h = (hue + 360) % 360, sat = max === 0 ? 0 : d / max;
+  if (sat > 0.25 && h >= 190 && h <= 255) return RESULT_CYAN;
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  if (lum >= 0.07) return hex;
+  const mix = (c) => Math.round((c + (1 - c) * 0.45) * 255).toString(16).padStart(2, '0');
+  return `#${mix(r)}${mix(g)}${mix(b)}`;
+}
+
 function ProbSquare({ label, logo, pct, best, color, index }) {
   return (
     <motion.div
@@ -240,9 +257,9 @@ function OddsTab({ match }) {
       {probs && (
         <div className="flex gap-2 pt-2" dir="ltr">
           <style>{PROB_CSS}</style>
-          <ProbSquare index={0} label={match.team_a} logo={match.team_a_logo} pct={probs.home} best={probs.home === best} color={getTeamColor(match.team_a, '#2f7bff')} />
+          <ProbSquare index={0} label={match.team_a} logo={match.team_a_logo} pct={probs.home} best={probs.home === best} color={liquidColor(getTeamColor(match.team_a, '#2f7bff'))} />
           <ProbSquare index={1} label="תיקו" pct={probs.draw} best={probs.draw === best} color="#a3adc6" />
-          <ProbSquare index={2} label={match.team_b} logo={match.team_b_logo} pct={probs.away} best={probs.away === best} color={getTeamColor(match.team_b, '#ff7a1a')} />
+          <ProbSquare index={2} label={match.team_b} logo={match.team_b_logo} pct={probs.away} best={probs.away === best} color={liquidColor(getTeamColor(match.team_b, '#ff7a1a'))} />
         </div>
       )}
 
