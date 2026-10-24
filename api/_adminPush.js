@@ -5,7 +5,7 @@
 // the server. target 'test' → only Test Users devices, 'all' → everyone,
 // 'user' + userId → one participant's devices, 'onesignal' + onesignalId →
 // one OneSignal user (from the OneSignal dashboard; works before linking).
-import { push, supa, sendRoundSummary, ONESIGNAL_APP_ID } from './_goalWebhook.js';
+import { push, supa, ONESIGNAL_APP_ID } from './_goalWebhook.js';
 
 const SITE = 'https://champions-league-2026.vercel.app';
 // Where a tap on the push lands (keep in sync with LINKS in AdminSendPush.jsx).
@@ -86,23 +86,6 @@ export async function adminSubscribersHandler(req, res) {
   }
 }
 
-// How a sent push is doing, a few seconds after creating it: delivered /
-// failed / still sending. null when OneSignal can't be read.
-async function delivery(id) {
-  if (!id) return null;
-  await new Promise((r) => setTimeout(r, 4000));
-  try {
-    const r = await fetch(`https://api.onesignal.com/notifications/${id}?app_id=${ONESIGNAL_APP_ID}`, {
-      headers: { Authorization: `Key ${process.env.ONESIGNAL_REST_API_KEY}` },
-    });
-    if (!r.ok) return null;
-    const n = await r.json();
-    return { successful: n.successful ?? 0, failed: n.failed ?? 0, errored: n.errored ?? 0, remaining: n.remaining ?? 0 };
-  } catch {
-    return null;
-  }
-}
-
 export async function adminPushHandler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
@@ -112,15 +95,6 @@ export async function adminPushHandler(req, res) {
     if (!admin) return res.status(401).json({ error: 'admins only' });
 
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
-    // Round summary by hand (the automatic one didn't go out): the saved
-    // wording, to everyone, opening that round's cinematic summary.
-    if (body.kind === 'round-summary') {
-      if (!UUID_RE.test(String(body.roundId || ''))) return res.status(400).json({ error: 'roundId is required' });
-      const sent = await sendRoundSummary(body.roundId, 'live', undefined, `round-summary:${body.roundId}:manual:${Date.now()}`);
-      if (sent.skipped) return res.status(400).json({ error: 'לא נשמר נוסח להתראת סיכום המחזור (לשונית סיכום המחזור)' });
-      console.log('[admin-push] round-summary', body.roundId, sent.status, JSON.stringify(sent.body).slice(0, 300));
-      return res.status(200).json({ ok: sent.status === 200 && !!sent.body?.id, target: 'all', sent, delivery: await delivery(sent.body?.id) });
-    }
     const heading = String(body.heading || '').trim().slice(0, 120);
     const text = String(body.body || '').trim().slice(0, 300);
     if (!heading || !text) return res.status(400).json({ error: 'heading and body are required' });
