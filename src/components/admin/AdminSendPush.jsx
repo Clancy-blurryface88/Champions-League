@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/api/supabase";
-import { Round, Match } from "@/api/entities";
+import { Round, Match, AppSettings } from "@/api/entities";
+import { completedRounds } from "@/utils/roundSummary";
 
 // Manual push from the admin panel: pick one of the app's ready-made formats
 // (the same wording the automatic pushes use — numbers/teams are editable
@@ -38,6 +39,84 @@ const LINKS = [
 
 const box = { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" };
 const input = "w-full rounded-lg px-3 py-2 text-sm text-white bg-white/5 border border-white/15 focus:outline-none focus:border-sky-400/60";
+
+// When the automatic round-summary push (10:00 after the round's last night)
+// didn't go out: one tap sends it to everyone with the saved wording. The
+// server uses the same key as the automatic push, so a round never gets it twice.
+function ManualRoundSummary() {
+  const [rounds, setRounds] = useState(null);
+  const [roundId, setRoundId] = useState("");
+  const [wording, setWording] = useState(undefined);
+  const [confirming, setConfirming] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState(null);
+
+  useEffect(() => {
+    Promise.all([Round.list("order"), Match.list("match_date"), AppSettings.list()]).then(([list, matches, settings]) => {
+      const done = completedRounds(list, matches);
+      setRounds(done);
+      setRoundId(done[done.length - 1]?.id || "");
+      setWording(settings?.[0]?.round_summary_push || null);
+    }).catch(() => { setRounds([]); setWording(null); });
+  }, []);
+
+  const send = async () => {
+    setSending(true); setResult(null);
+    try {
+      const { data } = await supabase.auth.getSession();
+      const r = await fetch("/api/football?source=admin-push", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${data.session?.access_token || ""}` },
+        body: JSON.stringify({ kind: "round-summary", roundId }),
+      });
+      const j = await r.json().catch(() => ({}));
+      const errors = j.sent?.body?.errors;
+      setResult(r.ok && j.ok
+        ? { ok: true, text: "סיכום המחזור נשלח לכל המשתתפים ✅" }
+        : { ok: false, text: `השליחה נכשלה: ${j.error || (Array.isArray(errors) ? errors.join(", ") : errors && JSON.stringify(errors)) || r.status}` });
+    } catch (e) {
+      setResult({ ok: false, text: `השליחה נכשלה: ${e.message}` });
+    } finally {
+      setSending(false); setConfirming(false);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(245,197,24,0.06)", border: "1px solid rgba(245,197,24,0.3)" }}>
+      <div>
+        <p className="text-sm font-bold text-white">🏆 שליחה ידנית של סיכום המחזור</p>
+        <p className="text-[11px] text-slate-400 mt-0.5">אם ההתראה האוטומטית לא יצאה: שולח לכולם את הנוסח השמור, ולחיצה פותחת את סיכום המחזור שנבחר. מחזור שכבר קיבל את ההתראה לא יקבל אותה שוב.</p>
+      </div>
+      {!rounds ? <p className="text-[11px] text-slate-500">טוען מחזורים...</p> : !rounds.length ? <p className="text-[11px] text-slate-500">עוד אין מחזור שהסתיים.</p> : (
+        <select value={roundId} onChange={(e) => { setRoundId(e.target.value); setConfirming(false); setResult(null); }} className={input}>
+          {rounds.map((r) => <option key={r.id} value={r.id} className="bg-slate-900">{r.name}</option>)}
+        </select>
+      )}
+      {wording === null && <p className="text-[11px] text-amber-300">עוד לא נשמר נוסח (לשונית סיכום מחזור), ולכן אי אפשר לשלוח.</p>}
+      {wording && (
+        <div className="rounded-xl p-3 bg-white/[0.06] border border-white/10">
+          <p className="text-sm font-bold text-white">{wording.heading}</p>
+          <p className="text-xs text-slate-300 mt-0.5">{wording.body}</p>
+        </div>
+      )}
+      {!confirming ? (
+        <button type="button" disabled={!roundId || !wording || sending} onClick={() => setConfirming(true)}
+          className="w-full py-2.5 rounded-xl font-bold text-sm text-black disabled:opacity-40" style={{ background: "linear-gradient(135deg,#f5c518,#fde68a)" }}>
+          שלח את סיכום המחזור לכולם
+        </button>
+      ) : (
+        <div className="rounded-xl p-3 border border-red-400/50 bg-red-500/10 space-y-2">
+          <p className="text-sm text-red-200">סיכום {rounds.find((r) => r.id === roundId)?.name} יישלח עכשיו לכל המשתתפים. לשלוח?</p>
+          <div className="flex gap-2">
+            <button type="button" onClick={send} disabled={sending} className="flex-1 py-2 rounded-lg bg-red-500 text-white text-sm font-bold">{sending ? "שולח..." : "כן, שלח לכולם"}</button>
+            <button type="button" onClick={() => setConfirming(false)} className="flex-1 py-2 rounded-lg border border-white/20 text-slate-300 text-sm">ביטול</button>
+          </div>
+        </div>
+      )}
+      {result && <p className={`text-sm ${result.ok ? "text-emerald-300" : "text-red-300"}`}>{result.text}</p>}
+    </div>
+  );
+}
 
 export default function AdminSendPush() {
   const [tpl, setTpl] = useState("free");
@@ -134,6 +213,8 @@ export default function AdminSendPush() {
         <h2 className="text-xl font-bold text-white mb-1">📣 שליחת התראה</h2>
         <p className="text-slate-400 text-sm">בחר נוסח מוכן ועדכן את הפרטים (שעות, קבוצות, מספרים), או כתוב טקסט חופשי.</p>
       </div>
+
+      <ManualRoundSummary />
 
       <div className="rounded-2xl p-4 space-y-3" style={box}>
         <label className="block text-xs text-slate-400">נוסח</label>

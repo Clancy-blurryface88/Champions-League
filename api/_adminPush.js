@@ -5,7 +5,7 @@
 // the server. target 'test' → only Test Users devices, 'all' → everyone,
 // 'user' + userId → one participant's devices, 'onesignal' + onesignalId →
 // one OneSignal user (from the OneSignal dashboard; works before linking).
-import { push, supa, ONESIGNAL_APP_ID } from './_goalWebhook.js';
+import { push, supa, sendRoundSummary, ONESIGNAL_APP_ID } from './_goalWebhook.js';
 
 const SITE = 'https://champions-league-2026.vercel.app';
 // Where a tap on the push lands (keep in sync with LINKS in AdminSendPush.jsx).
@@ -95,6 +95,15 @@ export async function adminPushHandler(req, res) {
     if (!admin) return res.status(401).json({ error: 'admins only' });
 
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+    // Round summary by hand (the automatic one didn't go out): the saved
+    // wording, to everyone, opening that round's cinematic summary.
+    if (body.kind === 'round-summary') {
+      if (!UUID_RE.test(String(body.roundId || ''))) return res.status(400).json({ error: 'roundId is required' });
+      const sent = await sendRoundSummary(body.roundId, 'live');
+      if (sent.skipped) return res.status(400).json({ error: 'לא נשמר נוסח להתראת סיכום המחזור (לשונית סיכום המחזור)' });
+      console.log('[admin-push] round-summary', body.roundId, sent.status);
+      return res.status(200).json({ ok: sent.status === 200 && !!sent.body?.id, target: 'all', sent });
+    }
     const heading = String(body.heading || '').trim().slice(0, 120);
     const text = String(body.body || '').trim().slice(0, 300);
     if (!heading || !text) return res.status(400).json({ error: 'heading and body are required' });

@@ -93,12 +93,19 @@ async function roundSummaryPush(rows, lastKickoff, mode) {
   const all = await supa(`matches?select=match_date&round_id=eq.${roundId}`);
   const last = Math.max(...all.map((m) => new Date(m.match_date).getTime()));
   if (last > lastKickoff.getTime() + 60e3) return { skipped: 'round not over' };
+  return sendRoundSummary(roundId, mode, mode === 'test' ? undefined : ilAt(lastKickoff, 1, 10));
+}
+
+// The round-summary push itself — also sent by hand from the admin panel when
+// the automatic one didn't go out. Same key as the automatic one, so OneSignal
+// never delivers it twice for the same round.
+export async function sendRoundSummary(roundId, mode, sendAfter) {
   const [cfg] = await supa('app_settings?select=round_summary_push&limit=1');
   const t = cfg?.round_summary_push;
   if (!t?.heading || !t?.body) return { skipped: 'no wording saved' };
   return push({
     heading: t.heading, body: t.body, url: `${SITE}/?open=summary&round=${roundId}`,
-    key: `round-summary:${roundId}`, mode, sendAfter: mode === 'test' ? undefined : ilAt(lastKickoff, 1, 10),
+    key: `round-summary:${roundId}`, mode, sendAfter,
   });
 }
 
