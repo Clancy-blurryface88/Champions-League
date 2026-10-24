@@ -9,6 +9,7 @@ import HeadToHead from './HeadToHead';
 import TeamFlag from '@/components/TeamFlag';
 import MatchupPlates from './MatchupPlates';
 import { goalTeamId } from '@/data/goalTeamIds';
+import { getTeamColor } from '@/utils/teamColors';
 
 export function getTeamForm(allMatches, teamName) {
   const played = allMatches
@@ -181,24 +182,51 @@ function FormTab({ match, formA, formB }) {
 // ── Arena sheet tab: תחזית ────────────────────────────────────────────────
 // Big 1/X/2 probability squares (odometer roll), the most likely exact scores
 // stacked by likelihood. (The crowd's picks live in MatchPredictionsModal.)
-function ProbSquare({ label, logo, pct, best }) {
+// Each glass square fills from the bottom with its team's colour up to the
+// percentage, a slow wave on top; the favourite breathes a glow
+// (prototypes/odds/probs20.html, design 1).
+const PROB_CSS = `
+@keyframes prob-wave{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes prob-breathe{0%,100%{box-shadow:0 0 0 1px var(--pc),0 0 16px -2px var(--pc)}50%{box-shadow:0 0 0 1px var(--pc),0 0 30px 2px var(--pc)}}`;
+
+function ProbSquare({ label, logo, pct, best, color, index }) {
   return (
-    <div
-      className="flex-1 aspect-square rounded-2xl flex flex-col items-center justify-center gap-1.5"
+    <motion.div
+      initial={{ opacity: 0, y: 14, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ delay: index * 0.12, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="relative flex-1 aspect-square rounded-2xl overflow-hidden"
       style={{
-        background: best ? 'rgba(56,189,248,0.16)' : 'rgba(255,255,255,0.04)',
-        border: `1px solid ${best ? 'rgba(56,189,248,0.55)' : 'rgba(255,255,255,0.1)'}`,
-        boxShadow: best ? '0 0 18px rgba(56,189,248,0.2)' : 'none',
+        '--pc': `${color}cc`,
+        background: 'linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.03))',
+        border: '1px solid rgba(255,255,255,0.13)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.14), 0 8px 24px rgba(0,0,0,0.3)',
+        animation: best ? 'prob-breathe 2.4s ease-in-out 1.2s infinite' : undefined,
       }}
     >
-      {logo !== undefined
-        ? <TeamFlag logo={logo} name={label} className="w-8 h-8" animate={false} rounded="full" />
-        : <span className="w-8 h-8 flex items-center justify-center text-lg font-black text-slate-300">X</span>}
-      <span className="text-3xl font-black text-white tabular-nums leading-none" dir="ltr">
-        <OdometerValue target={pct} decimals={0} height={32} width={18} />%
-      </span>
-      <span className="text-[10px] text-slate-300 truncate max-w-[90%]">{label}</span>
-    </div>
+      {/* the liquid */}
+      <motion.div
+        initial={{ scaleY: 0 }}
+        animate={{ scaleY: 1 }}
+        transition={{ delay: 0.3 + index * 0.12, duration: 1.3, ease: [0.22, 1, 0.36, 1] }}
+        className="absolute inset-x-0 bottom-0"
+        style={{ height: `${Math.max(pct, 6)}%`, transformOrigin: 'bottom', background: `linear-gradient(180deg, ${color}66, ${color}bb)` }}
+      >
+        <svg viewBox="0 0 200 12" preserveAspectRatio="none" className="absolute left-0 h-2.5"
+          style={{ top: -9, width: '200%', animation: 'prob-wave 3s linear infinite' }}>
+          <path d="M0 6 Q25 0 50 6 T100 6 T150 6 T200 6 V12 H0Z" fill={`${color}66`} />
+        </svg>
+      </motion.div>
+      <div className="relative h-full flex flex-col items-center justify-center gap-1.5">
+        {logo !== undefined
+          ? <TeamFlag logo={logo} name={label} className="w-8 h-8" animate={false} rounded="full" />
+          : <span className="w-8 h-8 flex items-center justify-center text-lg font-black text-slate-300">X</span>}
+        <span className="text-3xl font-black text-white tabular-nums leading-none" dir="ltr" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.45)' }}>
+          <OdometerValue target={pct} decimals={0} height={32} width={18} />%
+        </span>
+        <span className="text-[10px] text-slate-200 truncate max-w-[90%]">{label}</span>
+      </div>
+    </motion.div>
   );
 }
 
@@ -210,10 +238,11 @@ function OddsTab({ match }) {
   return (
     <div className="space-y-5">
       {probs && (
-        <div className="flex gap-2" dir="ltr">
-          <ProbSquare label={match.team_a} logo={match.team_a_logo} pct={probs.home} best={probs.home === best} />
-          <ProbSquare label="תיקו" pct={probs.draw} best={probs.draw === best} />
-          <ProbSquare label={match.team_b} logo={match.team_b_logo} pct={probs.away} best={probs.away === best} />
+        <div className="flex gap-2 pt-2" dir="ltr">
+          <style>{PROB_CSS}</style>
+          <ProbSquare index={0} label={match.team_a} logo={match.team_a_logo} pct={probs.home} best={probs.home === best} color={getTeamColor(match.team_a, '#2f7bff')} />
+          <ProbSquare index={1} label="תיקו" pct={probs.draw} best={probs.draw === best} color="#a3adc6" />
+          <ProbSquare index={2} label={match.team_b} logo={match.team_b_logo} pct={probs.away} best={probs.away === best} color={getTeamColor(match.team_b, '#ff7a1a')} />
         </div>
       )}
 
