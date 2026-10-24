@@ -265,22 +265,23 @@ function OddsTab({ match }) {
 
       {top.length > 0 && (
         <div>
-          <style>{`@keyframes ts-shine{0%{transform:translateX(-120%) skewX(-20deg)}60%,100%{transform:translateX(320%) skewX(-20deg)}}`}</style>
+          {/* one slow light sweep that passes over the plates one after the other */}
+          <style>{`@keyframes ts-shine{0%{transform:translateX(-160%) skewX(-20deg)}17%,100%{transform:translateX(330%) skewX(-20deg)}}`}</style>
           <p className="text-[12px] font-semibold text-yellow-400 text-center mb-3">תוצאות עם יחס הסיכוי הגבוה ביותר</p>
-          {/* Glass tags with a light sweep running across them */}
+          {/* Slanted glass plates (the app's tab/chip geometry), content counter-skewed */}
           <div className="flex flex-col items-center gap-2" dir="ltr">
             {top.map((t, i) => (
               <motion.div
                 key={t.score}
-                initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ delay: 0.3 + i * 0.22, duration: 0.55, ease: [0.23, 1, 0.32, 1] }}
-                className="relative overflow-hidden flex items-center justify-between w-44 px-5 py-2 rounded-full"
-                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.25)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18)' }}
+                initial={{ opacity: 0, x: -18 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + i * 0.16, duration: 0.55, ease: [0.23, 1, 0.32, 1] }}
+                className="relative overflow-hidden flex items-center justify-between w-44 px-5 py-2"
+                style={{ skewX: -12, borderRadius: 4, background: 'linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.04))', border: '1px solid rgba(255,255,255,0.25)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18)' }}
               >
-                <span className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" style={{ animation: `ts-shine 2.6s ease-in-out ${i * 0.2}s infinite` }} />
-                <span className="relative text-[17px] font-black text-white tabular-nums">{t.score.replace(':', '-')}</span>
-                <span className="relative text-[12px] font-semibold text-slate-300 tabular-nums">{t.pct}%</span>
+                <span className="absolute inset-y-0 left-0 w-[45%] bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" style={{ animation: `ts-shine ${top.length * 1.5 + 2.5}s ease-in-out ${1.3 + i * 1.5}s infinite`, transform: 'translateX(-160%)' }} />
+                <span className="relative text-[17px] font-black text-white tabular-nums" style={{ transform: 'skewX(12deg)' }}>{t.score.replace(':', '-')}</span>
+                <span className="relative text-[12px] font-semibold text-slate-300 tabular-nums" style={{ transform: 'skewX(12deg)' }}>{t.pct}%</span>
               </motion.div>
             ))}
           </div>
