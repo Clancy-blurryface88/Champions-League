@@ -247,43 +247,88 @@ function ProbSquare({ label, logo, pct, best, color, index }) {
   );
 }
 
+// One glass plate of a most-likely-score row (tinted when given a team colour);
+// the row is skewed, so the content is counter-skewed upright.
+function ScorePlate({ width, color, children }) {
+  return (
+    <div
+      className="flex-none h-10 flex items-center justify-center"
+      style={{
+        width,
+        background: 'linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04))',
+        backgroundColor: color ? `${color}33` : undefined,
+        border: `1px solid ${color ? `${color}88` : 'rgba(255,255,255,0.3)'}`,
+        backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+      }}
+    >
+      <span className="flex items-center" style={{ transform: 'skewX(12deg)' }}>{children}</span>
+    </div>
+  );
+}
+
+// A digit that rolls up from 0 to its value (odometer column), after `delay` seconds.
+function RollDigit({ value, delay }) {
+  const [on, setOn] = useState(false);
+  useEffect(() => { const t = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(t); }, []);
+  return (
+    <span className="inline-block overflow-hidden text-center" style={{ height: '1em', minWidth: '0.55em' }}>
+      <span className="flex flex-col" style={{ transform: `translateY(-${on ? value : 0}em)`, transition: `transform 1.3s cubic-bezier(.2,.9,.25,1) ${delay}s` }}>
+        {Array.from({ length: value + 1 }, (_, k) => <span key={k} style={{ height: '1em' }}>{k}</span>)}
+      </span>
+    </span>
+  );
+}
+
 function OddsTab({ match }) {
   const probs = useMemo(() => calculateProbabilities(match.home_win_points, match.draw_points, match.away_win_points), [match]);
   const top = useMemo(() => getTopScores(match.score_odds, 5), [match]);
   const best = probs ? Math.max(probs.home, probs.draw, probs.away) : null;
+  const colorA = liquidColor(getTeamColor(match.team_a, '#2f7bff'));
+  const colorB = liquidColor(getTeamColor(match.team_b, '#ff7a1a'));
   if (!probs && !top.length) return <p className="text-center text-[11px] text-slate-500 py-4">אין עדיין יחסים למשחק הזה</p>;
   return (
     <div className="space-y-5">
       {probs && (
         <div className="flex gap-2 pt-2" dir="ltr">
           <style>{PROB_CSS}</style>
-          <ProbSquare index={0} label={match.team_a} logo={match.team_a_logo} pct={probs.home} best={probs.home === best} color={liquidColor(getTeamColor(match.team_a, '#2f7bff'))} />
+          <ProbSquare index={0} label={match.team_a} logo={match.team_a_logo} pct={probs.home} best={probs.home === best} color={colorA} />
           <ProbSquare index={1} label="תיקו" pct={probs.draw} best={probs.draw === best} color="#a3adc6" />
-          <ProbSquare index={2} label={match.team_b} logo={match.team_b_logo} pct={probs.away} best={probs.away === best} color={liquidColor(getTeamColor(match.team_b, '#ff7a1a'))} />
+          <ProbSquare index={2} label={match.team_b} logo={match.team_b_logo} pct={probs.away} best={probs.away === best} color={colorB} />
         </div>
       )}
 
       {top.length > 0 && (
         <div>
-          {/* one slow light sweep that passes over the plates one after the other */}
+          {/* one slow light sweep that passes over the rows one after the other */}
           <style>{`@keyframes ts-shine{0%{transform:translateX(-160%) skewX(-20deg)}17%,100%{transform:translateX(330%) skewX(-20deg)}}`}</style>
           <p className="text-[12px] font-semibold text-yellow-400 text-center mb-3">תוצאות עם יחס הסיכוי הגבוה ביותר</p>
-          {/* Slanted glass plates (the app's tab/chip geometry), content counter-skewed */}
-          <div className="flex flex-col items-center gap-2" dir="ltr">
-            {top.map((t, i) => (
-              <motion.div
-                key={t.score}
-                initial={{ opacity: 0, x: -18 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + i * 0.16, duration: 0.55, ease: [0.23, 1, 0.32, 1] }}
-                className="relative overflow-hidden flex items-center justify-between w-44 px-5 py-2"
-                style={{ skewX: -12, borderRadius: 4, background: 'linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.04))', border: '1px solid rgba(255,255,255,0.25)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18)' }}
-              >
-                <span className="absolute inset-y-0 left-0 w-[45%] bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" style={{ animation: `ts-shine ${top.length * 1.5 + 2.5}s ease-in-out ${1.3 + i * 1.5}s infinite`, transform: 'translateX(-160%)' }} />
-                <span className="relative text-[17px] font-black text-white tabular-nums" style={{ transform: 'skewX(12deg)' }}>{t.score.replace(':', '-')}</span>
-                <span className="relative text-[12px] font-semibold text-slate-300 tabular-nums" style={{ transform: 'skewX(12deg)' }}>{t.pct}%</span>
-              </motion.div>
-            ))}
+          {/* Slanted glass plates (prototypes/odds/glass20.html, design 2): home crest
+              tinted in its colour · the score, digits rolling up · away crest · % */}
+          <div className="flex flex-col items-center gap-[7px]" dir="ltr">
+            {top.map((t, i) => {
+              const [a, b] = t.score.split(':').map(Number);
+              return (
+                <motion.div
+                  key={t.score}
+                  initial={{ opacity: 0, y: 14, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: 0.3 + i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  className="relative overflow-hidden flex items-stretch gap-[3px]"
+                  style={{ skewX: -12 }}
+                >
+                  <ScorePlate width={62} color={colorA}><TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-[26px] h-[26px]" animate={false} rounded="full" /></ScorePlate>
+                  <ScorePlate width={84}>
+                    <span className="flex items-center gap-1.5 text-white font-black tabular-nums" style={{ fontFamily: 'var(--num-font)', fontSize: 26, lineHeight: 1 }}>
+                      <RollDigit value={a} delay={0.65 + i * 0.28} /><span className="opacity-55">-</span><RollDigit value={b} delay={0.77 + i * 0.28} />
+                    </span>
+                  </ScorePlate>
+                  <ScorePlate width={62} color={colorB}><TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-[26px] h-[26px]" animate={false} rounded="full" /></ScorePlate>
+                  <ScorePlate width={52}><span className="text-[13px] font-bold text-slate-200 tabular-nums">{t.pct}%</span></ScorePlate>
+                  <span className="absolute inset-y-0 left-0 w-[45%] bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"
+                    style={{ transform: 'translateX(-160%)', animation: `ts-shine ${top.length * 1.5 + 2.5}s ease-in-out ${1.3 + i * 1.5}s infinite` }} />
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       )}
