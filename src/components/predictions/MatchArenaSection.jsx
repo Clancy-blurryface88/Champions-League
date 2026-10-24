@@ -225,12 +225,12 @@ function ProbSquare({ label, logo, pct, best, color, index }) {
       <motion.div
         initial={{ scaleY: 0 }}
         animate={{ scaleY: 1 }}
-        transition={{ delay: 0.3 + index * 0.12, duration: 1.3, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ delay: 0.4 + index * 0.2, duration: 2.8, ease: [0.33, 1, 0.68, 1] }}
         className="absolute inset-x-0 bottom-0"
         style={{ height: `${Math.max(pct, 6)}%`, transformOrigin: 'bottom', background: `linear-gradient(180deg, ${color}66, ${color}bb)` }}
       >
         <svg viewBox="0 0 200 12" preserveAspectRatio="none" className="absolute left-0 h-2.5"
-          style={{ top: -9, width: '200%', animation: 'prob-wave 3s linear infinite' }}>
+          style={{ top: -9, width: '200%', animation: 'prob-wave 4.5s linear infinite' }}>
           <path d="M0 6 Q25 0 50 6 T100 6 T150 6 T200 6 V12 H0Z" fill={`${color}66`} />
         </svg>
       </motion.div>
