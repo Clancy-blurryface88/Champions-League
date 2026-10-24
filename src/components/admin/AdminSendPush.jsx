@@ -41,8 +41,8 @@ const box = { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,
 const input = "w-full rounded-lg px-3 py-2 text-sm text-white bg-white/5 border border-white/15 focus:outline-none focus:border-sky-400/60";
 
 // When the automatic round-summary push (10:00 after the round's last night)
-// didn't go out: one tap sends it to everyone with the saved wording. The
-// server uses the same key as the automatic push, so a round never gets it twice.
+// didn't go out: one tap sends it to everyone with the saved wording. Every
+// tap is a new send (the server gives it its own key), hence the confirm step.
 function ManualRoundSummary() {
   const [rounds, setRounds] = useState(null);
   const [roundId, setRoundId] = useState("");
@@ -71,8 +71,9 @@ function ManualRoundSummary() {
       });
       const j = await r.json().catch(() => ({}));
       const errors = j.sent?.body?.errors;
+      const d = j.delivery;
       setResult(r.ok && j.ok
-        ? { ok: true, text: "סיכום המחזור נשלח לכל המשתתפים ✅" }
+        ? { ok: true, text: `סיכום המחזור נשלח לכל המשתתפים ✅${d ? ` · נמסר ל-${d.successful} מכשירים${d.remaining ? `, עוד ${d.remaining} בדרך` : ""}${d.failed + d.errored ? `, ${d.failed + d.errored} נכשלו` : ""}` : ""}` }
         : { ok: false, text: `השליחה נכשלה: ${j.error || (Array.isArray(errors) ? errors.join(", ") : errors && JSON.stringify(errors)) || r.status}` });
     } catch (e) {
       setResult({ ok: false, text: `השליחה נכשלה: ${e.message}` });
@@ -85,7 +86,7 @@ function ManualRoundSummary() {
     <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(245,197,24,0.06)", border: "1px solid rgba(245,197,24,0.3)" }}>
       <div>
         <p className="text-sm font-bold text-white">🏆 שליחה ידנית של סיכום המחזור</p>
-        <p className="text-[11px] text-slate-400 mt-0.5">אם ההתראה האוטומטית לא יצאה: שולח לכולם את הנוסח השמור, ולחיצה פותחת את סיכום המחזור שנבחר. מחזור שכבר קיבל את ההתראה לא יקבל אותה שוב.</p>
+        <p className="text-[11px] text-slate-400 mt-0.5">אם ההתראה האוטומטית לא יצאה: שולח לכולם את הנוסח השמור, ולחיצה פותחת את סיכום המחזור שנבחר. כל לחיצה היא שליחה חדשה.</p>
       </div>
       {!rounds ? <p className="text-[11px] text-slate-500">טוען מחזורים...</p> : !rounds.length ? <p className="text-[11px] text-slate-500">עוד אין מחזור שהסתיים.</p> : (
         <select value={roundId} onChange={(e) => { setRoundId(e.target.value); setConfirming(false); setResult(null); }} className={input}>

@@ -96,16 +96,17 @@ async function roundSummaryPush(rows, lastKickoff, mode) {
   return sendRoundSummary(roundId, mode, mode === 'test' ? undefined : ilAt(lastKickoff, 1, 10));
 }
 
-// The round-summary push itself — also sent by hand from the admin panel when
-// the automatic one didn't go out. Same key as the automatic one, so OneSignal
-// never delivers it twice for the same round.
-export async function sendRoundSummary(roundId, mode, sendAfter) {
+// The round-summary push itself. The automatic senders (match.finished webhook
+// and the 10:00 reminders check) share one key per round, so the round gets it
+// once. The admin panel passes its own key: a manual send always goes out
+// (with the shared key OneSignal answers "ok" and silently sends nothing).
+export async function sendRoundSummary(roundId, mode, sendAfter, key = `round-summary:${roundId}`) {
   const [cfg] = await supa('app_settings?select=round_summary_push&limit=1');
   const t = cfg?.round_summary_push;
   if (!t?.heading || !t?.body) return { skipped: 'no wording saved' };
   return push({
     heading: t.heading, body: t.body, url: `${SITE}/?open=summary&round=${roundId}`,
-    key: `round-summary:${roundId}`, mode, sendAfter,
+    key, mode, sendAfter,
   });
 }
 

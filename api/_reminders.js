@@ -12,6 +12,8 @@
 //     to whoever is missing that slot's predictions; says the lineups are out
 //     when they are (falls back to "matches start soon")
 // Every reminder opens the predictions page of its round.
+//   • 10:00 the morning after the round's last match day — the round-summary
+//     push (backup for the match.finished webhook; same key, sent once)
 //
 // Triggered every 5 min by the Supabase pg_cron job "prediction-reminders"
 // (Vercel Hobby cron runs only once a day; .github/workflows/reminders.yml is
@@ -20,7 +22,7 @@
 // on the minute. Every reminder has a fixed
 // idempotency key, so extra or overlapping triggers can never double-send —
 // which is also why this needs no secret.
-import { supa, push } from './_goalWebhook.js';
+import { supa, push, ilAt, sendRoundSummary } from './_goalWebhook.js';
 import { participants, latestPredictions, missingText, sendPersonal } from './_personal.js';
 import { PREDICTION_LOCK_MINUTES } from '../src/config/tournament.js';
 import { getLineupsForMatch } from './_uefaContext.js';
@@ -63,6 +65,21 @@ async function plannedReminders(now) {
   });
 
   const out = [];
+  // Round summary: 10:00 the morning after the round's last match day. The
+  // match.finished webhook schedules it too, but when that webhook is missed
+  // (Round 3) nothing else would — same key, so only one ever goes out.
+  const yesterday = byDay.get(addDays(today, -1));
+  const roundId = yesterday?.[yesterday.length - 1].round_id;
+  if (roundId) {
+    const rest = await supa(`matches?select=match_date,is_finished,is_score_calculated&round_id=eq.${roundId}`);
+    if (!rest.some((m) => ilDate(new Date(m.match_date)) > addDays(today, -1))) {
+      out.push({
+        kind: 'summary', key: `round-summary:${roundId}`, at: ilAt(now, 0, 10), roundId,
+        // scores may still be calculating at 10:00 — keep trying until 22:00
+        lateMs: 12 * 3600e3, scored: rest.every((m) => m.is_finished && m.is_score_calculated),
+      });
+    }
+  }
   for (const day of [today, addDays(today, 1), addDays(today, 2)]) {
     const list = byDay.get(day);
     if (!list) continue;
@@ -126,9 +143,16 @@ export async function remindersHandler(req, res) {
 
   try {
     const all = await plannedReminders(now);
-    const due = all.filter((r) => now >= new Date(r.at.getTime() - LEAD_MS) && now < new Date(r.at.getTime() + LATE_MS));
+    const due = all.filter((r) => now >= new Date(r.at.getTime() - LEAD_MS) && now < new Date(r.at.getTime() + (r.lateMs ?? LATE_MS)));
     const results = [];
     for (const r of due) {
+      if (r.kind === 'summary') {
+        // The summary is built from the stored scores — wait until they're in.
+        if (!r.scored) { results.push({ key: r.key, waiting: 'round scores not calculated yet' }); continue; }
+        const sent = await sendRoundSummary(r.roundId, mode, r.at);
+        results.push({ key: r.key, at: r.at.toISOString(), sent });
+        continue;
+      }
       if (r.kind === 'slot') {
         // Always sent. Lineups out → "lineups published" version. Not yet →
         // wait for the next trigger, until 10 min past the slot time, then
