@@ -101,15 +101,15 @@ export default function StudioVideoButton({ rounds, onPredict, onVisible }) {
       </AnimatePresence>, document.body)}
 
       <style>{`
-        .studio-tv__snow { opacity: .3; animation: studioSnow .25s steps(2) infinite; }
-        .studio-tv__screen { animation: studioOn 6s 1s infinite; }
-        .studio-tv__dot { animation: studioBlink 1s infinite; }
+        .studio-tv__snow { opacity: .3; animation: studioSnow .25s steps(2) infinite, studioChannel 5s infinite; }
+                .studio-tv__dot { animation: studioBlink 1s infinite; }
         .studio-tv__play { animation: studioPulse 1.8s infinite; }
         @keyframes studioSnow { 50% { background-position: 40px 20px; } }
-        @keyframes studioOn { 0% { clip-path: inset(50% 0 50% 0); filter: brightness(3); } 5% { clip-path: inset(49% 0 49% 0); filter: brightness(3); } 10% { clip-path: inset(0); filter: brightness(1.2); } 15%, 100% { clip-path: inset(0); filter: none; } }
+        /* channel switch: every few seconds a moment of full snow, then the host again */
+        @keyframes studioChannel { 0%, 84%, 100% { opacity: .3; } 86%, 92% { opacity: 1; mix-blend-mode: normal; } }
         @keyframes studioBlink { 50% { opacity: .2; } }
         @keyframes studioPulse { 0% { box-shadow: 0 0 0 0 rgba(250,204,21,.55); } 100% { box-shadow: 0 0 0 14px rgba(250,204,21,0); } }
-        @media (prefers-reduced-motion: reduce) { .studio-tv__snow, .studio-tv__screen, .studio-tv__dot, .studio-tv__play { animation: none; } }
+        @media (prefers-reduced-motion: reduce) { .studio-tv__snow, .studio-tv__dot, .studio-tv__play { animation: none; } }
       `}</style>
     </>
   );
