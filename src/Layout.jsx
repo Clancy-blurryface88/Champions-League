@@ -1151,7 +1151,8 @@ export default function Layout({ children, currentPageName }) {
                   } catch (e) {}
                 }
               }}
-              className="flex items-center justify-center rounded-full w-9 h-9 transition-all duration-200"
+              // mt: centered on the 42px name pill beside it (36px bell)
+              className="mt-[3px] flex items-center justify-center rounded-full w-9 h-9 transition-all duration-200"
               style={{
                 background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(8,20,50,0.55) 100%)',
                 border: `1px solid ${notifPermission === 'granted' ? 'rgba(245,197,24,0.6)' : 'rgba(255,255,255,0.15)'}`,
