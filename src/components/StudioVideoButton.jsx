@@ -13,27 +13,41 @@ const NOISE = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
 async function findStudioRound(rounds) {
   const withVideo = rounds.filter((r) => r.studio_video_url);
   if (!withVideo.length) return null;
-  const { count: players } = await supabase.from("profiles").select("id", { count: "exact", head: true });
-  for (const round of withVideo) {
-    const { data: matches } = await supabase.from("matches").select("id, match_date").eq("round_id", round.id);
-    if (!matches?.length) continue;
-    const firstKickoff = Math.min(...matches.map((m) => new Date(m.match_date).getTime()));
-    if (Date.now() >= firstKickoff) continue;
-    const { count: predicted } = await supabase.from("predictions").select("id", { count: "exact", head: true }).in("match_id", matches.map((m) => m.id));
-    if (players && predicted >= players * matches.length) continue;
-    return round;
-  }
-  return null;
+  // all the checks at once, not one after the other
+  const [{ count: players }, ...perRound] = await Promise.all([
+    supabase.from("profiles").select("id", { count: "exact", head: true }),
+    ...withVideo.map(async (round) => {
+      const { data: matches } = await supabase.from("matches").select("id, match_date").eq("round_id", round.id);
+      if (!matches?.length) return null;
+      const firstKickoff = Math.min(...matches.map((m) => new Date(m.match_date).getTime()));
+      if (Date.now() >= firstKickoff) return null;
+      const { count: predicted } = await supabase.from("predictions").select("id", { count: "exact", head: true }).in("match_id", matches.map((m) => m.id));
+      return { round, firstKickoff, predicted, total: matches.length };
+    }),
+  ]);
+  const hit = perRound.find((x) => x && !(players && x.predicted >= players * x.total));
+  return hit ? { ...hit.round, firstKickoff: hit.firstKickoff } : null;
 }
 
+// the last answer is remembered, so on the next visit the TV is there from the first frame
+const CACHE = "studio_tv_round";
+const readCache = () => {
+  try { const c = JSON.parse(localStorage.getItem(CACHE) || "null"); return c && Date.now() < c.firstKickoff ? c : null; } catch { return null; }
+};
+const writeCache = (r) => { try { r ? localStorage.setItem(CACHE, JSON.stringify(r)) : localStorage.removeItem(CACHE); } catch {} };
+
 export default function StudioVideoButton({ rounds, onPredict, onVisible }) {
-  const [round, setRound] = useState(null);
+  const [round, setRound] = useState(readCache);
   const [open, setOpen] = useState(false);
   const [ended, setEnded] = useState(false);
 
+  // the layout tightens in the same frame the TV appears
+  useEffect(() => { onVisible?.(!!round); }, [round]);
+
   useEffect(() => {
     let alive = true;
-    findStudioRound(rounds).then((r) => { if (!alive) return; setRound(r); onVisible?.(!!r); }).catch(() => {});
+    if (!rounds.length) return;
+    findStudioRound(rounds).then((r) => { if (!alive) return; setRound(r); writeCache(r); }).catch(() => {});
     return () => { alive = false; };
   }, [rounds]);
 
@@ -45,9 +59,9 @@ export default function StudioVideoButton({ rounds, onPredict, onVisible }) {
       <motion.button
         type="button"
         onClick={() => { setEnded(false); setOpen(true); }}
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+        transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
         className="studio-tv mx-auto block w-full max-w-[340px] rounded-xl p-[5px] bg-[#111827] shadow-[0_0_0_1px_#374151,0_12px_30px_rgba(0,0,0,0.7)] active:scale-[0.98] transition-transform"
         aria-label={`צפייה באולפן ${round.name}`}
       >
