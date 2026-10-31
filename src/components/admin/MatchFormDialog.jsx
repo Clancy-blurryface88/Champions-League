@@ -46,7 +46,8 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'שגיאה בניתוח');
-      setOddsTable(data.scoring);
+      // "Any other score" isn't in the bookmaker's table — default it to 200.
+      setOddsTable({ ...data.scoring, other: Number(data.scoring?.other) > 0 ? data.scoring.other : 200 });
       setShowOddsPopup(true);
     } catch (err) {
       setAnalyzeError(err.message);
@@ -147,10 +148,11 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
     setFormData(prev => ({ ...prev, [id]: value }));
   };
   
+  // Points fields keep what was typed (a string) so "0.75" can be typed past its
+  // leading "0"; a stored 0 shows as an empty field; toFloat makes it a number on save.
   const handleNumberChange = (e) => {
     const { id, value } = e.target;
-    const numValue = value === '' ? '' : parseFloat(value);
-    setFormData(prev => ({...prev, [id]: numValue}));
+    setFormData(prev => ({...prev, [id]: value}));
   };
 
   const handleSaveClick = async () => {
@@ -308,23 +310,23 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="home_win_points">Home Win Points</Label>
-                <Input id="home_win_points" type="number" step="0.05" value={formData.home_win_points || 0} onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
+                <Input id="home_win_points" type="number" step="0.05" value={formData.home_win_points === 0 ? '' : (formData.home_win_points ?? '')} placeholder="0" onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
               </div>
               <div>
                 <Label htmlFor="draw_points">Draw Points</Label>
-                <Input id="draw_points" type="number" step="0.05" value={formData.draw_points || 0} onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
+                <Input id="draw_points" type="number" step="0.05" value={formData.draw_points === 0 ? '' : (formData.draw_points ?? '')} placeholder="0" onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
               </div>
               <div>
                 <Label htmlFor="away_win_points">Away Win Points</Label>
-                <Input id="away_win_points" type="number" step="0.05" value={formData.away_win_points || 0} onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
+                <Input id="away_win_points" type="number" step="0.05" value={formData.away_win_points === 0 ? '' : (formData.away_win_points ?? '')} placeholder="0" onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
               </div>
               <div>
                 <Label htmlFor="btts_yes_points">BTTS - Yes Points</Label>
-                <Input id="btts_yes_points" type="number" step="0.05" value={formData.btts_yes_points || 0} onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
+                <Input id="btts_yes_points" type="number" step="0.05" value={formData.btts_yes_points === 0 ? '' : (formData.btts_yes_points ?? '')} placeholder="0" onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
               </div>
                <div>
                 <Label htmlFor="btts_no_points">BTTS - No Points</Label>
-                <Input id="btts_no_points" type="number" step="0.05" value={formData.btts_no_points || 0} onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
+                <Input id="btts_no_points" type="number" step="0.05" value={formData.btts_no_points === 0 ? '' : (formData.btts_no_points ?? '')} placeholder="0" onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1">
@@ -357,21 +359,21 @@ export default function MatchFormDialog({ open, onOpenChange, match, rounds, log
                   </div>
                 </div>
                 {analyzeError && <p className="text-red-400 text-xs mb-1">{analyzeError}</p>}
-                <Input id="exact_score_points" type="number" step="0.05" value={formData.exact_score_points || 0} onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
+                <Input id="exact_score_points" type="number" step="0.05" value={formData.exact_score_points === 0 ? '' : (formData.exact_score_points ?? '')} placeholder="0" onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-700 pt-4 mt-4">
               <div>
                 <Label htmlFor="goals_0_2_points">0-2 Goals Points</Label>
-                <Input id="goals_0_2_points" type="number" step="0.05" value={formData.goals_0_2_points || 0} onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
+                <Input id="goals_0_2_points" type="number" step="0.05" value={formData.goals_0_2_points === 0 ? '' : (formData.goals_0_2_points ?? '')} placeholder="0" onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
               </div>
               <div>
                 <Label htmlFor="goals_3_4_points">3-4 Goals Points</Label>
-                <Input id="goals_3_4_points" type="number" step="0.05" value={formData.goals_3_4_points || 0} onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
+                <Input id="goals_3_4_points" type="number" step="0.05" value={formData.goals_3_4_points === 0 ? '' : (formData.goals_3_4_points ?? '')} placeholder="0" onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
               </div>
               <div>
                 <Label htmlFor="goals_5_plus_points">5+ Goals Points</Label>
-                <Input id="goals_5_plus_points" type="number" step="0.05" value={formData.goals_5_plus_points || 0} onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
+                <Input id="goals_5_plus_points" type="number" step="0.05" value={formData.goals_5_plus_points === 0 ? '' : (formData.goals_5_plus_points ?? '')} placeholder="0" onChange={handleNumberChange} className="bg-slate-700 border-slate-600" />
               </div>
             </div>
           </div>

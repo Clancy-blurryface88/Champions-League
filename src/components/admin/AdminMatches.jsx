@@ -15,6 +15,30 @@ import { LoaderBar } from "../ui/LoaderBar";
 import { loadLeagueTableOverride, saveLeagueTableOverride } from "@/utils/standingsOverride";
 import { STAGES } from "@/config/tournament";
 
+// Is a match's scoring entered? The 8 market point fields plus the exact-score
+// table from the image (when it's there it replaces exact_score_points, which
+// is pre-filled anyway, so that field isn't checked). A 0 counts as missing —
+// no real odds are 0.
+const POINT_FIELDS = [
+  ['home_win_points', 'ניצחון בית'], ['draw_points', 'תיקו'], ['away_win_points', 'ניצחון חוץ'],
+  ['btts_yes_points', 'כובשות כן'], ['btts_no_points', 'כובשות לא'],
+  ['goals_0_2_points', '0-2 שערים'], ['goals_3_4_points', '3-4 שערים'], ['goals_5_plus_points', '5+ שערים'],
+];
+function scoringStatus(match) {
+  const missing = POINT_FIELDS.filter(([k]) => !(Number(match[k]) > 0)).map(([, label]) => label);
+  const hasTable = !!match.score_odds && Object.keys(match.score_odds).some((k) => k !== 'other');
+  if (!hasTable) missing.unshift('טבלת תוצאות מדויקות');
+  const total = POINT_FIELDS.length + 1;
+  if (!missing.length) return { tone: 'green', text: 'הכל מולא' };
+  if (missing.length === total) return { tone: 'red', text: 'עוד לא מולא כלום' };
+  return { tone: 'amber', text: `חסר: ${missing.join(', ')}` };
+}
+const TONES = {
+  green: { dot: '#22c55e', bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.45)', fg: '#86efac' },
+  amber: { dot: '#f59e0b', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.45)', fg: '#fcd34d' },
+  red: { dot: '#ef4444', bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.45)', fg: '#fca5a5' },
+};
+
 export default function AdminMatches() {
   const [matches, setMatches] = useState([]);
   const [rounds, setRounds] = useState([]);
@@ -201,6 +225,19 @@ export default function AdminMatches() {
                       {match.is_finished ? 'Finished' : 'Pending'}
                    </Badge>
                 </div>
+                {(() => {
+                  const s = scoringStatus(match), c = TONES[s.tone];
+                  return (
+                    <div className="flex items-start justify-between gap-3 text-sm">
+                      <span className="text-slate-400 shrink-0">Scoring:</span>
+                      <span dir="rtl" className="flex items-start gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium text-right"
+                        style={{ background: c.bg, border: `1px solid ${c.border}`, color: c.fg }}>
+                        <i className="mt-1 w-2 h-2 rounded-full shrink-0" style={{ background: c.dot, boxShadow: `0 0 6px ${c.dot}` }} />
+                        {s.text}
+                      </span>
+                    </div>
+                  );
+                })()}
                  {match.is_finished && (
                     <div className="flex items-center justify-between text-sm">
                         <span className="text-slate-400">Final Score:</span>
