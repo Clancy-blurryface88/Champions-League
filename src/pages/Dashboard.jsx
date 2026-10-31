@@ -13,6 +13,7 @@ import { RoundsMarquee } from "../components/RoundsMarquee"; // NEW: Import Roun
 import { Round } from "@/api/entities"; // NEW: Import Round entity
 import { motion, AnimatePresence } from "framer-motion";
 import LottieAnimation from "@/components/ui/LottieAnimation";
+import StudioVideoButton from "../components/StudioVideoButton";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -127,6 +128,13 @@ export default function Dashboard() {
         {rounds.length > 0 && (
           <div className="w-full max-w-6xl mx-auto px-4">
             <RoundsMarquee rounds={rounds} user={user} onRoundClick={handleRoundSelect} />
+          </div>
+        )}
+
+        {/* The round's studio video, on a small TV at the bottom (only while it is relevant) */}
+        {rounds.length > 0 && (
+          <div className="w-full px-4">
+            <StudioVideoButton rounds={rounds} onPredict={handleRoundSelect} />
           </div>
         )}
 

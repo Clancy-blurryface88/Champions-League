@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { Round } from "@/api/entities";
 import { motion } from "framer-motion";
-import { Plus, Edit, Trash2, Save, X } from "lucide-react";
+import { Plus, Edit, Trash2, Save, X, Tv, Upload } from "lucide-react";
+import { UploadFile } from "@/api/functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -172,6 +173,7 @@ export default function AdminRounds() {
                           {round.is_active ? 'Active' : 'Inactive'}
                         </span>
                       </div>
+                      <StudioVideoField round={round} onSaved={loadRounds} />
                     </div>
                     <div className="flex gap-2">
                       <Button
@@ -198,6 +200,55 @@ export default function AdminRounds() {
           </motion.div>
         ))}
       </div>
+    </div>
+  );
+}
+
+// The round's studio video (rounds.studio_video_url): the home screen shows a TV button
+// for it until every participant has predicted the round or its first match kicks off.
+function StudioVideoField({ round, onSaved }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (file.size > 50 * 1024 * 1024) { setError('הקובץ גדול מ-50MB. צריך גרסה דחוסה לטלפון.'); return; }
+    setBusy(true); setError('');
+    try {
+      const { file_url } = await UploadFile({ file, folder: 'videos' });
+      await Round.update(round.id, { studio_video_url: file_url });
+      onSaved();
+    } catch (err) {
+      setError('ההעלאה נכשלה: ' + (err?.message || 'שגיאה'));
+    }
+    setBusy(false);
+  };
+
+  const handleRemove = async () => {
+    if (!window.confirm('להסיר את הסרטון מהמחזור? הכפתור במסך הראשי ייעלם.')) return;
+    await Round.update(round.id, { studio_video_url: null });
+    onSaved();
+  };
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2 text-sm" dir="rtl">
+      <Tv className="w-4 h-4 text-amber-400" />
+      <span className="text-slate-300">סרטון אולפן:</span>
+      {round.studio_video_url ? (
+        <>
+          <a href={round.studio_video_url} target="_blank" rel="noreferrer" className="text-sky-400 underline">צפייה</a>
+          <button onClick={handleRemove} className="text-red-400 hover:underline">הסרה</button>
+        </>
+      ) : (
+        <label className={`inline-flex items-center gap-1 px-3 py-1 rounded-md border border-slate-600 text-slate-200 cursor-pointer hover:bg-slate-700 ${busy ? 'opacity-50 pointer-events-none' : ''}`}>
+          <Upload className="w-3.5 h-3.5" />
+          {busy ? 'מעלה…' : 'העלאת סרטון'}
+          <input type="file" accept="video/mp4" className="hidden" onChange={handleFile} />
+        </label>
+      )}
+      {error && <span className="text-red-400 w-full">{error}</span>}
     </div>
   );
 }

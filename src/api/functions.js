@@ -4,10 +4,10 @@ import { TOURNAMENT_CODE } from '@/config/tournament';
 // ============================================
 // UPLOAD FILE — העלאת קובץ ל-Supabase Storage
 // ============================================
-export const UploadFile = async ({ file }) => {
+export const UploadFile = async ({ file, folder = 'logos' }) => {
   const fileExt = file.name.split('.').pop();
   const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-  const filePath = `logos/${fileName}`;
+  const filePath = `${folder}/${fileName}`;
 
   const { error } = await supabase.storage
     .from('uploads')
