@@ -128,15 +128,15 @@ export default function AdminImportMatches() {
           is_finished: false,
           actual_score_a: null,
           actual_score_b: null,
-          home_win_points: 3,
-          away_win_points: 3,
-          draw_points: 2,
+          home_win_points: 0,
+          away_win_points: 0,
+          draw_points: 0,
           exact_score_points: 0,
-          btts_yes_points: 1,
+          btts_yes_points: 0,
           btts_no_points: 0,
-          goals_0_2_points: 1,
-          goals_3_4_points: 1,
-          goals_5_plus_points: 2,
+          goals_0_2_points: 0,
+          goals_3_4_points: 0,
+          goals_5_plus_points: 0,
         });
 
         setProgress({ current: i + 1, total: totalMatches });
