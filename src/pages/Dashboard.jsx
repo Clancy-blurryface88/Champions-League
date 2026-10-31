@@ -20,6 +20,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [rounds, setRounds] = useState([]);
+  // the studio TV takes room at the bottom: when it shows, the page tightens its gaps so it fits without scrolling
+  const [hasStudio, setHasStudio] = useState(false);
   const navigate = useNavigate();
 
   // Simple data load function
@@ -121,8 +123,8 @@ export default function Dashboard() {
     <div className="min-h-[calc(100vh-7rem)] relative flex flex-col">
       <AppBackground />
 
-      <div className="relative z-[1] flex-1 flex flex-col items-center justify-center w-full gap-10 md:gap-16 pt-28 pb-12">
-        <TournamentHeader />
+      <div className={`relative z-[1] flex-1 flex flex-col items-center justify-center w-full ${hasStudio ? "gap-4 md:gap-10 pt-20 pb-4" : "gap-10 md:gap-16 pt-28 pb-12"}`}>
+        <TournamentHeader compact={hasStudio} />
 
         {/* Rounds Marquee Section */}
         {rounds.length > 0 && (
@@ -134,7 +136,7 @@ export default function Dashboard() {
         {/* The round's studio video, on a small TV at the bottom (only while it is relevant) */}
         {rounds.length > 0 && (
           <div className="w-full px-4">
-            <StudioVideoButton rounds={rounds} onPredict={handleRoundSelect} />
+            <StudioVideoButton rounds={rounds} onPredict={handleRoundSelect} onVisible={setHasStudio} />
           </div>
         )}
 

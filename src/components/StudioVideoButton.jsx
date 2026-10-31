@@ -26,14 +26,14 @@ async function findStudioRound(rounds) {
   return null;
 }
 
-export default function StudioVideoButton({ rounds, onPredict }) {
+export default function StudioVideoButton({ rounds, onPredict, onVisible }) {
   const [round, setRound] = useState(null);
   const [open, setOpen] = useState(false);
   const [ended, setEnded] = useState(false);
 
   useEffect(() => {
     let alive = true;
-    findStudioRound(rounds).then((r) => alive && setRound(r)).catch(() => {});
+    findStudioRound(rounds).then((r) => { if (!alive) return; setRound(r); onVisible?.(!!r); }).catch(() => {});
     return () => { alive = false; };
   }, [rounds]);
 
@@ -51,7 +51,7 @@ export default function StudioVideoButton({ rounds, onPredict }) {
         className="studio-tv mx-auto block w-full max-w-[340px] rounded-xl p-[5px] bg-[#111827] shadow-[0_0_0_1px_#374151,0_12px_30px_rgba(0,0,0,0.7)] active:scale-[0.98] transition-transform"
         aria-label={`צפייה באולפן ${round.name}`}
       >
-        <div className="studio-tv__screen relative h-[150px] rounded-lg overflow-hidden bg-center bg-cover" style={{ backgroundImage: "url(/champions/studio-host.jpg)", backgroundPosition: "center 28%" }}>
+        <div className="studio-tv__screen relative h-[118px] rounded-lg overflow-hidden bg-center bg-cover" style={{ backgroundImage: "url(/champions/studio-host.jpg)", backgroundPosition: "center 28%" }}>
           <div className="studio-tv__snow absolute inset-0 mix-blend-overlay" style={{ backgroundImage: NOISE }} />
           <div className="absolute inset-0 pointer-events-none" style={{ background: "repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 1px, transparent 1px 3px)" }} />
           <span className="absolute top-2 right-2 inline-flex items-center gap-1.5 rounded-[3px] bg-red-600 px-2 py-px text-[11px] font-bold tracking-[0.12em] text-white" style={{ fontFamily: "Oswald, sans-serif" }}>

@@ -1,15 +1,16 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-export default function TournamentHeader() {
+// compact: a little smaller, so the studio TV fits under the rounds on a phone without scrolling
+export default function TournamentHeader({ compact = false }) {
   return (
-    <div className="relative flex flex-col items-center gap-3 w-full select-none -mt-16 md:-mt-20">
+    <div className={`relative flex flex-col items-center w-full select-none -mt-16 md:-mt-20 ${compact ? "gap-1.5" : "gap-3"}`}>
 
       {/* Logo */}
       <motion.img
         src="/champions/ch-logo.png"
         alt="UEFA Champions League"
-        className="w-[256px] md:w-[336px] h-auto object-contain"
+        className={`${compact ? "w-[220px]" : "w-[256px]"} md:w-[336px] h-auto object-contain`}
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
@@ -30,7 +31,7 @@ export default function TournamentHeader() {
         <img
           src="/champions/ch-trophy.webp"
           alt="Champions League Trophy"
-          className="w-[224px] md:w-[276px] h-auto object-contain"
+          className={`${compact ? "w-[172px]" : "w-[224px]"} md:w-[276px] h-auto object-contain`}
         />
       </motion.div>
 
