@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { supabase } from "@/api/supabase";
@@ -65,10 +66,12 @@ export default function StudioVideoButton({ rounds, onPredict }) {
         </div>
       </motion.button>
 
-      <AnimatePresence>
+      {/* rendered on <body>, above the app's top bars (ticker, menu), so the X is always reachable */}
+      {createPortal(<AnimatePresence>
         {open && (
           <motion.div
-            className="fixed inset-0 z-[200] bg-black flex items-center justify-center"
+            className="fixed inset-0 bg-black flex items-center justify-center"
+            style={{ zIndex: 2147483000 }}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           >
             {/* loaded only now, on tap, so the home screen stays light */}
@@ -80,7 +83,7 @@ export default function StudioVideoButton({ rounds, onPredict }) {
               onEnded={() => setEnded(true)}
             />
             <button type="button" onClick={() => setOpen(false)} aria-label="סגירה"
-              className="absolute top-[max(14px,env(safe-area-inset-top))] left-3.5 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white">
+              className="absolute top-[max(14px,env(safe-area-inset-top))] left-3.5 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/60 text-white">
               <X className="h-5 w-5" />
             </button>
             {ended && (
@@ -95,7 +98,7 @@ export default function StudioVideoButton({ rounds, onPredict }) {
             )}
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>, document.body)}
 
       <style>{`
         .studio-tv__snow { opacity: .3; animation: studioSnow .25s steps(2) infinite; }
