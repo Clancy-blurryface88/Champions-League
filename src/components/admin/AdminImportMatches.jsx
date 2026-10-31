@@ -131,7 +131,7 @@ export default function AdminImportMatches() {
           home_win_points: 3,
           away_win_points: 3,
           draw_points: 2,
-          exact_score_points: 5,
+          exact_score_points: 0,
           btts_yes_points: 1,
           btts_no_points: 0,
           goals_0_2_points: 1,
