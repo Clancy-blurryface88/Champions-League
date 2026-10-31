@@ -4,7 +4,7 @@ import { Match } from "@/api/entities";
 import { Round } from "@/api/entities";
 import { TeamLogo } from "@/api/entities";
 import { motion } from "framer-motion";
-import { Plus, Edit, Trash2, MoreVertical, Calendar, CheckCircle, Clock } from "lucide-react";
+import { Plus, Edit, Trash2, MoreVertical, Calendar, CheckCircle, Clock, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -77,6 +77,20 @@ export default function AdminMatches() {
   const handleEditMatch = (match) => {
     setSelectedMatch(match);
     setIsDialogOpen(true);
+  };
+
+  // The round's "big match" for the studio preview video (rounds.studio_match_id);
+  // picking it again clears it.
+  const handleToggleBigMatch = async (match) => {
+    const round = rounds.find((r) => r.id === match.round_id);
+    if (!round) return;
+    const next = round.studio_match_id === match.id ? null : match.id;
+    try {
+      const saved = await Round.update(round.id, { studio_match_id: next });
+      setRounds((prev) => prev.map((r) => (r.id === round.id ? saved : r)));
+    } catch (error) {
+      alert("שגיאה בשמירת המשחק הגדול: " + (error?.message || JSON.stringify(error)));
+    }
   };
 
   const handleDeleteMatch = async (matchId) => {
@@ -179,7 +193,12 @@ export default function AdminMatches() {
           >
             <Card className="bg-slate-800/80 border border-slate-700 backdrop-blur-sm overflow-hidden">
               <CardHeader className="p-4 flex flex-row items-center justify-between bg-slate-800/50">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
+                  {rounds.find((r) => r.id === match.round_id)?.studio_match_id === match.id && (
+                    <span className="flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-bold text-yellow-300" style={{ background: 'rgba(250,204,21,0.12)', border: '1px solid rgba(250,204,21,0.5)' }}>
+                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /> המשחק הגדול
+                    </span>
+                  )}
                   <div className="flex items-center gap-2 font-semibold text-white">
                     <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-6 h-6 " />
                     <span>{match.team_a}</span>
@@ -199,6 +218,10 @@ export default function AdminMatches() {
                   <DropdownMenuContent className="bg-slate-800 border-slate-700 text-white">
                     <DropdownMenuItem onClick={() => handleEditMatch(match)} className="cursor-pointer">
                       <Edit className="w-4 h-4 mr-2" /> Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleToggleBigMatch(match)} className="cursor-pointer">
+                      <Star className="w-4 h-4 mr-2 text-yellow-400" />
+                      {rounds.find((r) => r.id === match.round_id)?.studio_match_id === match.id ? 'הסר מ"המשחק הגדול"' : 'קבע כ"משחק הגדול" של המחזור'}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleDeleteMatch(match.id)} className="text-red-400 cursor-pointer">
                       <Trash2 className="w-4 h-4 mr-2" /> Delete
