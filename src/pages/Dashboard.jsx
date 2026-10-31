@@ -3,7 +3,6 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TournamentHeader from "../components/TournamentHeader";
 import AppBackground from "../components/AppBackground";
@@ -73,10 +72,6 @@ export default function Dashboard() {
     loadData();
   }, []);
 
-  const handleAdminPanel = () => {
-    navigate(createPageUrl("Admin"));
-  };
-
   const handleRoundSelect = (round) => {
     navigate(createPageUrl(`Predictions?round_id=${round.id}`));
   };
@@ -137,21 +132,6 @@ export default function Dashboard() {
         {rounds.length > 0 && (
           <div className="w-full px-4">
             <StudioVideoButton rounds={rounds} onPredict={handleRoundSelect} onVisible={setHasStudio} />
-          </div>
-        )}
-
-        {/* Admin Panel Button */}
-        {user?.is_admin && (
-          <div className="w-full max-w-4xl mx-auto px-4">
-            <div className="flex justify-center">
-              <Button
-                onClick={handleAdminPanel}
-                className="bg-slate-800 hover:bg-slate-700 border border-slate-600"
-                variant="outline">
-                <Settings className="w-4 h-4 mr-2" />
-                Admin Panel
-              </Button>
-            </div>
           </div>
         )}
 
