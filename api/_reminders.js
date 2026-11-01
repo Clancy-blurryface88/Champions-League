@@ -85,8 +85,9 @@ async function plannedReminders(now) {
     if (!list) continue;
     const slots = [...new Set(list.map((m) => new Date(m.match_date).getTime()))].sort((a, b) => a - b);
     const first = new Date(slots[0]);
-    // The round's own predictions page (round of the day's first match).
-    const roundUrl = list[0].round_id ? `${SITE}/Predictions?round_id=${list[0].round_id}` : `${SITE}/`;
+    // The home screen, not the round page: that is where the round's studio
+    // video (the TV button) is, and the rounds are one tap away from it.
+    const roundUrl = `${SITE}/`;
 
     // First day of a round (no matches the day before — usually Tuesday):
     // 12:00 two days before (names the weekday and date), 12:00 the day
@@ -120,7 +121,7 @@ async function plannedReminders(now) {
       out.push({
         kind: 'slot', key: `rem:slot:${day}:${t}`, at: new Date(t - (i === 0 ? 45 : 60) * 60e3),
         slotMatches, kickoff: ilTime(new Date(t)), lock: ilTime(lockOf(t)),
-        url: slotMatches[0].round_id ? `${SITE}/Predictions?round_id=${slotMatches[0].round_id}` : `${SITE}/`,
+        url: roundUrl,
       });
     });
   }
