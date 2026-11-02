@@ -1,89 +1,115 @@
-// Handler (mounted via GET /api/football?source=odds&round=<id>) — pulls the
-// odds of one round's Champions League matches from The Odds API, in the
-// shape of the match card's fields (1X2, both teams score, goals 0-2/3-4/5+).
-// Read-only: it returns the values and the admin page writes them, like a
-// manual edit. Only signed-in admins (Supabase token → profiles.is_admin).
+// Handler (mounted via GET /api/football?source=odds) — pulls one round's
+// Champions League odds from OddsPapi (oddspapi.io), in the shape of the match
+// card's fields: the exact-score table (from 888sport — the site the admin used
+// to screenshot), 1X2, both teams score and goals 0-2/3-4/5+ (from bwin, the
+// site those were taken from by hand). Read-only: it returns the values and the
+// admin page writes them, like a manual edit. Only signed-in admins.
 //
-// Two steps: ?round=<id> lists the matches and their events (free); ?event=<id>
-// pulls one match (region uk, 3 markets = 3 credits; the free plan has
-// 500 a month). Each category comes from the first bookmaker in its chain
-// that has it. Goals bands from the over/under lines: 0-2 = under 2.5,
-// 5+ = over 4.5, 3-4 = what's between them. Every price rounds UP to 0.05.
-// Exact-score odds are not here: they still come from the 888 screenshot.
+// Two steps, each 1 request of the free plan's 250 a month:
+//   ?round=<id>  → the round's matches and their OddsPapi fixtures
+//   ?event=<id>  → one match's odds (every market of every bookmaker in one call)
+// Goals bands come from the over/under lines: 0-2 = under 2.5, 5+ = over 4.5,
+// 3-4 = what's between them. Every price rounds UP to 0.05 (23 stays 23).
+// A score missing from 888's table counts as "any other score" (200).
 import { supa } from './_goalWebhook.js';
 import { adminFromToken } from './_adminPush.js';
 
-const API = 'https://api.the-odds-api.com/v4/sports/soccer_uefa_champs_league';
+const API = 'https://api.oddspapi.io/v4';
+const UCL = 7; // OddsPapi tournamentId of the UEFA Champions League
+const OTHER_SCORE = 200;
 const CHAIN = {
-  h2h: ['coral', 'ladbrokes_uk', 'leovegas', 'williamhill'],
-  btts: ['coral', 'ladbrokes_uk', 'leovegas', 'williamhill'],
-  bands: ['coral', 'ladbrokes_uk', 'leovegas', 'livescorebet', 'virginbet'],
+  score: ['888sport', '888sport.dk', '888sport.ca'],
+  h2h: ['bwin', '888sport', 'coral', 'ladbrokes'],
+  btts: ['bwin', '888sport', 'coral', 'ladbrokes'],
+  bands: ['bwin', '888sport', 'coral', 'ladbrokes'],
 };
-const NAMES = { coral: 'Coral', ladbrokes_uk: 'Ladbrokes', leovegas: 'LeoVegas', williamhill: 'William Hill', livescorebet: 'LiveScoreBet', virginbet: 'Virgin Bet' };
+const BOOKS = [...new Set(Object.values(CHAIN).flat())];
+const NAMES = { '888sport': '888sport', '888sport.dk': '888sport', '888sport.ca': '888sport', bwin: 'bwin', coral: 'Coral', ladbrokes: 'Ladbrokes' };
+// OddsPapi market / outcome ids (from /v4/markets)
+const M = {
+  result: [101, { 1: 101, X: 102, 2: 103 }],
+  btts: [104, { yes: 104, no: 105 }],
+  ou25: [1010, { over: 1010, under: 1011 }],
+  ou45: [1014, { over: 1014, under: 1015 }],
+  score: 10336, // outcomes 10336 + home + 8 × away, for 0..7 goals a side
+};
 
 // 2.62 → 2.65, 1.41 → 1.45, 1.70 stays
 export const roundUp05 = (x) => Number((Math.ceil(x * 20 - 1e-9) / 20).toFixed(2));
 
-// "Atlético Madrid" ~ "Atletico Madrid", "Sabah FK" ~ "Sabah FC", "PSV Eindhoven" ~ "PSV"
+// "Atlético Madrid" ~ "Atletico Madrid", "Sabah FC" ~ "Sabah Masazir", "Bodø" ~ "Bodoe"
 const words = (s) => s.toLowerCase().replace(/ø/g, 'o').normalize('NFD').replace(/[̀-ͯ]/g, '')
   .replace(/[^a-z ]/g, ' ').split(' ').filter((w) => w.length >= 3);
 const like = (a, b) => { const B = words(b); return words(a).filter((w) => B.some((v) => v.slice(0, 4) === w.slice(0, 4))).length; };
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-// credits: { used, left, last } from the response headers (last = this call's cost)
-async function oddsApi(path) {
+async function papi(path) {
   for (let attempt = 0; ; attempt++) {
-    const r = await fetch(`${API}${path}${path.includes('?') ? '&' : '?'}apiKey=${process.env.ODDS_API_KEY}`);
-    const h = (k) => (r.headers.get(k) == null ? null : Number(r.headers.get(k)));
-    const credits = { used: h('x-requests-used'), left: h('x-requests-remaining'), last: h('x-requests-last') };
-    // "Requests are too frequent" — back off and try again
+    const r = await fetch(`${API}${path}${path.includes('?') ? '&' : '?'}apiKey=${process.env.ODDS_PAPI_KEY}`);
     if (r.status === 429 && attempt < 3) {
       const body = await r.text();
-      if (!/FREQ/.test(body)) throw new Error(`Odds API 429: ${body.slice(0, 200)}`);
-      await wait(1500 * (attempt + 1));
+      if (/REQUEST_LIMIT_EXCEEDED/.test(body)) throw new Error('נגמרו הבקשות של החודש');
+      await wait(1500 * (attempt + 1)); // per-endpoint cooldown — back off and retry
       continue;
     }
-    if (!r.ok) throw new Error(`Odds API ${r.status}: ${(await r.text()).slice(0, 200)}`);
-    return { data: await r.json(), credits };
+    if (!r.ok) throw new Error(`OddsPapi ${r.status}: ${(await r.text()).slice(0, 200)}`);
+    return r.json();
   }
 }
+// the month's usage — /v4/account is not counted
+async function usage() {
+  try {
+    const a = await papi('/account');
+    const s = a.subscriptions?.find((x) => x.is_active) || a.subscriptions?.[0];
+    return s ? { used: s.request_count, left: s.request_limit - s.request_count, last: 1 } : null;
+  } catch { return null; }
+}
 
-// Our match ↔ the API's event: kickoff within 3h and the team names alike.
-// swapped → the API lists our team_a as the away side.
-export function findEvent(m, events) {
+// Our match ↔ an OddsPapi fixture: kickoff within 3h and the team names alike.
+// swapped → the fixture lists our team_a second.
+export function findEvent(m, fixtures) {
   const t = new Date(m.match_date).getTime();
   let best = null;
-  for (const e of events) {
-    if (Math.abs(new Date(e.commence_time).getTime() - t) > 3 * 3600e3) continue;
-    const straight = like(m.team_a, e.home_team) + like(m.team_b, e.away_team);
-    const swapped = like(m.team_a, e.away_team) + like(m.team_b, e.home_team);
+  for (const f of fixtures) {
+    if (Math.abs(new Date(f.startTime).getTime() - t) > 3 * 3600e3) continue;
+    const straight = like(m.team_a, f.participant1Name) + like(m.team_b, f.participant2Name);
+    const swapped = like(m.team_a, f.participant2Name) + like(m.team_b, f.participant1Name);
     const score = Math.max(straight, swapped);
-    if (score > 0 && (!best || score > best.score)) best = { e, score, swapped: swapped > straight };
+    if (score > 0 && (!best || score > best.score)) best = { f, score, swapped: swapped > straight };
   }
   return best;
 }
 
-// The card's fields from one event's bookmakers; null where no bookmaker has it.
-export function fieldsFrom(event, swapped) {
-  const book = (key) => event.bookmakers.find((b) => b.key === key);
-  const market = (key, m) => book(key)?.markets.find((x) => x.key === m)?.outcomes;
+// The card's fields from one fixture's odds; a category no bookmaker has is listed in `missing`.
+export function fieldsFrom(fx, swapped) {
+  const price = (book, market, outcome) => {
+    const p = fx.bookmakerOdds?.[book]?.markets?.[market]?.outcomes?.[outcome]?.players?.['0'];
+    return p?.active !== false && p?.price > 1 ? p.price : null;
+  };
   const first = (chain, get) => { for (const k of chain) { const v = get(k); if (v) return { v, from: k }; } return null; };
 
-  const h2h = first(CHAIN.h2h, (k) => {
-    const o = market(k, 'h2h'); if (!o) return null;
-    const p = (n) => o.find((x) => x.name === n)?.price;
-    const [home, away] = swapped ? [p(event.away_team), p(event.home_team)] : [p(event.home_team), p(event.away_team)];
-    return home && away && p('Draw') ? { home_win_points: home, draw_points: p('Draw'), away_win_points: away } : null;
+  const score = first(CHAIN.score, (b) => {
+    const table = {};
+    for (let h = 0; h <= 7; h++) for (let a = 0; a <= 7; a++) {
+      const p = price(b, M.score, M.score + h + 8 * a);
+      if (p) table[swapped ? `${a}:${h}` : `${h}:${a}`] = roundUp05(p);
+    }
+    return Object.keys(table).length ? { score_odds: { ...table, other: OTHER_SCORE } } : null;
   });
-  const btts = first(CHAIN.btts, (k) => {
-    const o = market(k, 'btts'); if (!o) return null;
-    const p = (n) => o.find((x) => x.name === n)?.price;
-    return p('Yes') && p('No') ? { btts_yes_points: p('Yes'), btts_no_points: p('No') } : null;
+  const h2h = first(CHAIN.h2h, (b) => {
+    const [id, o] = M.result;
+    const [p1, x, p2] = [price(b, id, o[1]), price(b, id, o.X), price(b, id, o[2])];
+    if (!p1 || !x || !p2) return null;
+    return { home_win_points: swapped ? p2 : p1, draw_points: x, away_win_points: swapped ? p1 : p2 };
   });
-  const bands = first(CHAIN.bands, (k) => {
-    const o = market(k, 'alternate_totals'); if (!o) return null;
-    const p = (n, pt) => o.find((x) => x.name === n && x.point === pt)?.price;
-    const [u25, o25, u45, o45] = [p('Under', 2.5), p('Over', 2.5), p('Under', 4.5), p('Over', 4.5)];
+  const btts = first(CHAIN.btts, (b) => {
+    const [id, o] = M.btts;
+    const [yes, no] = [price(b, id, o.yes), price(b, id, o.no)];
+    return yes && no ? { btts_yes_points: yes, btts_no_points: no } : null;
+  });
+  const bands = first(CHAIN.bands, (b) => {
+    const [u25, o25] = [price(b, M.ou25[0], M.ou25[1].under), price(b, M.ou25[0], M.ou25[1].over)];
+    const [u45, o45] = [price(b, M.ou45[0], M.ou45[1].under), price(b, M.ou45[0], M.ou45[1].over)];
     if (!u25 || !o25 || !u45 || !o45) return null;
     // fair chance of 3-4 goals = 1 − P(under 2.5) − P(over 4.5), priced with the 2.5 line's margin
     const m25 = 1 / u25 + 1 / o25, m45 = 1 / u45 + 1 / o45;
@@ -94,9 +120,9 @@ export function fieldsFrom(event, swapped) {
   const values = {};
   const sources = {};
   const missing = [];
-  for (const [cat, got, label] of [['h2h', h2h, '1X2'], ['btts', btts, 'שתי הקבוצות מבקיעות'], ['bands', bands, 'טווח שערים']]) {
+  for (const [cat, got, label] of [['score', score, 'תוצאה מדויקת'], ['h2h', h2h, '1X2'], ['btts', btts, 'שתי הקבוצות מבקיעות'], ['bands', bands, 'טווח שערים']]) {
     if (!got) { missing.push(label); continue; }
-    Object.entries(got.v).forEach(([f, x]) => { values[f] = roundUp05(x); });
+    Object.entries(got.v).forEach(([f, x]) => { values[f] = typeof x === 'number' ? roundUp05(x) : x; });
     sources[cat] = NAMES[got.from] || got.from;
   }
   return { values, sources, missing };
@@ -106,32 +132,36 @@ export async function oddsHandler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   const token = (req.headers.authorization || '').replace(/^Bearer /, '');
   if (!(await adminFromToken(token))) return res.status(403).json({ error: 'admins only' });
-  if (!process.env.ODDS_API_KEY) return res.status(500).json({ error: 'Missing ODDS_API_KEY' });
+  if (!process.env.ODDS_PAPI_KEY) return res.status(500).json({ error: 'Missing ODDS_PAPI_KEY' });
   const roundId = String(req.query.round || '');
   const eventId = String(req.query.event || '');
 
   try {
-    // Step 2 — one match's odds (3 credits). The page calls this once per match,
-    // one after another, so a long round never hits the function time limit or
-    // the frequency limit, and a failure loses only that match.
+    // the month's usage only (free) — shown when the page opens
+    if (req.query.usage) return res.status(200).json({ credits: await usage() });
+    // Step 2 — one match. The page calls this once per match, one after another,
+    // so a long round never hits the function time limit, and a failure loses
+    // only that match.
     if (eventId) {
-      if (!/^[0-9a-f]{32}$/i.test(eventId)) return res.status(400).json({ error: 'bad event' });
-      const r = await oddsApi(`/events/${eventId}/odds?regions=uk&markets=h2h,btts,alternate_totals&oddsFormat=decimal`);
-      return res.status(200).json({ ...fieldsFrom(r.data, req.query.swapped === '1'), credits: r.credits });
+      if (!/^id\d+$/.test(eventId)) return res.status(400).json({ error: 'bad event' });
+      const fx = await papi(`/odds?fixtureId=${eventId}&bookmakers=${BOOKS.join(',')}&oddsFormat=decimal`);
+      return res.status(200).json({ ...fieldsFrom(fx, req.query.swapped === '1'), credits: await usage() });
     }
-    // Step 1 — the round's matches and their events (the events list is free)
+    // Step 1 — the round's matches and their fixtures
     if (!/^[0-9a-f-]{36}$/i.test(roundId)) return res.status(400).json({ error: 'round required' });
     const matches = await supa(`matches?select=id,team_a,team_b,match_date,is_finished&round_id=eq.${roundId}&order=match_date`);
-    const { data: events, credits } = await oddsApi('/events');
+    const upcoming = matches.filter((m) => !m.is_finished && new Date(m.match_date) > new Date());
+    // no request when nothing is left to pull (a past round)
+    const fixtures = upcoming.length ? await papi(`/fixtures?tournamentId=${UCL}&statusId=0`) : [];
     const rows = matches.map((m) => {
       const row = { id: m.id, team_a: m.team_a.trim(), team_b: m.team_b.trim(), match_date: m.match_date };
       // a match that started keeps its odds — points may already be counted by them
-      if (m.is_finished || new Date(m.match_date) <= new Date()) return { ...row, skipped: 'המשחק כבר התחיל' };
-      const hit = findEvent(m, events);
-      if (!hit) return { ...row, skipped: 'לא נמצא אצל ספק היחסים' };
-      return { ...row, eventId: hit.e.id, swapped: hit.swapped, event: `${hit.e.home_team} – ${hit.e.away_team}` };
+      if (!upcoming.includes(m)) return { ...row, skipped: 'המשחק כבר התחיל' };
+      const hit = findEvent(m, fixtures);
+      if (!hit || !hit.f.hasOdds) return { ...row, skipped: 'עוד אין יחסים אצל ספק היחסים' };
+      return { ...row, eventId: hit.f.fixtureId, swapped: hit.swapped, event: `${hit.f.participant1Name} – ${hit.f.participant2Name}` };
     });
-    return res.status(200).json({ rows, credits });
+    return res.status(200).json({ rows, credits: await usage() });
   } catch (e) {
     console.error('[odds]', e.message);
     return res.status(500).json({ error: e.message });
