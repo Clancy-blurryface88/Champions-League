@@ -406,12 +406,13 @@ export default function LeaderboardPanel({ onClose, user }) {
               })()}
               </div>
             }
-            {!loading && participants.length > 0 &&
-            <div className="mt-3 px-0.5 pb-2">
-                <RankJourneyButton onClick={() => setShowJourney(true)} />
-              </div>
-            }
           </div>
+          {/* pinned to the bottom of the panel, apart from the table */}
+          {!loading && participants.length > 0 &&
+          <div className="border-t border-white/10 p-2.5" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom, 0px))' }}>
+              <RankJourneyButton onClick={() => setShowJourney(true)} />
+            </div>
+          }
         </div>
 
         <style>{`
