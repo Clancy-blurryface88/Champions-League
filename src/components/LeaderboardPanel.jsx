@@ -11,6 +11,7 @@ import { Match } from "@/api/entities";
 import OdometerValue from "./OdometerValue";
 import PlayerStatsModal from "./PlayerStatsModal";
 import { ShineBorder } from "@/components/magicui/shine-border";
+import { RankJourneyButton, RankJourneySheet } from "./RankJourney";
 
 const LEADERBOARD_ICON_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/a99a73381_image.png";
 const GENERIC_USER_AVATAR_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/314b5002f_WhatsApp2025-07-07000346_91206de8.jpg";
@@ -27,6 +28,7 @@ export default function LeaderboardPanel({ onClose, user }) {
   // must gate the points roll animation.
   const [revealedIds, setRevealedIds] = useState(() => new Set());
   const [expandedId, setExpandedId] = useState(null);
+  const [showJourney, setShowJourney] = useState(false);
 
   // Long-press vs. short-tap on the card body: a quick tap opens the profile
   // modal, holding it down (~450ms) opens the stat accordion instead.
@@ -404,6 +406,11 @@ export default function LeaderboardPanel({ onClose, user }) {
               })()}
               </div>
             }
+            {!loading && participants.length > 0 &&
+            <div className="mt-3 px-0.5 pb-2">
+                <RankJourneyButton onClick={() => setShowJourney(true)} />
+              </div>
+            }
           </div>
         </div>
 
@@ -413,6 +420,7 @@ export default function LeaderboardPanel({ onClose, user }) {
             to   { filter: blur(0px);  opacity: 1;   }
           }
         `}</style>
+        <RankJourneySheet open={showJourney} onClose={() => setShowJourney(false)} />
         <PlayerStatsModal 
           isOpen={isModalOpen} 
           onClose={() => setIsModalOpen(false)} 

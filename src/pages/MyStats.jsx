@@ -25,7 +25,6 @@ import RankingHistoryTable from "../components/stats/RankingHistoryTable";
 import ExactHitsHistoryTable from "../components/stats/ExactHitsHistoryTable";
 import PredictionsHeatmap from "../components/stats/PredictionsHeatmap";
 import UserRankingsSummary from "../components/stats/UserRankingsSummary";
-import RankingHistoryCharts from "../components/stats/RankingHistoryCharts";
 import CategoryLeaderboards from "../components/stats/CategoryLeaderboards";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ComparisonBar from "../components/stats/ComparisonBar";
@@ -822,9 +821,6 @@ export default function MyStats() {
           </TabsList>
 
           <TabsContent value="ranking" forceMount className="space-y-6 data-[state=inactive]:hidden">
-            {/* מגמות דירוג */}
-            <RankingHistoryCharts />
-
             {/* היסטוריית מיקום */}
             <RankingHistoryTable />
 
