@@ -101,7 +101,7 @@ function usePlayback(n) {
   const [p, setP] = useState(reduce ? n - 1 : 0);
   const [playing, setPlaying] = useState(false);
   const first = useRef(true);
-  useEffect(() => { if (inView && !reduce) setPlaying(true); }, [inView]);
+  useEffect(() => { if (!inView || reduce) return; const t = setTimeout(() => setPlaying(true), 650); return () => clearTimeout(t); }, [inView]);
   useEffect(() => { if (first.current) { first.current = false; return; } setPlaying(false); setP(n - 1); }, [n]);
   useEffect(() => {
     if (!playing) return;
@@ -231,7 +231,8 @@ function LanesView({ users, idx, tick, pl, sel, setSel, stepW }) {
           </g>); })}
         {users.filter((u) => !sel.includes(u.id)).map((u) => <path key={u.id} d={path(pts(u))} stroke="rgba(148,163,184,0.13)" strokeWidth="1.5" fill="none" />)}
         <g clipPath={`url(#${clip})`}>
-          {on.map((u) => <path key={u.id} d={path(pts(u))} stroke={`url(#${clip}-l${users.indexOf(u)})`} strokeWidth={u.me ? 3.5 : 2.6} strokeLinecap="round" fill="none" style={{ filter: `drop-shadow(0 0 ${u.me ? 5 : 3}px ${u.color}${u.me ? "8c" : "55"})` }} />)}
+          {on.map((u) => <path key={`g${u.id}`} d={path(pts(u))} stroke={u.color} strokeOpacity={u.me ? 0.28 : 0.16} strokeWidth={u.me ? 9 : 6.5} strokeLinecap="round" fill="none" />)}
+          {on.map((u) => <path key={u.id} d={path(pts(u))} stroke={`url(#${clip}-l${users.indexOf(u)})`} strokeWidth={u.me ? 3.5 : 2.6} strokeLinecap="round" fill="none" />)}
         </g>
         {[...on].sort((a, b) => a.me - b.me).map((u) => {
           const [hx, hy] = at(pts(u), pl.e);
@@ -326,7 +327,7 @@ export function RankJourneySheet({ open, onClose, palette }) {
       {open && (
         <motion.div key="rank-journey" dir="rtl" className="fixed inset-0 z-[70] flex flex-col"
           initial={{ x: "-100%" }} animate={{ x: 0, transition: { type: "spring", duration: 0.55, bounce: 0.08 } }} exit={{ x: "-100%", transition: { duration: 0.28, ease: [0.32, 0.72, 0, 1] } }}
-          style={{ background: "radial-gradient(120% 60% at 50% -10%, rgba(250,204,21,0.10), transparent 60%), #050b22", boxShadow: "20px 0 60px rgba(0,0,0,0.5)" }}>
+          style={{ background: "radial-gradient(120% 60% at 50% -10%, rgba(250,204,21,0.10), transparent 60%), #050b22", boxShadow: "20px 0 60px rgba(0,0,0,0.5)", willChange: "transform", backfaceVisibility: "hidden" }}>
           <div className="flex items-center justify-between px-4 pb-2" style={{ paddingTop: "max(14px, env(safe-area-inset-top, 0px))" }}>
             <div>
               <h2 className="text-[18px] font-black text-white">מסלול הדירוג</h2>
