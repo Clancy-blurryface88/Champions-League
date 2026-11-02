@@ -21,7 +21,6 @@ const GRAD = {
   "#f87171": ["#fca5a5", "#dc2626"], "#c0c0c0": ["#f1f5f9", "#8a96a8"], "#7cadee": ["#bae6fd", "#3b8fe0"],
 };
 const grad = (c) => GRAD[c] || [c, c];
-const cssGrad = (c) => `linear-gradient(270deg, ${grad(c)[0]}, ${grad(c)[1]})`;
 const MEDAL = ["#facc15", "#e2e8f0", "#f59e0b"];
 const SPRING = { type: "spring", duration: 0.75, bounce: 0.12 };
 const STEP_MS = 1300; // one night (or round) of playback
@@ -171,13 +170,18 @@ function TableView({ users, idx, pl }) {
 
 // rank lanes: glass lanes with medal places, name tags riding the lines
 const W = 340;
-function LanesView({ users, idx, tick, pl, sel, setSel }) {
+function LanesView({ users, idx, tick, pl, sel, setSel, stepW }) {
   const clip = useId().replace(/:/g, "");
   const n = idx.length, P = users.length;
   const laneH = 28;
   const H = 14 + 26 + laneH * (P - 1);
   const pad = { l: 44, r: 30, t: 14, b: 26 };
-  const x = (i) => (n > 1 ? W - pad.r - (i * (W - pad.l - pad.r)) / (n - 1) : (W - pad.r + pad.l) / 2);
+  // many nights or rounds: the chart grows wider than the screen and scrolls
+  // sideways by finger; a short season fits the width as it is
+  const Wd = n > 1 && (W - pad.l - pad.r) / (n - 1) < stepW ? pad.l + pad.r + (n - 1) * stepW : W;
+  const scroll = Wd > W;
+  const scroller = useRef(null);
+  const x = (i) => (n > 1 ? Wd - pad.r - (i * (Wd - pad.l - pad.r)) / (n - 1) : (Wd - pad.r + pad.l) / 2);
   const y = (r) => pad.t + (P > 1 ? ((r - 1) * (H - pad.t - pad.b)) / (P - 1) : 0);
   const pts = (u) => idx.map((k, i) => [x(i), y(u.ranks[k])]);
   const path = (p) => p.reduce((d, [px, py], i) => (i ? `${d} C${(p[i - 1][0] + px) / 2},${p[i - 1][1]} ${(p[i - 1][0] + px) / 2},${py} ${px},${py}` : `M${px},${py}`), "");
@@ -194,30 +198,34 @@ function LanesView({ users, idx, tick, pl, sel, setSel }) {
   const meId = users.find((u) => u.me)?.id;
   const tog = (id) => setSel((s) => (s.includes(id) ? (s.length > 1 ? s.filter((v) => v !== id) : s) : [...s, id]));
   const headX = x(pl.e);
+  // keep the moving names in view while it plays (and on open / when the scale changes)
+  const follow = () => { const el = scroller.current; if (el && scroll) el.scrollLeft = (headX / Wd) * el.scrollWidth - el.clientWidth / 2; };
+  useEffect(() => { if (pl.playing) follow(); }, [pl.e]);
+  useEffect(follow, [Wd]);
   return (
     <div>
-      <div dir="rtl" className="mb-2 flex flex-wrap items-center gap-1.5">
+      <div dir="rtl" className="mb-2 grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.ceil((P + 1) / 2)}, minmax(0, 1fr))` }}>
         <motion.button whileTap={{ scale: 0.94 }} onClick={() => setSel(all ? [meId || byNow[0].id] : users.map((u) => u.id))}
-          className="rounded-full px-2.5 py-[5px] text-[11px] font-bold transition-colors duration-200"
+          className="truncate rounded-full px-1.5 py-[5px] text-[11px] font-bold transition-colors duration-200"
           style={{ background: all ? "#fff" : "rgba(255,255,255,0.06)", color: all ? "#0b1430" : "#cbd5e1", border: "1px solid rgba(255,255,255,0.18)" }}>{all ? (meId ? "רק אני" : "רק המוביל") : "כולם"}</motion.button>
         {byNow.map((u) => { const o = sel.includes(u.id); return (
           <motion.button key={u.id} whileTap={{ scale: 0.94 }} onClick={() => tog(u.id)}
-            className="flex items-center gap-1 rounded-full py-[3px] pl-2.5 pr-1 text-[11px] font-bold transition-colors duration-200"
+            className="truncate rounded-full px-1.5 py-[5px] text-[11px] font-bold transition-colors duration-200"
             style={{ background: o ? `${u.color}22` : "rgba(255,255,255,0.04)", color: o ? u.color : "#94a3b8", border: `1px solid ${o ? u.color : "rgba(148,163,184,0.16)"}` }}>
-            <span className="grid h-4 w-4 place-items-center rounded-full text-[9px]" style={{ background: o ? cssGrad(u.color) : "#334155", color: o ? "#0b1430" : "#cbd5e1" }}>{u.name.slice(0, 1)}</span>{u.name}
+            {u.name}
           </motion.button>); })}
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: "block", overflow: "visible", direction: "ltr" }}>
+      <div className="relative">
+      <div ref={scroller} dir="ltr" className={scroll ? "overflow-x-auto overscroll-x-contain" : ""} style={{ scrollbarWidth: "none" }}>
+      <svg viewBox={`0 0 ${Wd} ${H}`} width={`${(Wd / W) * 100}%`} style={{ display: "block", overflow: "visible", direction: "ltr", maxWidth: "none" }}>
         <defs>
-          <clipPath id={clip}><rect x={headX - 2} y="-20" width={W - headX + 40} height={H + 40} /></clipPath>
-          {users.map((u, i) => <linearGradient key={u.id} id={`${clip}-l${i}`} gradientUnits="userSpaceOnUse" x1={W - pad.r} x2={pad.l} y1="0" y2="0"><stop offset="0" stopColor={grad(u.color)[0]} /><stop offset="1" stopColor={grad(u.color)[1]} /></linearGradient>)}
+          <clipPath id={clip}><rect x={headX - 2} y="-20" width={Wd - headX + 40} height={H + 40} /></clipPath>
+          {users.map((u, i) => <linearGradient key={u.id} id={`${clip}-l${i}`} gradientUnits="userSpaceOnUse" x1={Wd - pad.r} x2={pad.l} y1="0" y2="0"><stop offset="0" stopColor={grad(u.color)[0]} /><stop offset="1" stopColor={grad(u.color)[1]} /></linearGradient>)}
           {users.map((u, i) => <linearGradient key={u.id} id={`${clip}-t${i}`} x1="1" x2="0" y1="0" y2="0"><stop offset="0" stopColor={grad(u.color)[0]} /><stop offset="1" stopColor={grad(u.color)[1]} /></linearGradient>)}
         </defs>
         {Array.from({ length: P }, (_, r) => { const m = r < 3, cy = y(r + 1); return (
           <g key={r}>
-            <rect x={pad.l - 12} y={cy - laneH / 2 + 2} width={W - pad.l - pad.r + 18} height={laneH - 4} rx="7" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.07)" />
-            <rect x={W - 26} y={cy - 8} width="24" height="16" rx="8" fill={m ? MEDAL[r] : "rgba(148,163,184,0.15)"} />
-            <text x={W - 14} y={cy + 3.5} textAnchor="middle" fontSize="9.5" fontWeight="900" fill={m ? "#1a1200" : "#cbd5e1"}>{r + 1}</text>
+            <rect x={pad.l - 12} y={cy - laneH / 2 + 2} width={Wd - pad.l - pad.r + 18} height={laneH - 4} rx="7" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.07)" />
           </g>); })}
         {users.filter((u) => !sel.includes(u.id)).map((u) => <path key={u.id} d={path(pts(u))} stroke="rgba(148,163,184,0.13)" strokeWidth="1.5" fill="none" />)}
         <g clipPath={`url(#${clip})`}>
@@ -235,11 +243,24 @@ function LanesView({ users, idx, tick, pl, sel, setSel }) {
         })}
         {idx.map((k, i) => { const cur = Math.abs(pl.e - i) < 0.5; return <text key={k} x={x(i)} y={H - 6} textAnchor="middle" fontSize={n <= 4 ? 10 : 9} fontWeight={cur ? 800 : 400} fill={cur ? GREEN : "rgba(148,163,184,0.6)"}>{tick(k)}</text>; })}
       </svg>
+      </div>
+      {/* the places stay put on the right while the chart scrolls under them */}
+      <svg viewBox={`0 0 30 ${H}`} width={`${(30 / W) * 100}%`} className="pointer-events-none absolute right-0 top-0" style={{ overflow: "visible" }}>
+        {scroll && <rect x="0" y="0" width="30" height={H - pad.b + 8} fill={`url(#${clip}-fade)`} />}
+        <defs><linearGradient id={`${clip}-fade`} x1="0" x2="1"><stop offset="0" stopColor="#050b22" stopOpacity="0" /><stop offset="0.45" stopColor="#050b22" stopOpacity="0.9" /></linearGradient></defs>
+        {Array.from({ length: P }, (_, r) => { const m = r < 3, cy = y(r + 1); return (
+          <g key={r}>
+            <rect x="4" y={cy - 8} width="24" height="16" rx="8" fill={m ? MEDAL[r] : "#26324a"} />
+            <text x="16" y={cy + 3.5} textAnchor="middle" fontSize="9.5" fontWeight="900" fill={m ? "#1a1200" : "#cbd5e1"}>{r + 1}</text>
+          </g>); })}
+      </svg>
+      </div>
+      {scroll && <p dir="rtl" className="mt-1 text-center text-[10.5px] text-slate-500">החלק ימינה לערבים הקודמים, שמאלה לאחרונים</p>}
     </div>
   );
 }
 
-export function RankJourneyView({ data, palette, showAll = false }) {
+export function RankJourneyView({ data, palette, showAll = true }) {
   const { steps } = data;
   // a palette (other participants' colours) can be swapped in; you stay gold
   const users = useMemo(() => { if (!palette) return data.users; let c = 0; return data.users.map((u) => ({ ...u, color: u.me ? GOLD : palette[c++ % palette.length] })); }, [data, palette]);
@@ -279,7 +300,7 @@ export function RankJourneyView({ data, palette, showAll = false }) {
       </div>
       {view === "table"
         ? <TableView users={users} idx={M.idx} pl={pl} />
-        : <LanesView users={users} idx={M.idx} tick={M.tick} pl={pl} sel={sel} setSel={setSel} />}
+        : <LanesView users={users} idx={M.idx} tick={M.tick} pl={pl} sel={sel} setSel={setSel} stepW={mode === "round" ? 60 : 46} />}
       <Timeline pl={pl} n={n} label={(s) => M.label(M.idx[s])} />
     </div>
   );
