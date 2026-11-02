@@ -121,6 +121,11 @@ function uuidFrom(str) {
 // segment (needs OneSignal.login to have linked them). onesignalIds → those
 // OneSignal users' devices (works for unlinked users too).
 export async function push({ heading, body, url, key, mode = 'live', sendAfter, externalIds, onesignalIds }) {
+  // Every real send gets a push_log row; its id rides in the link (?pn=) so the
+  // app can record who opened it (push_opens) for the admin report.
+  const logId = crypto.randomUUID();
+  if (mode !== 'dry' && url) url = `${url}${url.includes('?') ? '&' : '?'}pn=${logId}`;
+  const idem = uuidFrom(mode === 'test' ? `test:${key}:${Date.now()}` : key);
   const payload = {
     app_id: ONESIGNAL_APP_ID,
     target_channel: 'push',
@@ -132,7 +137,7 @@ export async function push({ heading, body, url, key, mode = 'live', sendAfter, 
     headings: { en: heading, he: heading },
     contents: { en: body, he: body },
     url,
-    idempotency_key: uuidFrom(mode === 'test' ? `test:${key}:${Date.now()}` : key),
+    idempotency_key: idem,
     // Own topic per push: web push replaces a shown notification that shares
     // a topic, so without this a goal push wiped out the reminder above it.
     web_push_topic: uuidFrom(`topic:${key}:${mode === 'test' ? Date.now() : ''}`),
@@ -144,7 +149,37 @@ export async function push({ heading, body, url, key, mode = 'live', sendAfter, 
     headers: { 'Content-Type': 'application/json', Authorization: `Key ${process.env.ONESIGNAL_REST_API_KEY}` },
     body: JSON.stringify(payload),
   });
-  return { status: r.status, body: await r.json().catch(() => null) };
+  const res = { status: r.status, body: await r.json().catch(() => null) };
+  await logPush({ logId, idem, key, heading, body, url, mode, sendAfter, externalIds, onesignalIds, res });
+  return res;
+}
+
+// One push_log row per send. A retry with the same key (same idem) is ignored, so
+// the row of the first send — the one whose ?pn= OneSignal actually delivers — stays.
+// Never lets logging stop a push.
+async function logPush({ logId, idem, key, heading, body, url, mode, sendAfter, externalIds, onesignalIds, res }) {
+  try {
+    const errs = res.body?.errors;
+    const row = {
+      id: logId, idem, key, heading, body, url, mode,
+      user_id: externalIds?.length === 1 ? externalIds[0] : null,
+      audience: externalIds?.length ? 'user' : onesignalIds?.length ? 'onesignal' : mode === 'test' ? 'test' : 'all',
+      onesignal_id: res.body?.id || null,
+      recipients: typeof res.body?.recipients === 'number' ? res.body.recipients : null,
+      // no id from OneSignal = nobody matched (e.g. the user never linked a device)
+      error: res.status !== 200 ? `HTTP ${res.status}` : !res.body?.id ? (errs?.invalid_aliases ? 'not linked' : JSON.stringify(errs || 'no recipients').slice(0, 200)) : null,
+      send_after: sendAfter && sendAfter > new Date() ? sendAfter.toISOString() : null,
+    };
+    const base = process.env.VITE_SUPABASE_URL;
+    const k = process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_SERVICE_KEY;
+    await fetch(`${base}/rest/v1/push_log?on_conflict=idem`, {
+      method: 'POST',
+      headers: { apikey: k, Authorization: `Bearer ${k}`, 'Content-Type': 'application/json', Prefer: 'resolution=ignore-duplicates,return=minimal' },
+      body: JSON.stringify(row),
+    });
+  } catch (e) {
+    console.error('[push-log]', e.message);
+  }
 }
 
 // GOAL sometimes delivers the same goal.scored twice ~30s apart (seen live:

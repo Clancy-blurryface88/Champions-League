@@ -164,7 +164,14 @@ export async function remindersHandler(req, res) {
           results.push({ key: r.key, waiting: 'lineups not published yet' });
           continue;
         }
-        const heading = published ? `📋 ההרכבים למשחקי ${r.kickoff} פורסמו!` : `⏰ משחקי ${r.kickoff} מתחילים בקרוב`;
+        // Lineups out → everyone, as a chance to update a prediction (not a
+        // missing-prediction reminder: most people predict the whole round at once).
+        if (published) {
+          const sent = await push({ heading: `📋 ההרכבים למשחקי ${r.kickoff} פורסמו!`, body: 'ניתן לעדכן תוצאה עד נעילת המשחק', url: r.url, key: r.key, mode, sendAfter: r.at });
+          results.push({ key: r.key, at: r.at.toISOString(), lineups: true, sent });
+          continue;
+        }
+        const heading = `⏰ משחקי ${r.kickoff} מתחילים בקרוב`;
         const missing = await missingFor(r.slotMatches);
         const sent = await sendPersonal(toPersonal(missing, heading, (n) => `${missingText(n)} למשחקי ${r.kickoff} · אפשר עד ${r.lock} 👉`), { url: r.url, key: r.key, mode, sendAfter: r.at });
         results.push({ key: r.key, at: r.at.toISOString(), lineups: published, sent });

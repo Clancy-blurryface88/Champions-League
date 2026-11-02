@@ -413,6 +413,15 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     if (!user) return;
     const params = new URLSearchParams(window.location.search);
+    // ?pn=<push_log id>: this visit came from a push — record the open for the
+    // admin report (once per user and push), then drop the param.
+    const pn = params.get('pn');
+    if (pn) {
+      import('@/api/supabase').then(({ supabase }) => supabase.from('push_opens').insert({ log_id: pn, user_id: user.id })).then(() => {}, () => {});
+      params.delete('pn');
+      const rest = params.toString();
+      window.history.replaceState(null, '', window.location.pathname + (rest ? `?${rest}` : '') + window.location.hash);
+    }
     const target = params.get('open');
     if (!target) return;
     if (target === 'live') setShowLiveData(true);

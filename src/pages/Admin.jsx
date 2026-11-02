@@ -25,6 +25,7 @@ import AdminHallOfFame from "../components/admin/AdminHallOfFame";
 import AdminFinishCheck from "../components/admin/AdminFinishCheck";
 import AdminSendPush from "../components/admin/AdminSendPush";
 import AdminPushSubscribers from "../components/admin/AdminPushSubscribers";
+import AdminPushReport from "../components/admin/AdminPushReport";
 import AdminLiveIntroPreview from "../components/admin/AdminLiveIntroPreview";
 import AdminRoundSummary from "../components/admin/AdminRoundSummary";
 import { LoaderBar } from "../components/ui/LoaderBar";
@@ -94,6 +95,7 @@ export default function Admin() {
       case 'finish-check': return <AdminFinishCheck />;
       case 'send-push': return <AdminSendPush />;
       case 'push-subscribers': return <AdminPushSubscribers />;
+      case 'push-report': return <AdminPushReport />;
       case 'live-intro': return <AdminLiveIntroPreview />;
       case 'round-summary': return <AdminRoundSummary />;
       default: return <AdminRounds />;
@@ -119,6 +121,7 @@ export default function Admin() {
     { id: 'finish-check', label: '🧪 בדיקת סיום משחקים', icon: ShieldCheck },
     { id: 'send-push', label: '📣 שליחת התראה', icon: Radio },
     { id: 'push-subscribers', label: '🔔 מי רשום להתראות', icon: Users },
+    { id: 'push-report', label: '📬 דוח התראות', icon: Users },
     { id: 'live-intro', label: '🎬 תצוגת כניסת לייב', icon: Radio },
     { id: 'round-summary', label: '🏆 סיכום מחזור', icon: Trophy },
   ];
