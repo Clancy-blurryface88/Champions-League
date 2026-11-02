@@ -32,21 +32,53 @@ export default function AdminOddsPull() {
       setRoundId(next?.round_id || rs[rs.length - 1]?.id || "");
     });
   }, []);
+  // the round's matches and which ones the odds provider lists (free — no credits)
+  const [plan, setPlan] = useState(null);
+  const [credits, setCredits] = useState(null); // { used, left } for the month
+  const [spent, setSpent] = useState(0); // credits this pull cost
+  const api = async (q) => {
+    const { data } = await supabase.auth.getSession();
+    const r = await fetch(`/api/football?source=odds&${q}`, { headers: { Authorization: `Bearer ${data.session?.access_token || ""}` } });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || r.status);
+    if (j.credits?.left != null) setCredits(j.credits);
+    return j;
+  };
   useEffect(() => {
-    setPulled(null); setMsg("");
+    setPulled(null); setPlan(null); setMsg(""); setSpent(0);
     if (!roundId) return;
     Match.filter({ round_id: roundId }).then((ms) => setCurrent(Object.fromEntries(ms.map((m) => [m.id, m]))));
+    api(`round=${roundId}`).then(setPlan).catch((e) => setMsg(`⚠️ ${e.message}`));
   }, [roundId]);
 
+  const toPull = (plan?.rows || []).filter((r) => r.eventId);
+  // One match at a time with a short pause (the provider limits request frequency);
+  // a failed match is retried once, then marked, and the rest carry on.
   const pull = async () => {
-    setBusy("pull"); setMsg(""); setPulled(null);
-    try {
-      const { data } = await supabase.auth.getSession();
-      const r = await fetch(`/api/football?source=odds&round=${roundId}`, { headers: { Authorization: `Bearer ${data.session?.access_token || ""}` } });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error || r.status);
-      setPulled(j);
-    } catch (e) { setMsg(`⚠️ המשיכה נכשלה: ${e.message}`); }
+    setBusy("pull"); setMsg(""); setSpent(0);
+    const rows = plan.rows.map((r) => (r.eventId ? { ...r, loading: true } : r));
+    setPulled({ rows: [...rows] });
+    let cost = 0;
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r.eventId) continue;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const j = await api(`event=${r.eventId}&swapped=${r.swapped ? 1 : 0}`);
+          cost += j.credits?.last || 0;
+          rows[i] = { ...r, loading: false, values: j.values, sources: j.sources, missing: j.missing };
+          break;
+        } catch (e) {
+          if (attempt) rows[i] = { ...r, loading: false, failed: e.message };
+          else await new Promise((res) => setTimeout(res, 2500));
+        }
+      }
+      setSpent(cost);
+      setPulled({ rows: [...rows] });
+      await new Promise((res) => setTimeout(res, 400));
+    }
+    const failed = rows.filter((r) => r.failed).length;
+    setMsg(failed ? `⚠️ ${failed} משחקים לא נמשכו (אפשר ללחוץ שוב)` : `✅ נמשכו ${toPull.length} משחקים`);
     setBusy("");
   };
 
@@ -74,16 +106,32 @@ export default function AdminOddsPull() {
           <select value={roundId} onChange={(e) => setRoundId(e.target.value)} className="bg-slate-900 border border-white/15 text-white text-sm rounded-md px-2 py-1.5">
             {rounds.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
           </select>
-          <button onClick={pull} disabled={!roundId || !!busy} className="text-sm px-3 py-1.5 rounded-md bg-sky-500/20 border border-sky-400/60 text-white disabled:opacity-50">
-            {busy === "pull" ? "מושך…" : "👁️ תצוגה מקדימה"}
+          <button onClick={pull} disabled={!toPull.length || !!busy} className="text-sm px-3 py-1.5 rounded-md bg-sky-500/20 border border-sky-400/60 text-white disabled:opacity-50">
+            {busy === "pull" ? `מושך… ${(pulled?.rows || []).filter((r) => r.eventId && !r.loading).length}/${toPull.length}` : `👁️ תצוגה מקדימה (${toPull.length * 3} קרדיטים)`}
           </button>
-          {pulled && (
-            <button onClick={save} disabled={!ready.length || !!busy} className="text-sm px-3 py-1.5 rounded-md bg-emerald-500/20 border border-emerald-400/60 text-white disabled:opacity-50">
-              {busy === "save" ? "שומר…" : `💾 שמור ב-${ready.length} משחקים`}
+          {pulled && !busy && (
+            <button onClick={save} disabled={!ready.length} className="text-sm px-3 py-1.5 rounded-md bg-emerald-500/20 border border-emerald-400/60 text-white disabled:opacity-50">
+              {`💾 שמור ב-${ready.length} משחקים`}
             </button>
           )}
-          {pulled?.creditsLeft != null && <span className="text-xs text-slate-400">קרדיטים שנשארו החודש: {pulled.creditsLeft}</span>}
+          {busy === "save" && <span className="text-sm text-slate-300">שומר…</span>}
         </div>
+        {plan && (
+          <div className="text-xs text-slate-400 mt-2">
+            {toPull.length} מתוך {plan.rows.length} משחקים זמינים אצל ספק היחסים
+            {plan.rows.length > toPull.length && " · משחק שעוד לא מופיע אצלו בדרך כלל מתווסף שבוע-שבועיים לפני המשחק"}
+          </div>
+        )}
+        {credits && (
+          <div className="grid grid-cols-3 gap-2 mt-3 text-center">
+            {[["המשיכה הזו", spent], ["נוצלו החודש", `${credits.used} / ${credits.used + credits.left}`], ["נשארו", `${credits.left} · ≈${Math.floor(credits.left / Math.max(3, toPull.length * 3 || 54))} משיכות מחזור`]].map(([l, v]) => (
+              <div key={l} className="rounded-lg py-1.5 px-1" style={{ background: "rgba(255,255,255,0.04)" }}>
+                <div className="text-[10px] text-slate-500">{l}</div>
+                <div className="text-sm text-white font-semibold">{v}</div>
+              </div>
+            ))}
+          </div>
+        )}
         {msg && <div className="text-sm mt-3 text-slate-200">{msg}</div>}
       </div>
 
@@ -100,8 +148,10 @@ export default function AdminOddsPull() {
                 <div className="text-slate-400 text-xs">מקור: {Object.entries(r.sources).map(([c, s]) => `${{ h2h: "1X2", btts: "מבקיעות", bands: "שערים" }[c]} ${s}`).join(" · ")}</div>
               )}
               {r.skipped && <div className="text-amber-300 text-xs mt-1">{r.skipped}</div>}
+              {r.loading && <div className="text-sky-300 text-xs mt-1">מושך…</div>}
+              {r.failed && <div className="text-red-300 text-xs mt-1">לא נמשך: {r.failed}</div>}
               {r.missing?.length > 0 && <div className="text-amber-300 text-xs mt-1">חסר: {r.missing.join(", ")}</div>}
-              {!r.skipped && (
+              {r.values && (
                 <div className="grid grid-cols-8 gap-1 mt-2 text-xs">
                   {FIELDS.map(([f, l], i) => {
                     const now = current[r.id]?.[f], next = r.values?.[f];

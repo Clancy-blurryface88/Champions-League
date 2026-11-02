@@ -4,7 +4,8 @@
 // Read-only: it returns the values and the admin page writes them, like a
 // manual edit. Only signed-in admins (Supabase token → profiles.is_admin).
 //
-// One request per match (region uk, 3 markets = 3 credits; the free plan has
+// Two steps: ?round=<id> lists the matches and their events (free); ?event=<id>
+// pulls one match (region uk, 3 markets = 3 credits; the free plan has
 // 500 a month). Each category comes from the first bookmaker in its chain
 // that has it. Goals bands from the over/under lines: 0-2 = under 2.5,
 // 5+ = over 4.5, 3-4 = what's between them. Every price rounds UP to 0.05.
@@ -28,11 +29,23 @@ const words = (s) => s.toLowerCase().replace(/ø/g, 'o').normalize('NFD').replac
   .replace(/[^a-z ]/g, ' ').split(' ').filter((w) => w.length >= 3);
 const like = (a, b) => { const B = words(b); return words(a).filter((w) => B.some((v) => v.slice(0, 4) === w.slice(0, 4))).length; };
 
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+// credits: { used, left, last } from the response headers (last = this call's cost)
 async function oddsApi(path) {
-  const r = await fetch(`${API}${path}${path.includes('?') ? '&' : '?'}apiKey=${process.env.ODDS_API_KEY}`);
-  const left = r.headers.get('x-requests-remaining');
-  if (!r.ok) throw new Error(`Odds API ${r.status}: ${(await r.text()).slice(0, 200)}`);
-  return { data: await r.json(), left: left == null ? null : Number(left) };
+  for (let attempt = 0; ; attempt++) {
+    const r = await fetch(`${API}${path}${path.includes('?') ? '&' : '?'}apiKey=${process.env.ODDS_API_KEY}`);
+    const h = (k) => (r.headers.get(k) == null ? null : Number(r.headers.get(k)));
+    const credits = { used: h('x-requests-used'), left: h('x-requests-remaining'), last: h('x-requests-last') };
+    // "Requests are too frequent" — back off and try again
+    if (r.status === 429 && attempt < 3) {
+      const body = await r.text();
+      if (!/FREQ/.test(body)) throw new Error(`Odds API 429: ${body.slice(0, 200)}`);
+      await wait(1500 * (attempt + 1));
+      continue;
+    }
+    if (!r.ok) throw new Error(`Odds API ${r.status}: ${(await r.text()).slice(0, 200)}`);
+    return { data: await r.json(), credits };
+  }
 }
 
 // Our match ↔ the API's event: kickoff within 3h and the team names alike.
@@ -95,24 +108,30 @@ export async function oddsHandler(req, res) {
   if (!(await adminFromToken(token))) return res.status(403).json({ error: 'admins only' });
   if (!process.env.ODDS_API_KEY) return res.status(500).json({ error: 'Missing ODDS_API_KEY' });
   const roundId = String(req.query.round || '');
-  if (!/^[0-9a-f-]{36}$/i.test(roundId)) return res.status(400).json({ error: 'round required' });
+  const eventId = String(req.query.event || '');
 
   try {
+    // Step 2 — one match's odds (3 credits). The page calls this once per match,
+    // one after another, so a long round never hits the function time limit or
+    // the frequency limit, and a failure loses only that match.
+    if (eventId) {
+      if (!/^[0-9a-f]{32}$/i.test(eventId)) return res.status(400).json({ error: 'bad event' });
+      const r = await oddsApi(`/events/${eventId}/odds?regions=uk&markets=h2h,btts,alternate_totals&oddsFormat=decimal`);
+      return res.status(200).json({ ...fieldsFrom(r.data, req.query.swapped === '1'), credits: r.credits });
+    }
+    // Step 1 — the round's matches and their events (the events list is free)
+    if (!/^[0-9a-f-]{36}$/i.test(roundId)) return res.status(400).json({ error: 'round required' });
     const matches = await supa(`matches?select=id,team_a,team_b,match_date,is_finished&round_id=eq.${roundId}&order=match_date`);
-    const { data: events } = await oddsApi('/events');
-    let left = null;
-    const rows = [];
-    for (const m of matches) {
+    const { data: events, credits } = await oddsApi('/events');
+    const rows = matches.map((m) => {
       const row = { id: m.id, team_a: m.team_a.trim(), team_b: m.team_b.trim(), match_date: m.match_date };
       // a match that started keeps its odds — points may already be counted by them
-      if (m.is_finished || new Date(m.match_date) <= new Date()) { rows.push({ ...row, skipped: 'המשחק כבר התחיל' }); continue; }
+      if (m.is_finished || new Date(m.match_date) <= new Date()) return { ...row, skipped: 'המשחק כבר התחיל' };
       const hit = findEvent(m, events);
-      if (!hit) { rows.push({ ...row, skipped: 'לא נמצא אצל ספק היחסים' }); continue; }
-      const r = await oddsApi(`/events/${hit.e.id}/odds?regions=uk&markets=h2h,btts,alternate_totals&oddsFormat=decimal`);
-      left = r.left ?? left;
-      rows.push({ ...row, event: `${hit.e.home_team} – ${hit.e.away_team}`, ...fieldsFrom(r.data, hit.swapped) });
-    }
-    return res.status(200).json({ rows, creditsLeft: left });
+      if (!hit) return { ...row, skipped: 'לא נמצא אצל ספק היחסים' };
+      return { ...row, eventId: hit.e.id, swapped: hit.swapped, event: `${hit.e.home_team} – ${hit.e.away_team}` };
+    });
+    return res.status(200).json({ rows, credits });
   } catch (e) {
     console.error('[odds]', e.message);
     return res.status(500).json({ error: e.message });
