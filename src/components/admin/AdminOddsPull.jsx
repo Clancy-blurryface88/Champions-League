@@ -158,6 +158,13 @@ function MatchCard({ r, now }) {
         <span className="text-slate-100 text-sm font-semibold">{r.team_a} – {r.team_b}</span>
         <span className="text-slate-500 text-xs whitespace-nowrap">{fmt(r.match_date)}</span>
       </div>
+      {r.event && (
+        // how the provider lists the match — matched to ours by team names, not by order
+        <div className="text-slate-400 text-xs">
+          אצל הספק: <span dir="ltr">{r.event}</span>
+          {r.swapped && <span className="text-amber-300"> · ⚠️ הסדר אצלו הפוך, היחסים הותאמו לסדר שלנו</span>}
+        </div>
+      )}
       {r.sources && (
         <div className="text-slate-400 text-xs">מקור: {Object.entries(r.sources).map(([c, s]) => `${CAT[c]} ${s}`).join(" · ")}</div>
       )}
