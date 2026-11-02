@@ -23,7 +23,7 @@ const linkPath = (link, roundId) => {
   return l || LINKS.home;
 };
 
-async function adminFromToken(token) {
+export async function adminFromToken(token) {
   if (!token) return null;
   const url = process.env.VITE_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_SERVICE_KEY;

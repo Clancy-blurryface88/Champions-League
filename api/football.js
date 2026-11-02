@@ -6,6 +6,7 @@ import { goalWebhookHandler } from './_goalWebhook.js';
 import { remindersHandler } from './_reminders.js';
 import { adminPushHandler, adminSubscribersHandler } from './_adminPush.js';
 import { replayHandler } from './_replay.js';
+import { oddsHandler } from './_odds.js';
 
 export default async function handler(req, res) {
   if (req.query.source === 'goal-webhook') return goalWebhookHandler(req, res);
@@ -14,6 +15,7 @@ export default async function handler(req, res) {
   if (req.query.source === 'admin-push') return adminPushHandler(req, res);
   if (req.query.source === 'admin-subscribers') return adminSubscribersHandler(req, res);
   if (req.query.source === 'replay') return replayHandler(req, res);
+  if (req.query.source === 'odds') return oddsHandler(req, res);
 
   const { competition = TOURNAMENT_CODE, filter = 'LIVE', type } = req.query;
 

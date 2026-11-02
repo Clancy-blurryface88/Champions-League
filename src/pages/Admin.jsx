@@ -26,6 +26,7 @@ import AdminFinishCheck from "../components/admin/AdminFinishCheck";
 import AdminSendPush from "../components/admin/AdminSendPush";
 import AdminPushSubscribers from "../components/admin/AdminPushSubscribers";
 import AdminPushReport from "../components/admin/AdminPushReport";
+import AdminOddsPull from "../components/admin/AdminOddsPull";
 import AdminLiveIntroPreview from "../components/admin/AdminLiveIntroPreview";
 import AdminRoundSummary from "../components/admin/AdminRoundSummary";
 import { LoaderBar } from "../components/ui/LoaderBar";
@@ -96,6 +97,7 @@ export default function Admin() {
       case 'send-push': return <AdminSendPush />;
       case 'push-subscribers': return <AdminPushSubscribers />;
       case 'push-report': return <AdminPushReport />;
+      case 'odds-pull': return <AdminOddsPull />;
       case 'live-intro': return <AdminLiveIntroPreview />;
       case 'round-summary': return <AdminRoundSummary />;
       default: return <AdminRounds />;
@@ -105,6 +107,7 @@ export default function Admin() {
   const navItems = [
     { id: 'rounds', label: 'Rounds', icon: Target },
     { id: 'matches', label: 'Matches', icon: Trophy },
+    { id: 'odds-pull', label: '📥 משיכת יחסים', icon: Download },
     { id: 'predictions', label: 'User Predictions', icon: Users },
     { id: 'match-predictions', label: 'View by Match', icon: Eye },
     { id: 'users', label: 'Manage Users', icon: UserIcon },
