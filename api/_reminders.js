@@ -23,7 +23,7 @@
 // idempotency key, so extra or overlapping triggers can never double-send —
 // which is also why this needs no secret.
 import { supa, push, ilAt, sendRoundSummary } from './_goalWebhook.js';
-import { participants, latestPredictions, missingText, sendPersonal } from './_personal.js';
+import { participants, latestPredictions, sendPersonal } from './_personal.js';
 import { PREDICTION_LOCK_MINUTES } from '../src/config/tournament.js';
 import { getLineupsForMatch } from './_uefaContext.js';
 
@@ -105,12 +105,12 @@ async function plannedReminders(now) {
       }
       out.push(announced
         ? { kind: 'missing', key: `rem:daybefore:${day}`, at: ilNoon(addDays(day, -1)), url: roundUrl, matches: list,
-            heading: '⏰ המחזור מתחיל מחר', personalBody: (n) => `${missingText(n)} למשחקי מחר · מתחילים ב-${ilTime(first)} 👉` }
+            heading: '⏰ המחזור מתחיל מחר', personalBody: () => `אל תשכח לשלוח את הניחושים, מתחילים מחר ב-${ilTime(first)} 👉` }
         : { key: `rem:daybefore:${day}`, at: ilNoon(addDays(day, -1)), url: roundUrl,
             heading: '📅 מחזור חדש פורסם ופתוח לניחוש!', body: `המשחקים מתחילים מחר ב-${ilTime(first)} — כנסו לנחש 👉` });
       out.push({
         kind: 'missing', key: `rem:first:${day}`, at: new Date(slots[0] - 135 * 60e3), url: roundUrl, matches: list,
-        heading: '⏰ תזכורת', personalBody: (n) => `${missingText(n)} למשחקי הערב · מתחילים ב-${ilTime(first)} 👉`,
+        heading: '⏰ תזכורת', personalBody: () => `לא שלחת עדיין את הניחושים למחזור הקרוב · מתחילים ב-${ilTime(first)} 👉`,
       });
     }
     slots.forEach((t, i) => {
@@ -171,9 +171,9 @@ export async function remindersHandler(req, res) {
           results.push({ key: r.key, at: r.at.toISOString(), lineups: true, sent });
           continue;
         }
-        const heading = `⏰ משחקי ${r.kickoff} מתחילים בקרוב`;
+        const heading = `⏰ משחקי השעה ${r.kickoff} מתחילים בקרוב`;
         const missing = await missingFor(r.slotMatches);
-        const sent = await sendPersonal(toPersonal(missing, heading, (n) => `${missingText(n)} למשחקי ${r.kickoff} · אפשר עד ${r.lock} 👉`), { url: r.url, key: r.key, mode, sendAfter: r.at });
+        const sent = await sendPersonal(toPersonal(missing, heading, () => `ניתן לעדכן תוצאה עד נעילת המשחק · ${r.lock} 👉`), { url: r.url, key: r.key, mode, sendAfter: r.at });
         results.push({ key: r.key, at: r.at.toISOString(), lineups: published, sent });
         continue;
       }

@@ -226,14 +226,20 @@ async function onGoal(fixtureId, data, mode, sendAfter) {
   const our = await findOurMatch(fx);
   if (!our) return { skipped: 'match not in our DB' };
   const hits = await countExact(our, hs, as);
-  // Only goals that leave someone on the exact score are worth a push.
-  if (hits === 0) return { skipped: 'nobody hits the new score' };
+  // Only goals that touch someone's exact score are worth a push: the new score
+  // is someone's prediction, or the score before this goal was (the goal broke it).
+  const events = await goal(`/fixtures/${fixtureId}/events`).catch(() => []);
+  const goals = events.filter((e) => e.type === 'GOAL');
+  const thisIdx = goals.map((e) => e.score?.replace(/\s/g, '')).lastIndexOf(`${hs}-${as}`);
+  const before = (thisIdx > 0 ? goals[thisIdx - 1].score?.replace(/\s/g, '') : null)
+    || (hs + as === 1 ? '0-0' : null);
+  const broke = before ? await countExact(our, ...before.split('-').map(Number)) : 0;
+  if (hits === 0 && broke === 0) return { skipped: 'the goal touches nobody\'s exact score' };
 
   let scorer = data?.scorer || data?.player || null;
   let minute = data?.minute || data?.time || null;
   if (!scorer) {
-    const events = await goal(`/fixtures/${fixtureId}/events`).catch(() => []);
-    const last = events.filter((e) => e.type === 'GOAL' && e.score?.replace(/\s/g, '') === `${hs}-${as}`).pop();
+    const last = goals.filter((e) => e.score?.replace(/\s/g, '') === `${hs}-${as}`).pop();
     if (last) { scorer = last.homeScorer || last.awayScorer; minute = last.time; }
   }
 
@@ -282,10 +288,10 @@ async function onScoreChanged(fixtureId, data, mode, sendAfter) {
   const our = await findOurMatch(fx);
   if (!our) return { skipped: 'match not in our DB' };
   const hits = await countExact(our, hs, as);
-  // Goal pushes only go out when someone hits the new score, so only correct
-  // a goal that was announced: someone hit the score before it was cut.
-  const announced = (await countExact(our, ph, pa)) > 0;
-  if (!announced) return { skipped: 'cancelled goal was never announced' };
+  // Only when it touches someone's exact score: the cut goal had given someone a
+  // hit, or the corrected score is someone's prediction again.
+  const announced = (await countExact(our, ph, pa)) > 0 || hits > 0;
+  if (!announced) return { skipped: 'the cancelled goal touches nobody\'s exact score' };
   const heading = `🖥️❌ השער נפסל — ${teamLabel(fx, 'home')} ${hs}-${as} ${teamLabel(fx, 'away')}`;
   return push({ heading, body: hitsLine(hits), url: `${SITE}/?open=live`, key: `fix:${fixtureId}:${hs}-${as}:${Date.now() - (Date.now() % 600000)}`, mode, sendAfter });
 }
