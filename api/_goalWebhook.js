@@ -13,6 +13,7 @@ import crypto from 'crypto';
 import { TEAM_BY_GOAL_ID } from '../src/data/goalTeamIds.js';
 import { calculateScore } from '../src/utils/scoring.js';
 import { participants, latestPredictions, sendPersonal } from './_personal.js';
+import { personalForGoal, personalForFinish } from './_personalGoal.js';
 
 const GOAL_BASE = 'https://api.goal-api.com/v1';
 const CL_LEAGUE = 'cmr77dw3900f5rx06j05wgzv4';
@@ -234,7 +235,14 @@ async function onGoal(fixtureId, data, mode, sendAfter) {
   const before = (thisIdx > 0 ? goals[thisIdx - 1].score?.replace(/\s/g, '') : null)
     || (hs + as === 1 ? '0-0' : null);
   const broke = before ? await countExact(our, ...before.split('-').map(Number)) : 0;
-  if (hits === 0 && broke === 0) return { skipped: 'the goal touches nobody\'s exact score' };
+  const touches = hits > 0 || broke > 0;
+  // Personal messages (first place, overtaken, hit, broken hit) replace the regular
+  // push for whoever they concern — one message per person per goal.
+  const scorerTeam = before && Number(before.split('-')[0]) < hs ? teamLabel(fx, 'home') : teamLabel(fx, 'away');
+  const mine = before
+    ? await personalForGoal(fx, our, before.split('-').map(Number), [hs, as], scorerTeam).catch((e) => { console.error('[personal-goal]', e.message); return null; })
+    : null;
+  if (!touches && !mine?.personal.length) return { skipped: 'the goal touches nobody' };
 
   let scorer = data?.scorer || data?.player || null;
   let minute = data?.minute || data?.time || null;
@@ -248,9 +256,22 @@ async function onGoal(fixtureId, data, mode, sendAfter) {
   }
 
   const heading = `⚽ גול! ${teamLabel(fx, 'home')} ${hs}-${as} ${teamLabel(fx, 'away')}${scorer ? ` (${scorer}${minute ? ` ${minute}'` : ''})` : ''}`;
-  return push({ heading, body: hitsLine(hits), url: `${SITE}/?open=live`, // Minute in the key: a goal ruled out by VAR and then re-scored at the same
+  // Minute in the key: a goal ruled out by VAR and then re-scored at the same
   // score is a new goal and must not be deduped against the cancelled one.
-  key: `goal:${fixtureId}:${hs}-${as}:${minute || ''}`, mode, sendAfter });
+  const key = `goal:${fixtureId}:${hs}-${as}:${minute || ''}`;
+  const url = `${SITE}/?open=live`;
+  const out = {};
+  if (mine?.personal.length) out.personal = await sendPersonal(mine.personal, { url, key: `p${key}`, mode, sendAfter });
+  if (touches) {
+    // nobody got a personal one → the usual broadcast (reaches unlinked devices too);
+    // otherwise only the rest of the participants
+    out.general = !mine?.personal.length
+      ? await push({ heading, body: hitsLine(hits), url, key, mode, sendAfter })
+      : mine.rest.length && mode !== 'test'
+        ? await push({ heading, body: hitsLine(hits), url, key, mode, sendAfter, externalIds: mine.rest })
+        : { skipped: mode === 'test' ? 'test: personal messages only' : 'everyone got a personal message' };
+  }
+  return out;
 }
 
 // score.changed = the score moved WITHOUT going up — in practice a goal ruled
@@ -300,8 +321,15 @@ async function onScoreChanged(fixtureId, data, mode, sendAfter) {
 async function onFinished(fixtureId, mode, sendAfter, late = false) {
   const fx = await goal(`/fixtures/${fixtureId}`);
   const date = fx.matchDate;
+  // Final whistle of this match: 🎯 to whoever hit its exact score (not on a late re-send).
+  let hitPush;
+  if (!late) {
+    const ourFx = await findOurMatch(fx);
+    const hitters = ourFx ? await personalForFinish(fx, ourFx).catch((e) => { console.error('[personal-finish]', e.message); return []; }) : [];
+    if (hitters.length) hitPush = await sendPersonal(hitters, { url: `${SITE}/?open=hits`, key: `hit:${fixtureId}`, mode, sendAfter });
+  }
   const night = await goal(`/fixtures/date/${date}?leagueId=${CL_LEAGUE}&limit=100`);
-  if (night.some((f) => f.matchStatus !== 'FINISHED')) return { skipped: 'night not over yet' };
+  if (night.some((f) => f.matchStatus !== 'FINISHED')) return { skipped: 'night not over yet', hitPush };
 
   // Tonight's matches in our DB, with their final scores (in our team_a/team_b order).
   const games = [];
@@ -338,6 +366,16 @@ async function onFinished(fixtureId, mode, sendAfter, late = false) {
   const place = (key) => { const sorted = [...me].sort((x, y) => y[key] - x[key]); const at = {};
     sorted.forEach((x, i) => { at[x.id] = i > 0 && Math.abs(x[key] - sorted[i - 1][key]) < 1e-9 ? at[sorted[i - 1].id] : i + 1; }); return at; };
   const was = place('before'), now = place('after');
+  // Personal best: each participant's best earlier night (points of calculated matches
+  // grouped by Israel date). Tonight above it → a line in their night message.
+  const ilDay = (d) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(new Date(d));
+  const past = await supa(`matches?select=id,match_date&is_score_calculated=eq.true&match_date=lt.${date}T00:00:00Z`).catch(() => []);
+  const pastPreds = past.length ? await latestPredictions(past.map((m) => m.id), 'user_id,match_id,created_at,points_earned') : {};
+  const bestBefore = Object.fromEntries(people.map((p) => {
+    const nights = {};
+    past.forEach((m) => { const pr = pastPreds[p.id]?.[m.id]; if (pr) nights[ilDay(m.match_date)] = (nights[ilDay(m.match_date)] || 0) + (Number(pr.points_earned) || 0); });
+    return [p.id, Math.max(0, ...Object.values(nights))];
+  }));
   const pts = (n) => (Math.round(n * 100) / 100).toFixed(2);
   const moved = (d) => (d > 1 ? `עלית ${d} מקומות` : d === 1 ? 'עלית מקום אחד' : d < -1 ? `ירדת ${-d} מקומות` : d === -1 ? 'ירדת מקום אחד' : 'נשארת באותו מקום');
   const evening = late ? 'אתמול' : 'הערב';
@@ -345,7 +383,7 @@ async function onFinished(fixtureId, mode, sendAfter, late = false) {
     userId: p.id, name: p.name,
     heading: `🏁 ${late ? 'סיכום ערב ליגת האלופות של אתמול' : 'ערב ליגת האלופות הסתיים!'}`,
     body: p.played
-      ? `סיימת את ${evening} עם ${pts(p.tonight)} נק׳${p.exact ? ` · 🎯 ${p.exact === 1 ? 'פגיעה מדויקת' : `${p.exact} פגיעות מדויקות`}` : ''} · ${moved(was[p.id] - now[p.id])} · מקום ${now[p.id]} בטבלה 👉`
+      ? `סיימת את ${evening} עם ${pts(p.tonight)} נק׳${p.exact ? ` · 🎯 ${p.exact === 1 ? 'פגיעה מדויקת' : `${p.exact} פגיעות מדויקות`}` : ''} · ${moved(was[p.id] - now[p.id])} · מקום ${now[p.id]} בטבלה${bestBefore[p.id] > 0 && p.tonight > bestBefore[p.id] ? ' · 📈 הערב הכי טוב שלך בטורניר 🏆' : ''} 👉`
       : `לא ניחשת ${evening} · מקום ${now[p.id]} בטבלה. כנסו לראות מה קרה 👉`,
   }));
   // Delivered at 23:59 Israel time of the match night (OneSignal send_after);
