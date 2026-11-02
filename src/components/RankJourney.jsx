@@ -198,8 +198,10 @@ function LanesView({ users, idx, tick, pl, sel, setSel, stepW }) {
   const meId = users.find((u) => u.me)?.id;
   const tog = (id) => setSel((s) => (s.includes(id) ? (s.length > 1 ? s.filter((v) => v !== id) : s) : [...s, id]));
   const headX = x(pl.e);
-  // keep the moving names in view while it plays (and on open / when the scale changes)
-  const follow = () => { const el = scroller.current; if (el && scroll) el.scrollLeft = (headX / Wd) * el.scrollWidth - el.clientWidth / 2; };
+  // keep the moving names in view while it plays (and on open / when the scale
+  // changes): they ride near the left edge, so the nights already played stay
+  // on screen to their right for as long as possible
+  const follow = () => { const el = scroller.current; if (el && scroll) el.scrollLeft = (headX / Wd) * el.scrollWidth - el.clientWidth * 0.22; };
   useEffect(() => { if (pl.playing) follow(); }, [pl.e]);
   useEffect(follow, [Wd]);
   return (
