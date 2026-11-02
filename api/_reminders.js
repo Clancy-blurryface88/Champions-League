@@ -26,6 +26,7 @@ import { supa, push, ilAt, sendRoundSummary } from './_goalWebhook.js';
 import { participants, latestPredictions, sendPersonal } from './_personal.js';
 import { PREDICTION_LOCK_MINUTES } from '../src/config/tournament.js';
 import { getLineupsForMatch } from './_uefaContext.js';
+import { autoFinishSweep } from './_autoFinish.js';
 
 const SITE = 'https://champions-league-2026.vercel.app';
 const TZ = 'Asia/Jerusalem';
@@ -143,6 +144,8 @@ export async function remindersHandler(req, res) {
   const mode = admin ? (req.query.send === 'test' ? 'test' : 'dry') : 'live';
 
   try {
+    // auto-finish pilot: close chosen matches once GOAL and UEFA agree on the final score
+    const autoFinish = await autoFinishSweep(now, mode).catch((e) => { console.error('[auto-finish]', e.message); return { error: e.message }; });
     const all = await plannedReminders(now);
     const due = all.filter((r) => now >= new Date(r.at.getTime() - LEAD_MS) && now < new Date(r.at.getTime() + (r.lateMs ?? LATE_MS)));
     const results = [];
@@ -190,6 +193,7 @@ export async function remindersHandler(req, res) {
       now: now.toISOString(),
       planned: admin ? all.map((r) => ({ key: r.key, at: r.at.toISOString(), atIsrael: `${ilDate(r.at)} ${ilTime(r.at)}` })) : undefined,
       results,
+      autoFinish,
     });
   } catch (e) {
     console.error('[reminders]', e.message);
