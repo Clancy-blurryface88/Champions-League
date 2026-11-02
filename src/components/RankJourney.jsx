@@ -289,9 +289,9 @@ export function RankJourneyView({ data, palette, showAll = true }) {
         <div className="grid grid-cols-2 gap-2">
           {VIEW.map(([key, l, sub]) => { const on = view === key; return (
             <motion.button whileTap={{ scale: 0.97 }} key={key} onClick={() => setView(key)} className="flex flex-col items-center rounded-xl py-1.5 transition-colors duration-200"
-              style={{ background: on ? `${GOLD}1f` : "rgba(255,255,255,0.03)", border: `1.5px solid ${on ? GOLD : "rgba(255,255,255,0.07)"}`, color: on ? GOLD : "#64748b" }}>
+              style={{ background: on ? `${GOLD}1f` : "rgba(255,255,255,0.07)", border: `1.5px solid ${on ? GOLD : "rgba(148,163,184,0.32)"}`, color: on ? GOLD : "#e2e8f0" }}>
               <span className="text-[13px] font-black">{l}</span>
-              <span className="text-[9.5px]" style={{ color: on ? "#cbd5e1" : "#475569" }}>{sub}</span>
+              <span className="text-[9.5px]" style={{ color: on ? "#cbd5e1" : "#94a3b8" }}>{sub}</span>
             </motion.button>); })}
         </div>
         <div className="flex justify-center gap-1.5">
