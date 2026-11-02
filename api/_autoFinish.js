@@ -19,7 +19,8 @@ const PILOT = {
 };
 const CL_LEAGUE = 'cmr77dw3900f5rx06j05wgzv4';
 const SITE = 'https://champions-league-2026.vercel.app';
-const START_AFTER_MS = 100 * 60e3; // no check before 100 min after kickoff
+// no check before 105 min after an early kickoff (19:45 → 21:30), 100 after a late one (22:00 → 23:40)
+const startAfterMs = (m) => (new Date(m.match_date).getUTCHours() < 19 ? 105 : 100) * 60e3;
 const GIVE_UP_MS = 3.5 * 3600e3; // still not closed 3.5h after kickoff → tell the admin
 
 async function supaWrite(method, path, body) {
@@ -160,7 +161,7 @@ const toAdmins = async (heading, body, key) => {
 export async function autoFinishSweep(now = new Date(), mode = 'live') {
   const ids = Object.keys(PILOT);
   const rows = await supa(`matches?select=id,team_a,team_b,match_date,is_finished,stage&id=in.(${ids.join(',')})`);
-  const due = rows.filter((m) => !m.is_finished && now - new Date(m.match_date) >= START_AFTER_MS);
+  const due = rows.filter((m) => !m.is_finished && now - new Date(m.match_date) >= startAfterMs(m));
   if (!due.length) return [];
   const days = [...new Set(due.map((m) => m.match_date.slice(0, 10)))];
   const uefa = (await Promise.all(days.map((d) => getUefaMatchesByDate(d, d)))).flat();
