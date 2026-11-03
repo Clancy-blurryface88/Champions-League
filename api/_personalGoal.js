@@ -98,14 +98,14 @@ export async function personalForFinish(fx, our) {
   const people = await participants();
   const preds = await latestPredictions([our.match.id], PRED);
   const home = fx.homeTeamName.trim(), away = fx.awayTeamName.trim();
-  const winner = h > w ? home : w > h ? away : null;
+  const draw = h === w;
   return people.flatMap((p) => {
     const pr = preds[p.id]?.[our.match.id];
     if (!pr || pr.predicted_score_a !== a || pr.predicted_score_b !== b) return [];
     const got = calculateScore(pr, { ...m, actual_score_a: a, actual_score_b: b }).totalPoints;
     return [{
       userId: p.id, name: p.name, heading: '🎯',
-      body: winner ? `פגעת ב-${h}-${w} ל${winner}, צברת ${pts(got)} נק׳` : `פגעת בתיקו ${h}-${w} של ${home}–${away}, צברת ${pts(got)} נק׳`,
+      body: `פגעת ${draw ? 'בתיקו ' : 'ב-'}${h}-${w} של ${home}–${away}, צברת ${pts(got)} נק׳`,
     }];
   });
 }
