@@ -773,8 +773,9 @@ export default function PredictionsResults() {
                         משחק {currentMatchIndex + 1} מתוך {finishedMatches.length}
                       </h3>
 
-                      {/* Chip strip — jump straight to any match, newest first */}
-                      {finishedMatches.length > 1 &&
+                      {/* Chip strip — jump straight to any match, newest first (shown
+                          from the first finished match: it is also the score card) */}
+                      {finishedMatches.length > 0 &&
                         <div ref={chipStripRef} className="flex gap-2 overflow-x-auto px-2 py-1 scrollbar-hide">
                           {finishedMatches.map((match, i) => i).reverse().map((i) => {
                             const match = finishedMatches[i];
