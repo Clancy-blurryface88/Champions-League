@@ -4,7 +4,7 @@
 //   score.changed  → correction push (goal ruled out by VAR) with the new count
 //   match.finished → once the night's last CL match ends, a personal summary to
 //                    each participant — their points tonight, places moved, and
-//                    where they stand — delivered at 23:59 Israel time; opens
+//                    where they stand — delivered at 00:20 Israel time; opens
 //                    that night's replay (/Replay?date=).
 // Goal pushes go to every subscriber; the night summary is per user (_personal.js). Each push carries
 // an idempotency key, so GOAL's retries (and two matches finishing together)
@@ -63,16 +63,6 @@ async function exactHitters(our, homeScore, awayScore) {
 
 async function countExact(our, homeScore, awayScore) {
   return (await exactHitters(our, homeScore, awayScore)).length;
-}
-
-// 23:59 Israel time on the Israel date of a moment, as a UTC Date (DST-safe).
-function ilEndOfNight(d) {
-  const TZ = 'Asia/Jerusalem';
-  const ymd = new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(d);
-  const guess = new Date(`${ymd}T23:59:00Z`);
-  const shown = Number(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', hourCycle: 'h23' }).format(guess));
-  // Israel is ahead of UTC, so 23:59Z shows as 01:59/02:59 the next day.
-  return new Date(guess.getTime() - (shown + 24 - 23) % 24 * 3600e3);
 }
 
 // `hour`:00 Israel time, `days` days after the Israel date of d.
@@ -257,6 +247,16 @@ async function onGoal(fixtureId, data, mode, sendAfter) {
   if (mode === 'live' && await alreadyAnnounced(teamLabel(fx, 'home'), teamLabel(fx, 'away'), ` ${hs}-${as} `)) {
     return { skipped: 'duplicate — this score was already announced' };
   }
+  // GOAL re-sends goals after the whistle, sometimes with a corrected minute (3.11:
+  // Raphinha 65' announced at 23:25, again as 64' at 23:57), so the minute key misses it.
+  if (fx.matchStatus === 'FINISHED') return { skipped: 'match already finished — a repeat, not a live goal' };
+  // This score was announced and no VAR call has cancelled it since: a repeat. A goal
+  // re-scored at the same score after a cancellation still goes out.
+  if (mode === 'live') {
+    // goal: is the broadcast, pgoal: the personal messages (a goal that only broke a hit has no broadcast)
+    const sent = await supa(`push_log?select=key&or=(key.like.*goal:${fixtureId}:${hs}-${as}:*,key.like.fix:${fixtureId}:*)&order=created_at.desc&limit=1`).catch(() => []);
+    if (sent[0]?.key?.includes('goal:')) return { skipped: 'duplicate — this score was already announced (push_log)' };
+  }
 
   const heading = `⚽ גול! ${teamLabel(fx, 'home')} ${hs}-${as} ${teamLabel(fx, 'away')}${scorer ? ` (${scorer}${minute ? ` ${minute}'` : ''})` : ''}`;
   // Minute in the key: a goal ruled out by VAR and then re-scored at the same
@@ -397,11 +397,12 @@ async function onFinished(fixtureId, mode, sendAfter, late = false) {
       ? `סיימת את ${evening} עם ${pts(p.tonight)} נק׳${p.exact ? ` · 🎯 ${p.exact === 1 ? 'פגיעה מדויקת' : `${p.exact} פגיעות מדויקות`}` : ''} · ${moved(was[p.id] - now[p.id])} · מקום ${now[p.id]} בטבלה${bestBefore[p.id] > 0 && p.tonight > bestBefore[p.id] ? ' · 📈 הערב הכי טוב שלך בטורניר 🏆' : ''} 👉`
       : `לא ניחשת ${evening} · מקום ${now[p.id]} בטבלה. כנסו לראות מה קרה 👉`,
   }));
-  // Delivered at 23:59 Israel time of the match night (OneSignal send_after);
-  // if the night runs past that, push() sends right away. A manual &at= or a
-  // test/late re-send keeps its own timing.
+  // Delivered at 00:20 Israel time after the match night (OneSignal send_after), so the
+  // last matches are already closed in the app when people tap it (at 23:59 they were
+  // not, 3.11); if the night runs past that, push() sends right away. A manual &at=
+  // or a test/late re-send keeps its own timing.
   const lastKickoff = new Date(Math.max(...night.map((f) => new Date(f.kickoffUtc).getTime())));
-  if (!sendAfter && !late && mode !== 'test') sendAfter = ilEndOfNight(lastKickoff);
+  if (!sendAfter && !late && mode !== 'test') sendAfter = new Date(ilAt(lastKickoff, 1, 0).getTime() + 20 * 60e3);
   const out = await sendPersonal(list, { url: `${SITE}/Replay?date=${String(date).slice(0, 10)}`, key: `night:${date}`, mode, sendAfter });
   out.roundSummary = late ? { skipped: 'late re-send' } : await roundSummaryPush(rows, lastKickoff, mode).catch((e) => ({ error: e.message }));
   return out;
