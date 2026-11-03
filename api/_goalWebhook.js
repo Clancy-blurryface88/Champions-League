@@ -326,7 +326,7 @@ async function onFinished(fixtureId, mode, sendAfter, late = false) {
   if (!late) {
     const ourFx = await findOurMatch(fx);
     const hitters = ourFx ? await personalForFinish(fx, ourFx).catch((e) => { console.error('[personal-finish]', e.message); return []; }) : [];
-    if (hitters.length) hitPush = await sendPersonal(hitters, { url: `${SITE}/?open=hits`, key: `hit:${fixtureId}`, mode, sendAfter });
+    if (hitters.length) hitPush = await sendPersonal(hitters, { url: `${SITE}/`, key: `hit:${fixtureId}`, mode, sendAfter });
   }
   const night = await goal(`/fixtures/date/${date}?leagueId=${CL_LEAGUE}&limit=100`);
   if (night.some((f) => f.matchStatus !== 'FINISHED')) return { skipped: 'night not over yet', hitPush };
