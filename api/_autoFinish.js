@@ -1,27 +1,21 @@
-// Auto-finish pilot (round 4, 3.11.2026) — closes chosen matches by itself.
-// Run from the reminders trigger (every 5 min). For each pilot match that
-// kicked off over 100 minutes ago and is still open, it reads the final score
-// from GOAL and from UEFA; only when BOTH say finished with the SAME score
-// does it write the match card like the admin's manual save (finished toggle,
-// score, is_score_calculated=false, league-table override cleared). In 'calc'
-// mode it then calculates the points — the same rules and writes as the
-// admin's "Calculate Scores", for that match only. The admin gets a push on
-// every close, and one when the sources disagree or never finish.
+// Auto-finish (since 4.11.2026, after the 3.11 pilot) — closes every match by itself.
+// Run from the reminders trigger (every 5 min, until 00:59 Israel time). For each match
+// that kicked off over 100 minutes ago (within the last day) and is still open, it reads
+// the final score from GOAL and from UEFA; only when BOTH say finished with the SAME
+// score does it write the match card like the admin's manual save (finished toggle,
+// score, is_score_calculated=false, league-table override cleared), then calculate the
+// points — the same rules and writes as the admin's "Calculate Scores", for that match
+// only. The admin gets a push on every close, and one when the sources disagree or
+// never finish.
 import { goal, supa, findOurMatch, push } from './_goalWebhook.js';
 import { getUefaMatchesByDate } from './_uefaContext.js';
 
-// matchId → 'score' (close only; the admin calculates) | 'calc' (close + calculate)
-const PILOT = {
-  'cc38c6a8-d581-4ea1-b5d7-cc9abccf0862': 'score', // Galatasaray – Stuttgart 19:45
-  '08e48671-e9eb-42e1-9684-c0131f8cc372': 'score', // Shakhtar Donetsk – Sporting Lisbon 19:45
-  'c3bf5871-4120-40e7-a4d0-bb041fd2aaea': 'calc', // Barcelona – Aston villa 22:00
-  'a17062ee-4e43-44cf-8848-d9f9ef6c8919': 'calc', // Manchester United – AS Roma 22:00
-};
 const CL_LEAGUE = 'cmr77dw3900f5rx06j05wgzv4';
 const SITE = 'https://champions-league-2026.vercel.app';
 // no check before 105 min after an early kickoff (19:45 → 21:30), 100 after a late one (22:00 → 23:40)
 const startAfterMs = (m) => (new Date(m.match_date).getUTCHours() < 19 ? 105 : 100) * 60e3;
-const GIVE_UP_MS = 3.5 * 3600e3; // still not closed 3.5h after kickoff → tell the admin
+// still not closed 2h45 after kickoff → tell the admin (22:00 → 00:45, before the trigger stops at 00:59)
+const GIVE_UP_MS = 2.75 * 3600e3;
 
 async function supaWrite(method, path, body) {
   const url = process.env.VITE_SUPABASE_URL;
@@ -159,8 +153,8 @@ const toAdmins = async (heading, body, key) => {
 
 // mode 'live' writes and pushes; anything else only reports what it would do.
 export async function autoFinishSweep(now = new Date(), mode = 'live') {
-  const ids = Object.keys(PILOT);
-  const rows = await supa(`matches?select=id,team_a,team_b,match_date,is_finished,stage&id=in.(${ids.join(',')})`);
+  const since = new Date(now - 864e5).toISOString();
+  const rows = await supa(`matches?select=id,team_a,team_b,match_date,is_finished,stage&is_finished=eq.false&match_date=gte.${since}&match_date=lte.${now.toISOString()}`);
   const due = rows.filter((m) => !m.is_finished && now - new Date(m.match_date) >= startAfterMs(m));
   if (!due.length) return [];
   const days = [...new Set(due.map((m) => m.match_date.slice(0, 10)))];
@@ -179,23 +173,18 @@ export async function autoFinishSweep(now = new Date(), mode = 'live') {
       continue;
     }
     const [a, b] = [g.a, g.b];
-    if (mode !== 'live') { out.push({ match: name, wouldClose: `${a}-${b}`, calc: PILOT[m.id] === 'calc' }); continue; }
+    if (mode !== 'live') { out.push({ match: name, wouldClose: `${a}-${b}` }); continue; }
     await supaWrite('PATCH', `matches?id=eq.${m.id}&is_finished=eq.false`, { is_finished: true, actual_score_a: a, actual_score_b: b, is_score_calculated: false });
     // like the manual save: a finished league-phase match clears the manual table order
     if (m.stage === 'league_phase') await supaWrite('PATCH', 'app_settings?league_table_override=not.is.null', { league_table_override: null, updated_at: new Date().toISOString() });
     const score = `${m.team_a.trim()} ${a}-${b} ${m.team_b.trim()}`;
-    if (PILOT[m.id] === 'calc') {
-      try {
-        const n = await calculateMatch(m.id);
-        await toAdmins('✅ סגרתי וחישבתי', `${score} · ${n} ניחושים חושבו, הטבלה עודכנה`, `auto:${m.id}:closed`);
-        out.push({ match: name, closed: `${a}-${b}`, calculated: n });
-      } catch (e) {
-        await toAdmins('⚠️ סגרתי, החישוב נכשל', `${score} · לחץ על חישוב ניקוד`, `auto:${m.id}:closed`);
-        out.push({ match: name, closed: `${a}-${b}`, calcError: e.message });
-      }
-    } else {
-      await toAdmins('✅ סגרתי משחק', `${score} · בדוק ולחץ על חישוב ניקוד`, `auto:${m.id}:closed`);
-      out.push({ match: name, closed: `${a}-${b}` });
+    try {
+      const n = await calculateMatch(m.id);
+      await toAdmins('✅ סגרתי וחישבתי', `${score} · ${n} ניחושים חושבו, הטבלה עודכנה`, `auto:${m.id}:closed`);
+      out.push({ match: name, closed: `${a}-${b}`, calculated: n });
+    } catch (e) {
+      await toAdmins('⚠️ סגרתי, החישוב נכשל', `${score} · לחץ על חישוב ניקוד`, `auto:${m.id}:closed`);
+      out.push({ match: name, closed: `${a}-${b}`, calcError: e.message });
     }
   }
   return out;
