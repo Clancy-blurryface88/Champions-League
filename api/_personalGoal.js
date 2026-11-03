@@ -53,7 +53,10 @@ async function liveTotals(fx, override) {
 
 // Returns { personal: [{ userId, name, heading, body }], rest: [userIds] } for a goal
 // that took our match from `before` to `after` (both in GOAL's home-away order).
-export async function personalForGoal(fx, our, before, after, scorerTeam) {
+// `game` = { match: "Home 2-1 Away", scorer: "⚽ Name 67'" (or '') }.
+export async function personalForGoal(fx, our, before, after, scorerTeam, game = { match: '', scorer: '' }) {
+  const gameLine = [game.match, game.scorer].filter(Boolean).join(' · ');
+  const withGame = (body) => (gameLine ? `${gameLine}\n${body}` : body);
   const toOurs = ([h, w]) => ({ id: our.match.id, a: our.swapped ? w : h, b: our.swapped ? h : w });
   const { people, preds, total } = await liveTotals(fx);
   const was = places(total(toOurs(before))), now = places(total(toOurs(after)));
@@ -68,17 +71,17 @@ export async function personalForGoal(fx, our, before, after, scorerTeam) {
     const hitNow = sameAs(pr, after), lost = sameAs(pr, before);
     let msg = null;
     if (now[p.id] === 1 && was[p.id] > 1) {
-      msg = { heading: '🏆 עלית לפסגה!', body: `בזכות השער של ${scorerTeam}, אתה במקום הראשון!` };
+      msg = { heading: '🏆 עלית לפסגה!', body: withGame(`בזכות השער של ${scorerTeam}, אתה במקום הראשון!`) };
     } else if (was[p.id] <= 3 && now[p.id] > was[p.id]) {
       // the one now directly above who used to be below
       const passer = people.find((o) => o.id !== p.id && now[o.id] < now[p.id] && was[o.id] > was[p.id]);
       msg = passer
-        ? { heading: '⚔️ עקפו אותך', body: `${nameOf(passer.id)} עקף אותך ב-${pts(afterTotals[passer.id] - afterTotals[p.id])} נק׳ 😤` }
-        : { heading: '⚔️ עקפו אותך', body: `ירדת למקום ${now[p.id]} בטבלה 😤` };
+        ? { heading: '⚔️ עקפו אותך', body: withGame(`${nameOf(passer.id)} עקף אותך ב-${pts(afterTotals[passer.id] - afterTotals[p.id])} נק׳ 😤`) }
+        : { heading: '⚔️ עקפו אותך', body: withGame(`ירדת למקום ${now[p.id]} בטבלה 😤`) };
     } else if (hitNow) {
-      msg = { heading: `🔥 ${after[0]}-${after[1]}!`, body: 'כרגע זאת פגיעה מדויקת. תחזיק אצבעות 🤞' };
+      msg = { heading: `🔥 ${game.match || `${after[0]}-${after[1]}!`}`, body: `${game.scorer ? `${game.scorer} · ` : ''}כרגע זאת פגיעה מדויקת. תחזיק אצבעות 🤞` };
     } else if (lost) {
-      msg = { heading: '😱 השער הרס לך את הפגיעה', body: `הגול של ${scorerTeam} הרס לך את ה-${shown(pr)} 💔` };
+      msg = { heading: '😱 השער הרס לך את הפגיעה', body: `${gameLine ? `${gameLine} · ` : ''}הגול הרס לך את ה-${shown(pr)} 💔` };
     }
     if (msg) personal.push({ userId: p.id, name: p.name, ...msg });
   }

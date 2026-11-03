@@ -238,18 +238,20 @@ async function onGoal(fixtureId, data, mode, sendAfter) {
   const touches = hits > 0 || broke > 0;
   // Personal messages (first place, overtaken, hit, broken hit) replace the regular
   // push for whoever they concern — one message per person per goal.
-  const scorerTeam = before && Number(before.split('-')[0]) < hs ? teamLabel(fx, 'home') : teamLabel(fx, 'away');
-  const mine = before
-    ? await personalForGoal(fx, our, before.split('-').map(Number), [hs, as], scorerTeam).catch((e) => { console.error('[personal-goal]', e.message); return null; })
-    : null;
-  if (!touches && !mine?.personal.length) return { skipped: 'the goal touches nobody' };
-
   let scorer = data?.scorer || data?.player || null;
   let minute = data?.minute || data?.time || null;
   if (!scorer) {
     const last = goals.filter((e) => e.score?.replace(/\s/g, '') === `${hs}-${as}`).pop();
     if (last) { scorer = last.homeScorer || last.awayScorer; minute = last.time; }
   }
+
+  const scorerTeam = before && Number(before.split('-')[0]) < hs ? teamLabel(fx, 'home') : teamLabel(fx, 'away');
+  // the match and the scorer, for the personal messages
+  const game = { match: `${teamLabel(fx, 'home')} ${hs}-${as} ${teamLabel(fx, 'away')}`, scorer: scorer ? `⚽ ${scorer}${minute ? ` ${minute}'` : ''}` : '' };
+  const mine = before
+    ? await personalForGoal(fx, our, before.split('-').map(Number), [hs, as], scorerTeam, game).catch((e) => { console.error('[personal-goal]', e.message); return null; })
+    : null;
+  if (!touches && !mine?.personal.length) return { skipped: 'the goal touches nobody' };
 
   if (mode === 'live' && await alreadyAnnounced(teamLabel(fx, 'home'), teamLabel(fx, 'away'), ` ${hs}-${as} `)) {
     return { skipped: 'duplicate — this score was already announced' };
