@@ -16,16 +16,22 @@ const KIND = [
   [/^rem:twodays:/, "📅 מחזור חדש (יומיים לפני)"], [/^rem:daybefore:/, "⏰ יום לפני"], [/^rem:first:/, "⏰ תזכורת לפני הערב"],
   [/^rem:slot:/, "📋 הרכבים / משבצת"], [/^goal:/, "⚽ גול"], [/^fix:/, "🖥️ VAR"], [/^night:/, "🏁 סוף ערב"],
   [/^round-summary:/, "🏆 סיכום מחזור"], [/^manual:/, "✍️ ידני"],
+  [/^auto:test:/, "🤖 סגירה אוטומטית · בדיקה למנהלים"], [/^auto:/, "🤖 סגירה אוטומטית (למנהלים)"],
 ];
+// a device that isn't subscribed to pushes is not a send failure
+const notLinked = (e) => e === "not linked" || /not subscribed/i.test(e || "");
 const kindOf = (key) => KIND.find(([re]) => re.test(key))?.[1] || key.split(":")[0];
 
 export default function AdminPushReport() {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [days, setDays] = useState(7);
+  const [busy, setBusy] = useState(false);
+  const [loadedAt, setLoadedAt] = useState(null);
 
   const load = async () => {
     setError("");
+    setBusy(true);
     const since = new Date(Date.now() - days * 864e5).toISOString();
     const [logs, opens, profiles, rounds] = await Promise.all([
       supabase.from("push_log").select("*").gte("created_at", since).order("created_at", { ascending: false }).limit(1000),
@@ -33,9 +39,11 @@ export default function AdminPushReport() {
       supabase.from("profiles").select("id,display_name"),
       supabase.from("rounds").select("id,name,order").order("order"),
     ]);
+    setBusy(false);
     const err = logs.error || opens.error;
     if (err) { setError(err.message); setData(null); return; }
     setData({ logs: logs.data, opens: opens.data, people: profiles.data || [], rounds: rounds.data || [] });
+    setLoadedAt(new Date());
   };
   useEffect(() => { load(); }, [days]);
 
@@ -72,14 +80,17 @@ export default function AdminPushReport() {
 
       <div className="rounded-2xl p-4" style={box}>
         <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
-          <h3 className="text-white font-bold">📬 התראות שנשלחו</h3>
+          <div>
+            <h3 className="text-white font-bold">📬 התראות שנשלחו</h3>
+            {loadedAt && <div className="text-[11px] text-slate-500">עודכן ב-{new Intl.DateTimeFormat("he-IL", { timeZone: TZ, hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(loadedAt)}</div>}
+          </div>
           <div className="flex gap-1">
             {[1, 7, 30].map((d) => (
               <button key={d} onClick={() => setDays(d)} className={`text-xs px-2 py-1 rounded-md border ${days === d ? "bg-sky-500/20 border-sky-400/60 text-white" : "border-white/15 text-slate-400"}`}>
                 {d === 1 ? "היום" : `${d} ימים`}
               </button>
             ))}
-            <button onClick={load} className="text-xs px-2 py-1 rounded-md border border-white/15 text-slate-300">רענון</button>
+            <button onClick={load} disabled={busy} className="text-xs px-2 py-1 rounded-md border border-white/15 text-slate-300 active:scale-95 transition-transform disabled:opacity-60">{busy ? "מרענן…" : "רענון"}</button>
           </div>
         </div>
         {!sends.length && <div className="text-slate-500 text-sm">עוד לא נרשמו התראות בתקופה הזאת.</div>}
@@ -95,6 +106,8 @@ function SendCard({ g, name }) {
   const [open, setOpen] = useState(false);
   const personal = g.rows.some((r) => r.user_id);
   const ok = g.rows.filter((r) => !r.error);
+  const unlinked = g.rows.filter((r) => notLinked(r.error)).length;
+  const failed = g.rows.length - ok.length - unlinked;
   const openers = g.rows.flatMap((r) => r.opens.map((o) => ({ ...o, row: r })));
   const scheduled = g.rows[0].send_after && new Date(g.rows[0].send_after) > new Date();
   return (
@@ -106,7 +119,7 @@ function SendCard({ g, name }) {
         </div>
         <div className="text-white text-sm font-semibold mt-1">{g.heading}</div>
         <div className="flex gap-3 mt-1 text-xs">
-          <span className="text-emerald-300">{personal ? `📨 ${ok.length}/${g.rows.length} נשלחו` : g.rows[0].error ? `⚠️ ${g.rows[0].error}` : `📨 כולם${g.rows[0].recipients != null ? ` · ${g.rows[0].recipients} מכשירים` : ""}`}</span>
+          <span className="text-emerald-300">{personal ? `📨 ${ok.length}/${g.rows.length} נשלחו${unlinked ? ` · ${unlinked} לא רשומים` : ""}${failed ? ` · ${failed} שגיאה` : ""}` : g.rows[0].error ? `⚠️ ${g.rows[0].error}` : `📨 כולם${g.rows[0].recipients != null ? ` · ${g.rows[0].recipients} מכשירים` : ""}`}</span>
           <span className="text-amber-300">👆 {openers.length} פתחו</span>
         </div>
       </button>
@@ -116,7 +129,7 @@ function SendCard({ g, name }) {
             <div key={r.id} className="flex items-center justify-between gap-2">
               <span className="text-slate-200">{name(r.user_id)}</span>
               <span className="text-slate-400 truncate flex-1 text-left" title={r.body}>{r.body}</span>
-              <span className={r.error ? "text-red-300" : "text-emerald-300"}>{r.error === "not linked" ? "⚠️ לא רשום" : r.error ? "⚠️ שגיאה" : "✅"}</span>
+              <span className={r.error ? "text-red-300" : "text-emerald-300"}>{notLinked(r.error) ? "⚠️ לא רשום" : r.error ? `⚠️ שגיאה (${r.error})` : "✅"}</span>
               <span className="text-amber-300 w-24 text-left">{r.opens.length ? `👆 ${fmt(r.opens[0].opened_at)}` : "—"}</span>
             </div>
           )) : (
