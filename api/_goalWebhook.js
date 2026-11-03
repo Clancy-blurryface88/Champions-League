@@ -291,6 +291,10 @@ async function onScoreChanged(fixtureId, data, mode, sendAfter) {
   if (!prev || prev.home == null || prev.away == null) return { skipped: 'no previous score — not a cancellation' };
   const ph = Number(prev.home), pa = Number(prev.away);
   if (!(ph > hs || pa > as) || ph < hs || pa < as) return { skipped: `score did not drop (${ph}-${pa} → ${hs}-${as})` };
+  // GOAL re-sent the same cancellation after the final whistle (Galatasaray–
+  // Stuttgart 2-1 → 2-0: once at 21:23, again at 21:55) — a finished match
+  // gets no VAR push, and one cancellation is announced once (see the key below).
+  if (fx.matchStatus === 'FINISHED') return { skipped: 'match already finished — a repeat, not a live VAR call' };
 
   // GOAL can blip the score down for a moment while it rebuilds a match's
   // data (Aston Villa–Fenerbahçe 2-0: both goals re-written at once, a false
@@ -317,7 +321,7 @@ async function onScoreChanged(fixtureId, data, mode, sendAfter) {
   const announced = (await countExact(our, ph, pa)) > 0 || hits > 0;
   if (!announced) return { skipped: 'the cancelled goal touches nobody\'s exact score' };
   const heading = `🖥️❌ השער נפסל — ${teamLabel(fx, 'home')} ${hs}-${as} ${teamLabel(fx, 'away')}`;
-  return push({ heading, body: hitsLine(hits, false), url: `${SITE}/?open=live`, key: `fix:${fixtureId}:${hs}-${as}:${Date.now() - (Date.now() % 600000)}`, mode, sendAfter });
+  return push({ heading, body: hitsLine(hits, false), url: `${SITE}/?open=live`, key: `fix:${fixtureId}:${ph}-${pa}>${hs}-${as}`, mode, sendAfter });
 }
 
 // late=true: a manual re-send the day after ("אתמול" instead of "הערב").
