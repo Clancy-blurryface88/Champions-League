@@ -1,7 +1,7 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useInView, useReducedMotion } from "framer-motion";
-import { Play, Pause, RotateCcw, X } from "lucide-react";
+import { Play, Pause, RotateCcw, X, Info } from "lucide-react";
 import { User, Prediction, Match, PublicProfile } from "@/api/entities";
 import { ShineBorder } from "@/components/magicui/shine-border";
 
@@ -100,6 +100,7 @@ function usePlayback(n) {
   const reduce = useReducedMotion();
   const [p, setP] = useState(reduce ? n - 1 : 0);
   const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState(1);
   const first = useRef(true);
   useEffect(() => { if (!inView || reduce) return; const t = setTimeout(() => setPlaying(true), 650); return () => clearTimeout(t); }, [inView]);
   useEffect(() => { if (first.current) { first.current = false; return; } setPlaying(false); setP(n - 1); }, [n]);
@@ -109,18 +110,21 @@ function usePlayback(n) {
     const tick = (now) => {
       // a frame's timestamp can be a little before `last` — never step backwards past 0
       const dt = Math.max(0, now - last); last = now;
-      setP((x) => { const nx = Math.min(n - 1, x + dt / STEP_MS); if (nx >= n - 1) setPlaying(false); return nx; });
+      setP((x) => { const nx = Math.min(n - 1, x + (dt * speed) / STEP_MS); if (nx >= n - 1) setPlaying(false); return nx; });
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [playing, n]);
+  }, [playing, n, speed]);
   const toggle = () => { if (playing) return setPlaying(false); if (p >= n - 1) setP(0); setPlaying(true); };
   const seek = (v) => { setPlaying(false); setP(v); };
   const i = Math.max(0, Math.min(Math.floor(p), n - 1));
   const e = i >= n - 1 ? n - 1 : i + easeInOut(p - i);
-  return { ref, p, e, playing, toggle, seek };
+  return { ref, p, e, playing, toggle, seek, speed, setSpeed };
 }
+
+// a chip that is easy to see even when it isn't the chosen one (same look as the view tiles)
+const chip = (on) => ({ background: on ? `${GOLD}26` : "rgba(255,255,255,0.07)", color: on ? GOLD : "#e2e8f0", border: `1px solid ${on ? GOLD : "rgba(148,163,184,0.32)"}` });
 
 function Timeline({ pl, n, label, tick }) {
   const step = Math.min(n - 1, Math.round(pl.p));
@@ -131,7 +135,16 @@ function Timeline({ pl, n, label, tick }) {
         {pl.playing ? <Pause size={16} fill="currentColor" /> : pl.p >= n - 1 ? <RotateCcw size={16} strokeWidth={2.6} /> : <Play size={16} fill="currentColor" className="mr-[-2px]" />}
       </motion.button>
       <div className="min-w-0 flex-1">
-        <div className="mb-1.5 text-[12px] font-bold text-slate-200">{label(step)}</div>
+        <div className="mb-1.5 flex items-center justify-between gap-2">
+          <span className="truncate text-[12px] font-bold text-slate-200">{label(step)}</span>
+          <div className="flex shrink-0 items-center gap-1" role="group" aria-label="מהירות">
+            <span className="text-[10px] text-slate-500">מהירות</span>
+            {[0.5, 0.75, 1].map((s) => (
+              <button key={s} dir="ltr" onClick={() => pl.setSpeed(s)} aria-pressed={pl.speed === s}
+                className="rounded-full px-1.5 py-[2px] text-[10.5px] font-bold tabular-nums transition-colors duration-200 active:scale-95" style={chip(pl.speed === s)}>{s}×</button>
+            ))}
+          </div>
+        </div>
         <div className="relative h-5">
           <div className="absolute inset-x-0 top-1/2 h-[4px] -translate-y-1/2 rounded-full bg-white/10" />
           <div className="absolute right-0 top-1/2 h-[4px] -translate-y-1/2 rounded-full" style={{ width: `${n > 1 ? (pl.e / (n - 1)) * 100 : 100}%`, background: GREEN }} />
@@ -296,8 +309,8 @@ export function RankJourneyView({ data, palette, showAll = true }) {
         </div>
         <div className="flex justify-center gap-1.5">
           {[["night", "לפי ערב"], ["round", "לפי מחזור"]].map(([key, l]) => (
-            <button key={key} onClick={() => setMode(key)} className="rounded-full px-3 py-1 text-[11.5px] font-bold transition-colors duration-200"
-              style={{ background: mode === key ? `${GOLD}26` : "transparent", color: mode === key ? GOLD : "#64748b", border: `1px solid ${mode === key ? GOLD : "rgba(148,163,184,0.2)"}` }}>{l}</button>
+            <button key={key} onClick={() => setMode(key)} className="rounded-full px-3 py-1 text-[11.5px] font-bold transition-colors duration-200 active:scale-95"
+              style={chip(mode === key)}>{l}</button>
           ))}
         </div>
       </div>
@@ -305,6 +318,10 @@ export function RankJourneyView({ data, palette, showAll = true }) {
         ? <TableView users={users} idx={M.idx} pl={pl} />
         : <LanesView users={users} idx={M.idx} tick={M.tick} pl={pl} sel={sel} setSel={setSel} stepW={mode === "round" ? 60 : 46} />}
       <Timeline pl={pl} n={n} label={(s) => M.label(M.idx[s])} />
+      <p className="mt-3 flex items-start gap-1.5 rounded-lg px-2.5 py-1.5 text-[10.5px] leading-snug text-slate-400" style={{ background: "rgba(255,255,255,0.03)" }}>
+        <Info size={12} className="mt-[1px] shrink-0 text-slate-500" />
+        <span>בחר תצוגה: מסלול דירוג או טבלה, לפי ערב או לפי מחזור. במסלול לחץ על "רק אני" כדי לראות רק אותך, או סמן משתתף אחד, כמה משתתפים או "כולם".</span>
+      </p>
     </div>
   );
 }
