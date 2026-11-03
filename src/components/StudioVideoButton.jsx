@@ -26,7 +26,32 @@ async function findStudioRound(rounds) {
     }),
   ]);
   const hit = perRound.find((x) => x && !(players && x.predicted >= players * x.total));
-  return hit ? { ...hit.round, firstKickoff: hit.firstKickoff } : null;
+  return hit ? { ...hit.round, video: hit.round.studio_video_url, kind: "studio", firstKickoff: hit.firstKickoff } : null;
+}
+
+// The night's summary video (rounds.summary_video_url) is offered from its upload until the
+// next kickoff after it (the second night), and for 48 hours at most when no match follows.
+async function findSummaryRound(rounds) {
+  const latest = rounds.filter((r) => r.summary_video_url && r.summary_video_at)
+    .sort((a, b) => new Date(b.summary_video_at) - new Date(a.summary_video_at))[0];
+  if (!latest) return null;
+  const at = new Date(latest.summary_video_at).getTime();
+  const { data: next } = await supabase.from("matches").select("match_date, round_id")
+    .gt("match_date", latest.summary_video_at).order("match_date").limit(1);
+  const until = Math.min(next?.[0] ? new Date(next[0].match_date).getTime() : Infinity, at + 48 * 3600e3);
+  if (Date.now() >= until) return null;
+  // after the video, "predict now" only when the round still has a match to predict
+  const canPredict = next?.[0]?.round_id === latest.id;
+  // the night it sums up: the day of the last kickoff before the upload ("יום שלישי")
+  const { data: prev } = await supabase.from("matches").select("match_date")
+    .eq("round_id", latest.id).lt("match_date", latest.summary_video_at).order("match_date", { ascending: false }).limit(1);
+  const day = prev?.[0] ? new Date(prev[0].match_date).toLocaleDateString("he-IL", { weekday: "long", timeZone: "Asia/Jerusalem" }) : "";
+  return { ...latest, video: latest.summary_video_url, kind: "summary", canPredict, day, firstKickoff: until };
+}
+
+// the studio video before a round comes first; otherwise the latest night summary
+async function findVideo(rounds) {
+  return (await findStudioRound(rounds)) || (await findSummaryRound(rounds));
 }
 
 // the last answer is remembered, so on the next visit the TV is there from the first frame
@@ -47,11 +72,13 @@ export default function StudioVideoButton({ rounds, onPredict, onVisible }) {
   useEffect(() => {
     let alive = true;
     if (!rounds.length) return;
-    findStudioRound(rounds).then((r) => { if (!alive) return; setRound(r); writeCache(r); }).catch(() => {});
+    findVideo(rounds).then((r) => { if (!alive) return; setRound(r); writeCache(r); }).catch(() => {});
     return () => { alive = false; };
   }, [rounds]);
 
   if (!round) return null;
+  const summary = round.kind === "summary";
+  const video = round.video || round.studio_video_url; // a cache from before the summary videos has no `video`
 
   return (
     <>
@@ -63,7 +90,7 @@ export default function StudioVideoButton({ rounds, onPredict, onVisible }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
         className="studio-tv mx-auto block w-full max-w-[340px] rounded-xl p-[5px] bg-[#111827] shadow-[0_0_0_1px_#374151,0_12px_30px_rgba(0,0,0,0.7)] active:scale-[0.98] transition-transform"
-        aria-label={`צפייה באולפן ${round.name}`}
+        aria-label={summary ? `צפייה בסיכום הערב, ${round.name}` : `צפייה באולפן ${round.name}`}
       >
         <div className="studio-tv__screen relative h-[118px] rounded-lg overflow-hidden bg-center bg-cover" style={{ backgroundImage: "url(/champions/studio-host.jpg)", backgroundPosition: "center 28%" }}>
           <div className="studio-tv__snow absolute inset-0 mix-blend-overlay" style={{ backgroundImage: NOISE }} />
@@ -72,7 +99,7 @@ export default function StudioVideoButton({ rounds, onPredict, onVisible }) {
             <i className="studio-tv__dot h-1.5 w-1.5 rounded-full bg-white" />LIVE
           </span>
           <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-2.5 py-2" style={{ background: "linear-gradient(0deg, rgba(2,6,23,.9), transparent)" }}>
-            <b className="text-[15px] font-black text-white">📺 אולפן ליגת האלופות</b>
+            <b className="text-[15px] font-black text-white">{summary ? `📺 סיכום משחקי ${round.day || "הערב"}` : "📺 אולפן ליגת האלופות"}</b>
             <span className="studio-tv__play flex h-8 w-8 items-center justify-center rounded-full bg-yellow-400">
               <span className="ml-0.5 border-y-[7px] border-l-[11px] border-y-transparent border-l-[#1b1400]" />
             </span>
@@ -90,7 +117,7 @@ export default function StudioVideoButton({ rounds, onPredict, onVisible }) {
           >
             {/* loaded only now, on tap, so the home screen stays light */}
             <video
-              src={round.studio_video_url}
+              src={video}
               poster="/champions/studio-host.jpg"
               className="h-full w-full object-contain"
               autoPlay playsInline controls
@@ -100,7 +127,7 @@ export default function StudioVideoButton({ rounds, onPredict, onVisible }) {
               className="absolute top-[max(14px,env(safe-area-inset-top))] left-3.5 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/60 text-white">
               <X className="h-5 w-5" />
             </button>
-            {ended && (
+            {ended && (!summary || round.canPredict) && (
               <motion.button
                 type="button"
                 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}

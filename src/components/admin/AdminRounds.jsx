@@ -174,6 +174,7 @@ export default function AdminRounds() {
                         </span>
                       </div>
                       <StudioVideoField round={round} onSaved={loadRounds} />
+                      <StudioVideoField round={round} onSaved={loadRounds} summary />
                     </div>
                     <div className="flex gap-2">
                       <Button
@@ -206,7 +207,10 @@ export default function AdminRounds() {
 
 // The round's studio video (rounds.studio_video_url): the home screen shows a TV button
 // for it until every participant has predicted the round or its first match kicks off.
-function StudioVideoField({ round, onSaved }) {
+// With `summary`, the night's summary video (rounds.summary_video_url): the same TV button
+// shows it from the upload until the next kickoff.
+function StudioVideoField({ round, onSaved, summary = false }) {
+  const field = summary ? 'summary_video_url' : 'studio_video_url';
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -218,7 +222,9 @@ function StudioVideoField({ round, onSaved }) {
     setBusy(true); setError('');
     try {
       const { file_url } = await UploadFile({ file, folder: 'videos' });
-      await Round.update(round.id, { studio_video_url: file_url });
+      await Round.update(round.id, summary
+        ? { summary_video_url: file_url, summary_video_at: new Date().toISOString() }
+        : { studio_video_url: file_url });
       onSaved();
     } catch (err) {
       setError('ההעלאה נכשלה: ' + (err?.message || 'שגיאה'));
@@ -228,17 +234,17 @@ function StudioVideoField({ round, onSaved }) {
 
   const handleRemove = async () => {
     if (!window.confirm('להסיר את הסרטון מהמחזור? הכפתור במסך הראשי ייעלם.')) return;
-    await Round.update(round.id, { studio_video_url: null });
+    await Round.update(round.id, { [field]: null });
     onSaved();
   };
 
   return (
     <div className="mt-3 flex flex-wrap items-center gap-2 text-sm" dir="rtl">
       <Tv className="w-4 h-4 text-amber-400" />
-      <span className="text-slate-300">סרטון אולפן:</span>
-      {round.studio_video_url ? (
+      <span className="text-slate-300">{summary ? 'סרטון סיכום ערב:' : 'סרטון אולפן:'}</span>
+      {round[field] ? (
         <>
-          <a href={round.studio_video_url} target="_blank" rel="noreferrer" className="text-sky-400 underline">צפייה</a>
+          <a href={round[field]} target="_blank" rel="noreferrer" className="text-sky-400 underline">צפייה</a>
           <button onClick={handleRemove} className="text-red-400 hover:underline">הסרה</button>
         </>
       ) : (
