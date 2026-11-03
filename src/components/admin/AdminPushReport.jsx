@@ -126,15 +126,21 @@ function SendCard({ g, name }) {
       {open && (
         <div className="mt-2 pt-2 border-t border-white/10 space-y-1 text-xs">
           {personal ? g.rows.map((r) => (
-            <div key={r.id} className="flex items-center justify-between gap-2">
-              <span className="text-slate-200">{name(r.user_id)}</span>
-              <span className="text-slate-400 truncate flex-1 text-left" title={r.body}>{r.body}</span>
-              <span className={r.error ? "text-red-300" : "text-emerald-300"}>{notLinked(r.error) ? "⚠️ לא רשום" : r.error ? `⚠️ שגיאה (${r.error})` : "✅"}</span>
-              <span className="text-amber-300 w-24 text-left">{r.opens.length ? `👆 ${fmt(r.opens[0].opened_at)}` : "—"}</span>
+            <div key={r.id} className="rounded-lg px-2 py-1.5" style={{ background: "rgba(255,255,255,0.025)" }}>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-slate-200 font-semibold">{name(r.user_id)}</span>
+                <span className="flex items-center gap-2">
+                  <span className={r.error ? "text-red-300" : "text-emerald-300"}>{notLinked(r.error) ? "⚠️ לא רשום" : r.error ? `⚠️ שגיאה (${r.error})` : "✅"}</span>
+                  <span className="text-amber-300">{r.opens.length ? `👆 ${fmt(r.opens[0].opened_at)}` : "—"}</span>
+                </span>
+              </div>
+              {/* the full text, as the person got it (personal headings differ per person) */}
+              {r.heading !== g.heading && <div className="text-slate-200 mt-0.5 whitespace-pre-line break-words">{r.heading}</div>}
+              <div className="text-slate-400 mt-0.5 whitespace-pre-line break-words">{r.body}</div>
             </div>
           )) : (
             <>
-              <div className="text-slate-400">{g.rows[0].body}</div>
+              <div className="text-slate-400 whitespace-pre-line break-words">{g.rows[0].body}</div>
               {openers.length ? openers.map((o) => (
                 <div key={o.user_id} className="flex justify-between"><span className="text-slate-200">{name(o.user_id)}</span><span className="text-amber-300">👆 {fmt(o.opened_at)}</span></div>
               )) : <div className="text-slate-500">אף אחד עוד לא פתח</div>}
