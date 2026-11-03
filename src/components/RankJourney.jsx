@@ -188,7 +188,10 @@ function LanesView({ users, idx, tick, pl, sel, setSel, stepW }) {
   const n = idx.length, P = users.length;
   const laneH = 28;
   const H = 14 + 26 + laneH * (P - 1);
-  const pad = { l: 44, r: 30, t: 14, b: 26 };
+  // room for half the widest name tag at both ends (and the place badges on the
+  // right), so the first and the latest night are never cut or hidden
+  const half = Math.max(...users.map((u) => u.name.length * 7 + 14)) / 2;
+  const pad = { l: Math.max(44, half + 6), r: 30 + half + 4, t: 14, b: 26 };
   // many nights or rounds: the chart grows wider than the screen and scrolls
   // sideways by finger; a short season fits the width as it is
   const Wd = n > 1 && (W - pad.l - pad.r) / (n - 1) < stepW ? pad.l + pad.r + (n - 1) * stepW : W;
@@ -215,7 +218,9 @@ function LanesView({ users, idx, tick, pl, sel, setSel, stepW }) {
   // changes): they ride near the left edge, so the nights already played stay
   // on screen to their right for as long as possible
   const follow = () => { const el = scroller.current; if (el && scroll) el.scrollLeft = (headX / Wd) * el.scrollWidth - el.clientWidth * 0.22; };
-  useEffect(() => { if (pl.playing) follow(); }, [pl.e]);
+  // also when the timeline is dragged back or forth (a finger scroll of the chart
+  // itself doesn't move the position, so it is left alone)
+  useEffect(follow, [pl.e]);
   useEffect(follow, [Wd]);
   return (
     <div>
