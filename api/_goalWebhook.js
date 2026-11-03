@@ -265,7 +265,11 @@ async function onGoal(fixtureId, data, mode, sendAfter) {
   const url = `${SITE}/?open=live`;
   const out = {};
   if (mine?.personal.length) out.personal = await sendPersonal(mine.personal, { url, key: `p${key}`, mode, sendAfter });
-  if (touches) {
+  // A goal that only broke a hit (nobody hits the new score): the ones it
+  // concerns got their personal message — no broadcast to everyone else
+  // (the user's rule, 2026-11-03: Villarreal 0-3 PSG went to all with "nobody hits").
+  if (touches && hits === 0 && mine?.personal.length) out.general = { skipped: 'broke a hit, nobody hits now — personal messages only' };
+  else if (touches) {
     // nobody got a personal one → the usual broadcast (reaches unlinked devices too);
     // otherwise only the rest of the participants
     out.general = !mine?.personal.length
