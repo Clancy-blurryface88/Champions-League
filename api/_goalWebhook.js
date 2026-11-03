@@ -213,10 +213,11 @@ async function alreadyAnnounced(home, away, scoreText) {
 // GOAL's short display names ("Lille", "Atl. Madrid") — our DB names carry typos.
 const teamLabel = (fx, side) => (side === 'home' ? fx.homeTeamName : fx.awayTeamName).trim();
 
-function hitsLine(n) {
-  if (n === 0) return '😱 אף אחד לא פוגע כרגע בתוצאה המדויקת — כנסו לטבלת הלייב 👉';
-  if (n === 1) return '🎯 משתתף אחד פוגע כרגע בתוצאה המדויקת — כנסו לגלות מי בטבלת הלייב 👉';
-  return `🎯 ${n} משתתפים פוגעים כרגע בתוצאה המדויקת — כנסו לגלות מי בטבלת הלייב 👉`;
+// cta=false (goal ruled out): the line without the "go to the live table" call
+function hitsLine(n, cta = true) {
+  if (n === 0) return `😱 אף אחד לא פוגע כרגע בתוצאה המדויקת${cta ? ' — כנסו לטבלת הלייב 👉' : ''}`;
+  if (n === 1) return `🎯 משתתף אחד פוגע כרגע בתוצאה המדויקת${cta ? ' — כנסו לגלות מי בטבלת הלייב 👉' : ''}`;
+  return `🎯 ${n} משתתפים פוגעים כרגע בתוצאה המדויקת${cta ? ' — כנסו לגלות מי בטבלת הלייב 👉' : ''}`;
 }
 
 async function onGoal(fixtureId, data, mode, sendAfter) {
@@ -316,7 +317,7 @@ async function onScoreChanged(fixtureId, data, mode, sendAfter) {
   const announced = (await countExact(our, ph, pa)) > 0 || hits > 0;
   if (!announced) return { skipped: 'the cancelled goal touches nobody\'s exact score' };
   const heading = `🖥️❌ השער נפסל — ${teamLabel(fx, 'home')} ${hs}-${as} ${teamLabel(fx, 'away')}`;
-  return push({ heading, body: hitsLine(hits), url: `${SITE}/?open=live`, key: `fix:${fixtureId}:${hs}-${as}:${Date.now() - (Date.now() % 600000)}`, mode, sendAfter });
+  return push({ heading, body: hitsLine(hits, false), url: `${SITE}/?open=live`, key: `fix:${fixtureId}:${hs}-${as}:${Date.now() - (Date.now() % 600000)}`, mode, sendAfter });
 }
 
 // late=true: a manual re-send the day after ("אתמול" instead of "הערב").
