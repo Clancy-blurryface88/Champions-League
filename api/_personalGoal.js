@@ -79,7 +79,8 @@ export async function personalForGoal(fx, our, before, after, scorerTeam, game =
         ? { heading: '⚔️ עקפו אותך', body: withGame(`${nameOf(passer.id)} עקף אותך ב-${pts(afterTotals[passer.id] - afterTotals[p.id])} נק׳ 😤`) }
         : { heading: '⚔️ עקפו אותך', body: withGame(`ירדת למקום ${now[p.id]} בטבלה 😤`) };
     } else if (hitNow) {
-      msg = { heading: `🔥 ${game.match || `${after[0]}-${after[1]}!`}`, body: `${game.scorer ? `${game.scorer} · ` : ''}כרגע זאת פגיעה מדויקת. תחזיק אצבעות 🤞` };
+      // the scorer on its own line under the match line (the heading), like the other pushes
+      msg = { heading: `🔥 ${game.match || `${after[0]}-${after[1]}!`}`, body: `${game.scorer ? `${game.scorer}\n` : ''}כרגע זאת פגיעה מדויקת. תחזיק אצבעות 🤞` };
     } else if (lost) {
       msg = { heading: '😱 השער הרס לך את הפגיעה', body: `${gameLine ? `${gameLine} · ` : ''}הגול הרס לך את ה-${shown(pr)} 💔` };
     }
