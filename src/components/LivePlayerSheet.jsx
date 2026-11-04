@@ -118,27 +118,21 @@ export default function LivePlayerSheet({ player, rows, onClose, Card = GameCard
               </>
             )}
 
+            {/* only what earns points right now, and the match's total: two short lines per match */}
             {tab === "detail" && (
-              <div className="space-y-3">
-                {preds.map((mp, i) => (
-                  <div key={i} className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.04)" }}>
-                    <div className="flex items-center justify-between text-[12px] mb-1.5">
-                      <span dir="ltr" className="flex items-center gap-1 min-w-0 text-slate-300">
-                        <TeamFlag logo={mp.homeLogo} name={mp.home} size={14} rounded="sm" /><span className="truncate">{mp.home} - {mp.away}</span><TeamFlag logo={mp.awayLogo} name={mp.away} size={14} rounded="sm" />
-                      </span>
+              <div className="space-y-1.5 pb-1">
+                {preds.map((mp, i) => { const earned = PARTS.filter(([k]) => (mp.parts?.[k] || 0) > 0); return (
+                  <div key={i} className="rounded-xl px-3 py-2" style={{ background: "rgba(255,255,255,0.04)" }}>
+                    <div className="flex items-center justify-between gap-2 text-[11.5px]">
+                      <span className="flex items-center gap-1.5 text-slate-300">ניחש <Pred mp={mp} size={14} /></span>
+                      <span className="font-bold" style={{ color: tone(mp.points) }}>סה״כ במשחק <span className="tabular-nums" style={NUM}><Signed v={mp.points} /></span></span>
                     </div>
-                    <div className="mb-2 flex items-center gap-1 text-[11px] text-slate-300">ניחש <Digits v={mp.predicted} /></div>
-                    <div className="space-y-1 text-[11.5px]">
-                      {PARTS.map(([k, l]) => { const v = mp.parts?.[k] || 0; return (
-                        <div key={k} className="flex items-center justify-between" style={{ color: v ? GREEN : "#475569" }}>
-                          <span>{v ? "✓" : "✕"} {l}</span><span className="tabular-nums" style={NUM}>{v ? f2(v) : "0"}</span>
-                        </div>); })}
-                      <div className="flex items-center justify-between border-t border-white/10 pt-1 font-bold" style={{ color: tone(mp.points) }}>
-                        <span>סה״כ במשחק</span><span className="tabular-nums" style={NUM}><Signed v={mp.points} /></span>
-                      </div>
+                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px]">
+                      {earned.length ? earned.map(([k, l]) => (
+                        <span key={k} style={{ color: GREEN }}>✓ {l} <span className="tabular-nums" style={NUM}>{f2(mp.parts[k])}</span></span>
+                      )) : <span className="text-slate-500">אין ניקוד כרגע במשחק הזה</span>}
                     </div>
-                  </div>
-                ))}
+                  </div>); })}
               </div>
             )}
 
