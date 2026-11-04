@@ -82,7 +82,7 @@ export async function personalForGoal(fx, our, before, after, scorerTeam, game =
       // the scorer on its own line under the match line (the heading), like the other pushes
       msg = { heading: `🔥 ${game.match || `${after[0]}-${after[1]}!`}`, body: `${game.scorer ? `${game.scorer}\n` : ''}כרגע זאת פגיעה מדויקת. תחזיק אצבעות 🤞` };
     } else if (lost) {
-      msg = { heading: '😱 השער הרס לך את הפגיעה', body: `${gameLine ? `${gameLine} · ` : ''}הגול הרס לך את ה-${shown(pr)} 💔` };
+      msg = { heading: '😱 השער הרס לך את הפגיעה', body: `${gameLine ? `${gameLine} · ` : ''}הגול הרס לך את ה-${shown(pr)} 😞` };
     }
     if (msg) personal.push({ userId: p.id, name: p.name, ...msg });
   }
