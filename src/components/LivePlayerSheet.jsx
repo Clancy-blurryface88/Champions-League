@@ -29,18 +29,18 @@ const Pred = ({ mp, size = 15 }) => (
 // earns something), the prediction between the two logos, and a stripe on the right for what it
 // hits right now — green the exact score, yellow the outcome, red neither
 const SK = { transform: "skewX(-12deg)" }, UNSK = { transform: "skewX(12deg)" };
-export function GameCard({ mp }) {
+export function GameCard({ mp, compact = false }) {
   const stripe = mp.isExact ? "#22c55e" : mp.isHit ? "#facc15" : "#ef4444";
   return (
-    <div className="flex h-12 items-stretch gap-1" dir="ltr">
-      <span className="grid w-[64px] place-items-center rounded-sm text-[13px] font-black"
+    <div className={`flex ${compact ? "h-9" : "h-12"} items-stretch gap-1`} dir="ltr">
+      <span className={`grid ${compact ? "w-[56px] text-[12px]" : "w-[64px] text-[13px]"} place-items-center rounded-sm font-black`}
         style={{ ...SK, ...NUM, background: mp.points > 0 ? "linear-gradient(135deg,#fde047,#eab308)" : "rgba(255,255,255,0.08)", color: mp.points > 0 ? "#3a2a00" : "#64748b" }}>
         <span style={UNSK}>{mp.points > 0 ? "+" : ""}{f2(mp.points)}</span>
       </span>
       <span className="flex flex-1 items-center justify-center gap-3 rounded-sm" style={{ ...SK, background: "linear-gradient(90deg,#1e2a78,#0b1440)" }}>
-        <span style={UNSK}><TeamFlag logo={mp.homeLogo} name={mp.home} size={18} rounded="sm" /></span>
-        <span style={{ ...UNSK, ...NUM }} className="text-[20px] font-black text-white">{mp.predicted}</span>
-        <span style={UNSK}><TeamFlag logo={mp.awayLogo} name={mp.away} size={18} rounded="sm" /></span>
+        <span style={UNSK}><TeamFlag logo={mp.homeLogo} name={mp.home} size={compact ? 15 : 18} rounded="sm" /></span>
+        <span style={{ ...UNSK, ...NUM }} className={`${compact ? "text-[16px]" : "text-[20px]"} font-black text-white`}>{mp.predicted}</span>
+        <span style={UNSK}><TeamFlag logo={mp.awayLogo} name={mp.away} size={compact ? 15 : 18} rounded="sm" /></span>
       </span>
       <span className="w-3 rounded-sm" style={{ ...SK, background: stripe }} />
     </div>
@@ -52,11 +52,13 @@ export default function LivePlayerSheet({ player, rows, onClose, Card = GameCard
   const preds = player.matchPredictions || [];
   const delta = (player.officialRank ?? player.liveRank) - player.liveRank;
   const before = player.total - player.liveBonus;
+  // a full night (up to 9 live matches) has to fit one phone screen: smaller rows from 4 matches
+  const compact = preds.length >= 4;
 
   return (
     <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1, transition: { duration: 0.25, ease: [0.23, 1, 0.32, 1] } }} exit={{ scale: 0.92, opacity: 0 }}
       onClick={(e) => e.stopPropagation()} dir="rtl"
-      className="rounded-2xl p-5 w-full max-w-xs" style={{ background: "#0b1a2e", border: "1px solid rgba(255,255,255,0.1)" }}>
+      className="rounded-2xl p-4 w-full max-w-sm flex flex-col" style={{ background: "#0b1a2e", border: "1px solid rgba(255,255,255,0.1)", maxHeight: "calc(100dvh - 24px)" }}>
       {/* who, where, and the live points */}
       <div className="flex items-center justify-between mb-3">
         <div>
@@ -90,19 +92,20 @@ export default function LivePlayerSheet({ player, rows, onClose, Card = GameCard
 
       {!preds.length ? <p className="text-slate-500 text-xs text-center py-4">אין ניחושים למשחקים החיים כרגע</p> : (
         <AnimatePresence mode="wait">
-          <motion.div key={tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
+          <motion.div key={tab} className="min-h-0 flex-1 overflow-y-auto" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
             {tab === "games" && (
               <>
-                <div className="space-y-2">{preds.map((mp, i) => <Card key={i} mp={mp} />)}</div>
+                <div className={compact ? "space-y-1.5" : "space-y-2"}>{preds.map((mp, i) => <Card key={i} mp={mp} compact={compact} />)}</div>
                 {/* the total, written out as a sum */}
-                <div className="mt-3 rounded-xl px-3 py-2.5 text-[12px]" style={{ background: "rgba(250,204,21,0.06)", border: "1px solid rgba(250,204,21,0.18)" }}>
-                  {preds.map((mp, i) => (
+                <div className={`${compact ? "mt-2 py-2 text-[11.5px]" : "mt-3 py-2.5 text-[12px]"} rounded-xl px-3`} style={{ background: "rgba(250,204,21,0.06)", border: "1px solid rgba(250,204,21,0.18)" }}>
+                  {/* with many matches the cards above already list each one's points: the sum starts from the total */}
+                  {!compact && preds.map((mp, i) => (
                     <div key={i} className="flex items-center justify-between py-0.5 text-slate-300">
                       <Pred mp={mp} size={13} />
                       <span className="tabular-nums" style={NUM}>{f2(mp.points)}</span>
                     </div>
                   ))}
-                  <div className="my-1.5 border-t border-dashed border-white/25" />
+                  {!compact && <div className="my-1.5 border-t border-dashed border-white/25" />}
                   <div className="flex items-center justify-between font-black">
                     <span className="text-slate-100"><span className="ml-1 text-slate-500">=</span>במשחקים החיים</span>
                     <span className="tabular-nums text-[15px]" style={{ ...NUM, color: GOLD }}>{f2(player.liveBonus)}</span>

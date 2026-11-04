@@ -403,6 +403,14 @@ export default function LiveLeaderboard() {
           ))}
         </AnimatePresence>
         {rows.length > 0 && <p className="text-center text-slate-300 text-[12px] mt-5">ניתן ללחוץ על כרטיס המשתתף לפרטים נוספים</p>}
+        {/* the colours of the stripe on each match in the participant window */}
+        {rows.length > 0 && (
+          <div className="flex flex-nowrap items-center justify-center gap-3 mt-2 text-[11.5px] text-slate-300 whitespace-nowrap">
+            {[["#ef4444", "לא פוגע"], ["#facc15", "כיוון"], ["#22c55e", "פגיעה בתוצאה"]].map(([c, l]) => (
+              <span key={l} className="flex shrink-0 items-center gap-1.5"><span className="w-2.5 h-3.5 shrink-0 rounded-sm" style={{ background: c, transform: "skewX(-12deg)" }} />{l}</span>
+            ))}
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
@@ -410,7 +418,7 @@ export default function LiveLeaderboard() {
           const player = rows.find(r => r.userId === openPlayer);
           if (!player) return null;
           return (
-            <motion.div key="prediction-modal" className="fixed inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.6)' }}
+            <motion.div key="prediction-modal" className="fixed inset-0 z-50 flex items-center justify-center p-3" style={{ background: 'rgba(0,0,0,0.6)' }}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpenPlayer(null)}>
               <LivePlayerSheet player={player} rows={rows} onClose={() => setOpenPlayer(null)} />
             </motion.div>

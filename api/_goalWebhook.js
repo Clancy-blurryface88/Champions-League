@@ -132,6 +132,10 @@ export async function push({ heading, body, url, key, mode = 'live', sendAfter, 
     // Own topic per push: web push replaces a shown notification that shares
     // a topic, so without this a goal push wiped out the reminder above it.
     web_push_topic: uuidFrom(`topic:${key}:${mode === 'test' ? Date.now() : ''}`),
+    // A transparent image instead of OneSignal's default icon: the system already shows the
+    // app's icon, so the default one made a second, identical icon beside the text (4.11).
+    chrome_web_icon: `${SITE}/champions/push-blank.png`,
+    firefox_icon: `${SITE}/champions/push-blank.png`,
   };
   if (sendAfter && sendAfter > new Date()) payload.send_after = sendAfter.toISOString();
   if (mode === 'dry') return { dryRun: true, payload };
