@@ -335,6 +335,8 @@ export default function LiveLeaderboard() {
             homeLogo: dbMatch.team_a_logo ?? null, home: dbMatch.team_a,
             awayLogo: dbMatch.team_b_logo ?? null, away: dbMatch.team_b,
             isExact, isHit,
+            // what this prediction earns at the current score
+            points: b.totalPoints, live: `${homeScore}-${awayScore}`,
           });
         }
       }
@@ -420,17 +422,36 @@ export default function LiveLeaderboard() {
                                  : mp.isHit   ? { icon: '✅', color: '#7cadee' }
                                  :              { icon: '✕',  color: '#64748b' };
                     return (
-                      <div key={i} className="flex items-center justify-between gap-2 text-[12px]">
-                        <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                          <TeamFlag logo={mp.homeLogo} name={mp.home} size={14} rounded="sm" />
-                          <span className="text-slate-400 truncate">{mp.home} - {mp.away}</span>
-                          <TeamFlag logo={mp.awayLogo} name={mp.away} size={14} rounded="sm" />
+                      <div key={i} className="text-[12px]">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                            <TeamFlag logo={mp.homeLogo} name={mp.home} size={14} rounded="sm" />
+                            <span className="text-slate-400 truncate">{mp.home} - {mp.away}</span>
+                            <TeamFlag logo={mp.awayLogo} name={mp.away} size={14} rounded="sm" />
+                          </div>
+                          <span className="font-mono font-bold flex-shrink-0" style={{ color: status.color }}>{status.icon} {mp.predicted}</span>
                         </div>
-                        <span className="font-mono font-bold flex-shrink-0" style={{ color: status.color }}>{status.icon} {mp.predicted}</span>
+                        {/* the points this prediction earns right now, at the current score */}
+                        <div className="flex items-center justify-between gap-2 mt-0.5 text-[11px]">
+                          <span className="text-slate-500">כרגע <span dir="ltr" className="font-mono text-slate-300">{mp.live}</span></span>
+                          <span className="font-bold tabular-nums" style={{ color: mp.points > 0 ? '#facc15' : '#64748b' }}><span dir="ltr">{mp.points > 0 ? '+' : ''}{(Math.round(mp.points * 100) / 100).toFixed(2)}</span> נק׳</span>
+                        </div>
                       </div>
                     );
                   })}
                 </div>
+                {player.matchPredictions?.length > 0 && (
+                  <div className="mt-3 pt-3 space-y-1 text-[12px]" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div className="flex items-center justify-between font-bold">
+                      <span className="text-slate-200">סה״כ במשחקים החיים כרגע</span>
+                      <span className="tabular-nums text-[14px]" style={{ color: '#facc15' }}><span dir="ltr">+{player.liveBonus.toFixed(2)}</span> נק׳</span>
+                    </div>
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span>סה״כ בטבלה כרגע</span>
+                      <span className="tabular-nums text-slate-200">{player.total.toFixed(2)} נק׳</span>
+                    </div>
+                  </div>
+                )}
                 <button
                   onClick={() => setOpenPlayer(null)}
                   className="w-full mt-4 py-2 rounded-lg text-slate-300 text-xs font-semibold"
