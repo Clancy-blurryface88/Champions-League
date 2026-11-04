@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { Play, Pause, SkipBack, SkipForward, RotateCcw, TrendingUp, TrendingDown, Minus, ArrowLeft } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
+import NightHitsMap from "@/components/NightHitsMap";
 import { calculateScore } from "@/components/LiveLeaderboard";
 import { Match, Prediction, UserStats, PublicProfile, Round, User } from "@/api/entities";
 
@@ -56,6 +57,7 @@ export default function NightReplay({ roundId = null, initialDate = null, onBack
   const [speed, setSpeed] = useState(1);
   const [flashKey, setFlashKey] = useState(null); // event id just reached → glow
   const [preds, setPreds] = useState(null); // matchId → userId → prediction
+  const [view, setView] = useState("replay"); // "replay" | "map" (the night map of exact hits)
 
   // ── base data: matches, users, rounds ──────────────────────────────────────
   useEffect(() => {
@@ -348,8 +350,15 @@ export default function NightReplay({ roundId = null, initialDate = null, onBack
 
       {!model ? <Loading text="בונה את ציר הזמן של הערב..." /> : model.empty ? (
         <div className="text-slate-400 p-6 text-center">אין נתוני שערים לערב הזה</div>
+      ) : view === "map" ? (
+        <>
+          <ViewToggle view={view} onChange={setView} />
+          <NightHitsMap matches={model.matches} preds={preds.map} me={me}
+            users={model.table(model.matches, Infinity).map((r) => ({ userId: r.userId, name: r.name }))} />
+        </>
       ) : (
         <>
+          <ViewToggle view={view} onChange={setView} />
           {/* match filter */}
           <div ref={replayTopRef} className="flex gap-1.5 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: "none", scrollMarginTop: REPLAY_TOP }}>
             <Chip on={filter === "all"} onClick={() => setFilter("all")}>כל הערב</Chip>
@@ -458,6 +467,20 @@ function Chip({ on, onClick, children }) {
       }}>
       <span className="flex items-center gap-1.5" style={{ transform: "skewX(12deg)" }}>{children}</span>
     </button>
+  );
+}
+
+// the replay itself or the night map (who hit the exact score, and who lost it to a goal)
+function ViewToggle({ view, onChange }) {
+  return (
+    <div className="grid grid-cols-2 gap-1 rounded-xl p-1 mb-3" style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)" }}>
+      {[["replay", "הילוך חוזר"], ["map", "מפת הערב"]].map(([k, l]) => (
+        <button key={k} onClick={() => onChange(k)} className="relative rounded-lg py-1.5 text-[13px] font-bold transition-colors" style={{ color: view === k ? "#04201d" : "#cbd5e1" }}>
+          {view === k && <motion.span layoutId="replayView" className="absolute inset-0 rounded-lg" style={{ background: "linear-gradient(135deg,#22c55e,#00e0ff)" }} transition={{ type: "spring", duration: 0.4, bounce: 0.15 }} />}
+          <span className="relative">{l}</span>
+        </button>
+      ))}
+    </div>
   );
 }
 
