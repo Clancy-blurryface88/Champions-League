@@ -4,8 +4,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { supabase } from "@/api/supabase";
 
-// TV noise for the screen ("snow"), drawn once as an SVG tile
-const NOISE = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E\")";
+// the button's plates lean like the live table's rows; their content stands upright
+const SK = { transform: "skewX(-12deg)" }, UNSK = { transform: "skewX(12deg)" };
 
 // The round's studio video is offered from the moment it is uploaded until every
 // participant has predicted all of the round's matches, or at the latest until its
@@ -78,33 +78,36 @@ export default function StudioVideoButton({ rounds, onPredict, onVisible }) {
 
   if (!round) return null;
   const summary = round.kind === "summary";
+  // after the round's last night the video sums up the whole round too ("והמחזור ה-4")
+  const roundNo = round.name?.match(/\d+\s*$/)?.[0]?.trim();
+  const roundEnd = summary && !round.canPredict && roundNo ? ` והמחזור ה-${roundNo}` : "";
   const video = round.video || round.studio_video_url; // a cache from before the summary videos has no `video`
 
   return (
     <>
-      {/* a small TV with snow that switches on, the host behind it; centered under the rounds */}
+      {/* slanted plates, like the live table's rows: gold play, the title on blue, the host, a red stripe */}
       <motion.button
         type="button"
+        dir="ltr"
         onClick={() => { setEnded(false); setOpen(true); }}
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-        className="studio-tv mx-auto block w-full max-w-[340px] rounded-xl p-[5px] bg-[#111827] shadow-[0_0_0_1px_#374151,0_12px_30px_rgba(0,0,0,0.7)] active:scale-[0.98] transition-transform"
+        className="studio-tv mx-auto flex h-14 w-full max-w-[340px] items-stretch gap-1 active:scale-[0.98] transition-transform"
         aria-label={summary ? `צפייה בסיכום הערב, ${round.name}` : `צפייה באולפן ${round.name}`}
       >
-        <div className="studio-tv__screen relative h-[118px] rounded-lg overflow-hidden bg-center bg-cover" style={{ backgroundImage: "url(/champions/studio-host.jpg)", backgroundPosition: "center 28%" }}>
-          <div className="studio-tv__snow absolute inset-0 mix-blend-overlay" style={{ backgroundImage: NOISE }} />
-          <div className="absolute inset-0 pointer-events-none" style={{ background: "repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 1px, transparent 1px 3px)" }} />
-          <span className="absolute top-2 right-2 inline-flex items-center gap-1.5 rounded-[3px] bg-red-600 px-2 py-px text-[11px] font-bold tracking-[0.12em] text-white" style={{ fontFamily: "Oswald, sans-serif" }}>
-            <i className="studio-tv__dot h-1.5 w-1.5 rounded-full bg-white" />LIVE
+        <span className="grid w-14 place-items-center rounded-sm" style={{ ...SK, background: "linear-gradient(135deg,#fde047,#eab308)" }}>
+          <span className="studio-tv__play flex h-[26px] w-[26px] items-center justify-center rounded-full bg-[#1b1400]" style={UNSK}>
+            <span className="ml-0.5 border-y-[6px] border-l-[9px] border-y-transparent border-l-[#facc15]" />
           </span>
-          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-2.5 py-2" style={{ background: "linear-gradient(0deg, rgba(2,6,23,.9), transparent)" }}>
-            <b className="text-[15px] font-black text-white">{summary ? `📺 סיכום משחקי ${round.day || "הערב"}` : "📺 אולפן ליגת האלופות"}</b>
-            <span className="studio-tv__play flex h-8 w-8 items-center justify-center rounded-full bg-yellow-400">
-              <span className="ml-0.5 border-y-[7px] border-l-[11px] border-y-transparent border-l-[#1b1400]" />
-            </span>
-          </div>
-        </div>
+        </span>
+        <span className="flex flex-1 items-center justify-end overflow-hidden rounded-sm px-3" style={{ ...SK, background: "linear-gradient(90deg,#1e2a78,#0b1440)" }}>
+          <b dir="rtl" className="text-right text-[13px] font-black leading-tight text-white" style={UNSK}>{summary ? `סיכום משחקי ${round.day || "הערב"}${roundEnd}` : "אולפן ליגת האלופות"}</b>
+        </span>
+        <span className="w-16 overflow-hidden rounded-sm" style={SK}>
+          <span className="block h-full w-[120%] -ml-[10%] bg-cover" style={{ ...UNSK, backgroundImage: "url(/champions/studio-host.jpg)", backgroundPosition: "center 28%" }} />
+        </span>
+        <span className="w-2.5 rounded-sm bg-red-600" style={SK} />
       </motion.button>
 
       {/* rendered on <body>, above the app's top bars (ticker, menu), so the X is always reachable */}
@@ -142,15 +145,9 @@ export default function StudioVideoButton({ rounds, onPredict, onVisible }) {
       </AnimatePresence>, document.body)}
 
       <style>{`
-        .studio-tv__snow { opacity: .3; animation: studioSnow .25s steps(2) infinite, studioChannel 5s infinite; }
-                .studio-tv__dot { animation: studioBlink 1s infinite; }
         .studio-tv__play { animation: studioPulse 1.8s infinite; }
-        @keyframes studioSnow { 50% { background-position: 40px 20px; } }
-        /* channel switch: every few seconds a moment of full snow, then the host again */
-        @keyframes studioChannel { 0%, 84%, 100% { opacity: .3; } 86%, 92% { opacity: 1; mix-blend-mode: normal; } }
-        @keyframes studioBlink { 50% { opacity: .2; } }
-        @keyframes studioPulse { 0% { box-shadow: 0 0 0 0 rgba(250,204,21,.55); } 100% { box-shadow: 0 0 0 14px rgba(250,204,21,0); } }
-        @media (prefers-reduced-motion: reduce) { .studio-tv__snow, .studio-tv__dot, .studio-tv__play { animation: none; } }
+        @keyframes studioPulse { 0% { box-shadow: 0 0 0 0 rgba(27,20,0,.55); } 100% { box-shadow: 0 0 0 10px rgba(27,20,0,0); } }
+        @media (prefers-reduced-motion: reduce) { .studio-tv__play { animation: none; } }
       `}</style>
     </>
   );
