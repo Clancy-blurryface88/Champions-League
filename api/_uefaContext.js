@@ -21,8 +21,13 @@ function teamNames(team) {
     .map((n) => n.toLowerCase());
 }
 
+// names as the DB spells them -> as UEFA does ("Manchaster City" is the DB's spelling and the
+// rest of the app relies on it, so it is translated here rather than renamed)
+const DB_ALIASES = { 'manchaster city': 'manchester city' };
+const uefaName = (name) => { const n = name.trim().toLowerCase(); return DB_ALIASES[n] || n; };
+
 function resolveTeam(teams, name) {
-  const n = name.trim().toLowerCase();
+  const n = uefaName(name);
   return (
     teams.find((t) => teamNames(t).includes(n)) ||
     teams.find((t) => teamNames(t).some((x) => x.startsWith(n) || n.startsWith(x))) ||
@@ -308,7 +313,7 @@ function hasPositionedField(team) {
 }
 
 function matchesName(wanted, candidate) {
-  const w = wanted.trim().toLowerCase();
+  const w = uefaName(wanted);
   return candidate === w || candidate.startsWith(w) || w.startsWith(candidate) || candidate.includes(w);
 }
 

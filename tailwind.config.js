@@ -102,5 +102,6 @@ module.exports = {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  // typography: the `prose` classes, for long text if we ever need them
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 }
