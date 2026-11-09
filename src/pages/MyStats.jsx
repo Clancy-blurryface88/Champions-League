@@ -32,7 +32,7 @@ import CommonPredictionsStripe from "../components/stats/CommonPredictionsStripe
 import GapTrackingTable from "../components/stats/GapTrackingTable";
 import StatsDashboard from "../components/stats/StatsDashboard";
 import RoundSummaryTable from "../components/stats/RoundSummaryTable";
-import ForecasterProfile from "../components/stats/ForecasterProfile.jsx";
+import { ProfileButton, ProfileSheet } from "../components/stats/ForecasterProfile.jsx";
 
 export default function MyStats() {
   const navigate = useNavigate();
@@ -51,6 +51,7 @@ export default function MyStats() {
   const [exactHitsList, setExactHitsList] = useState([]);
   const [heatmapData, setHeatmapData] = useState([]);
   const [activeTab, setActiveTab] = useState("stats");
+  const [showProfile, setShowProfile] = useState(false);
   const [activeChartTab, setActiveChartTab] = useState("points");
   const [activeHitsTab, setActiveHitsTab] = useState("hits");
 
@@ -793,8 +794,7 @@ export default function MyStats() {
               { id: "stats", label: "סטטיסטיקה" },
               { id: "ranking", label: "דירוג" },
               { id: "tables", label: "טבלאות" },
-              { id: "head2head", label: "ראש בראש" },
-              { id: "profile", label: "פרופיל" }
+              { id: "head2head", label: "ראש בראש" }
             ].map((tab, index, arr) => (
               <TabsTrigger
                 key={tab.id}
@@ -822,11 +822,6 @@ export default function MyStats() {
             ))}
           </TabsList>
 
-          {/* the forecaster profile: computed only once its tab is opened */}
-          <TabsContent value="profile" className="space-y-6">
-            {activeTab === "profile" && <ForecasterProfile userId={user?.id} />}
-          </TabsContent>
-
           <TabsContent value="ranking" forceMount className="space-y-6 data-[state=inactive]:hidden">
             {/* היסטוריית מיקום */}
             <RankingHistoryTable />
@@ -840,6 +835,7 @@ export default function MyStats() {
           </TabsContent>
 
           <TabsContent value="stats" forceMount className="space-y-6 data-[state=inactive]:hidden">
+            <ProfileButton onClick={() => setShowProfile(true)} />
             <StatsDashboard
               averagePointsPerMatch={averagePointsPerMatch}
               averagePointsPerRound={averagePointsPerRound}
@@ -1828,6 +1824,10 @@ export default function MyStats() {
             </motion.div>
           </TabsContent>
         </Tabs>
+
+        <AnimatePresence>
+          {showProfile && <ProfileSheet userId={user?.id} onClose={() => setShowProfile(false)} />}
+        </AnimatePresence>
 
       </div>
       </motion.div>

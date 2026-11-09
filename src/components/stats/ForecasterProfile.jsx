@@ -1,10 +1,43 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, ChevronLeft } from "lucide-react";
 import { Match, Prediction, PublicProfile, Round } from "@/api/entities";
 import CircleLoader from "@/components/CircleLoader";
+import { useModalBackButtonOnMount } from "@/hooks/useModalBackButton";
 import { computeProfile, isDone, pc } from "./profileMath";
 
-// "The forecaster profile" tab: pairs of bars (you in gold, reality or the group's average in
+// The button at the top of the stats tab that opens the profile
+export function ProfileButton({ onClick }) {
+  return (
+    <button onClick={onClick} className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-right active:scale-[0.98] transition-transform"
+      style={{ background: "linear-gradient(135deg,rgba(30,42,120,0.9),rgba(11,20,64,0.9))", border: "1px solid rgba(250,204,21,0.35)" }}>
+      <span className="text-[24px]">📊</span>
+      <span className="flex-1">
+        <b className="block text-[15px] text-white">הפרופיל שלך כמנחש</b>
+        <span className="text-[11.5px] text-slate-300">איך אתה מנחש מול המציאות ומול הקבוצה</span>
+      </span>
+      <ChevronLeft className="h-5 w-5 text-yellow-300" />
+    </button>
+  );
+}
+
+// the profile on a full screen of its own, above the app's bars; the phone's back button closes it
+export function ProfileSheet({ userId, onClose }) {
+  useModalBackButtonOnMount(onClose);
+  return createPortal(
+    <motion.div className="fixed inset-0 overflow-y-auto" style={{ zIndex: 60, background: "#050b22" }}
+      initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 24 }} transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}>
+      <div className="mx-auto max-w-[480px] px-3 pb-8 pt-3">
+        <button onClick={onClose} aria-label="חזרה" className="mb-1 rounded-xl border border-white/10 bg-white/5 p-2 text-white/70"><ArrowLeft className="h-5 w-5" /></button>
+        <ForecasterProfile userId={userId} />
+      </div>
+    </motion.div>,
+    document.body,
+  );
+}
+
+// The forecaster profile: pairs of bars (you in gold, reality or the group's average in
 // silver) in three sections, for one participant or the whole group, over the season or the
 // latest round. It is computed from the finished matches, so it updates itself after each one;
 // over the season, a small arrow shows the change since the round before.
