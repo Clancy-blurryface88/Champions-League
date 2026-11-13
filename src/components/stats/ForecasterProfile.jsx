@@ -43,7 +43,8 @@ export function ProfileSheet({ userId, onClose }) {
 // over the season, a small arrow shows the change since the round before.
 
 const NUM = { fontFamily: "var(--num-font)" };
-const GOLD = "#facc15", SILVER = "#cbd5e1";
+// gold: you; light blue: what you are compared with (reality, the group's average, the others)
+const GOLD = "#facc15", SILVER = "#7dd3fc";
 const glass = { background: "rgba(8,18,40,0.88)", border: "1px solid rgba(255,255,255,0.1)" };
 const SRC = [["exact", "תוצאה מדויקת", "#facc15"], ["outcome", "כיוון", "#38bdf8"], ["range", "טווח שערים", "#a78bfa"], ["btts", "שתיהן כובשות", "#34d399"]];
 // a predicted score said the way people say it: "2-1 לבית", "2-1 לחוץ", or a draw
@@ -58,12 +59,12 @@ const Delta = ({ d, unit = "", merit }) => {
 };
 const Bar = ({ label, v, max, c, shown, note, strong, delta }) => (
   <div className="flex items-center gap-2">
-    <span className={`w-[58px] shrink-0 truncate text-[10.5px] ${strong ? "font-bold text-white" : "text-slate-400"}`}>{label}</span>
+    <span className={`w-[58px] shrink-0 truncate text-[10.5px] ${strong ? "font-bold" : ""}`} style={{ color: strong ? "#fff" : SILVER }}>{label}</span>
     <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-white/10">
       <motion.div className="h-full rounded-full" style={{ background: c }} initial={{ width: 0 }} animate={{ width: `${Math.min(100, max ? (v / max) * 100 : 0)}%` }} transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }} />
     </div>
     <span className="w-[78px] shrink-0 text-left leading-none">
-      <span className="flex items-baseline justify-end gap-1">{delta}<b dir="ltr" className="text-[13px] tabular-nums" style={{ ...NUM, color: c === GOLD ? GOLD : "#e2e8f0" }}>{shown}</b></span>
+      <span className="flex items-baseline justify-end gap-1">{delta}<b dir="ltr" className="text-[13px] tabular-nums" style={{ ...NUM, color: c === GOLD ? GOLD : SILVER }}>{shown}</b></span>
       {note && <span className="text-[9px] text-slate-500">{note}</span>}
     </span>
   </div>
@@ -138,7 +139,7 @@ function Me({ prof, uid, prev }) {
       <Section title="כמה אתה מדייק" sub={`מול הממוצע של ${prof.people} המשתתפים`}>
         <Measure n={7} icon="🧭" title="פגיעה בכיוון">
           <Bar label="אתה" strong v={pc(p.outcome, p.n)} max={100} c={GOLD} shown={`${pc(p.outcome, p.n)}%`} note={`${p.outcome} מתוך ${p.n}`} delta={dp("outcome", true)} />
-          <Bar label="ממוצע" v={GA.outcome} max={100} c={SILVER} shown={`${Math.round(GA.outcome)}%`} />
+          <Bar label="ממוצע" v={GA.outcome} max={100} c={SILVER} shown={`${Math.round(GA.outcome)}%`} note={`${GA.sum.outcome} מתוך ${GA.sum.n}`} />
         </Measure>
         <Measure n={8} icon="🎯" title="פגיעות מדויקות">
           <Bar label="אתה" strong v={p.exact} max={maxExact} c={GOLD} shown={p.exact} note="פגיעות" delta={dn("exact", true)} />
@@ -152,15 +153,15 @@ function Me({ prof, uid, prev }) {
       <Section title="הסגנון שלך" sub="מול הממוצע של הקבוצה">
         <Measure n={10} icon="👥" title="עם הרוב" foot="כמה פעמים ניחשת את אותו כיוון כמו רוב המשתתפים האחרים.">
           <Bar label="אתה" strong v={pc(p.majority, p.n)} max={100} c={GOLD} shown={`${pc(p.majority, p.n)}%`} note={`${p.majority} מתוך ${p.n}`} delta={dp("majority")} />
-          <Bar label="ממוצע" v={GA.majority} max={100} c={SILVER} shown={`${Math.round(GA.majority)}%`} />
+          <Bar label="ממוצע" v={GA.majority} max={100} c={SILVER} shown={`${Math.round(GA.majority)}%`} note={`${GA.sum.majority} מתוך ${GA.sum.n}`} />
         </Measure>
         <Measure n={11} icon="🦄" title="ניחושים ייחודיים" foot={`תוצאות שאף משתתף אחר לא ניחש. ${p.uniqueHits ? `${p.uniqueHits} מהן פגעו בתוצאה המדויקת.` : "אף אחת מהן לא פגעה בתוצאה המדויקת."}`}>
           <Bar label="אתה" strong v={p.unique} max={maxUniq} c={GOLD} shown={p.unique} note={`פגעו ${p.uniqueHits}`} delta={dn("unique")} />
           <Bar label="ממוצע" v={GA.unique} max={maxUniq} c={SILVER} shown={Math.round(GA.unique)} note={`פגעו ${GA.uniqueHits.toFixed(1)}`} />
         </Measure>
         <Measure n={12} icon="🎨" title="גיוון" foot={`הניחוש הקבוע שלך הוא ${sayScore(p.top)}, ${p.topN} פעמים מתוך ${p.n}. בסך הכול ניחשת ${p.distinct} תוצאות שונות.`}>
-          <Bar label="אתה" strong v={pc(p.topN, p.n)} max={50} c={GOLD} shown={`${pc(p.topN, p.n)}%`} note="הניחוש הקבוע" />
-          <Bar label="ממוצע" v={GA.topShare} max={50} c={SILVER} shown={`${Math.round(GA.topShare)}%`} />
+          <Bar label="אתה" strong v={pc(p.topN, p.n)} max={50} c={GOLD} shown={`${pc(p.topN, p.n)}%`} note={`${p.topN} מתוך ${p.n}`} />
+          <Bar label="ממוצע" v={GA.topShare} max={50} c={SILVER} shown={`${Math.round(GA.topShare)}%`} note={`${GA.sum.topN} מתוך ${GA.sum.n}`} />
         </Measure>
         <Measure n={13} icon="💰" title="מאיפה הנקודות">
           <Split label="אתה" strong src={p.src} />
@@ -180,8 +181,8 @@ function All({ prof }) {
     return sorted.map((x, i) => <Bar key={x.uid} label={x.name} strong={i === 0} v={f(x)} max={max} c={i === 0 ? GOLD : SILVER} shown={fmt(x)} note={note && note(x)} />);
   };
   const vs = (k, pct = true) => [
-    <Bar key="g" label="הקבוצה" strong v={GA[k]} max={pct ? 100 : 5} c={GOLD} shown={pct ? `${Math.round(GA[k])}%` : GA[k]} />,
-    <Bar key="r" label="במציאות" v={pct ? pc(R[k], N) : R[k]} max={pct ? 100 : 5} c={SILVER} shown={pct ? `${pc(R[k], N)}%` : R[k]} note={pct ? `${R[k]} מתוך ${N}` : ""} />,
+    <Bar key="g" label="הקבוצה" strong v={GA[k]} max={pct ? 100 : 5} c={GOLD} shown={pct ? `${Math.round(GA[k])}%` : GA[k]} note={pct ? `${GA.sum[k]} מתוך ${GA.sum.n}` : "בממוצע"} />,
+    <Bar key="r" label="במציאות" v={pct ? pc(R[k], N) : R[k]} max={pct ? 100 : 5} c={SILVER} shown={pct ? `${pc(R[k], N)}%` : R[k]} note={pct ? `${R[k]} מתוך ${N}` : "בממוצע"} />,
   ];
   return (
     <div className="space-y-3">
@@ -192,19 +193,19 @@ function All({ prof }) {
         <Measure n={4} icon="⚽" title="שערים למשחק">{vs("goals", false)}</Measure>
         <Measure n={5} icon="🔁" title="שתי הקבוצות כובשות">{vs("btts")}</Measure>
         <Measure n={6} icon="↔️" title="הפרש שערים">
-          <Bar label="הקבוצה" strong v={GA.margin} max={3} c={GOLD} shown={GA.margin} />
-          <Bar label="במציאות" v={R.margin} max={3} c={SILVER} shown={R.margin} />
+          <Bar label="הקבוצה" strong v={GA.margin} max={3} c={GOLD} shown={GA.margin} note="שערים" />
+          <Bar label="במציאות" v={R.margin} max={3} c={SILVER} shown={R.margin} note="שערים" />
         </Measure>
       </Section>
       <Section title="מי הכי מדייק" sub="כל המשתתפים, מהגבוה לנמוך">
-        <Measure n={7} icon="🧭" title="פגיעה בכיוון">{rank((x) => pc(x.outcome, x.n), (x) => `${pc(x.outcome, x.n)}%`)}</Measure>
+        <Measure n={7} icon="🧭" title="פגיעה בכיוון">{rank((x) => pc(x.outcome, x.n), (x) => `${pc(x.outcome, x.n)}%`, (x) => `${x.outcome} מתוך ${x.n}`)}</Measure>
         <Measure n={8} icon="🎯" title="פגיעות מדויקות">{rank((x) => x.exact, (x) => x.exact)}</Measure>
         <Measure n={9} icon="📈" title="נקודות למשחק">{rank((x) => x.ppm, (x) => x.ppm.toFixed(2))}</Measure>
       </Section>
       <Section title="הסגנונות" sub="כל המשתתפים, מהגבוה לנמוך">
-        <Measure n={10} icon="👥" title="עם הרוב">{rank((x) => pc(x.majority, x.n), (x) => `${pc(x.majority, x.n)}%`)}</Measure>
+        <Measure n={10} icon="👥" title="עם הרוב">{rank((x) => pc(x.majority, x.n), (x) => `${pc(x.majority, x.n)}%`, (x) => `${x.majority} מתוך ${x.n}`)}</Measure>
         <Measure n={11} icon="🦄" title="ניחושים ייחודיים">{rank((x) => x.unique, (x) => x.unique, (x) => `פגעו ${x.uniqueHits}`)}</Measure>
-        <Measure n={12} icon="🎨" title="הניחוש הקבוע">{rank((x) => pc(x.topN, x.n), (x) => `${pc(x.topN, x.n)}%`, (x) => sayScore(x.top))}</Measure>
+        <Measure n={12} icon="🎨" title="הניחוש הקבוע">{rank((x) => pc(x.topN, x.n), (x) => `${pc(x.topN, x.n)}%`, (x) => `${x.topN} מתוך ${x.n} · ${sayScore(x.top)}`)}</Measure>
         <Measure n={13} icon="💰" title="מאיפה הנקודות">{ppl.map((x) => <Split key={x.uid} label={x.name} src={x.src} />)}<Legend /></Measure>
       </Section>
     </div>

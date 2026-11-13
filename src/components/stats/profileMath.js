@@ -72,6 +72,8 @@ export function computeProfile(matches, predictions, names) {
     outcome: ga((p) => pc(p.outcome, p.n)), exact: ga((p) => p.exact), ppm: ga((p) => p.ppm),
     majority: ga((p) => pc(p.majority, p.n)), unique: ga((p) => p.unique), uniqueHits: ga((p) => p.uniqueHits),
     topShare: ga((p) => pc(p.topN, p.n)), src,
+    // the counts behind the group's percentages: all participants' predictions added up
+    sum: Object.fromEntries(['n', 'D', 'H', 'A', 'btts', 'outcome', 'majority', 'topN'].map((k) => [k, P.reduce((s, p) => s + p[k], 0)])),
   };
   return { n: N, real, group, per, people: P.length };
 }
