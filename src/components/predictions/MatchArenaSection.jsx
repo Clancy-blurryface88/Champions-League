@@ -181,18 +181,19 @@ function FormTab({ match, formA, formB }) {
 
 // ── Arena sheet tab: תחזית ────────────────────────────────────────────────
 // Big 1/X/2 probability squares (odometer roll), the most likely exact scores
-// stacked by likelihood. (The crowd's picks live in MatchPredictionsModal.)
+// in one row by likelihood, and under them the facts before the match. (The crowd's picks live in MatchPredictionsModal.)
 // Each glass square fills from the bottom with its team's colour up to the
 // percentage, a slow wave on top; the favourite breathes a glow
 // (prototypes/odds/probs20.html, design 1).
-const PROB_CSS = `
+export const PROB_CSS = `
 @keyframes prob-wave{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes ts-shine{0%{transform:translateX(-160%) skewX(-20deg)}17%,100%{transform:translateX(330%) skewX(-20deg)}}
 @keyframes prob-breathe{0%,100%{box-shadow:0 0 0 1px var(--pc),0 0 16px -2px var(--pc)}50%{box-shadow:0 0 0 1px var(--pc),0 0 30px 2px var(--pc)}}`;
 
 // Dark blues vanish on our navy background, so blue clubs fill with the
 // ticker's result cyan; any other very dark colour is lifted toward white.
 const RESULT_CYAN = '#22d3ee';
-function liquidColor(hex) {
+export function liquidColor(hex) {
   const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
   if (!m) return hex;
   const n = parseInt(m[1], 16), r = (n >> 16) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
@@ -206,7 +207,7 @@ function liquidColor(hex) {
   return `#${mix(r)}${mix(g)}${mix(b)}`;
 }
 
-function ProbSquare({ label, logo, pct, best, color, index }) {
+export function ProbSquare({ label, logo, pct, best, color, index }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 14, scale: 0.96 }}
@@ -247,8 +248,26 @@ function ProbSquare({ label, logo, pct, best, color, index }) {
   );
 }
 
-// One glass plate of a most-likely-score row (tinted when given a team colour);
-// the row is skewed, so the content is counter-skewed upright.
+// A digit that rolls up from 0 to its value (odometer column), after `delay` seconds.
+export function RollDigit({ value, delay }) {
+  const [on, setOn] = useState(false);
+  useEffect(() => { const t = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(t); }, []);
+  return (
+    <span className="inline-block overflow-hidden text-center" style={{ height: '1em', minWidth: '0.55em' }}>
+      <span className="flex flex-col" style={{ transform: `translateY(-${on ? value : 0}em)`, transition: `transform 1.3s cubic-bezier(.2,.9,.25,1) ${delay}s` }}>
+        {Array.from({ length: value + 1 }, (_, k) => <span key={k} style={{ height: '1em' }}>{k}</span>)}
+      </span>
+    </span>
+  );
+}
+
+// The likely scores come in once the third square's liquid is half way up (it starts at 0.8s and
+// its ease-out passes half within ~0.6s); the pre-match facts follow them.
+const SCORES_AT = 1.4;
+const NEWS_AT = 2.3;
+const GLASS = 'rounded-2xl border border-white/10 bg-white/[0.04] p-3';
+
+// one glass plate of a score row (slanted with its row; the content stands upright)
 function ScorePlate({ width, color, children }) {
   return (
     <div
@@ -266,31 +285,22 @@ function ScorePlate({ width, color, children }) {
   );
 }
 
-// A digit that rolls up from 0 to its value (odometer column), after `delay` seconds.
-function RollDigit({ value, delay }) {
-  const [on, setOn] = useState(false);
-  useEffect(() => { const t = requestAnimationFrame(() => setOn(true)); return () => cancelAnimationFrame(t); }, []);
-  return (
-    <span className="inline-block overflow-hidden text-center" style={{ height: '1em', minWidth: '0.55em' }}>
-      <span className="flex flex-col" style={{ transform: `translateY(-${on ? value : 0}em)`, transition: `transform 1.3s cubic-bezier(.2,.9,.25,1) ${delay}s` }}>
-        {Array.from({ length: value + 1 }, (_, k) => <span key={k} style={{ height: '1em' }}>{k}</span>)}
-      </span>
-    </span>
-  );
-}
-
-function OddsTab({ match }) {
+// The forecast tab (layout 13 of the arena designs): the 1X2 squares, then each section in a
+// glass panel: the likely scores (slanted glass rows: home crest, score rolling up, away crest, %)
+// and the pre-match facts.
+function OddsTab({ match, news }) {
   const probs = useMemo(() => calculateProbabilities(match.home_win_points, match.draw_points, match.away_win_points), [match]);
   const top = useMemo(() => getTopScores(match.score_odds, 5), [match]);
   const best = probs ? Math.max(probs.home, probs.draw, probs.away) : null;
   const colorA = liquidColor(getTeamColor(match.team_a, '#2f7bff'));
   const colorB = liquidColor(getTeamColor(match.team_b, '#ff7a1a'));
   if (!probs && !top.length) return <p className="text-center text-[11px] text-slate-500 py-4">אין עדיין יחסים למשחק הזה</p>;
+  const scoresAt = probs ? SCORES_AT : 0.2;
   return (
     <div className="space-y-5">
+      <style>{PROB_CSS}</style>
       {probs && (
         <div className="flex gap-2 pt-2" dir="ltr">
-          <style>{PROB_CSS}</style>
           <ProbSquare index={0} label={match.team_a} logo={match.team_a_logo} pct={probs.home} best={probs.home === best} color={colorA} />
           <ProbSquare index={1} label="תיקו" pct={probs.draw} best={probs.draw === best} color="#a3adc6" />
           <ProbSquare index={2} label={match.team_b} logo={match.team_b_logo} pct={probs.away} best={probs.away === best} color={colorB} />
@@ -298,12 +308,8 @@ function OddsTab({ match }) {
       )}
 
       {top.length > 0 && (
-        <div>
-          {/* one slow light sweep that passes over the rows one after the other */}
-          <style>{`@keyframes ts-shine{0%{transform:translateX(-160%) skewX(-20deg)}17%,100%{transform:translateX(330%) skewX(-20deg)}}`}</style>
-          <p className="text-[12px] font-semibold text-yellow-400 text-center mb-3">תוצאות עם יחס הסיכוי הגבוה ביותר</p>
-          {/* Slanted glass plates (prototypes/odds/glass20.html, design 2): home crest
-              tinted in its colour · the score, digits rolling up · away crest · % */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: scoresAt - 0.2, duration: 0.5 }} className={GLASS}>
+          <p className="text-[12px] font-semibold text-yellow-400 text-center mb-2.5">תוצאות עם יחס הסיכוי הגבוה ביותר</p>
           <div className="flex flex-col items-center gap-[7px]" dir="ltr">
             {top.map((t, i) => {
               const [a, b] = t.score.split(':').map(Number);
@@ -312,25 +318,32 @@ function OddsTab({ match }) {
                   key={t.score}
                   initial={{ opacity: 0, y: 14, scale: 0.96 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ delay: 0.3 + i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ delay: scoresAt + i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   className="relative overflow-hidden flex items-stretch gap-[3px]"
                   style={{ skewX: -12 }}
                 >
                   <ScorePlate width={62} color={colorA}><TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-[26px] h-[26px]" animate={false} rounded="full" /></ScorePlate>
                   <ScorePlate width={84}>
                     <span className="flex items-center gap-1.5 text-white font-black tabular-nums" style={{ fontFamily: 'var(--num-font)', fontSize: 26, lineHeight: 1 }}>
-                      <RollDigit value={a} delay={0.65 + i * 0.28} /><span className="opacity-55">-</span><RollDigit value={b} delay={0.77 + i * 0.28} />
+                      <RollDigit value={a} delay={scoresAt + 0.35 + i * 0.28} /><span className="opacity-55">-</span><RollDigit value={b} delay={scoresAt + 0.47 + i * 0.28} />
                     </span>
                   </ScorePlate>
                   <ScorePlate width={62} color={colorB}><TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-[26px] h-[26px]" animate={false} rounded="full" /></ScorePlate>
                   <ScorePlate width={52}><span className="text-[13px] font-bold text-slate-200 tabular-nums">{t.pct}%</span></ScorePlate>
                   <span className="absolute inset-y-0 left-0 w-[45%] bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"
-                    style={{ transform: 'translateX(-160%)', animation: `ts-shine ${top.length * 1.5 + 2.5}s ease-in-out ${1.3 + i * 1.5}s infinite` }} />
+                    style={{ transform: 'translateX(-160%)', animation: `ts-shine ${top.length * 1.5 + 2.5}s ease-in-out ${scoresAt + 1 + i * 1.5}s infinite` }} />
                 </motion.div>
               );
             })}
           </div>
-        </div>
+        </motion.div>
+      )}
+
+      {news && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: NEWS_AT - 0.2, duration: 0.5 }} className={GLASS}>
+          <p className="text-[12px] font-semibold text-yellow-400 text-center mb-2.5">לפני המשחק</p>
+          <NewsColumns items={news} match={match} at={NEWS_AT} />
+        </motion.div>
       )}
     </div>
   );
@@ -491,11 +504,67 @@ function useLineups(teamA, teamB) {
   return lineups;
 }
 
+// a few short facts before the match, written on the server: [{ side: 'home'|'away', kind, head, body }]
+// Off until api/football.js has its source=news route: without it the request falls through to the
+// matches handler and pulls UEFA's data for nothing. The panel shows once this is on.
+const NEWS_ENABLED = false;
+
+function useMatchNews(teamA, teamB) {
+  const [news, setNews] = useState(null);
+  useEffect(() => {
+    if (!NEWS_ENABLED) return undefined;
+    let cancelled = false;
+    fetch(`/api/football?source=news&a=${encodeURIComponent(teamA?.trim() || '')}&b=${encodeURIComponent(teamB?.trim() || '')}`)
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled && d.items?.length) setNews(d.items); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [teamA, teamB]);
+  return news;
+}
+
+const NEWS_TOPIC = { 'חסרים': 'חסרים', 'השעיה': 'השעיות', 'שערים': 'שערים', 'כושר': 'כושר', 'חוץ': 'משחקי חוץ', 'בית': 'משחקי בית', 'מה על הכף': 'מה על הכף' };
+const tint = (hex, o) => `${hex}${Math.round(o * 255).toString(16).padStart(2, '0')}`;
+
+// the facts in two columns under the header's two plates (home left, away right, as the plates
+// are drawn): each team's crest large in the background, every fact titled by its topic in white,
+// a side bar in the team's colour between them
+function NewsColumns({ items, match, at = 0.85 }) {
+  return (
+    <div dir="ltr" className="grid grid-cols-2 gap-2.5">
+      {[['home', match.team_a, match.team_a_logo], ['away', match.team_b, match.team_b_logo]].map(([side, name, logo]) => {
+        const color = getTeamColor(name?.trim(), side === 'home' ? '#2f7bff' : '#ff7a1a');
+        const list = items.filter((n) => n.side === side);
+        return (
+          <motion.div key={side} dir="rtl" initial={{ opacity: 0, x: side === 'home' ? -18 : 18 }} animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: at + (side === 'away' ? 0.08 : 0), duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            className="relative min-w-0 overflow-hidden rounded-xl p-3" style={{ background: tint(color, 0.12), border: `1px solid ${tint(color, 0.4)}` }}>
+            <motion.img src={logo} alt={name} initial={{ opacity: 0, scale: 1.2 }} animate={{ opacity: 0.09, scale: 1 }} transition={{ delay: at + 0.15, duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+              className="pointer-events-none absolute -left-8 -top-5 h-36 w-36 object-contain" />
+            <div className="relative space-y-3.5">
+              {list.map((n, i) => {
+                return (
+                  <motion.div key={i} className="relative pr-2.5" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: at + 0.2 + i * 0.14, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}>
+                    <motion.span aria-hidden className="absolute inset-y-0 right-0 w-[2px]" style={{ background: color, transformOrigin: 'top' }} initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: at + 0.25 + i * 0.14, duration: 0.5, ease: [0.22, 1, 0.36, 1] }} />
+                    <div className="text-[21px] leading-none text-white" style={{ fontFamily: 'Karantina, sans-serif', fontWeight: 700 }}>{NEWS_TOPIC[n.kind] || n.kind}</div>
+                    <p className="mt-1.5 text-[12px] leading-[1.5] text-slate-200"><b className="font-bold text-white">{n.head}.</b> {n.body}</p>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function MatchArenaSection({ match, allMatches, loading, onClose }) {
   const formA = useMemo(() => getTeamForm(allMatches, match.team_a), [allMatches, match.team_a]);
   const formB = useMemo(() => getTeamForm(allMatches, match.team_b), [allMatches, match.team_b]);
   const hasForm = formA.played > 0 || formB.played > 0;
   const lineups = useLineups(match.team_a, match.team_b);
+  const news = useMatchNews(match.team_a, match.team_b);
   const dragControls = useDragControls();
   useModalBackButtonOnMount(onClose);
 
@@ -518,7 +587,7 @@ export default function MatchArenaSection({ match, allMatches, loading, onClose 
       if (!hasForm) return <>{scope}<p className="text-center text-[11px] text-slate-500 py-4">אין עדיין משחקים שהסתיימו</p></>;
       return <>{scope}<FormTab match={match} formA={formA} formB={formB} /></>;
     }
-    if (tab === 'odds') return <OddsTab match={match} />;
+    if (tab === 'odds') return <OddsTab match={match} news={news} />;
     if (tab === 'h2h') {
       return <HeadToHead inline teamA={match.team_a?.trim()} teamB={match.team_b?.trim()} logoA={match.team_a_logo} logoB={match.team_b_logo} allMatches={allMatches} />;
     }
