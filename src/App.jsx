@@ -33,7 +33,20 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 const INTRO_END = 2.2; // cut the 3s clip short — the intro plays for 2.2s
 const INTRO_MAX_MS = 9000; // a video that can't play (autoplay blocked, load error) never holds the app longer
 const PRELOAD_IMAGES = ['/champions/ch-logo.png', '/champions/ch-trophy.webp', '/champions/match-card-bg-2.webp', '/champions/match-card-bg-3.webp'];
-const introSrc = () => (window.innerWidth < window.innerHeight ? '/champions/intro-portrait.mp4' : '/champions/intro-landscape.mp4');
+// the opening clips, each as [portrait, landscape]; every launch draws one, never the one
+// shown last time
+const INTRO_CLIPS = [
+  ['/champions/intro-portrait.mp4', '/champions/intro-landscape.mp4'],
+  ['/champions/intro-portrait-2.mp4', '/champions/intro-landscape-2.mp4'],
+];
+const introSrc = () => {
+  let last = -1;
+  try { last = Number(localStorage.getItem('intro_clip') ?? -1); } catch {}
+  const choices = INTRO_CLIPS.map((_, i) => i).filter((i) => i !== last || INTRO_CLIPS.length === 1);
+  const i = choices[Math.floor(Math.random() * choices.length)];
+  try { localStorage.setItem('intro_clip', String(i)); } catch {}
+  return INTRO_CLIPS[i][window.innerWidth < window.innerHeight ? 0 : 1];
+};
 
 const IntroVideo = ({ appReady, onDone }) => {
   const [src] = React.useState(introSrc);
