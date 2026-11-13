@@ -25,6 +25,7 @@ import MatchPredictionsModal from "../components/MatchPredictionsModal"; // ADDE
 import CrowdWisdomStats from "../components/predictions/CrowdWisdomStats";
 import MatchOddsBar from "../components/predictions/MatchOddsBar";
 import MatchArenaSection from "../components/predictions/MatchArenaSection";
+import DaysBar from "../components/predictions/DaysBar";
 import { RevealText } from "@/components/magicui/reveal-text";
 import TeamFlag from "@/components/TeamFlag";
 import LeagueTableModal from "@/components/LeagueTableModal";
@@ -772,69 +773,13 @@ export default function Predictions() {
               borderBottom: '1px solid rgba(255,255,255,0.07)',
             }}
           >
-          <div ref={dateStripRef} className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 py-2 -my-2">
-            {sortedDateKeys.map(dateKey => {
-              const isActive = activeDateKey === dateKey;
-              const isToday  = moment(dateKey).isSame(moment(), 'day');
-              const isPast   = moment(dateKey).isBefore(moment().startOf('day'));
-              const dayMatches = matchesByDate[dateKey] || [];
-              const count    = dayMatches.length;
-              const settledCount = dayMatches.filter(m => m.is_finished || isMatchLocked(m.match_date)).length;
-              const hasMissing = dateHasMissingPredictions(dateKey);
-              const dayName  = isToday ? 'היום' : moment(dateKey).locale('he').format('ddd');
-              const dayNum   = moment(dateKey).format('D');
-
-              return (
-                <button
-                  key={dateKey}
-                  ref={el => dateTabRefs.current[dateKey] = el}
-                  onClick={() => scrollToDate(dateKey)}
-                  className="relative flex-1 flex flex-col items-center gap-1 pt-2 pb-2.5 px-4 rounded-2xl transition-all duration-250"
-                  style={{
-                    background: isActive
-                      ? 'rgba(9, 122, 220,0.08)'
-                      : 'rgba(255,255,255,0.05)',
-                    border: isActive
-                      ? '1.5px solid #3b9eff'
-                      : '1px solid rgba(255,255,255,0.08)',
-                    boxShadow: isActive
-                      ? '0 0 12px rgba(59,158,255,0.55)'
-                      : 'none',
-                  }}
-                >
-                  {/* Missing predictions indicator */}
-                  {hasMissing && !isPast && (
-                    <span
-                      className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-orange-500 border-2 border-[#060e1c] z-10"
-                      title="יש משחקים ללא ניחוש"
-                    />
-                  )}
-
-                  <span className={`text-[10px] font-semibold leading-none ${isActive ? 'text-sky-300' : isPast ? 'text-slate-600' : 'text-slate-400'}`}>
-                    {dayName}
-                  </span>
-                  <span className={`text-base font-black leading-none ${isActive ? 'text-white' : isPast ? 'text-slate-500' : 'text-white'}`}>
-                    {dayNum}
-                  </span>
-                  <span className={`text-[9px] font-semibold leading-none ${isActive ? 'text-sky-300' : isPast ? 'text-slate-600' : 'text-white/40'}`}>
-                    {settledCount}/{count}
-                  </span>
-                  <div className="w-full flex gap-0.5 mt-0.5">
-                    {dayMatches.map((m, mi) => {
-                      const settled = m.is_finished || isMatchLocked(m.match_date);
-                      return (
-                        <div
-                          key={m.id ?? mi}
-                          className="flex-1 h-1 rounded-full"
-                          style={{ background: settled ? '#4ade80' : 'rgba(255,255,255,0.08)' }}
-                        />
-                      );
-                    })}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+          <DaysBar
+            dateKeys={sortedDateKeys}
+            activeKey={activeDateKey}
+            onPick={scrollToDate}
+            stripRef={dateStripRef}
+            tabRef={(key, el) => { dateTabRefs.current[key] = el; }}
+          />
           </div>
         )}
 
