@@ -4,7 +4,7 @@ import React, { useLayoutEffect, useRef, useState } from 'react';
 // split by a gentle slanted break with a slit between them, set inside the card. Each button is
 // outlined in a darker shade of its own colour. Both labels share one font, size and weight.
 
-const H = 34, SLANT = 10, GAP = 6, R = 12, STROKE = 1.75;
+const H = 36, SLANT = 10, GAP = 6, R = 12, STROKE = 1.75;
 const BUTTONS = [
   { label: '1 X 2', fill: 'linear-gradient(90deg,#3b82f6,#1d4ed8)', line: '#1e3a8a' },
   { label: 'ניחושים', fill: 'linear-gradient(90deg,#16a34a,#15803d)', line: '#14532d' },
@@ -15,8 +15,8 @@ const LABEL = { fontFamily: 'inherit', fontSize: 16, fontWeight: 600, lineHeight
 function shape(side, W) {
   const mid = W / 2, g = GAP / 2, arc = (x, y) => `A ${R} ${R} 0 0 1 ${x} ${y}`;
   return side === 0
-    ? `M ${R} 0 L ${mid + SLANT / 2 - g} 0 L ${mid - SLANT / 2 - g} ${H} L ${R} ${H} ${arc(0, H - R)} L 0 ${R} ${arc(R, 0)} Z`
-    : `M ${mid + SLANT / 2 + g} 0 L ${W - R} 0 ${arc(W, R)} L ${W} ${H - R} ${arc(W - R, H)} L ${mid - SLANT / 2 + g} ${H} Z`;
+    ? `M ${R} 0 L ${mid - SLANT / 2 - g} 0 L ${mid + SLANT / 2 - g} ${H} L ${R} ${H} ${arc(0, H - R)} L 0 ${R} ${arc(R, 0)} Z`
+    : `M ${mid - SLANT / 2 + g} 0 L ${W - R} 0 ${arc(W, R)} L ${W} ${H - R} ${arc(W - R, H)} L ${mid + SLANT / 2 + g} ${H} Z`;
 }
 
 export default function CardActions({ onOdds, onPredictions }) {
