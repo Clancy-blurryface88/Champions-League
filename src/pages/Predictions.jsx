@@ -150,9 +150,6 @@ export default function Predictions() {
   // NEW: Add state for predictions modal
   const [showPredictionsModal, setShowPredictionsModal] = useState(false);
   const [showLeagueTable, setShowLeagueTable] = useState(false);
-  // Admin preview (set from the admin panel on this device only): the match arena as a third
-  // part of the card's bottom bar, in variant N of ARENA_VARIANTS, instead of its own pill.
-  const [arenaPreview] = useState(() => { try { const v = localStorage.getItem('card-arena-preview'); return v === null ? null : Number(v); } catch { return null; } });
   const [leagueTableHighlight, setLeagueTableHighlight] = useState({});
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [fixturesTeam, setFixturesTeam] = useState(null); // { name, logo_url } — opens TeamFixturesModal
@@ -1042,35 +1039,8 @@ export default function Predictions() {
                       </div>
                     )}
 
-                    {/* Separator + Arena toggle */}
+                    {/* Separator */}
                     <div className="h-px mt-3" style={{ background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)' }} />
-                    {/* Same look as the "League Phase" stage badge at the top of the card */}
-                    <style>{`
-                      @keyframes arena-text-glow {
-                        0%, 100% { text-shadow: 0 0 0 rgba(250,204,21,0); opacity: .8; }
-                        50% { text-shadow: 0 0 6px rgba(250,204,21,0.9), 0 0 12px rgba(250,204,21,0.6); opacity: 1; }
-                      }
-                      @keyframes arena-glow-pulse {
-                        0%, 100% { border-color: rgba(250,204,21,0.40); box-shadow: inset 0 1px 0 rgba(255,255,255,0.30), 0 0 0 0 rgba(250,204,21,0); }
-                        50% { border-color: rgba(250,204,21,0.95); box-shadow: inset 0 1px 0 rgba(255,255,255,0.30), 0 0 14px 2px rgba(250,204,21,0.55); }
-                      }
-                    `}</style>
-                    {arenaPreview === null && <div className="flex justify-center mt-3">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); toggleArena(match.id); }}
-                        className="relative overflow-hidden flex items-center gap-1.5 text-sm font-semibold text-yellow-400 border border-yellow-400/40 px-5 py-1 rounded-full hover:border-yellow-400/70 transition-colors cursor-pointer"
-                        style={{
-                          background: 'rgba(255,255,255,0.07)',
-                          backdropFilter: 'blur(20px) saturate(140%)',
-                          WebkitBackdropFilter: 'blur(20px) saturate(140%)',
-                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.30)',
-                          animation: 'arena-glow-pulse 1.8s ease-in-out infinite',
-                        }}
-                      >
-                        <img src="/champions/arena-stadium.png" alt="" className="w-4 h-4 object-contain" />
-                        <span style={{ animation: 'arena-text-glow 1.8s ease-in-out infinite' }}>זירת המשחק</span>
-                      </button>
-                    </div>}
 
                     {/* Arena — bottom sheet (portal) */}
                     <AnimatePresence>
@@ -1086,13 +1056,13 @@ export default function Predictions() {
                       )}
                     </AnimatePresence>
 
-                    {/* The two bottom buttons (1 X 2 / ניחושים), split like the days bar. Solid
+                    {/* The bottom buttons (1 X 2 / match arena / ניחושים), split like the days bar. Solid
                         gradients only: clip-path together with backdrop-filter broke rendering before. */}
                     <div className="-mx-3 -mb-3 mt-3">
                       <CardActions
                         onOdds={() => handleShowScoringRules(match)}
                         onPredictions={() => handleShowPredictions(match)}
-                        {...(arenaPreview !== null ? { onArena: () => toggleArena(match.id), arena: arenaPreview } : {})} />
+                        onArena={() => toggleArena(match.id)} />
                     </div>
                   </CardContent>
                 </LiquidGlassCard>
