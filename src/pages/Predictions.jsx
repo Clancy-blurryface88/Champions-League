@@ -30,7 +30,6 @@ import CardActions from "../components/predictions/CardActions";
 import MatchDateTag from "../components/predictions/MatchDateTag";
 import BackTab from "../components/predictions/BackTab";
 import RoundHeader from "../components/predictions/RoundHeader";
-import { RevealText } from "@/components/magicui/reveal-text";
 import TeamFlag from "@/components/TeamFlag";
 import LeagueTableModal from "@/components/LeagueTableModal";
 import { PREDICTION_LOCK_MINUTES } from "@/config/tournament";
@@ -130,16 +129,6 @@ function _computeTeamPositions(allMatches, leagueTableOverride = []) {
   });
   return positions;
 }
-
-// Team names under the crests: sporty italic capitals, white fading into lemon yellow, with a
-// hard drop shadow (on the inner span: the reveal animation drives the outer element's filter)
-const TEAM_NAME = {
-  fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 14, fontStyle: 'italic', textTransform: 'uppercase',
-  background: 'linear-gradient(180deg,#ffffff,#fde047)', WebkitBackgroundClip: 'text', backgroundClip: 'text',
-  color: 'transparent', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(2px 2px 0 rgba(0,0,0,0.5))',
-  // the italic letters lean past the text box and the gradient only paints inside it: room on both sides
-  padding: '0 5px', WebkitBoxDecorationBreak: 'clone', boxDecorationBreak: 'clone',
-};
 
 export default function Predictions() {
   const [currentRound, setCurrentRound] = useState(null);
@@ -916,10 +905,10 @@ export default function Predictions() {
                     <div className="py-3 px-1">
                       <div
                         className="w-full grid gap-x-2"
-                        style={{ gridTemplateColumns: '1fr auto 1fr', gridTemplateRows: 'auto auto' }}
+                        style={{ gridTemplateColumns: 'minmax(0,1fr) auto minmax(0,1fr)', gridTemplateRows: 'auto auto' }}
                       >
                         {/* Row 1: flags */}
-                        <div className="flex justify-center items-center pt-14"
+                        <div className="flex justify-center items-center pt-[22px]"
                              style={{ gridColumn: 1, gridRow: 1 }}>
                           <motion.div
                             onClick={() => handleTeamLogoClick(match.team_a, match.team_a_logo)}
@@ -959,7 +948,7 @@ export default function Predictions() {
                           )}
                         </div>
 
-                        <div className="flex justify-center items-center pt-14"
+                        <div className="flex justify-center items-center pt-[22px]"
                              style={{ gridColumn: 3, gridRow: 1 }}>
                           <motion.div
                             onClick={() => handleTeamLogoClick(match.team_b, match.team_b_logo)}
@@ -974,12 +963,9 @@ export default function Predictions() {
                           </motion.div>
                         </div>
 
-                        {/* Row 2: name + label tightly stacked, top-aligned */}
+                        {/* Row 2: home / away label and table position under each crest (no team name: the crest says it) */}
                         <div style={{ gridColumn: 1, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center">
-                          <RevealText delay={0.5} animate={shouldAnimate} className="leading-tight text-center w-full break-words" style={{ minHeight: '2.5em' }}>
-                            <span style={TEAM_NAME}>{match.team_a}</span>
-                          </RevealText>
                           <span className="text-[10px] font-extrabold leading-none text-center" style={{
                             backgroundImage: 'linear-gradient(135deg, #d1fae5 0%, #6ee7b7 100%)',
                             WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent',
@@ -990,9 +976,6 @@ export default function Predictions() {
                         </div>
                         <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center">
-                          <RevealText delay={0.5} animate={shouldAnimate} className="leading-tight text-center w-full break-words" style={{ minHeight: '2.5em' }}>
-                            <span style={TEAM_NAME}>{match.team_b}</span>
-                          </RevealText>
                           <span className="text-[10px] font-extrabold leading-none text-center" style={{
                             backgroundImage: 'linear-gradient(135deg, #dbeafe 0%, #7dd3fc 100%)',
                             WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent',
