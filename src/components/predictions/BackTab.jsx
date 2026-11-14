@@ -9,8 +9,8 @@ import { ArrowLeft } from 'lucide-react';
 
 const SKEW = -12;
 const PANE = {
-  width: 220,
-  height: 24,
+  width: 240,
+  height: 30,
   background: 'rgba(0,0,0,0.3)',
   backdropFilter: 'blur(14px) saturate(1.5)',
   WebkitBackdropFilter: 'blur(14px) saturate(1.5)',
@@ -28,8 +28,8 @@ export default function BackTab({ onClick }) {
       <motion.button whileTap={{ scale: 0.97 }} transition={{ duration: 0.12 }} onClick={onClick} aria-label="חזרה" className="relative">
         <span className="flex items-center justify-center" style={PANE}>
           <span dir="ltr" className="flex items-center gap-1.5" style={{ transform: `skewX(${-SKEW}deg)` }}>
-            <ArrowLeft className="h-[15px] w-[15px] text-white" strokeWidth={2.5} />
-            <span className="text-[13px] font-extrabold leading-none text-white" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85)' }}>חזרה</span>
+            <ArrowLeft className="h-4 w-4 text-white" strokeWidth={2.5} />
+            <span className="text-[14px] font-extrabold leading-none text-white" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85)' }}>חזרה</span>
           </span>
         </span>
       </motion.button>
