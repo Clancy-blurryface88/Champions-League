@@ -4,7 +4,7 @@ import React, { useLayoutEffect, useRef, useState } from 'react';
 // split by a gentle slanted break with a slit between them, set inside the card. Each button is
 // outlined in a darker shade of its own colour. Both labels share one font, size and weight.
 
-const H = 38, SLANT = 10, GAP = 6, R = 14, STROKE = 1.75;
+const H = 42, SLANT = 10, GAP = 6, R = 12, STROKE = 1.75;
 const BUTTONS = [
   { label: '1 X 2', fill: 'linear-gradient(90deg,#3b82f6,#1d4ed8)', line: '#1e3a8a' },
   { label: 'ניחושים', fill: 'linear-gradient(90deg,#16a34a,#15803d)', line: '#14532d' },

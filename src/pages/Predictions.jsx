@@ -1163,7 +1163,7 @@ export default function Predictions() {
 
                     {/* The two bottom buttons (1 X 2 / ניחושים), split like the days bar. Solid
                         gradients only: clip-path together with backdrop-filter broke rendering before. */}
-                    <div className="mt-3">
+                    <div className="-mx-3 -mb-3 mt-3">
                       <CardActions onOdds={() => handleShowScoringRules(match)} onPredictions={() => handleShowPredictions(match)} />
                     </div>
                   </CardContent>
