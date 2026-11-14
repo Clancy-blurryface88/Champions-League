@@ -54,7 +54,7 @@ function coachName(team) {
 // differ from ISO 3166-1), so it can't be fed to a standard flag CDN
 // as-is. Mapped to flagcdn.com codes — verified against every nationality
 // that actually appears in this season's competition player pool.
-const COUNTRY_FLAG_CODE = {
+export const COUNTRY_FLAG_CODE = {
   ALB: 'al', ALG: 'dz', AND: 'ad', ANG: 'ao', ARG: 'ar', ARM: 'am', AUS: 'au', AUT: 'at', AZE: 'az',
   BEL: 'be', BFA: 'bf', BIH: 'ba', BLR: 'by', BRA: 'br', BUL: 'bg', CAN: 'ca', CGO: 'cg', CHI: 'cl',
   CIV: 'ci', CMR: 'cm', COD: 'cd', COL: 'co', CPV: 'cv', CRC: 'cr', CRO: 'hr', CUW: 'cw', CYP: 'cy',
