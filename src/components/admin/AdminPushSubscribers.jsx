@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/api/supabase";
+import { NOTIF_TABS } from "@/components/NotificationsSheet";
 
 // Who is subscribed to pushes: every participant with their OneSignal push
 // subscriptions, matched by external_id (= Supabase user id, set on login).
@@ -11,6 +12,19 @@ const box = { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,
 const fmtDate = (iso) => iso
   ? new Intl.DateTimeFormat("he-IL", { timeZone: "Asia/Jerusalem", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(iso))
   : "";
+
+// bell-menu choices: what this participant turned off, and from which minute live pushes come
+const TITLE = Object.fromEntries(Object.values(NOTIF_TABS).flatMap((t) => t.items.map(([k, icon, title]) => [k, `${icon} ${title}`])));
+function PrefsLine({ prefs }) {
+  if (!prefs || (!prefs.off.length && !prefs.liveFrom)) return <p className="text-[11px] text-emerald-300/80 mt-1">🔔 מקבל הכל</p>;
+  return (
+    <div className="mt-1 space-y-0.5">
+      {prefs.liveFrom > 0 && <p className="text-[11px] text-sky-200">⏱️ הודעות LIVE רק מדקה {prefs.liveFrom}</p>}
+      {prefs.off.length > 0 && <p className="text-[11px] text-amber-200">🔕 כיבה: {prefs.off.map((k) => TITLE[k] || k).join(" · ")}</p>}
+      {prefs.updatedAt && <p className="text-[10px] text-slate-500">עודכן {fmtDate(prefs.updatedAt)}</p>}
+    </div>
+  );
+}
 
 const statusOf = (u) => {
   if (u.error) return { label: "שגיאה", cls: "text-amber-300" };
@@ -117,7 +131,7 @@ export default function AdminPushSubscribers() {
       <div className="flex items-end justify-between gap-2">
         <div>
           <h2 className="text-xl font-bold text-white mb-1">🔔 מי רשום להתראות</h2>
-          {users && <p className="text-slate-400 text-sm">{subscribed} מתוך {users.length} משתתפים רשומים</p>}
+          {users && <p className="text-slate-400 text-sm">{subscribed} מתוך {users.length} משתתפים רשומים · {users.filter((u) => u.prefs && (u.prefs.off.length || u.prefs.liveFrom)).length} שינו הגדרות התראות</p>}
         </div>
         <button type="button" onClick={load} disabled={loading}
           className="text-xs px-3 py-1.5 rounded-lg border border-white/15 text-slate-300 disabled:opacity-40">
@@ -141,6 +155,7 @@ export default function AdminPushSubscribers() {
                   <span className={`text-xs shrink-0 ${st.cls}`}>{st.label}</span>
                 </div>
                 <p className="text-[11px] text-slate-500 font-mono break-all" dir="ltr">{u.id}</p>
+                <PrefsLine prefs={u.prefs} />
                 {u.subscriptions.map((s) => (
                   <p key={s.id} className="text-[11px] text-slate-400 mt-0.5" dir="ltr">
                     {s.enabled ? "🟢" : "🔴"} {s.device || s.type} · <span className="font-mono">{s.id}</span>

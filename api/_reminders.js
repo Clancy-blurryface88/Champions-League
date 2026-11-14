@@ -170,7 +170,7 @@ export async function remindersHandler(req, res) {
         // Lineups out → everyone, as a chance to update a prediction (not a
         // missing-prediction reminder: most people predict the whole round at once).
         if (published) {
-          const sent = await push({ heading: `📋 ההרכבים למשחקי ${r.kickoff} פורסמו!`, body: 'ניתן לעדכן תוצאה עד נעילת המשחק', url: r.url, key: r.key, mode, sendAfter: r.at });
+          const sent = await push({ heading: `📋 ההרכבים למשחקי ${r.kickoff} פורסמו!`, body: 'ניתן לעדכן תוצאה עד נעילת המשחק', url: r.url, key: r.key, mode, sendAfter: r.at, pref: 'lineups' });
           results.push({ key: r.key, at: r.at.toISOString(), lineups: true, sent });
           continue;
         }

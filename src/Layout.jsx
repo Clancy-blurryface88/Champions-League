@@ -31,6 +31,7 @@ import FinalResultsOverlay from "./components/FinalResultsOverlay";
 import RoundSummaryReveal from "./components/roundSummary/RoundSummaryReveal";
 import { computeRoundSummary } from "./utils/roundSummary";
 import PushInvite, { PUSH_INVITE_SNOOZE_MS, pushInviteSnoozeKey } from "./components/PushInvite";
+import NotificationsSheet from "./components/NotificationsSheet";
 
 function localDayKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -133,6 +134,7 @@ export default function Layout({ children, currentPageName }) {
   const [showSidebar, setShowSidebar] = useState(false);
   const [showYearlySummary, setShowYearlySummary] = useState(false); // NEW: State for YearlySummaryPanel
   const [showPushBanner, setShowPushBanner] = useState(false);
+  const [showNotifSheet, setShowNotifSheet] = useState(false);
   const [notifPermission, setNotifPermission] = useState(
     typeof Notification !== 'undefined' ? Notification.permission : 'default'
   );
@@ -1140,26 +1142,12 @@ export default function Layout({ children, currentPageName }) {
         {user &&
         <div className="fixed top-[44px] right-4 z-40 flex items-start gap-2">
 
-            {/* Notification Bell — manual fallback in case the auto-request
-                (push banner on first login) failed or was dismissed. */}
+            {/* Notification Bell — opens the notifications menu (NotificationsSheet):
+                this device's status with "הפעלה", then what to receive. */}
             <motion.button
               whileTap={{ scale: 0.92 }}
-              onClick={async () => {
-                const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-                const isStandalone = window.navigator.standalone === true;
-                if ((isIOS && !isStandalone) || notifPermission === 'denied') {
-                  setShowPushBanner(true);
-                  return;
-                }
-                if (notifPermission !== 'granted' && window.OneSignal) {
-                  try {
-                    await window.OneSignal.Notifications.requestPermission();
-                    if (typeof Notification !== 'undefined') {
-                      setNotifPermission(Notification.permission);
-                    }
-                  } catch (e) {}
-                }
-              }}
+              aria-label="התראות"
+              onClick={() => setShowNotifSheet(true)}
               // mt: centered on the 42px name pill beside it (36px bell)
               className="mt-[3px] flex items-center justify-center rounded-full w-9 h-9 transition-all duration-200"
               style={{
@@ -1591,6 +1579,23 @@ export default function Layout({ children, currentPageName }) {
         {/* Push invite — held back until the full onboarding chain (welcome
             name, general questions, intro video) is done, same reasoning as
             the live/next-match intro overlays below. */}
+        <NotificationsSheet
+          open={showNotifSheet}
+          onClose={() => setShowNotifSheet(false)}
+          granted={notifPermission === 'granted'}
+          onEnable={async () => {
+            // iPhone outside the home-screen app, or blocked in the browser: the guide
+            const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+            if ((isIOS && window.navigator.standalone !== true) || notifPermission === 'denied') {
+              setShowNotifSheet(false);
+              setShowPushBanner(true);
+              return;
+            }
+            const perm = await enablePush();
+            if (perm === 'denied') { setShowNotifSheet(false); setShowPushBanner(true); }
+          }}
+        />
+
         <AnimatePresence>
           {showPushBanner && !showWelcomeModal && !showGeneralPredictionsOnboarding && !showIntroVideo && (
             <PushInvite

@@ -14,6 +14,7 @@ import { TEAM_BY_GOAL_ID } from '../src/data/goalTeamIds.js';
 import { calculateScore } from '../src/utils/scoring.js';
 import { participants, latestPredictions, sendPersonal } from './_personal.js';
 import { personalForGoal, personalForFinish } from './_personalGoal.js';
+import { splitByPrefs, broadcastFilters, liveMinute } from './_prefs.js';
 
 const GOAL_BASE = 'https://api.goal-api.com/v1';
 const CL_LEAGUE = 'cmr77dw3900f5rx06j05wgzv4';
@@ -95,7 +96,7 @@ export async function sendRoundSummary(roundId, mode, sendAfter) {
   if (!t?.heading || !t?.body) return { skipped: 'no wording saved' };
   return push({
     heading: t.heading, body: t.body, url: `${SITE}/?open=summary&round=${roundId}`,
-    key: `round-summary:${roundId}`, mode, sendAfter,
+    key: `round-summary:${roundId}`, mode, sendAfter, pref: 'summary',
   });
 }
 
@@ -111,7 +112,19 @@ function uuidFrom(str) {
 // externalIds (Supabase user ids) → only those users' devices, instead of a
 // segment (needs OneSignal.login to have linked them). onesignalIds → those
 // OneSignal users' devices (works for unlinked users too).
-export async function push({ heading, body, url, key, mode = 'live', sendAfter, externalIds, onesignalIds }) {
+// pref = which bell-menu toggle this push belongs to ('goal', 'night', ...; none =
+// always sent, like the reminders), minute = the match minute for live pushes.
+// Personal sends drop users who turned it off; a broadcast gets OneSignal tag
+// filters only when somebody turned it off, and falls back to the whole segment
+// if that filtered send fails (_prefs.js: when in doubt, send).
+export async function push({ heading, body, url, key, mode = 'live', sendAfter, externalIds, onesignalIds, pref, minute }) {
+  if (pref && externalIds?.length && mode !== 'test') {
+    const { keep } = await splitByPrefs(externalIds.map((userId) => ({ userId })), pref, minute);
+    if (!keep.length) return { skipped: `turned off (${pref})` };
+    externalIds = keep.map((m) => m.userId);
+  }
+  const filters = pref && mode !== 'test' && !externalIds?.length && !onesignalIds?.length
+    ? await broadcastFilters(pref, minute) : null;
   // Every real send gets a push_log row; its id rides in the link (?pn=) so the
   // app can record who opened it (push_opens) for the admin report.
   const logId = crypto.randomUUID();
@@ -124,7 +137,9 @@ export async function push({ heading, body, url, key, mode = 'live', sendAfter, 
       ? { include_aliases: { external_id: externalIds } }
       : onesignalIds?.length
         ? { include_aliases: { onesignal_id: onesignalIds } }
-        : { included_segments: [mode === 'test' ? 'Test Users' : 'Total Subscriptions'] }),
+        : filters
+          ? { filters }
+          : { included_segments: [mode === 'test' ? 'Test Users' : 'Total Subscriptions'] }),
     headings: { en: heading, he: heading },
     contents: { en: body, he: body },
     url,
@@ -139,12 +154,22 @@ export async function push({ heading, body, url, key, mode = 'live', sendAfter, 
   };
   if (sendAfter && sendAfter > new Date()) payload.send_after = sendAfter.toISOString();
   if (mode === 'dry') return { dryRun: true, payload };
-  const r = await fetch('https://api.onesignal.com/notifications?c=push', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Key ${process.env.ONESIGNAL_REST_API_KEY}` },
-    body: JSON.stringify(payload),
-  });
-  const res = { status: r.status, body: await r.json().catch(() => null) };
+  const send = async (p) => {
+    const r = await fetch('https://api.onesignal.com/notifications?c=push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Key ${process.env.ONESIGNAL_REST_API_KEY}` },
+      body: JSON.stringify(p),
+    });
+    return { status: r.status, body: await r.json().catch(() => null) };
+  };
+  let res = await send(payload);
+  if (filters && (res.status !== 200 || !res.body?.id)) {
+    // the filtered broadcast failed or reached nobody: send it to everyone instead
+    console.error('[push] filtered send failed — sending to the whole segment', res.status, JSON.stringify(res.body?.errors || ''));
+    const { filters: _f, ...plain } = payload;
+    res = await send({ ...plain, included_segments: ['Total Subscriptions'], idempotency_key: uuidFrom(`${key}:unfiltered`) });
+    res.fallback = true;
+  } else if (filters) res.filtered = pref;
   await logPush({ logId, idem, key, heading, body, url, mode, sendAfter, externalIds, onesignalIds, res });
   return res;
 }
@@ -268,7 +293,14 @@ async function onGoal(fixtureId, data, mode, sendAfter) {
   const key = `goal:${fixtureId}:${hs}-${as}:${minute || ''}`;
   const url = `${SITE}/?open=live`;
   const out = {};
-  if (mine?.personal.length) out.personal = await sendPersonal(mine.personal, { url, key: `p${key}`, mode, sendAfter });
+  const min = liveMinute(minute);
+  // whoever turned their personal kind off goes back to the regular goal push below
+  let kept = 0, dropped = [];
+  if (mine?.personal.length) {
+    out.personal = await sendPersonal(mine.personal, { url, key: `p${key}`, mode, sendAfter, minute: min });
+    kept = out.personal.count;
+    dropped = out.personal.dropped || [];
+  }
   // A goal that only broke a hit (nobody hits the new score): the ones it
   // concerns got their personal message — no broadcast to everyone else
   // (the user's rule, 2026-11-03: Villarreal 0-3 PSG went to all with "nobody hits").
@@ -276,10 +308,11 @@ async function onGoal(fixtureId, data, mode, sendAfter) {
   else if (touches) {
     // nobody got a personal one → the usual broadcast (reaches unlinked devices too);
     // otherwise only the rest of the participants
-    out.general = !mine?.personal.length
-      ? await push({ heading, body: hitsLine(hits), url, key, mode, sendAfter })
-      : mine.rest.length && mode !== 'test'
-        ? await push({ heading, body: hitsLine(hits), url, key, mode, sendAfter, externalIds: mine.rest })
+    const rest = [...(mine?.rest || []), ...dropped];
+    out.general = !kept
+      ? await push({ heading, body: hitsLine(hits), url, key, mode, sendAfter, pref: 'goal', minute: min })
+      : rest.length && mode !== 'test'
+        ? await push({ heading, body: hitsLine(hits), url, key, mode, sendAfter, externalIds: rest, pref: 'goal', minute: min })
         : { skipped: mode === 'test' ? 'test: personal messages only' : 'everyone got a personal message' };
   }
   return out;
@@ -329,7 +362,7 @@ async function onScoreChanged(fixtureId, data, mode, sendAfter) {
   const announced = (await countExact(our, ph, pa)) > 0 || hits > 0;
   if (!announced) return { skipped: 'the cancelled goal touches nobody\'s exact score' };
   const heading = `🖥️❌ השער נפסל — ${teamLabel(fx, 'home')} ${hs}-${as} ${teamLabel(fx, 'away')}`;
-  return push({ heading, body: hitsLine(hits, false), url: `${SITE}/?open=live`, key: `fix:${fixtureId}:${ph}-${pa}>${hs}-${as}`, mode, sendAfter });
+  return push({ heading, body: hitsLine(hits, false), url: `${SITE}/?open=live`, key: `fix:${fixtureId}:${ph}-${pa}>${hs}-${as}`, mode, sendAfter, pref: 'var', minute: liveMinute(data?.minute ?? data?.time) });
 }
 
 // late=true: a manual re-send the day after ("אתמול" instead of "הערב").
@@ -341,7 +374,7 @@ async function onFinished(fixtureId, mode, sendAfter, late = false) {
   if (!late) {
     const ourFx = await findOurMatch(fx);
     const hitters = ourFx ? await personalForFinish(fx, ourFx).catch((e) => { console.error('[personal-finish]', e.message); return []; }) : [];
-    if (hitters.length) hitPush = await sendPersonal(hitters, { url: `${SITE}/`, key: `hit:${fixtureId}`, mode, sendAfter });
+    if (hitters.length) hitPush = await sendPersonal(hitters, { url: `${SITE}/`, key: `hit:${fixtureId}`, mode, sendAfter, pref: 'final' });
   }
   const night = await goal(`/fixtures/date/${date}?leagueId=${CL_LEAGUE}&limit=100`);
   if (night.some((f) => f.matchStatus !== 'FINISHED')) return { skipped: 'night not over yet', hitPush };
@@ -407,7 +440,7 @@ async function onFinished(fixtureId, mode, sendAfter, late = false) {
   // or a test/late re-send keeps its own timing.
   const lastKickoff = new Date(Math.max(...night.map((f) => new Date(f.kickoffUtc).getTime())));
   if (!sendAfter && !late && mode !== 'test') sendAfter = new Date(ilAt(lastKickoff, 1, 0).getTime() + 20 * 60e3);
-  const out = await sendPersonal(list, { url: `${SITE}/Replay?date=${String(date).slice(0, 10)}`, key: `night:${date}`, mode, sendAfter });
+  const out = await sendPersonal(list, { url: `${SITE}/Replay?date=${String(date).slice(0, 10)}`, key: `night:${date}`, mode, sendAfter, pref: 'night' });
   out.roundSummary = late ? { skipped: 'late re-send' } : await roundSummaryPush(rows, lastKickoff, mode).catch((e) => ({ error: e.message }));
   return out;
 }

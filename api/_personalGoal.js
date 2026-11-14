@@ -71,18 +71,18 @@ export async function personalForGoal(fx, our, before, after, scorerTeam, game =
     const hitNow = sameAs(pr, after), lost = sameAs(pr, before);
     let msg = null;
     if (now[p.id] === 1 && was[p.id] > 1) {
-      msg = { heading: '🏆 עלית לפסגה!', body: withGame(`בזכות השער של ${scorerTeam}, אתה במקום הראשון!`) };
+      msg = { pref: 'first-place', heading: '🏆 עלית לפסגה!', body: withGame(`בזכות השער של ${scorerTeam}, אתה במקום הראשון!`) };
     } else if (was[p.id] <= 3 && now[p.id] > was[p.id]) {
       // the one now directly above who used to be below
       const passer = people.find((o) => o.id !== p.id && now[o.id] < now[p.id] && was[o.id] > was[p.id]);
       msg = passer
-        ? { heading: '⚔️ עקפו אותך', body: withGame(`${nameOf(passer.id)} עקף אותך ב-${pts(afterTotals[passer.id] - afterTotals[p.id])} נק׳ 😤`) }
-        : { heading: '⚔️ עקפו אותך', body: withGame(`ירדת למקום ${now[p.id]} בטבלה 😤`) };
+        ? { pref: 'overtaken', heading: '⚔️ עקפו אותך', body: withGame(`${nameOf(passer.id)} עקף אותך ב-${pts(afterTotals[passer.id] - afterTotals[p.id])} נק׳ 😤`) }
+        : { pref: 'overtaken', heading: '⚔️ עקפו אותך', body: withGame(`ירדת למקום ${now[p.id]} בטבלה 😤`) };
     } else if (hitNow) {
       // the scorer on its own line under the match line (the heading), like the other pushes
-      msg = { heading: `🔥 ${game.match || `${after[0]}-${after[1]}!`}`, body: `${game.scorer ? `${game.scorer}\n` : ''}כרגע זאת פגיעה מדויקת. תחזיק אצבעות 🤞` };
+      msg = { pref: 'hit', heading: `🔥 ${game.match || `${after[0]}-${after[1]}!`}`, body: `${game.scorer ? `${game.scorer}\n` : ''}כרגע זאת פגיעה מדויקת. תחזיק אצבעות 🤞` };
     } else if (lost) {
-      msg = { heading: '😱 השער הרס לך את הפגיעה', body: `${gameLine ? `${gameLine} · ` : ''}הגול הרס לך את ה-${shown(pr)} 😞` };
+      msg = { pref: 'broke', heading: '😱 השער הרס לך את הפגיעה', body: `${gameLine ? `${gameLine} · ` : ''}הגול הרס לך את ה-${shown(pr)} 😞` };
     }
     if (msg) personal.push({ userId: p.id, name: p.name, ...msg });
   }

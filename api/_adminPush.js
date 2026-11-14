@@ -66,6 +66,9 @@ export async function adminSubscribersHandler(req, res) {
     if (!(await adminFromToken(token))) return res.status(401).json({ error: 'admins only' });
 
     const profiles = await supa('profiles?select=id,display_name,email&order=display_name');
+    // bell-menu choices (no row = everything on)
+    const prefRows = await supa('notification_prefs?select=user_id,off,live_from,updated_at').catch(() => []);
+    const prefs = Object.fromEntries((Array.isArray(prefRows) ? prefRows : []).map((r) => [r.user_id, r]));
     const users = [];
     // Small batches — OneSignal rate-limits per app.
     for (let i = 0; i < profiles.length; i += 10) {
@@ -76,6 +79,7 @@ export async function adminSubscribersHandler(req, res) {
         users.push({
           id: p.id, name: p.display_name || p.email, email: p.email,
           error: s?.error, linked: Array.isArray(s), subscriptions: Array.isArray(s) ? s : [],
+          prefs: prefs[p.id] ? { off: prefs[p.id].off || [], liveFrom: prefs[p.id].live_from || 0, updatedAt: prefs[p.id].updated_at } : null,
         });
       });
     }

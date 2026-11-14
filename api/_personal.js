@@ -2,6 +2,7 @@
 // devices (OneSignal external_id = Supabase user id, linked by OneSignal.login
 // in the app). Users who never linked a device simply don't receive these.
 import { supa, push } from './_goalWebhook.js';
+import { splitByPrefs } from './_prefs.js';
 
 // Every participant (a user_stats row), with display names.
 export async function participants() {
@@ -30,8 +31,13 @@ export const missingText = (n) => (n === 1 ? 'חסר לך ניחוש אחד' : `
 // retry never double-sends. mode 'dry' → payloads only; 'test' → the first two
 // messages go to the Test Users segment instead (labelled with whose they are),
 // so a test never reaches the real participants.
-export async function sendPersonal(list, { url, key, mode = 'live', sendAfter }) {
+// pref (or each message's own m.pref) = the bell-menu toggle these belong to:
+// users who turned it off (or set a later minute for live ones) are left out and
+// returned in `dropped`. No pref = always sent (reminders).
+export async function sendPersonal(list, { url, key, mode = 'live', sendAfter, pref, minute }) {
   const out = [];
+  const { keep, dropped } = await splitByPrefs(list, pref, minute);
+  list = keep;
   const batch = mode === 'test' ? list.slice(0, 2) : list;
   for (const m of batch) {
     const r = mode === 'test'
@@ -39,5 +45,5 @@ export async function sendPersonal(list, { url, key, mode = 'live', sendAfter })
       : await push({ heading: m.heading, body: m.body, url, key: `${key}:${m.userId}`, mode, sendAfter, externalIds: [m.userId] });
     out.push({ userId: m.userId, name: m.name, body: m.body, status: r.status ?? (r.dryRun ? 'dry' : undefined) });
   }
-  return { personal: true, count: list.length, sent: out };
+  return { personal: true, count: list.length, sent: out, dropped };
 }
