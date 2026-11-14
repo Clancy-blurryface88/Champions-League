@@ -6,7 +6,7 @@ import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { User } from "@/api/entities";
 import { AiBrief } from "@/api/entities";
-import { ArrowLeft, Check, Lock, HelpCircle, Eye, Sparkles, ChevronDown, Dices, History, Play } from "lucide-react";
+import { ArrowLeft, Check, HelpCircle, Eye, Sparkles, ChevronDown, Dices, History, Play } from "lucide-react";
 import AiBriefModal from "@/components/AiBriefModal"; // ADDED Eye icon
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -38,7 +38,7 @@ import TeamInfoModal from "@/components/TeamInfoModal";
 import TeamFixturesModal from "@/components/TeamFixturesModal";
 import { loadLeagueTableOverride, applyOverride } from '@/utils/standingsOverride';
 import { calcStandings } from '@/utils/standings';
-import { STAGES, STAGE_LABELS, DIRECT_R16_CUTOFF, PLAYOFF_CUTOFF } from '@/config/tournament';
+import { STAGES, DIRECT_R16_CUTOFF, PLAYOFF_CUTOFF } from '@/config/tournament';
 import { pickWeightedScore } from '@/utils/pickWeightedScore';
 
 // --- Slot-machine position badge (starts when element enters viewport) ---
@@ -150,6 +150,9 @@ export default function Predictions() {
   // NEW: Add state for predictions modal
   const [showPredictionsModal, setShowPredictionsModal] = useState(false);
   const [showLeagueTable, setShowLeagueTable] = useState(false);
+  // Admin preview (set from the admin panel on this device only): the match arena as a third
+  // part of the card's bottom bar, in variant N of ARENA_VARIANTS, instead of its own pill.
+  const [arenaPreview] = useState(() => { try { const v = localStorage.getItem('card-arena-preview'); return v === null ? null : Number(v); } catch { return null; } });
   const [leagueTableHighlight, setLeagueTableHighlight] = useState({});
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [fixturesTeam, setFixturesTeam] = useState(null); // { name, logo_url } — opens TeamFixturesModal
@@ -702,7 +705,10 @@ export default function Predictions() {
         <div className="mb-8 pt-4">
           <BackTab onClick={() => navigate(-1)} />
           <div className="mt-5">
-            <RoundHeader name={currentRound?.name} sent={submitted} />
+            <RoundHeader
+              name={currentRound?.name}
+              sent={submitted}
+              onOpenTable={() => { setLeagueTableHighlight({}); setShowLeagueTable(true); }} />
           </div>
         </div>
 
@@ -862,20 +868,9 @@ export default function Predictions() {
                   {/* Date and kick-off time, hanging from the card's top edge */}
                   <MatchDateTag date={match.match_date} />
                   <CardContent className="p-5 pt-12 flex-1 flex flex-col justify-between">
-                    {/* Header: Countdown / Status */}
+                    {/* Countdown to the lock; nothing once the match is locked or over (the card itself shows that) */}
+                    {!(timeInfo.status === 'locked' || timeInfo.status === 'finished') && (
                     <div className="flex justify-center mb-3">
-                      {timeInfo.status === 'locked' || timeInfo.status === 'finished' ?
-                        <div className="relative overflow-hidden flex items-center gap-1.5 px-4 py-1.5 rounded-2xl" style={{
-                          background: 'rgba(255,255,255,0.07)',
-                          backdropFilter: 'blur(20px) saturate(140%)',
-                          WebkitBackdropFilter: 'blur(20px) saturate(140%)',
-                          border: '1px solid rgba(255,255,255,0.15)',
-                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.30)',
-                        }}>
-                          <Lock className="w-3.5 h-3.5" style={{ color: 'rgba(255,255,255,0.75)' }} />
-                          <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.80)' }}>{timeInfo.text}</span>
-                        </div> :
-
                         <div dir="rtl" className="relative overflow-hidden flex rounded-2xl" style={{
                           background: 'rgba(255,255,255,0.06)',
                           backdropFilter: 'blur(40px) saturate(180%)',
@@ -902,25 +897,7 @@ export default function Predictions() {
                             </React.Fragment>
                           ))}
                         </div>
-                      }
                     </div>
-
-                    {/* Stage badge */}
-                    {match.stage && (
-                      <div className="flex justify-center mb-4">
-                        <button
-                          onClick={() => { setLeagueTableHighlight({ home: match.team_a, away: match.team_b }); setShowLeagueTable(true); }}
-                          className="relative overflow-hidden text-sm font-semibold text-yellow-400 border border-yellow-400/40 px-5 py-1 rounded-full hover:border-yellow-400/70 transition-colors cursor-pointer"
-                          style={{
-                            background: 'rgba(255,255,255,0.07)',
-                            backdropFilter: 'blur(20px) saturate(140%)',
-                            WebkitBackdropFilter: 'blur(20px) saturate(140%)',
-                            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.30)',
-                          }}
-                        >
-                          {STAGE_LABELS[match.stage] || match.stage}
-                        </button>
-                      </div>
                     )}
 
                     {/* Separator below group badge */}
@@ -1078,7 +1055,7 @@ export default function Predictions() {
                         50% { border-color: rgba(250,204,21,0.95); box-shadow: inset 0 1px 0 rgba(255,255,255,0.30), 0 0 14px 2px rgba(250,204,21,0.55); }
                       }
                     `}</style>
-                    <div className="flex justify-center mt-3">
+                    {arenaPreview === null && <div className="flex justify-center mt-3">
                       <button
                         onClick={(e) => { e.stopPropagation(); toggleArena(match.id); }}
                         className="relative overflow-hidden flex items-center gap-1.5 text-sm font-semibold text-yellow-400 border border-yellow-400/40 px-5 py-1 rounded-full hover:border-yellow-400/70 transition-colors cursor-pointer"
@@ -1093,7 +1070,7 @@ export default function Predictions() {
                         <img src="/champions/arena-stadium.png" alt="" className="w-4 h-4 object-contain" />
                         <span style={{ animation: 'arena-text-glow 1.8s ease-in-out infinite' }}>זירת המשחק</span>
                       </button>
-                    </div>
+                    </div>}
 
                     {/* Arena — bottom sheet (portal) */}
                     <AnimatePresence>
@@ -1112,7 +1089,10 @@ export default function Predictions() {
                     {/* The two bottom buttons (1 X 2 / ניחושים), split like the days bar. Solid
                         gradients only: clip-path together with backdrop-filter broke rendering before. */}
                     <div className="-mx-3 -mb-3 mt-3">
-                      <CardActions onOdds={() => handleShowScoringRules(match)} onPredictions={() => handleShowPredictions(match)} />
+                      <CardActions
+                        onOdds={() => handleShowScoringRules(match)}
+                        onPredictions={() => handleShowPredictions(match)}
+                        {...(arenaPreview !== null ? { onArena: () => toggleArena(match.id), arena: arenaPreview } : {})} />
                     </div>
                   </CardContent>
                 </LiquidGlassCard>
