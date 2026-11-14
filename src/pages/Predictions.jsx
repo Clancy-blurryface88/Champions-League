@@ -29,6 +29,7 @@ import DaysBar from "../components/predictions/DaysBar";
 import CardActions from "../components/predictions/CardActions";
 import MatchDateTag from "../components/predictions/MatchDateTag";
 import BackTab from "../components/predictions/BackTab";
+import RoundHeader from "../components/predictions/RoundHeader";
 import { RevealText } from "@/components/magicui/reveal-text";
 import TeamFlag from "@/components/TeamFlag";
 import LeagueTableModal from "@/components/LeagueTableModal";
@@ -700,9 +701,8 @@ export default function Predictions() {
         {/* Header */}
         <div className="mb-8 pt-4">
           <BackTab onClick={() => navigate(-1)} />
-          <div className="text-center mt-5">
-            <h1 className="text-3xl font-bold text-white mb-2">{currentRound?.name}</h1>
-            <p className="text-slate-400">נחש את תוצאות המשחקים</p>
+          <div className="mt-5">
+            <RoundHeader name={currentRound?.name} sent={submitted} />
           </div>
         </div>
 
@@ -712,53 +712,6 @@ export default function Predictions() {
           </div>
         }
 
-        <AnimatePresence>
-          {submitted && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.94, y: -10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.94, y: -10 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 26 }}
-              className="relative mb-4 rounded-2xl overflow-hidden"
-              style={{
-                background: 'rgba(52,211,153,0.07)',
-                border: '1px solid rgba(52,211,153,0.22)',
-              }}
-            >
-              {/* Animated glow pulse */}
-              <motion.div
-                className="absolute inset-0"
-                animate={{ opacity: [0.4, 0.9, 0.4] }}
-                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                style={{
-                  background: 'radial-gradient(ellipse at 50% 0%, rgba(52,211,153,0.14) 0%, transparent 70%)',
-                  pointerEvents: 'none',
-                }}
-              />
-
-              <div className="relative flex flex-col items-center gap-2 px-4 py-3 text-center">
-                {/* Pulsing check icon */}
-                <motion.div
-                  animate={{ scale: [1, 1.13, 1] }}
-                  transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-                  className="w-8 h-8 rounded-full flex items-center justify-center"
-                  style={{
-                    background: 'rgba(52,211,153,0.15)',
-                    border: '1px solid rgba(52,211,153,0.35)',
-                    boxShadow: '0 0 14px rgba(52,211,153,0.20)',
-                  }}
-                >
-                  <Check className="w-4 h-4 text-emerald-400" />
-                </motion.div>
-
-                <div>
-                  <p className="text-emerald-300 text-sm font-semibold">הניחושים נשלחו בהצלחה</p>
-                  <p className="text-emerald-400/50 text-xs mt-0.5">ניתן לעדכן עד {PREDICTION_LOCK_MINUTES} דקות לפני תחילת כל משחק</p>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
 
         {/* Week Strip */}
