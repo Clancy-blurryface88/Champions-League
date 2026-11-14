@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import PitchLineupWide from './PitchLineupWide';
 
 // Fetches the official starting lineup once UEFA publishes it (usually
 // ~45-60 min before kickoff) and renders it under the score-prediction
@@ -30,7 +31,7 @@ export default function MatchLineups({ teamA, teamB }) {
     >
       <div className="w-full h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent)' }} />
       <span className="text-[10px] font-semibold tracking-wide text-yellow-400">ההרכבים פורסמו</span>
-      <PitchLineup home={lineups.homeTeam} away={lineups.awayTeam} />
+      <PitchLineupWide home={lineups.homeTeam} away={lineups.awayTeam} />
     </motion.div>
   );
 }

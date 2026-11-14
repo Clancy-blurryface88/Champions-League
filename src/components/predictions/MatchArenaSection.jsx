@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { calculateProbabilities, getTopScores } from './MatchOddsBar';
 import OdometerValue from '@/components/OdometerValue';
-import { PitchLineup } from './MatchLineups';
+import PitchLineupWide from './PitchLineupWide';
 import { useModalBackButtonOnMount } from '@/hooks/useModalBackButton';
 import HeadToHead from './HeadToHead';
 import TeamFlag from '@/components/TeamFlag';
@@ -591,7 +591,7 @@ export default function MatchArenaSection({ match, allMatches, loading, onClose 
     if (tab === 'h2h') {
       return <HeadToHead inline teamA={match.team_a?.trim()} teamB={match.team_b?.trim()} logoA={match.team_a_logo} logoB={match.team_b_logo} allMatches={allMatches} />;
     }
-    if (tab === 'lineups' && lineups) return <PitchLineup home={lineups.homeTeam} away={lineups.awayTeam} />;
+    if (tab === 'lineups' && lineups) return <PitchLineupWide home={lineups.homeTeam} away={lineups.awayTeam} />;
     return null;
   })();
 
