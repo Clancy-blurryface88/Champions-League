@@ -334,6 +334,10 @@ export default function Predictions() {
     if (initialScrollDone.current) return;
     if (!activeDateKey || !expandedDates) return;
     initialScrollDone.current = true;
+    // Until the round's first day (usually Tuesday) is over, the page opens at the top: the
+    // round header and the days bar first, nothing to jump to yet.
+    const firstDay = matchesByDate[sortedDateKeys[0]] || [];
+    if (firstDay.some((m) => !m.is_finished)) return;
     const key = activeDateKey;
     setTimeout(() => {
       const container = scrollContainerRef.current;
@@ -699,7 +703,7 @@ export default function Predictions() {
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0">
       <div className="max-w-4xl mx-auto px-4 py-4 pb-20" style={{ paddingTop: '84px' }}>
         {/* Header */}
-        <div className="mb-8 pt-4">
+        <div className="pt-4" style={{ marginBottom: 14 }}>
           <BackTab onClick={() => navigate(-1)} />
           <div className="mt-5">
             <RoundHeader
@@ -707,6 +711,8 @@ export default function Predictions() {
               sent={submitted}
               onOpenTable={() => { setLeagueTableHighlight({}); setShowLeagueTable(true); }} />
           </div>
+          {/* a thin glowing blue line between the round header and the days bar */}
+          <div className="mt-4" style={{ height: 1, background: 'linear-gradient(90deg,transparent,#60a5fa 20%,#60a5fa 80%,transparent)', boxShadow: '0 0 8px rgba(96,165,250,0.8)' }} />
         </div>
 
         {error &&
