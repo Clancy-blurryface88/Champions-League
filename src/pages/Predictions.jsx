@@ -26,6 +26,7 @@ import CrowdWisdomStats from "../components/predictions/CrowdWisdomStats";
 import MatchOddsBar from "../components/predictions/MatchOddsBar";
 import MatchArenaSection from "../components/predictions/MatchArenaSection";
 import DaysBar from "../components/predictions/DaysBar";
+import CardActions from "../components/predictions/CardActions";
 import { RevealText } from "@/components/magicui/reveal-text";
 import TeamFlag from "@/components/TeamFlag";
 import LeagueTableModal from "@/components/LeagueTableModal";
@@ -1160,35 +1161,10 @@ export default function Predictions() {
                       )}
                     </AnimatePresence>
 
-                    {/* Footer bar — exact demo #7 geometry (clip-path chevron split),
-                        but with opaque gradients and no backdrop-filter. The earlier
-                        rendering bugs came from combining clip-path with
-                        backdrop-filter blur/saturate on semi-transparent fills — the
-                        demo itself never used backdrop-filter, only solid gradients,
-                        which is why it never broke there. */}
-                    <div className="-mx-5 -mb-5 mt-3 relative overflow-hidden rounded-b-xl" style={{ height: 38 }}>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleShowScoringRules(match); }}
-                        className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white transition-colors"
-                        style={{
-                          clipPath: 'polygon(0 0, 53% 0, 47% 100%, 0 100%)',
-                          background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                          paddingInlineEnd: '46%',
-                        }}
-                      >
-                        1 X 2
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleShowPredictions(match); }}
-                        className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white transition-colors"
-                        style={{
-                          clipPath: 'polygon(53% 0, 100% 0, 100% 100%, 47% 100%)',
-                          background: 'linear-gradient(135deg, #22c55e, #15803d)',
-                          paddingInlineStart: '46%',
-                        }}
-                      >
-                        ניחושים
-                      </button>
+                    {/* The two bottom buttons (1 X 2 / ניחושים), split like the days bar. Solid
+                        gradients only: clip-path together with backdrop-filter broke rendering before. */}
+                    <div className="mt-3">
+                      <CardActions onOdds={() => handleShowScoringRules(match)} onPredictions={() => handleShowPredictions(match)} />
                     </div>
                   </CardContent>
                 </LiquidGlassCard>
