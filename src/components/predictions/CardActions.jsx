@@ -2,13 +2,15 @@ import React, { useLayoutEffect, useRef, useState } from 'react';
 
 // The match card's bottom buttons as one bar split by gentle slanted breaks with a slit between
 // them, set inside the card: "1 X 2" on the left, the match arena (a narrow lemon-yellow part
-// with a drawn pitch) in the middle, "ניחושים" on the right. Each part is outlined in a darker
+// with a drawn pitch) in the middle, "BETS" (everyone's predictions) on the right. Each part is outlined in a darker
 // shade of its own colour. Both labels share one font, size and weight.
 
 const H = 36, SLANT = -10, GAP = 6, R = 12, STROKE = 1.75; // negative SLANT: the cuts lean like "/", as the rest of the app
 const ODDS = { label: '1 X 2', fill: 'linear-gradient(90deg,#3b82f6,#1d4ed8)', line: '#1e3a8a', w: 1.4 };
-const PREDS = { label: 'ניחושים', fill: 'linear-gradient(90deg,#16a34a,#15803d)', line: '#14532d', w: 1.4 };
-const LABEL = { fontFamily: 'inherit', fontSize: 16, fontWeight: 600, lineHeight: 1 };
+const PREDS = { label: 'BETS', fill: 'linear-gradient(90deg,#16a34a,#15803d)', line: '#14532d', w: 1.4 };
+// labels in the stencil number font with a long diagonal shadow
+const LONG_SHADOW = [1, 2, 3, 4, 5].map((k) => `${k}px ${k}px 0 rgba(2,6,23,${(0.55 - k * 0.07).toFixed(2)})`).join(',');
+const LABEL = { fontFamily: 'var(--num-font)', fontSize: 17, fontWeight: 900, letterSpacing: '0.06em', lineHeight: 1, textShadow: LONG_SHADOW };
 
 // the match arena: lemon yellow, light at the top and deeper at the bottom
 const ARENA = { arena: true, label: 'זירת המשחק', fill: 'linear-gradient(180deg,#fefce8,#fde047 55%,#eab308)', line: '#a16207', icon: '#422006', w: 0.55 };

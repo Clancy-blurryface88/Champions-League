@@ -2,8 +2,8 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // The predictions page's round header: one bar as wide as the days bar under it, cut by the
-// same diagonal slit (same lean, same slit width, a thin outline along the cut too). The left
-// ~30% is the league-table button: gold tint, gold outline, the word TABLE. The rest is the
+// same diagonal slit (same lean, same slit width, a thin outline along the cut too). The right
+// ~35% is the league-table button: gold tint, gold outline, the word TABLE. The left part is the
 // round: number large, stage name beside it, both in the stencil number font and fitted to
 // the space. Once predictions are sent, a pulsing green dot and "הניחושים נשלחו בהצלחה"
 // appear under the stage name.
@@ -59,20 +59,14 @@ export default function RoundHeader({ name, sent, onOpenTable }) {
     ro.observe(el); setW(el.offsetWidth);
     return () => ro.disconnect();
   }, []);
-  const L = Math.round(W * SHARE);
+  // the cut sits at C: the round on the left (the wide part), the table button on the right
+  const C = Math.round(W * (1 - SHARE));
   return (
     <div ref={box} dir="ltr" className="relative w-full" style={{ height: H }}>
       {W > 0 && <>
-        <Part path={leftPath(L)} bg="rgba(250,204,21,0.14)" line="rgba(250,204,21,0.8)" onClick={onOpenTable} label="טבלת הליגה">
-          <span className="absolute inset-y-0 left-0 flex items-center justify-center" style={{ width: L - 2 }}>
-            <Fit width={Math.max(40, L - S - 26)} height={H - 30} max={1.7}>
-              <span style={{ ...NUM, fontSize: 27, letterSpacing: '0.08em', color: GOLD, lineHeight: 1 }}>TABLE</span>
-            </Fit>
-          </span>
-        </Part>
-        <Part path={rightPath(L, W)} bg="rgba(255,255,255,0.06)" line="rgba(255,255,255,0.4)">
-          <div className="absolute inset-y-0 right-0 flex items-center justify-center" style={{ left: L + S + 6 }}>
-            <Fit width={Math.max(60, W - L - S - 30)} height={H - 14}>
+        <Part path={leftPath(C)} bg="rgba(255,255,255,0.06)" line="rgba(255,255,255,0.4)">
+          <div className="absolute inset-y-0 left-0 flex items-center justify-center" style={{ width: C - S - 6 }}>
+            <Fit width={Math.max(60, C - S - 30)} height={H - 14}>
               <span dir="rtl" className="flex items-center gap-3">
                 {num && <span style={{ ...NUM, fontSize: 60, lineHeight: 1, color: '#fff' }}>{num}</span>}
                 <span className="flex flex-col items-start">
@@ -100,7 +94,15 @@ export default function RoundHeader({ name, sent, onOpenTable }) {
             </Fit>
           </div>
         </Part>
+        <Part path={rightPath(C, W)} bg="rgba(250,204,21,0.14)" line="rgba(250,204,21,0.8)" onClick={onOpenTable} label="טבלת הליגה">
+          <span className="absolute inset-y-0 right-0 flex items-center justify-center" style={{ left: C + S + 2 }}>
+            <Fit width={Math.max(40, W - C - S - 26)} height={H - 30} max={1.7}>
+              <span style={{ ...NUM, fontSize: 27, letterSpacing: '0.08em', color: GOLD, lineHeight: 1 }}>TABLE</span>
+            </Fit>
+          </span>
+        </Part>
       </>}
     </div>
   );
 }
+
