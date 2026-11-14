@@ -28,6 +28,7 @@ import MatchArenaSection from "../components/predictions/MatchArenaSection";
 import DaysBar from "../components/predictions/DaysBar";
 import CardActions from "../components/predictions/CardActions";
 import MatchDateTag from "../components/predictions/MatchDateTag";
+import BackTab from "../components/predictions/BackTab";
 import { RevealText } from "@/components/magicui/reveal-text";
 import TeamFlag from "@/components/TeamFlag";
 import LeagueTableModal from "@/components/LeagueTableModal";
@@ -697,13 +698,9 @@ export default function Predictions() {
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0">
       <div className="max-w-4xl mx-auto px-4 py-4 pb-20" style={{ paddingTop: '84px' }}>
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8 pt-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 backdrop-blur-sm text-white/70 hover:text-white transition-all">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="text-center flex-1">
+        <div className="mb-8 pt-4">
+          <BackTab onClick={() => navigate(-1)} />
+          <div className="text-center mt-5">
             <h1 className="text-3xl font-bold text-white mb-2">{currentRound?.name}</h1>
             <p className="text-slate-400">נחש את תוצאות המשחקים</p>
           </div>
