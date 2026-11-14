@@ -269,7 +269,7 @@ function BigNumberRoundPicker({ rounds, value, onChange }) {
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
           className="text-center min-w-[64px]">
-          <span className="block text-[11px] font-bold tracking-[0.14em]" style={{ color: '#4ade80', fontFamily: "'Outfit', sans-serif" }}>ROUND</span>
+          <span className="block text-[11px] font-bold tracking-[0.14em]" style={{ color: '#4ade80', fontFamily: "'EnStencil', 'Outfit', sans-serif" }}>ROUND</span>
           <span className="block text-white" style={{ fontFamily: "var(--num-font)", fontWeight: 700, fontSize: 64, lineHeight: 0.85 }}>
             {roundNumber(current, idx)}
           </span>
@@ -1265,7 +1265,7 @@ function PredictionsList({ match, predictions, getUserDisplayName, getOutcomeSta
                 </span>
                 <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-6 h-6" rounded="sm" />
               </span>
-              <span className="truncate text-right text-white" dir="rtl" style={{ fontFamily: "'Fredoka', sans-serif", fontWeight: 600, fontSize: 15.5 }}>
+              <span className="truncate text-right text-white" dir="rtl" style={{ fontFamily: "'EnStencil', 'Fredoka', sans-serif", fontWeight: 600, fontSize: 15.5 }}>
                 {getUserDisplayName(prediction.user_id)}
               </span>
             </button>

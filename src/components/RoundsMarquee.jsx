@@ -34,7 +34,8 @@ const RoundCard = ({ round, onClick, isNext }) => {
             backdropFilter: "blur(12px)",
             WebkitBackdropFilter: "blur(12px)",
             border: "1px solid rgba(255,255,255,.45)",
-            font: "700 15.5px 'Outfit', sans-serif",
+            font: "800 17px 'EnStencil', 'Outfit', sans-serif",
+            letterSpacing: '0.08em',
             padding: num ? "0 20px 0 60px" : "0 28px 0 60px",
           }}
         >

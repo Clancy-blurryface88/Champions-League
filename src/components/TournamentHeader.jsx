@@ -46,7 +46,7 @@ export default function TournamentHeader({ compact = false }) {
           <div className="h-px w-16 bg-gradient-to-r from-transparent to-white/70" />
           <span
             className="text-white text-xl font-bold tracking-[0.25em]"
-            style={{ fontFamily: "'Syne', sans-serif" }}
+            style={{ fontFamily: "'EnStencil', 'Syne', sans-serif" }}
           >
             2026-2027
           </span>

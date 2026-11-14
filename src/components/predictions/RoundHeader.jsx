@@ -2,8 +2,8 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // The predictions page's round header: one glass card with the round number large on the right
-// (the app's stencil number font) and, to its left, the stage name in the home page's round
-// label face (Outfit, bold). Once predictions are sent, a pulsing green dot and
+// (the app's stencil number font) and, to its left, the stage name in the same font, heavy and
+// spaced wide. Once predictions are sent, a pulsing green dot and
 // "הניחושים נשלחו בהצלחה" appear under the stage name (before that, progress is shown at the
 // bottom of the page, so nothing is added here).
 
@@ -13,14 +13,16 @@ const splitRoundName = (name = '') => {
   return m ? { label: m[1].toUpperCase(), num: m[2] } : { label: name.trim().toUpperCase(), num: null };
 };
 
-export default function RoundHeader({ name, sent }) {
+// the stage name: the number font, heavy, spaced wide
+export default function RoundHeader({ name, sent, labelFont = 'var(--num-font)', labelWeight = 900, labelSpacing = '0.08em' }) {
   const { label, num } = splitRoundName(name);
   return (
     <div className="mx-auto w-full max-w-[340px] overflow-hidden rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12)' }}>
       <div dir="rtl" className="flex items-center justify-center gap-4 px-4 py-3">
         {num && <span className="font-black leading-none text-white" style={{ fontFamily: 'var(--num-font)', fontSize: 60 }}>{num}</span>}
         <div className="text-right leading-tight">
-          <div className="text-white" style={{ font: "800 20px 'Outfit', sans-serif", letterSpacing: '0.02em' }}>{label}</div>
+          {/* larger while it stands alone; a step smaller once the sent line sits under it */}
+          <div className="text-white" style={{ fontFamily: labelFont, fontWeight: labelWeight, fontSize: sent ? 22 : 29, lineHeight: 1.05, letterSpacing: labelSpacing, transition: 'font-size 0.2s ease' }}>{label}</div>
           <AnimatePresence initial={false}>
             {sent && (
               <motion.div

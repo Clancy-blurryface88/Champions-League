@@ -367,7 +367,7 @@ export default function LeaderboardPanel({ onClose, user }) {
                                 target={participant.total_points}
                                 height={17}
                                 width={8.4}
-                                font="'Outfit', sans-serif"
+                                font="'EnStencil', 'Outfit', sans-serif"
                                 alignDot
                                 trigger={revealedIds.has(participant.id)} />
                               {' '}Pts

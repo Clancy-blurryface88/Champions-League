@@ -30,7 +30,7 @@ export default function HallOfFamePage() {
 
         <div className="flex items-center justify-center gap-3 mb-8">
           <span className="text-2xl sm:text-3xl flex-shrink-0">🏆</span>
-          <h1 className="text-2xl sm:text-3xl font-black text-white text-center" style={{ fontFamily: "'Syne', sans-serif" }}>
+          <h1 className="text-2xl sm:text-3xl font-black text-white text-center" style={{ fontFamily: "'EnStencil', 'Syne', sans-serif" }}>
             היכל התהילה
           </h1>
           <span className="text-2xl sm:text-3xl flex-shrink-0">🏅</span>

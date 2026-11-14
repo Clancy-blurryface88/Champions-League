@@ -43,7 +43,7 @@ export default function HallOfFameView({ entries, title = "היכל התהילה
             );
           })}
         </div>
-        {showTitle && <h2 className="text-white font-black text-lg truncate" style={{ fontFamily: "'Syne', sans-serif" }}>{title}</h2>}
+        {showTitle && <h2 className="text-white font-black text-lg truncate" style={{ fontFamily: "'EnStencil', 'Syne', sans-serif" }}>{title}</h2>}
       </div>
 
       {view === "vitrine" ? <HallOfFameVitrine entries={entries} /> : <HallOfFameTimeline entries={entries} />}

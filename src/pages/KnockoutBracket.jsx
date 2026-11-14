@@ -348,7 +348,7 @@ export default function KnockoutBracket() {
   );
 
   return (
-    <div className="min-h-screen text-white" style={{ fontFamily:"'Outfit',sans-serif" }}>
+    <div className="min-h-screen text-white" style={{ fontFamily:"'EnStencil', 'Outfit', sans-serif" }}>
       <AppBackground />
       <div className="relative z-10 px-4 pt-2 pb-8">
         {/* Header */}

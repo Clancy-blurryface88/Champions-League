@@ -886,7 +886,7 @@ export default function Layout({ children, currentPageName }) {
       `}</style>
       <div
         className="min-h-screen text-white relative overflow-x-clip"
-        style={{ background: '#030d1a', fontFamily: "'Outfit', sans-serif" }}
+        style={{ background: '#030d1a', fontFamily: "'EnStencil', 'Outfit', sans-serif" }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}>
@@ -1209,7 +1209,7 @@ export default function Layout({ children, currentPageName }) {
                     />
                     <span
                       className="text-white text-sm font-semibold"
-                      style={{ fontFamily: "'Outfit', sans-serif" }}
+                      style={{ fontFamily: "'EnStencil', 'Outfit', sans-serif" }}
                     >
                       {user.display_name || user.full_name}
                     </span>
@@ -1318,7 +1318,7 @@ export default function Layout({ children, currentPageName }) {
                 >
                   <style>{'@keyframes liveChipGlow { 0%, 100% { filter: drop-shadow(0 0 3px rgba(239,68,68,.4)); } 50% { filter: drop-shadow(0 0 12px rgba(239,68,68,.95)); } } .live-chip-glow { animation: liveChipGlow 1.8s ease-in-out infinite; }'}</style>
                   <span className="flex items-center pl-3 pr-2 h-full" style={{ background: '#e11d48' }}>
-                    <span className="text-white text-[14px] leading-none font-extrabold tracking-[0.1em]" style={{ fontFamily: "'Outfit', sans-serif" }}>LIVE</span>
+                    <span className="text-white text-[14px] leading-none font-extrabold tracking-[0.1em]" style={{ fontFamily: "'EnStencil', 'Outfit', sans-serif" }}>LIVE</span>
                   </span>
                   <span className="flex-1 flex items-center justify-center h-full pr-1" style={{ background: '#0a1235', minWidth: 0 }}>
                     <span style={{ fontFamily: 'var(--num-font)', fontWeight: 800, fontSize: 18, lineHeight: 1, color: '#ef4444' }}>{liveChipMinute}</span>

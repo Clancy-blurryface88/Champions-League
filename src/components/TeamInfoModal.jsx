@@ -1061,7 +1061,7 @@ export default function TeamInfoModal({ teamName, teamLogo, onClose }) {
             const bestMain = parenIdx === -1 ? stats.bestResult : stats.bestResult.slice(0, parenIdx);
             const bestYear = parenIdx === -1 ? null : stats.bestResult.slice(parenIdx + 2, -1);
             const flagColors = stats.hexColors || [data.color, '#ffffff', data.color];
-            const orbitron = { fontFamily: "'Orbitron', sans-serif" };
+            const orbitron = { fontFamily: "'EnStencil', 'Orbitron', sans-serif" };
             const goldGrad = { background: "linear-gradient(to bottom, #FFE066, #FFB300)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" };
             const statCells = [
               { label: "הופעות במונדיאל", value: stats.appearances, isText: false },

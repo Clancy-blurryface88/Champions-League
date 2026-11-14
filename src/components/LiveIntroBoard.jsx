@@ -103,7 +103,7 @@ function Tile({ match, prediction, stage, timing, width, centred, minuteColor })
             initial={{ opacity: 0, y: -10, scale: 0.5 }}
             animate={{ opacity: 1, y: 0, scale: [0.5, 1.25, 1] }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            style={{ display: 'inline-block', font: "700 12px 'Outfit', sans-serif", letterSpacing: '.08em', color: minuteColor, textShadow: `0 0 8px ${glow(minuteColor, .6)}` }}>
+            style={{ display: 'inline-block', font: "700 12px 'EnStencil', 'Outfit', sans-serif", letterSpacing: '.08em', color: minuteColor, textShadow: `0 0 8px ${glow(minuteColor, .6)}` }}>
             {minuteLabel}
           </motion.span>
         )}
@@ -160,7 +160,7 @@ export default function LiveIntroBoard({ matches, predictions = {}, timing = LIV
       exit={{ scale: 0.15, x: '38vw', y: '-42vh', opacity: 0, transition: { duration: 0.55, ease: [0.4, 0, 0.2, 1] } }}
       style={{ width: W, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, font: "600 11px 'Outfit', sans-serif", letterSpacing: '.22em', color: '#cbd3e6', marginBottom: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, font: "600 11px 'EnStencil', 'Outfit', sans-serif", letterSpacing: '.22em', color: '#cbd3e6', marginBottom: 16 }}>
         <span className="relative flex h-1.5 w-1.5">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" />

@@ -199,7 +199,7 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
         {exacts.length > 0 && <motion.span aria-hidden initial={{ opacity: 0.85 }} animate={{ opacity: 0 }} transition={{ delay: 0.8, duration: 1.7, ease: 'easeOut' }}
           style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg,#16a34a,#065f46)', pointerEvents: 'none' }} />}
         {exacts.length > 0 && <span aria-hidden style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: '#4ade80', boxShadow: '0 0 10px #4ade80' }} />}
-        <span className="truncate" style={{ transform: UN, fontFamily: "'Fredoka', sans-serif", fontWeight: 600, fontSize: 15.5, color: '#fff', minWidth: 0,
+        <span className="truncate" style={{ transform: UN, fontFamily: "'EnStencil', 'Fredoka', sans-serif", fontWeight: 600, fontSize: 15.5, color: '#fff', minWidth: 0,
           ...(isInitial ? { animation: 'lb-blur-focus 1.0s ease-out both', animationDelay: `${cardDelay}s` } : {}) }}>{row.name}</span>
         <span style={{ transform: UN, marginInlineStart: 'auto', flexShrink: 0 }}><DeltaIcon delta={delta} /></span>
       </motion.div>
