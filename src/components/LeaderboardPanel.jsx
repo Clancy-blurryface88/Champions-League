@@ -240,7 +240,7 @@ export default function LeaderboardPanel({ onClose, user }) {
 
         <div className="h-full flex flex-col overflow-hidden">
           <div className="p-3 border-b border-white/10">
-            <h2 className="text-2xl font-bold text-yellow-400 text-center leading-tight py-1">Leaderboard</h2>
+            <h2 className="text-yellow-400 text-center leading-tight py-1" style={{ fontFamily: "'Bungee Inline', sans-serif", fontWeight: 400, fontSize: 18 }}>Leaderboard</h2>
           </div>
 
           <div className="flex-1 overflow-y-auto p-2">
