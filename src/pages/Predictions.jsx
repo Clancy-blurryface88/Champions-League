@@ -945,7 +945,7 @@ export default function Predictions() {
                           ].map((item, i) => (
                             <React.Fragment key={item.label}>
                               <div className="relative flex flex-col items-center px-3 py-2" style={{ transform: 'skewX(12deg)' }}>
-                                <span className="font-extrabold leading-none mb-0.5" style={{ fontSize: "1.05rem", color: 'rgba(255,255,255,0.92)' }}>{item.val}</span>
+                                <span className="font-black leading-none mb-0.5" style={{ fontFamily: 'var(--num-font)', fontSize: 19, color: 'rgba(255,255,255,0.92)' }}>{item.val}</span>
                                 <span className="text-[9px] font-semibold" style={{ color: 'rgba(255,255,255,0.45)' }}>{item.label}</span>
                               </div>
                               {i < 3 && <div className="self-center" style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.12)' }} />}
