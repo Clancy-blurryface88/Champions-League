@@ -137,6 +137,8 @@ const TEAM_NAME = {
   fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 14, fontStyle: 'italic', textTransform: 'uppercase',
   background: 'linear-gradient(180deg,#ffffff,#fde047)', WebkitBackgroundClip: 'text', backgroundClip: 'text',
   color: 'transparent', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(2px 2px 0 rgba(0,0,0,0.5))',
+  // the italic letters lean past the text box and the gradient only paints inside it: room on both sides
+  padding: '0 5px', WebkitBoxDecorationBreak: 'clone', boxDecorationBreak: 'clone',
 };
 
 export default function Predictions() {
@@ -714,13 +716,8 @@ export default function Predictions() {
         <div className="pt-4" style={{ marginBottom: 14 }}>
           <BackTab onClick={() => navigate(-1)} />
           <div className="mt-5">
-            <RoundHeader
-              name={currentRound?.name}
-              sent={submitted}
-              onOpenTable={() => { setLeagueTableHighlight({}); setShowLeagueTable(true); }} />
+            <RoundHeader name={currentRound?.name} sent={submitted} />
           </div>
-          {/* a thin glowing blue line between the round header and the days bar */}
-          <div className="mt-4" style={{ height: 1, background: 'linear-gradient(90deg,transparent,#60a5fa 20%,#60a5fa 80%,transparent)', boxShadow: '0 0 8px rgba(96,165,250,0.8)' }} />
         </div>
 
         {error &&
@@ -746,6 +743,7 @@ export default function Predictions() {
             dateKeys={sortedDateKeys}
             activeKey={activeDateKey}
             onPick={scrollToDate}
+            onTable={() => { setLeagueTableHighlight({}); setShowLeagueTable(true); }}
             stripRef={dateStripRef}
             tabRef={(key, el) => { dateTabRefs.current[key] = el; }}
           />
