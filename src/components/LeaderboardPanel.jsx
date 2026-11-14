@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PublicProfile } from "@/api/entities";
 import { User } from "@/api/entities";
@@ -242,19 +240,7 @@ export default function LeaderboardPanel({ onClose, user }) {
 
         <div className="h-full flex flex-col overflow-hidden">
           <div className="p-3 border-b border-white/10">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <h2 className="text-lg font-bold text-yellow-400">Leaderboard</h2>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="text-slate-400 hover:text-white hover:bg-white/10 bg-transparent transition-all duration-200">
-
-                <X className="w-5 h-5" />
-              </Button>
-            </div>
+            <h2 className="text-2xl font-bold text-yellow-400 text-center leading-tight py-1">Leaderboard</h2>
           </div>
 
           <div className="flex-1 overflow-y-auto p-2">
