@@ -131,6 +131,14 @@ function _computeTeamPositions(allMatches, leagueTableOverride = []) {
   return positions;
 }
 
+// Team names under the crests: sporty italic capitals, white fading into lemon yellow, with a
+// hard drop shadow (on the inner span: the reveal animation drives the outer element's filter)
+const TEAM_NAME = {
+  fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 14, fontStyle: 'italic', textTransform: 'uppercase',
+  background: 'linear-gradient(180deg,#ffffff,#fde047)', WebkitBackgroundClip: 'text', backgroundClip: 'text',
+  color: 'transparent', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(2px 2px 0 rgba(0,0,0,0.5))',
+};
+
 export default function Predictions() {
   const [currentRound, setCurrentRound] = useState(null);
   const [matches, setMatches] = useState([]);
@@ -971,8 +979,8 @@ export default function Predictions() {
                         {/* Row 2: name + label tightly stacked, top-aligned */}
                         <div style={{ gridColumn: 1, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center">
-                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)', filter: 'drop-shadow(0 0 6px rgba(250,204,21,0.8))', minHeight: '2.5em' }}>
-                            {match.team_a}
+                          <RevealText delay={0.5} animate={shouldAnimate} className="leading-tight text-center w-full break-words" style={{ minHeight: '2.5em' }}>
+                            <span style={TEAM_NAME}>{match.team_a}</span>
                           </RevealText>
                           <span className="text-[10px] font-extrabold leading-none text-center" style={{
                             backgroundImage: 'linear-gradient(135deg, #d1fae5 0%, #6ee7b7 100%)',
@@ -984,8 +992,8 @@ export default function Predictions() {
                         </div>
                         <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center">
-                          <RevealText delay={0.5} animate={shouldAnimate} className="text-yellow-400 font-extrabold text-xs leading-tight text-center w-full break-words" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)', filter: 'drop-shadow(0 0 6px rgba(250,204,21,0.8))', minHeight: '2.5em' }}>
-                            {match.team_b}
+                          <RevealText delay={0.5} animate={shouldAnimate} className="leading-tight text-center w-full break-words" style={{ minHeight: '2.5em' }}>
+                            <span style={TEAM_NAME}>{match.team_b}</span>
                           </RevealText>
                           <span className="text-[10px] font-extrabold leading-none text-center" style={{
                             backgroundImage: 'linear-gradient(135deg, #dbeafe 0%, #7dd3fc 100%)',
