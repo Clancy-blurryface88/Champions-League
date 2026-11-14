@@ -10,9 +10,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const GOLD = '#facc15';
 const NUM = { fontFamily: 'var(--num-font)', fontWeight: 900 };
-const H = 70;                  // bar height, px
+const H = 72;                  // bar height, px
 const R = 12;                  // outer corner radius (the days bar's)
-const SHARE = 0.35;            // table part's share of the width
+const SHARE = 0.3;             // table part's share of the width
 const S = (26 / 56) * H / 2;   // half the lean: the days bar leans 26px over its 56px height
 const G = 5.25;                // half the slit
 

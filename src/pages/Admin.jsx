@@ -29,6 +29,7 @@ import AdminPushReport from "../components/admin/AdminPushReport";
 import AdminOddsPull from "../components/admin/AdminOddsPull";
 import AdminLiveIntroPreview from "../components/admin/AdminLiveIntroPreview";
 import AdminRoundSummary from "../components/admin/AdminRoundSummary";
+import AdminCardButtons from "../components/admin/AdminCardButtons";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -100,6 +101,7 @@ export default function Admin() {
       case 'odds-pull': return <AdminOddsPull />;
       case 'live-intro': return <AdminLiveIntroPreview />;
       case 'round-summary': return <AdminRoundSummary />;
+      case 'card-buttons': return <AdminCardButtons />;
       default: return <AdminRounds />;
     }
   };
@@ -127,6 +129,7 @@ export default function Admin() {
     { id: 'push-report', label: '📬 דוח התראות', icon: Users },
     { id: 'live-intro', label: '🎬 תצוגת כניסת לייב', icon: Radio },
     { id: 'round-summary', label: '🏆 סיכום מחזור', icon: Trophy },
+    { id: 'card-buttons', label: '🏟️ כפתורי כרטיס המשחק', icon: Eye },
   ];
 
   return (
