@@ -27,6 +27,7 @@ import MatchOddsBar from "../components/predictions/MatchOddsBar";
 import MatchArenaSection from "../components/predictions/MatchArenaSection";
 import DaysBar from "../components/predictions/DaysBar";
 import CardActions from "../components/predictions/CardActions";
+import MatchDateTag from "../components/predictions/MatchDateTag";
 import { RevealText } from "@/components/magicui/reveal-text";
 import TeamFlag from "@/components/TeamFlag";
 import LeagueTableModal from "@/components/LeagueTableModal";
@@ -908,7 +909,9 @@ export default function Predictions() {
                   {/* Noise texture overlay */}
                   <div className="absolute inset-0 pointer-events-none opacity-[0.025]"
                     style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundSize: '180px' }} />
-                  <CardContent className="p-5 pt-2 flex-1 flex flex-col justify-between">
+                  {/* Date and kick-off time, hanging from the card's top edge */}
+                  <MatchDateTag date={match.match_date} />
+                  <CardContent className="p-5 pt-8 flex-1 flex flex-col justify-between">
                     {/* Header: Countdown / Status */}
                     <div className="flex justify-center mb-3">
                       {timeInfo.status === 'locked' || timeInfo.status === 'finished' ?
@@ -1102,20 +1105,13 @@ export default function Predictions() {
                       </div>
                     }
 
-                    {/* Footer: Date & Location */}
-                    <div className="pt-3 space-y-1">
-                      <div className="h-px mb-2" style={{ background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)' }} />
-                      <div className="flex items-center justify-center gap-1.5 text-xs text-white">
-                        <span className="text-sm">🗓️</span>
-                        <span className="font-extrabold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 1px rgba(0,0,0,0.9)' }}>{moment(match.match_date).format('DD/MM/YYYY')} · {moment(match.match_date).format('HH:mm')}</span>
+                    {/* Location (the date and time moved to the tag at the card's top) */}
+                    {match.location && (
+                      <div className="pt-3 flex items-center justify-center gap-1 text-xs text-slate-400">
+                        <span>📍</span>
+                        <span>{match.location}</span>
                       </div>
-                      {match.location && (
-                        <div className="flex items-center justify-center gap-1 text-xs text-slate-400">
-                          <span>📍</span>
-                          <span>{match.location}</span>
-                        </div>
-                      )}
-                    </div>
+                    )}
 
                     {/* Separator + Arena toggle */}
                     <div className="h-px mt-3" style={{ background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)' }} />
