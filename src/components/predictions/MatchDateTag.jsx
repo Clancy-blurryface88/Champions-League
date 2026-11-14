@@ -23,7 +23,7 @@ export default function MatchDateTag({ date }) {
   return (
     <div className="pointer-events-none absolute left-1/2 top-0 z-10 flex -translate-x-1/2 items-start gap-2">
       {[m.format('D.MM'), m.format('HH:mm')].map((v) => (
-        <div key={v} className="rounded-b-lg px-3 pb-1 pt-0.5" style={PANE}>
+        <div key={v} className="rounded-b-lg" style={{ ...PANE, padding: '3px 13px 4px' }}>
           <span className="block font-black leading-none text-white" style={{ ...VALUE, transform: `skewX(${-SKEW}deg)` }}>{v}</span>
         </div>
       ))}
