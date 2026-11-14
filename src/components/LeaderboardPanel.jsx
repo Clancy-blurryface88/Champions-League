@@ -291,13 +291,14 @@ export default function LeaderboardPanel({ onClose, user }) {
                   return (
                     <motion.div
                       key={participant.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      // each card slides in from the left (same order and timing as before)
+                      initial={{ opacity: 0, x: -48 }}
+                      animate={{ opacity: 1, x: 0 }}
                       onAnimationComplete={() => setRevealedIds(prev => prev.has(participant.id) ? prev : new Set(prev).add(participant.id))}
                       transition={{
                         delay: cardAnimationDelay,
                         duration: 0.6,
-                        ease: "easeOut"
+                        ease: [0.23, 1, 0.32, 1]
                       }}>
 
                         <div className="relative">
