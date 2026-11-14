@@ -8,7 +8,7 @@ import React, { useLayoutEffect, useRef, useState } from 'react';
 
 const NUM = { fontFamily: 'var(--num-font)' };
 const KAR = { fontFamily: 'Karantina, Heebo, sans-serif', fontWeight: 700 };
-const SLANT = 3;   // how far (in % of the bar) each cut leans
+const SLANT = -3;  // how far (in % of the bar) each cut leans; negative = leaning like "/", as the rest of the app
 const GAP = 1.2;   // half the slit's width, in %
 const R = 12;      // the bar's outer corner radius, px
 const H = 56;      // the bar's height, px

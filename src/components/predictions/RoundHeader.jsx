@@ -22,8 +22,8 @@ const splitRoundName = (name = '') => {
   return m ? { label: m[1].toUpperCase(), num: m[2] } : { label: name.trim().toUpperCase(), num: null };
 };
 
-const leftPath = (L) => `M ${R} 0 L ${L - S - G} 0 L ${L + S - G} ${H} L ${R} ${H} A ${R} ${R} 0 0 1 0 ${H - R} L 0 ${R} A ${R} ${R} 0 0 1 ${R} 0 Z`;
-const rightPath = (L, W) => `M ${L - S + G} 0 L ${W - R} 0 A ${R} ${R} 0 0 1 ${W} ${R} L ${W} ${H - R} A ${R} ${R} 0 0 1 ${W - R} ${H} L ${L + S + G} ${H} Z`;
+const leftPath = (L) => `M ${R} 0 L ${L + S - G} 0 L ${L - S - G} ${H} L ${R} ${H} A ${R} ${R} 0 0 1 0 ${H - R} L 0 ${R} A ${R} ${R} 0 0 1 ${R} 0 Z`;
+const rightPath = (L, W) => `M ${L + S + G} 0 L ${W - R} 0 A ${R} ${R} 0 0 1 ${W} ${R} L ${W} ${H - R} A ${R} ${R} 0 0 1 ${W - R} ${H} L ${L - S + G} ${H} Z`;
 
 // scales its content down (or up to `max`) to fit width × height
 function Fit({ width, height, max = 1, children }) {

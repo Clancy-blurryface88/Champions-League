@@ -5,7 +5,7 @@ import React, { useLayoutEffect, useRef, useState } from 'react';
 // with a drawn pitch) in the middle, "ניחושים" on the right. Each part is outlined in a darker
 // shade of its own colour. Both labels share one font, size and weight.
 
-const H = 36, SLANT = 10, GAP = 6, R = 12, STROKE = 1.75;
+const H = 36, SLANT = -10, GAP = 6, R = 12, STROKE = 1.75; // negative SLANT: the cuts lean like "/", as the rest of the app
 const ODDS = { label: '1 X 2', fill: 'linear-gradient(90deg,#3b82f6,#1d4ed8)', line: '#1e3a8a', w: 1.4 };
 const PREDS = { label: 'ניחושים', fill: 'linear-gradient(90deg,#16a34a,#15803d)', line: '#14532d', w: 1.4 };
 const LABEL = { fontFamily: 'inherit', fontSize: 16, fontWeight: 600, lineHeight: 1 };

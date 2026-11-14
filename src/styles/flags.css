@@ -1,0 +1,56 @@
+/* Flags of the national teams in src/utils/teamFlags.js only (the full flag-icons set,
+   271 flags inlined into the stylesheet, made it ~600KB). Same classes as flag-icons:
+   .fi .fi-xx, and .fis for the square version. Files in public/flags, loaded when shown.
+   A new code in teamFlags.js needs its two SVGs copied from node_modules/flag-icons/flags. */
+.fib,.fi{background-size:contain;background-position:50%;background-repeat:no-repeat}
+.fi{position:relative;display:inline-block;width:1.333333em;line-height:1em}
+.fi:before{content:" "}
+.fi.fis{width:1em}
+.fi-ar{background-image:url(/flags/4x3/ar.svg)}.fi-ar.fis{background-image:url(/flags/1x1/ar.svg)}
+.fi-at{background-image:url(/flags/4x3/at.svg)}.fi-at.fis{background-image:url(/flags/1x1/at.svg)}
+.fi-au{background-image:url(/flags/4x3/au.svg)}.fi-au.fis{background-image:url(/flags/1x1/au.svg)}
+.fi-ba{background-image:url(/flags/4x3/ba.svg)}.fi-ba.fis{background-image:url(/flags/1x1/ba.svg)}
+.fi-be{background-image:url(/flags/4x3/be.svg)}.fi-be.fis{background-image:url(/flags/1x1/be.svg)}
+.fi-br{background-image:url(/flags/4x3/br.svg)}.fi-br.fis{background-image:url(/flags/1x1/br.svg)}
+.fi-ca{background-image:url(/flags/4x3/ca.svg)}.fi-ca.fis{background-image:url(/flags/1x1/ca.svg)}
+.fi-cd{background-image:url(/flags/4x3/cd.svg)}.fi-cd.fis{background-image:url(/flags/1x1/cd.svg)}
+.fi-ch{background-image:url(/flags/4x3/ch.svg)}.fi-ch.fis{background-image:url(/flags/1x1/ch.svg)}
+.fi-ci{background-image:url(/flags/4x3/ci.svg)}.fi-ci.fis{background-image:url(/flags/1x1/ci.svg)}
+.fi-co{background-image:url(/flags/4x3/co.svg)}.fi-co.fis{background-image:url(/flags/1x1/co.svg)}
+.fi-cv{background-image:url(/flags/4x3/cv.svg)}.fi-cv.fis{background-image:url(/flags/1x1/cv.svg)}
+.fi-cw{background-image:url(/flags/4x3/cw.svg)}.fi-cw.fis{background-image:url(/flags/1x1/cw.svg)}
+.fi-cz{background-image:url(/flags/4x3/cz.svg)}.fi-cz.fis{background-image:url(/flags/1x1/cz.svg)}
+.fi-de{background-image:url(/flags/4x3/de.svg)}.fi-de.fis{background-image:url(/flags/1x1/de.svg)}
+.fi-dz{background-image:url(/flags/4x3/dz.svg)}.fi-dz.fis{background-image:url(/flags/1x1/dz.svg)}
+.fi-ec{background-image:url(/flags/4x3/ec.svg)}.fi-ec.fis{background-image:url(/flags/1x1/ec.svg)}
+.fi-eg{background-image:url(/flags/4x3/eg.svg)}.fi-eg.fis{background-image:url(/flags/1x1/eg.svg)}
+.fi-es{background-image:url(/flags/4x3/es.svg)}.fi-es.fis{background-image:url(/flags/1x1/es.svg)}
+.fi-fr{background-image:url(/flags/4x3/fr.svg)}.fi-fr.fis{background-image:url(/flags/1x1/fr.svg)}
+.fi-gb-eng{background-image:url(/flags/4x3/gb-eng.svg)}.fi-gb-eng.fis{background-image:url(/flags/1x1/gb-eng.svg)}
+.fi-gb-sct{background-image:url(/flags/4x3/gb-sct.svg)}.fi-gb-sct.fis{background-image:url(/flags/1x1/gb-sct.svg)}
+.fi-gh{background-image:url(/flags/4x3/gh.svg)}.fi-gh.fis{background-image:url(/flags/1x1/gh.svg)}
+.fi-hr{background-image:url(/flags/4x3/hr.svg)}.fi-hr.fis{background-image:url(/flags/1x1/hr.svg)}
+.fi-ht{background-image:url(/flags/4x3/ht.svg)}.fi-ht.fis{background-image:url(/flags/1x1/ht.svg)}
+.fi-iq{background-image:url(/flags/4x3/iq.svg)}.fi-iq.fis{background-image:url(/flags/1x1/iq.svg)}
+.fi-ir{background-image:url(/flags/4x3/ir.svg)}.fi-ir.fis{background-image:url(/flags/1x1/ir.svg)}
+.fi-jo{background-image:url(/flags/4x3/jo.svg)}.fi-jo.fis{background-image:url(/flags/1x1/jo.svg)}
+.fi-jp{background-image:url(/flags/4x3/jp.svg)}.fi-jp.fis{background-image:url(/flags/1x1/jp.svg)}
+.fi-kr{background-image:url(/flags/4x3/kr.svg)}.fi-kr.fis{background-image:url(/flags/1x1/kr.svg)}
+.fi-ma{background-image:url(/flags/4x3/ma.svg)}.fi-ma.fis{background-image:url(/flags/1x1/ma.svg)}
+.fi-mx{background-image:url(/flags/4x3/mx.svg)}.fi-mx.fis{background-image:url(/flags/1x1/mx.svg)}
+.fi-nl{background-image:url(/flags/4x3/nl.svg)}.fi-nl.fis{background-image:url(/flags/1x1/nl.svg)}
+.fi-no{background-image:url(/flags/4x3/no.svg)}.fi-no.fis{background-image:url(/flags/1x1/no.svg)}
+.fi-nz{background-image:url(/flags/4x3/nz.svg)}.fi-nz.fis{background-image:url(/flags/1x1/nz.svg)}
+.fi-pa{background-image:url(/flags/4x3/pa.svg)}.fi-pa.fis{background-image:url(/flags/1x1/pa.svg)}
+.fi-pt{background-image:url(/flags/4x3/pt.svg)}.fi-pt.fis{background-image:url(/flags/1x1/pt.svg)}
+.fi-py{background-image:url(/flags/4x3/py.svg)}.fi-py.fis{background-image:url(/flags/1x1/py.svg)}
+.fi-qa{background-image:url(/flags/4x3/qa.svg)}.fi-qa.fis{background-image:url(/flags/1x1/qa.svg)}
+.fi-sa{background-image:url(/flags/4x3/sa.svg)}.fi-sa.fis{background-image:url(/flags/1x1/sa.svg)}
+.fi-se{background-image:url(/flags/4x3/se.svg)}.fi-se.fis{background-image:url(/flags/1x1/se.svg)}
+.fi-sn{background-image:url(/flags/4x3/sn.svg)}.fi-sn.fis{background-image:url(/flags/1x1/sn.svg)}
+.fi-tn{background-image:url(/flags/4x3/tn.svg)}.fi-tn.fis{background-image:url(/flags/1x1/tn.svg)}
+.fi-tr{background-image:url(/flags/4x3/tr.svg)}.fi-tr.fis{background-image:url(/flags/1x1/tr.svg)}
+.fi-us{background-image:url(/flags/4x3/us.svg)}.fi-us.fis{background-image:url(/flags/1x1/us.svg)}
+.fi-uy{background-image:url(/flags/4x3/uy.svg)}.fi-uy.fis{background-image:url(/flags/1x1/uy.svg)}
+.fi-uz{background-image:url(/flags/4x3/uz.svg)}.fi-uz.fis{background-image:url(/flags/1x1/uz.svg)}
+.fi-za{background-image:url(/flags/4x3/za.svg)}.fi-za.fis{background-image:url(/flags/1x1/za.svg)}
