@@ -15,8 +15,28 @@ window.OneSignalDeferred.push(async function(OneSignal) {
   });
 });
 
+// Anything that crashes the whole app shows what broke and a reload button, instead of a white screen
+class AppErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(error, info) { console.error('[app crash]', error, info?.componentStack); }
+  render() {
+    const { error } = this.state;
+    if (!error) return this.props.children;
+    return (
+      <div dir="rtl" style={{ minHeight: '100vh', background: '#050d1c', color: '#fff', padding: 24, fontFamily: 'system-ui', display: 'flex', flexDirection: 'column', gap: 14, justifyContent: 'center' }}>
+        <div style={{ fontSize: 20, fontWeight: 800 }}>משהו השתבש בטעינת האפליקציה</div>
+        <div dir="ltr" style={{ fontSize: 12, color: '#fca5a5', background: 'rgba(255,255,255,0.06)', padding: 12, borderRadius: 10, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{String(error?.stack || error?.message || error).slice(0, 900)}</div>
+        <button onClick={() => window.location.reload()} style={{ padding: '12px 16px', borderRadius: 12, background: '#facc15', color: '#1a1405', fontWeight: 800, fontSize: 16 }}>טעינה מחדש</button>
+      </div>
+    );
+  }
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <GlobalLoaderProvider>
-    <App />
-  </GlobalLoaderProvider>
+  <AppErrorBoundary>
+    <GlobalLoaderProvider>
+      <App />
+    </GlobalLoaderProvider>
+  </AppErrorBoundary>
 )
