@@ -932,6 +932,8 @@ export default function Predictions() {
                           WebkitBackdropFilter: 'blur(40px) saturate(180%)',
                           border: '1px solid rgba(255,255,255,0.18)',
                           boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.35)',
+                          // a parallelogram with the date tag's lean; each unit is set back upright below
+                          transform: 'skewX(-12deg)',
                         }}>
                           {/* gloss */}
                           <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.14) 0%, transparent 100%)', borderRadius: '16px 16px 0 0' }} />
@@ -942,7 +944,7 @@ export default function Predictions() {
                             { val: timeInfo.days,    label: "ימים"  },
                           ].map((item, i) => (
                             <React.Fragment key={item.label}>
-                              <div className="relative flex flex-col items-center px-3 py-2">
+                              <div className="relative flex flex-col items-center px-3 py-2" style={{ transform: 'skewX(12deg)' }}>
                                 <span className="font-extrabold leading-none mb-0.5" style={{ fontSize: "1.05rem", color: 'rgba(255,255,255,0.92)' }}>{item.val}</span>
                                 <span className="text-[9px] font-semibold" style={{ color: 'rgba(255,255,255,0.45)' }}>{item.label}</span>
                               </div>
