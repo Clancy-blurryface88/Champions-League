@@ -19,7 +19,7 @@ import { LiquidGlassCard } from "../components/ui/liquid-glass";
 import PredictionSummary from "../components/predictions/PredictionSummary";
 import { GlowButton } from "../components/ui/GlowButton";
 import { BgAnimateButton } from "../components/ui/bg-animate-button";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import MatchScoringRulesModal from "../components/MatchScoringRulesModal";
 import MatchPredictionsModal from "../components/MatchPredictionsModal"; // ADDED MatchPredictionsModal import
 import CrowdWisdomStats from "../components/predictions/CrowdWisdomStats";
@@ -180,6 +180,8 @@ export default function Predictions() {
   const roundId = urlParams.get('round_id');
 
   const navigate = useNavigate();
+  // opened from a screen in the app → shown as a sheet over it (App.jsx keeps that screen rendered)
+  const asSheet = !!useLocation().state?.background;
 
   useEffect(() => {
     if (roundId) {
@@ -699,13 +701,24 @@ export default function Predictions() {
   // tap it, or drag it down (far enough or fast enough) and the sheet slides away, then back.
   const closeSheet = () => setSheetClosing(true);
   return (
+    <>
+    {asSheet && (
+      <motion.div
+        className="fixed inset-0"
+        style={{ zIndex: 29, background: 'rgba(2,6,23,0.6)' }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: sheetClosing ? 0 : 1 }}
+        transition={{ duration: 0.28 }}
+        onClick={closeSheet}
+      />
+    )}
     <motion.div
       className="fixed inset-0 flex flex-col"
-      style={{ top: '108px', background: 'linear-gradient(135deg, #0d2b52 0%, #050d1c 100%)', borderRadius: '22px 22px 0 0', borderTop: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 -8px 30px rgba(0,0,0,0.5)' }}
+      style={{ zIndex: asSheet ? 30 : undefined, top: '108px', background: 'linear-gradient(135deg, #0d2b52 0%, #050d1c 100%)', borderRadius: '22px 22px 0 0', borderTop: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 -8px 30px rgba(0,0,0,0.5)' }}
       initial={{ y: '100%' }}
       animate={{ y: sheetClosing ? '100%' : 0 }}
       transition={{ duration: sheetClosing ? 0.28 : 0.42, ease: sheetClosing ? [0.4, 0, 1, 1] : [0.32, 0.72, 0, 1] }}
-      onAnimationComplete={() => { if (sheetClosing) navigate(-1); }}
+      onAnimationComplete={() => { if (sheetClosing) { if (window.history.state?.idx > 0) navigate(-1); else navigate('/'); } }}
       drag="y"
       dragControls={sheetDrag}
       dragListener={false}
@@ -1344,6 +1357,7 @@ export default function Predictions() {
           }
         </AnimatePresence>
 
-    </motion.div>);
+    </motion.div>
+    </>);
 
 }

@@ -6,7 +6,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import VisualEditAgent from '@/lib/VisualEditAgent'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -94,6 +94,12 @@ const IntroVideo = ({ appReady, onDone }) => {
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const [introDone, setIntroDone] = React.useState(false);
+  // A round opened from the app (state.background = the screen it was opened from) shows as a
+  // bottom sheet over that screen: the routes keep rendering the screen underneath, and the
+  // round page is drawn on top. Opened from a link (no background), it is a page of its own.
+  const location = useLocation();
+  const background = location.state?.background;
+  const sheetOpen = background && location.pathname.toLowerCase() === '/predictions';
 
   const isLoading = isLoadingPublicSettings || isLoadingAuth;
 
@@ -114,7 +120,7 @@ const AuthenticatedApp = () => {
   // Render the main app (Admin and MyStats load on demand — LoadingScreen while they do)
   return (
     <React.Suspense fallback={<LoadingScreen />}>
-    <Routes>
+    <Routes location={sheetOpen ? background : location}>
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
           <MainPage />
@@ -133,6 +139,7 @@ const AuthenticatedApp = () => {
       ))}
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    {sheetOpen && Pages.Predictions && <PageSlot>{React.createElement(Pages.Predictions)}</PageSlot>}
     </React.Suspense>
   );
 };

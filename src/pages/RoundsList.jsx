@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Round } from "@/api/entities";
 import { User } from "@/api/entities";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ export default function RoundsList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation(); // the round opens as a sheet over this screen
 
   // Simple data load function
   const loadData = async () => {
@@ -64,7 +65,7 @@ export default function RoundsList() {
   }, []);
 
   const goToRound = (round) => {
-    navigate(createPageUrl(`Predictions?round_id=${round.id}`));
+    navigate(createPageUrl(`Predictions?round_id=${round.id}`), { state: { background: location } });
   };
 
   const handleRoundClick = (round) => {

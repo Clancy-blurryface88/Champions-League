@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import LoadingScreen from "@/components/LoadingScreen";
 import { User } from "@/api/entities";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import TournamentHeader from "../components/TournamentHeader";
@@ -22,6 +22,7 @@ export default function Dashboard() {
   // the studio TV takes room at the bottom: when it shows, the page tightens its gaps so it fits without scrolling
   const [hasStudio, setHasStudio] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation(); // the round opens as a sheet over this screen
 
   // Simple data load function
   const loadData = async () => {
@@ -73,7 +74,7 @@ export default function Dashboard() {
   }, []);
 
   const handleRoundSelect = (round) => {
-    navigate(createPageUrl(`Predictions?round_id=${round.id}`));
+    navigate(createPageUrl(`Predictions?round_id=${round.id}`), { state: { background: location } });
   };
 
   // Show error state

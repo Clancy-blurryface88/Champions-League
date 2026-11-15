@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { motion, useMotionValue, useAnimationFrame } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Match } from "@/api/entities";
 
@@ -69,6 +69,7 @@ const RoundCard = ({ round, onClick, isNext }) => {
 
 export function RoundsMarquee({ rounds, user, onRoundClick }) {
   const navigate = useNavigate();
+  const location = useLocation(); // the round opens as a sheet over this screen
   const baseX = useMotionValue(0);
   const [isDragging, setIsDragging] = useState(false);
   const [pauseAnimation, setPauseAnimation] = useState(false);
@@ -83,10 +84,10 @@ export function RoundsMarquee({ rounds, user, onRoundClick }) {
       if (onRoundClick) {
         onRoundClick(round);
       } else {
-        navigate(createPageUrl(`Predictions?round_id=${round.id}`));
+        navigate(createPageUrl(`Predictions?round_id=${round.id}`), { state: { background: location } });
       }
     }
-  }, [isDragging, onRoundClick, navigate]);
+  }, [isDragging, onRoundClick, navigate, location]);
 
   // Filter active rounds (hidden for everyone including admins if inactive)
   const displayedRounds = rounds.filter((r) => r.is_active);
