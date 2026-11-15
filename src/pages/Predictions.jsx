@@ -695,13 +695,13 @@ export default function Predictions() {
 
   }
 
-  // The round page opens as a bottom sheet: it slides up, and the handle at its top closes it —
+  // The round page opens as a bottom sheet under the app's top bar (108px): it slides up, and the handle at its top closes it —
   // tap it, or drag it down (far enough or fast enough) and the sheet slides away, then back.
   const closeSheet = () => setSheetClosing(true);
   return (
     <motion.div
       className="fixed inset-0 flex flex-col"
-      style={{ top: '36px', background: 'linear-gradient(135deg, #0d2b52 0%, #050d1c 100%)', borderRadius: '22px 22px 0 0', boxShadow: '0 -8px 30px rgba(0,0,0,0.5)' }}
+      style={{ top: '108px', background: 'linear-gradient(135deg, #0d2b52 0%, #050d1c 100%)', borderRadius: '22px 22px 0 0', borderTop: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 -8px 30px rgba(0,0,0,0.5)' }}
       initial={{ y: '100%' }}
       animate={{ y: sheetClosing ? '100%' : 0 }}
       transition={{ duration: sheetClosing ? 0.28 : 0.42, ease: sheetClosing ? [0.4, 0, 1, 1] : [0.32, 0.72, 0, 1] }}
@@ -714,9 +714,9 @@ export default function Predictions() {
       onDragEnd={(e, info) => { if (info.offset.y > 120 || info.velocity.y > 600) closeSheet(); }}
     >
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0">
-      <div className="max-w-4xl mx-auto px-4 py-4 pb-20" style={{ paddingTop: '84px' }}>
+      <div className="max-w-4xl mx-auto px-4 py-4 pb-20" style={{ paddingTop: '6px' }}>
         {/* Header */}
-        <div className="pt-4" style={{ marginBottom: 14 }}>
+        <div style={{ marginBottom: 14 }}>
           {/* the sheet's handle: tap or drag down to close */}
           <div
             onPointerDown={(e) => sheetDrag.start(e)}
@@ -744,7 +744,7 @@ export default function Predictions() {
         {/* Week Strip */}
         {expandedDates !== null && sortedDateKeys.length > 0 && (
           <div
-            className="sticky top-[65px] z-20 -mx-4 px-4 pt-2 pb-2 mb-2"
+            className="sticky top-0 z-20 -mx-4 px-4 pt-2 pb-2 mb-2"
             style={{
               background: 'rgba(5,10,20,0.35)',
               backdropFilter: 'blur(28px) saturate(1.6)',
