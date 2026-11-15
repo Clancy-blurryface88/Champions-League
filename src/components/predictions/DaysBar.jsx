@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useRef, useState } from 'react';
 
 // The round's bar under the round title: the league-table button on the left, then the round's
 // days left to right in date order, as one bar cut by slits leaning like "/" (as the rest of the
-// app). Each part has a thin outline along its cuts too. TABLE is gold-tinted with gold lettering;
+// app). Each part has a thin outline along its cuts too. TABLE looks like an unselected day with blue lettering;
 // a day shows its date large (day of month) with the month under it in English capitals; the
 // active day is filled royal blue. All lettering is the stencil number font with a long diagonal
 // shadow. Switching days fades colours over 0.25s.
@@ -11,7 +11,7 @@ const NUM = { fontFamily: 'var(--num-font)', fontWeight: 900 };
 const H = 46;        // bar height, px
 const LEAN = 18;     // how far each cut leans over the bar's height, px ("/": top further right)
 const GAP = 10;      // slit width, px
-const R = 12;        // outer corner radius, px
+const R = 0;         // outer corners: square
 const MONTHS = ['', 'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 const longShadow = (a) => [1, 2, 3, 4, 5].map((k) => `${k}px ${k}px 0 rgba(2,6,23,${(a - k * 0.07).toFixed(2)})`).join(',');
 const FADE = 'background 0.25s, color 0.25s, opacity 0.25s';
@@ -75,8 +75,8 @@ export default function DaysBar({ dateKeys, activeKey, onPick, onTable, tabRef, 
       <div ref={box} dir="ltr" className="relative" style={{ height: H }}>
         {W > 0 && <>
           {part(0, {
-            fill: 'rgba(250,204,21,0.14)', line: 'rgba(250,204,21,0.8)', label: 'טבלת הליגה', onClick: onTable,
-            children: <span style={{ ...NUM, fontSize: 17, letterSpacing: '0.08em', color: '#facc15', lineHeight: 1, textShadow: longShadow(0.55) }}>TABLE</span>,
+            fill: 'rgba(255,255,255,0.06)', line: 'rgba(255,255,255,0.4)', label: 'טבלת הליגה', onClick: onTable,
+            children: <span style={{ ...NUM, fontSize: 17, letterSpacing: '0.08em', color: '#60a5fa', lineHeight: 1, textShadow: longShadow(0.5) }}>TABLE</span>,
           })}
           {dateKeys.map((key, f) => {
             const on = key === activeKey;

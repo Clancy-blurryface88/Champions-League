@@ -11,7 +11,7 @@ import AiBriefModal from "@/components/AiBriefModal"; // ADDED Eye icon
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { createPageUrl } from "@/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import moment from "moment";
 import "moment/locale/he";
 import ScoreInput from "../components/predictions/ScoreInput";
@@ -28,7 +28,6 @@ import MatchArenaSection from "../components/predictions/MatchArenaSection";
 import DaysBar from "../components/predictions/DaysBar";
 import CardActions from "../components/predictions/CardActions";
 import MatchDateTag from "../components/predictions/MatchDateTag";
-import BackTab from "../components/predictions/BackTab";
 import RoundHeader from "../components/predictions/RoundHeader";
 import TeamFlag from "@/components/TeamFlag";
 import LeagueTableModal from "@/components/LeagueTableModal";
@@ -149,6 +148,8 @@ export default function Predictions() {
   // NEW: Add state for predictions modal
   const [showPredictionsModal, setShowPredictionsModal] = useState(false);
   const [showLeagueTable, setShowLeagueTable] = useState(false);
+  const [sheetClosing, setSheetClosing] = useState(false);
+  const sheetDrag = useDragControls();
   const [leagueTableHighlight, setLeagueTableHighlight] = useState({});
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [fixturesTeam, setFixturesTeam] = useState(null); // { name, logo_url } — opens TeamFixturesModal
@@ -694,17 +695,40 @@ export default function Predictions() {
 
   }
 
+  // The round page opens as a bottom sheet: it slides up, and the handle at its top closes it —
+  // tap it, or drag it down (far enough or fast enough) and the sheet slides away, then back.
+  const closeSheet = () => setSheetClosing(true);
   return (
-    <div
+    <motion.div
       className="fixed inset-0 flex flex-col"
-      style={{ top: '36px', background: 'linear-gradient(135deg, #0d2b52 0%, #050d1c 100%)' }}
+      style={{ top: '36px', background: 'linear-gradient(135deg, #0d2b52 0%, #050d1c 100%)', borderRadius: '22px 22px 0 0', boxShadow: '0 -8px 30px rgba(0,0,0,0.5)' }}
+      initial={{ y: '100%' }}
+      animate={{ y: sheetClosing ? '100%' : 0 }}
+      transition={{ duration: sheetClosing ? 0.28 : 0.42, ease: sheetClosing ? [0.4, 0, 1, 1] : [0.32, 0.72, 0, 1] }}
+      onAnimationComplete={() => { if (sheetClosing) navigate(-1); }}
+      drag="y"
+      dragControls={sheetDrag}
+      dragListener={false}
+      dragConstraints={{ top: 0, bottom: 0 }}
+      dragElastic={{ top: 0, bottom: 0.9 }}
+      onDragEnd={(e, info) => { if (info.offset.y > 120 || info.velocity.y > 600) closeSheet(); }}
     >
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0">
       <div className="max-w-4xl mx-auto px-4 py-4 pb-20" style={{ paddingTop: '84px' }}>
         {/* Header */}
         <div className="pt-4" style={{ marginBottom: 14 }}>
-          <BackTab onClick={() => navigate(-1)} />
-          <div className="mt-5">
+          {/* the sheet's handle: tap or drag down to close */}
+          <div
+            onPointerDown={(e) => sheetDrag.start(e)}
+            onClick={closeSheet}
+            className="flex justify-center py-2 cursor-grab active:cursor-grabbing"
+            style={{ touchAction: 'none' }}
+            role="button"
+            aria-label="סגירה"
+          >
+            <span className="block h-1 w-14 rounded-full" style={{ background: '#60a5fa', boxShadow: '0 0 10px rgba(96,165,250,0.9)' }} />
+          </div>
+          <div className="mt-3">
             <RoundHeader name={currentRound?.name} sent={submitted} />
           </div>
         </div>
@@ -1320,6 +1344,6 @@ export default function Predictions() {
           }
         </AnimatePresence>
 
-    </div>);
+    </motion.div>);
 
 }
