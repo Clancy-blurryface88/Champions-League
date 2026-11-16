@@ -83,7 +83,7 @@ export default function CountdownSwap({ timeInfo, date }) {
             <div className="flex w-full items-center justify-center" style={{ gap: 14 }}>
               <span style={{ ...UP, font: `900 16px ${NUM}`, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.06em' }}>{m.format('D.MM')}</span>
               <span style={{ width: 1.5, height: 28, background: 'linear-gradient(transparent, rgba(255,255,255,0.45), transparent)', transform: 'skewX(12deg) rotate(12deg)' }} />
-              <span style={{ ...UP, font: `900 30px ${NUM}`, color: 'rgba(255,255,255,0.95)', lineHeight: 1 }}>{m.format('HH:mm')}</span>
+              <span style={{ ...UP, font: `900 24px ${NUM}`, color: 'rgba(255,255,255,0.95)', lineHeight: 1 }}>{m.format('HH:mm')}</span>
             </div>
           </Pill>
         ))}
