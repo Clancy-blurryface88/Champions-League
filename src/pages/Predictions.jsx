@@ -1050,7 +1050,7 @@ export default function Predictions() {
                     )}
 
                     {/* Separator */}
-                    <div className="h-px mt-3" style={{ background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)' }} />
+                    <div className="h-px mt-4" style={{ background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)' }} />
 
                     {/* Arena — bottom sheet (portal) */}
                     <AnimatePresence>
@@ -1068,7 +1068,7 @@ export default function Predictions() {
 
                     {/* The bottom buttons (1 X 2 / match arena / ניחושים), split like the days bar. Solid
                         gradients only: clip-path together with backdrop-filter broke rendering before. */}
-                    <div className="-mx-3 -mb-3 mt-3">
+                    <div className="-mx-3 -mb-3 mt-5">
                       <CardActions
                         onOdds={() => handleShowScoringRules(match)}
                         onPredictions={() => handleShowPredictions(match)}

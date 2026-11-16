@@ -76,7 +76,7 @@ export default function DaysBar({ dateKeys, activeKey, onPick, onTable, tabRef, 
         {W > 0 && <>
           {part(0, {
             fill: 'rgba(255,255,255,0.06)', line: 'rgba(255,255,255,0.4)', label: 'טבלת הליגה', onClick: onTable,
-            children: <span style={{ ...NUM, fontSize: 17, letterSpacing: '0.08em', color: '#60a5fa', lineHeight: 1, textShadow: longShadow(0.5) }}>TABLE</span>,
+            children: <span style={{ ...NUM, fontSize: 17, letterSpacing: '0.08em', color: '#94a3b8', opacity: 0.7, lineHeight: 1, textShadow: longShadow(0.5) }}>TABLE</span>,
           })}
           {dateKeys.map((key, f) => {
             const on = key === activeKey;
