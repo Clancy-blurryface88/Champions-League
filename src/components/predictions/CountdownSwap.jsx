@@ -20,6 +20,8 @@ const GLASS = {
 };
 const UP = { transform: 'skewX(12deg)' };
 const NUM = 'var(--num-font)';
+// thin slanted divider that fades out at both ends (between countdown units, and between date and time)
+const DIVIDER = { width: 1.5, height: 28, background: 'linear-gradient(transparent, rgba(255,255,255,0.45), transparent)', transform: 'skewX(12deg) rotate(12deg)' };
 
 function Pill({ children }) {
   return (
@@ -69,7 +71,7 @@ export default function CountdownSwap({ timeInfo, date }) {
           <Pill>
             {units.map((u, i) => (
               <React.Fragment key={u.label}>
-                {i > 0 && <div className="shrink-0" style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.12)' }} />}
+                {i > 0 && <span className="shrink-0" style={DIVIDER} />}
                 <div className="flex flex-1 flex-col items-center" style={UP}>
                   <span className="font-black leading-none mb-0.5" style={{ fontFamily: NUM, fontSize: 19, color: 'rgba(255,255,255,0.92)' }}>{u.val}</span>
                   <span className="text-[9px] font-semibold" style={{ color: 'rgba(255,255,255,0.45)' }}>{u.label}</span>
@@ -82,7 +84,7 @@ export default function CountdownSwap({ timeInfo, date }) {
           <Pill>
             <div className="flex w-full items-center justify-center" style={{ gap: 14 }}>
               <span style={{ ...UP, font: `900 16px ${NUM}`, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.06em' }}>{m.format('D.MM')}</span>
-              <span style={{ width: 1.5, height: 28, background: 'linear-gradient(transparent, rgba(255,255,255,0.45), transparent)', transform: 'skewX(12deg) rotate(12deg)' }} />
+              <span style={DIVIDER} />
               <span style={{ ...UP, font: `900 24px ${NUM}`, color: 'rgba(255,255,255,0.95)', lineHeight: 1 }}>{m.format('HH:mm')}</span>
             </div>
           </Pill>
