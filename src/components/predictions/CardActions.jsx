@@ -36,7 +36,8 @@ function shape(i, parts, W) {
   return { d, mid: (c0 + c1) / 2 };
 }
 
-export default function CardActions({ onOdds, onPredictions, onArena }) {
+// arenaPx: width of the middle (arena) part in px; the two side parts share the rest equally
+export default function CardActions({ onOdds, onPredictions, onArena, arenaPx = 66 }) {
   const box = useRef(null);
   const [W, setW] = useState(0);
   const [down, setDown] = useState(null);
@@ -46,7 +47,9 @@ export default function CardActions({ onOdds, onPredictions, onArena }) {
     ro.observe(el); setW(el.offsetWidth);
     return () => ro.disconnect();
   }, []);
-  const parts = [{ ...ODDS, on: onOdds }, { ...ARENA, on: onArena }, { ...PREDS, on: onPredictions }];
+  // the arena's visible width is its share of the bar less the gap at each cut
+  const arenaW = arenaPx && W > arenaPx ? ((ODDS.w + PREDS.w) * (arenaPx + GAP)) / (W - arenaPx - GAP) : ARENA.w;
+  const parts = [{ ...ODDS, on: onOdds }, { ...ARENA, w: arenaW, on: onArena }, { ...PREDS, on: onPredictions }];
   return (
     <div ref={box} className="relative" style={{ height: H }}>
       {W > 0 && parts.map((b, k) => {
