@@ -1,47 +1,7 @@
+import { InlinePitchLoader } from './PitchLoader';
+
+// The app's in-page loader: the pitch drawing itself (variant 9), shown only if loading takes more
+// than 300ms. `size` is kept from the old five-orb loader; the pitch is a little wider than that.
 export default function CircleLoader({ size = 50 }) {
-  const orbes = 5;
-  const gradient = 'linear-gradient(135deg, #4ade80, #16a34a)';
-  const glow = '#4ade80';
-
-  return (
-    <>
-      <div className="orbit-loader" style={{ '--size-loader': `${size}px`, '--size-orbe': `${size * 0.2}px` }}>
-        {Array.from({ length: orbes }, (_, i) => (
-          <div key={i} className="orbe" style={{ '--index': i }} />
-        ))}
-      </div>
-
-      <style>{`
-        .orbit-loader {
-          width: var(--size-loader);
-          height: var(--size-loader);
-          position: relative;
-          transform: rotate(45deg);
-        }
-        .orbe {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          animation: orbit7456 ease-in-out 1.5s calc(var(--index) * 0.12s) infinite;
-          opacity: calc(1 - 0.15 * var(--index));
-        }
-        .orbe::after {
-          position: absolute;
-          content: '';
-          top: 0;
-          left: 0;
-          width: var(--size-orbe);
-          height: var(--size-orbe);
-          background: ${gradient};
-          box-shadow: 0px 0px 20px 3px ${glow};
-          border-radius: 50%;
-        }
-        @keyframes orbit7456 {
-          0%   { transform: rotate(0deg); }
-          80%  { transform: rotate(360deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
-    </>
-  );
+  return <InlinePitchLoader width={Math.round(size * 1.4)} />;
 }

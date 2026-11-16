@@ -1,5 +1,5 @@
 import React from 'react'
-import LoadingScreen from '@/components/LoadingScreen'
+import LoadingScreen, { LoadingScreenHost } from '@/components/LoadingScreen'
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -155,6 +155,7 @@ function App() {
           <AuthenticatedApp />
         </Router>
         <Toaster />
+        <LoadingScreenHost />
         <VisualEditAgent />
       </QueryClientProvider>
     </AuthProvider>

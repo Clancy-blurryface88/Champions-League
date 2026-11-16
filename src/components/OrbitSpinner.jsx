@@ -1,4 +1,9 @@
+import { InlinePitchLoader } from './PitchLoader';
+
+// Loaders of 30px and up are the pitch drawing itself (variant 9); smaller ones (inside buttons) stay
+// the blue orbiting dots, since a pitch can't be read that small.
 export default function OrbitSpinner({ size = 36 }) {
+  if (size >= 30) return <InlinePitchLoader width={Math.round(size * 1.8)} />;
   const gold = '#097adc';
   const orbeSize = Math.max(4, Math.round(size * 0.2));
 
