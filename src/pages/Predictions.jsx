@@ -28,6 +28,7 @@ import MatchArenaSection from "../components/predictions/MatchArenaSection";
 import DaysBar from "../components/predictions/DaysBar";
 import CardActions from "../components/predictions/CardActions";
 import MatchDateTag from "../components/predictions/MatchDateTag";
+import CountdownSwap from "../components/predictions/CountdownSwap";
 import RoundHeader from "../components/predictions/RoundHeader";
 import TeamFlag from "@/components/TeamFlag";
 import LeagueTableModal from "@/components/LeagueTableModal";
@@ -900,38 +901,15 @@ export default function Predictions() {
                   {/* Noise texture overlay */}
                   <div className="absolute inset-0 pointer-events-none opacity-[0.025]"
                     style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundSize: '180px' }} />
-                  {/* Date and kick-off time, hanging from the card's top edge */}
-                  <MatchDateTag date={match.match_date} />
+                  {/* While the match is open, the countdown pill takes turns with the kick-off time and
+                      date (CountdownSwap). Once it's locked or over there's no countdown, so the date
+                      and kick-off hang from the card's top edge instead. */}
+                  {(timeInfo.status === 'locked' || timeInfo.status === 'finished') && <MatchDateTag date={match.match_date} />}
                   <CardContent className="p-5 pt-12 flex-1 flex flex-col justify-between">
-                    {/* Countdown to the lock; nothing once the match is locked or over (the card itself shows that) */}
                     {!(timeInfo.status === 'locked' || timeInfo.status === 'finished') && (
-                    <div className="flex justify-center mb-3">
-                        <div dir="rtl" className="relative overflow-hidden flex rounded-2xl" style={{
-                          background: 'rgba(255,255,255,0.06)',
-                          backdropFilter: 'blur(40px) saturate(180%)',
-                          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-                          border: '1px solid rgba(255,255,255,0.18)',
-                          boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.35)',
-                          // a parallelogram with the date tag's lean; each unit is set back upright below
-                          transform: 'skewX(-12deg)',
-                        }}>
-                          {/* gloss */}
-                          <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.14) 0%, transparent 100%)', borderRadius: '16px 16px 0 0' }} />
-                          {[
-                            { val: timeInfo.seconds, label: "שניות" },
-                            { val: timeInfo.minutes, label: "דקות" },
-                            { val: timeInfo.hours,   label: "שעות"  },
-                            { val: timeInfo.days,    label: "ימים"  },
-                          ].map((item, i) => (
-                            <React.Fragment key={item.label}>
-                              <div className="relative flex flex-col items-center px-3 py-2" style={{ transform: 'skewX(12deg)' }}>
-                                <span className="font-black leading-none mb-0.5" style={{ fontFamily: 'var(--num-font)', fontSize: 19, color: 'rgba(255,255,255,0.92)' }}>{item.val}</span>
-                                <span className="text-[9px] font-semibold" style={{ color: 'rgba(255,255,255,0.45)' }}>{item.label}</span>
-                              </div>
-                              {i < 3 && <div className="self-center" style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.12)' }} />}
-                            </React.Fragment>
-                          ))}
-                        </div>
+                    // raised 28px into the room above; the extra bottom margin keeps everything below in place
+                    <div className="flex justify-center" style={{ marginTop: -28, marginBottom: 40 }}>
+                      <CountdownSwap timeInfo={timeInfo} date={match.match_date} />
                     </div>
                     )}
 

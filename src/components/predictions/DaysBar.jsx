@@ -49,8 +49,8 @@ export default function DaysBar({ dateKeys, activeKey, onPick, onTable, tabRef, 
     ro.observe(el); setW(el.offsetWidth);
     return () => ro.disconnect();
   }, []);
-  // part widths: TABLE 0.7, each day 1
-  const weights = [0.7, ...dateKeys.map(() => 1)];
+  // part widths: TABLE and every day the same size
+  const weights = [1, ...dateKeys.map(() => 1)];
   const total = weights.reduce((a, b) => a + b, 0);
   let acc = 0;
   const cuts = weights.map((w) => { acc += w; return (W * acc) / total; });
