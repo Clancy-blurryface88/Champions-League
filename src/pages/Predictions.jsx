@@ -6,6 +6,7 @@ import { Match } from "@/api/entities";
 import { Prediction } from "@/api/entities";
 import { User } from "@/api/entities";
 import { AiBrief } from "@/api/entities";
+import { AppSettings } from "@/api/entities";
 import { ArrowLeft, Check, HelpCircle, Eye, Sparkles, ChevronDown, Dices, History, Play } from "lucide-react";
 import AiBriefModal from "@/components/AiBriefModal"; // ADDED Eye icon
 import { Button } from "@/components/ui/button";
@@ -471,8 +472,22 @@ export default function Predictions() {
   const [demoMatch, setDemoMatch] = useState(undefined); // undefined: still looking, null: none found
   const tourStartedRef = useRef(false);
   const tourArenaRef = useRef(null); // the card whose arena the tour opened
-  const tourDone = (k) => { try { return localStorage.getItem(TOURS[k].key) === 'done'; } catch { return false; } };
-  const markTour = (k) => { try { localStorage.setItem(TOURS[k].key, 'done'); } catch { /* private mode */ } };
+  // The admin panel can turn the tour off, or show it again to everyone: each device keeps when it
+  // finished each part, and a part finished before the last reset counts as not seen.
+  const [tourCfg, setTourCfg] = useState(null);
+  useEffect(() => {
+    AppSettings.list()
+      .then((l) => setTourCfg({ on: l[0]?.tour_enabled !== false, resetAt: l[0]?.tour_reset_at ? Date.parse(l[0].tour_reset_at) : 0 }))
+      .catch(() => setTourCfg({ on: true, resetAt: 0 }));
+  }, []);
+  const tourDone = (k) => {
+    let v = null;
+    try { v = localStorage.getItem(TOURS[k].key); } catch { /* private mode */ }
+    if (!v) return false;
+    const at = v === 'done' ? 0 : Number(v) || 0; // 'done': finished before resets existed
+    return at >= (tourCfg?.resetAt || 0);
+  };
+  const markTour = (k) => { try { localStorage.setItem(TOURS[k].key, String(Math.max(Date.now(), (tourCfg?.resetAt || 0) + 1))); } catch { /* private mode */ } };
   useEffect(() => {
     if (currentRound?.order !== 5 || demoMatch !== undefined) return;
     (async () => {
@@ -487,7 +502,8 @@ export default function Predictions() {
     })();
   }, [currentRound?.order]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (!storyMode || !storyId || loading || currentRound?.order !== 5 || demoMatch === undefined || tourStartedRef.current) return undefined;
+    if (!storyMode || !storyId || loading || currentRound?.order !== 5 || demoMatch === undefined || !tourCfg || tourStartedRef.current) return undefined;
+    if (!tourCfg.on) return undefined;
     const replay = new URLSearchParams(window.location.search).has('tour');
     let seg = null;
     if (replay || !tourDone('round')) seg = 'round';
@@ -495,7 +511,7 @@ export default function Predictions() {
     if (!seg) return undefined;
     const t = setTimeout(() => { tourStartedRef.current = true; setTourSeg(seg); }, 900); // after the sheet and the card
     return () => clearTimeout(t);
-  }, [storyMode, storyId, loading, demoMatch, currentRound?.order]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [storyMode, storyId, loading, demoMatch, tourCfg, currentRound?.order]); // eslint-disable-line react-hooks/exhaustive-deps
   // the next part, once the window before it has slid away
   const tourThen = (next) => { setTourSeg(null); setTimeout(() => setTourSeg(next), 450); };
   const onTourDone = (seg) => {
