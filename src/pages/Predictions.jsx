@@ -497,6 +497,35 @@ export default function Predictions() {
     toggleArena(matchId);
   };
 
+  // After the round tour the three windows follow one by one — 1X2, then (once it's closed) the match
+  // arena, then BETS — so every option has been seen before the first prediction. If the page is left
+  // half way, the chain picks up at the next unseen window on the next visit.
+  const tourChainRef = useRef(false);
+  const TOUR_CHAIN = ['x12', 'arena', 'bets'];
+  const chainNext = (after) => {
+    const from = after ? TOUR_CHAIN.indexOf(after) + 1 : 0;
+    const k = TOUR_CHAIN.slice(from).find((x) => windowTourPending(x));
+    const m = storyFlat.find((x) => x.id === storyId) || storyFlat[0];
+    if (!k || !m) { tourChainRef.current = false; return; }
+    tourChainRef.current = true;
+    // after the previous window has slid away
+    setTimeout(() => {
+      if (k === 'x12') handleShowScoringRules(m);
+      else if (k === 'arena') openArena(m.id);
+      else handleShowPredictions(m);
+    }, after ? 450 : 350);
+  };
+  // the round tour was finished on an earlier visit but a window's tour wasn't: carry on from there
+  useEffect(() => {
+    if (!storyMode || !storyId || loading || !demoMatch || tourChainRef.current || tourOn) return undefined;
+    if (new URLSearchParams(window.location.search).has('tour')) return undefined;
+    let seen = false;
+    try { seen = localStorage.getItem(ROUND_TOUR_KEY) === 'done'; } catch {}
+    if (!seen) return undefined;
+    const t = setTimeout(() => chainNext(), 900);
+    return () => clearTimeout(t);
+  }, [storyMode, storyId, loading, demoMatch]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // open on the first match still waiting for a prediction (or the next one to play)
   useEffect(() => {
     if (!storyMode || storyId || !storyFlat.length) return;
@@ -667,6 +696,7 @@ export default function Predictions() {
   const handleCloseScoringRules = () => {
     setShowScoringRulesModal(false);
     setSelectedMatchForRules(null);
+    if (tourChainRef.current) chainNext('x12');
   };
 
   // NEW: Handle predictions modal open
@@ -681,6 +711,7 @@ export default function Predictions() {
   const handleClosePredictions = () => {
     setShowPredictionsModal(false);
     setSelectedMatchForPredictions(null);
+    tourChainRef.current = false; // the last window: the tours are over
   };
 
   // Opens TeamFixturesModal for the clicked team's logo — fetches league-phase
@@ -1106,7 +1137,7 @@ export default function Predictions() {
                           isLocked={isLocked}
                           allMatches={allMatchesForForm}
                           loading={arenaMatchesLoading}
-                          onClose={() => toggleArena(match.id)}
+                          onClose={() => { toggleArena(match.id); if (tourChainRef.current) chainNext('arena'); }}
                           showTable={storyMode}
                         />
                       )}
@@ -1294,7 +1325,7 @@ export default function Predictions() {
 
 
         {/* NEW: Predictions Modal */}
-        {tourOn && <RoundTour onDone={() => setTourOn(false)} />}
+        {tourOn && <RoundTour onDone={() => { setTourOn(false); chainNext(); }} />}
         {windowTour && (
           <Tour
             key={windowTour}
