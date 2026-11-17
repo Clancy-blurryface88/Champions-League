@@ -67,16 +67,22 @@ function Pair({ m, circle = 'split', on = false }) {
   );
 }
 
-// the day as plain text (English), its date under it, after a thin line
+// the day as plain text (English), its date under it, then a thin line toward its matches. It sticks to
+// the strip's right edge while that day's matches scroll under it; the next day's mark pushes it out.
 function DayMark({ dateKey }) {
   const d = moment(dateKey);
   return (
-    <span style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'stretch' }}>
-      <span style={{ width: 1, alignSelf: 'stretch', background: 'linear-gradient(transparent,rgba(255,255,255,.35),transparent)' }} />
+    <span style={{
+      position: 'sticky', right: -6, zIndex: 2, flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'stretch',
+      padding: '0 6px 0 4px', marginRight: -6,
+      // the strip's own background behind it, fading out toward the matches that pass beneath
+      background: 'linear-gradient(to left, rgba(11,32,64,0.97) 72%, rgba(11,32,64,0))',
+    }}>
       <span dir="ltr" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1 }}>
         <span style={{ font: `900 16px ${NUM}`, letterSpacing: '.08em', color: '#e2e8f0' }}>{d.locale('en').format('ddd').toUpperCase()}</span>
         <span style={{ font: `900 11px ${NUM}`, letterSpacing: '.06em', color: '#cbd5e1', marginTop: 3 }}>{d.format('DD.MM')}</span>
       </span>
+      <span style={{ width: 1, alignSelf: 'stretch', margin: '6px 4px 6px 0', background: 'linear-gradient(transparent,rgba(255,255,255,.35),transparent)' }} />
     </span>
   );
 }
@@ -96,7 +102,8 @@ export default function RoundStories({ dateKeys, matchesByDate, selectedId, onSe
     <div ref={ref} dir="rtl" style={{ display: 'flex', alignItems: 'center', gap: 10, overflowX: 'auto', overflowY: 'hidden', overscrollBehavior: 'contain', touchAction: 'pan-x', scrollbarWidth: 'none', padding: '12px 6px 10px', marginTop: 0 }}>
       <style>{RING_CSS}</style>
       {dateKeys.map((key) => (
-        <React.Fragment key={key}>
+        // one group per day, so its sticky mark only sticks while the day's matches are in view
+        <div key={key} style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: 10, alignSelf: 'stretch' }}>
           <DayMark dateKey={key} />
           {(matchesByDate[key] || []).map((m) => {
             const on = m.id === selectedId;
@@ -113,7 +120,7 @@ export default function RoundStories({ dateKeys, matchesByDate, selectedId, onSe
               </button>
             );
           })}
-        </React.Fragment>
+        </div>
       ))}
     </div>
   );
