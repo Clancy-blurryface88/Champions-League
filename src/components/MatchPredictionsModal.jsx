@@ -12,6 +12,15 @@ import { Lock } from "lucide-react";
 import { useModalBackButton } from "@/hooks/useModalBackButton";
 import { PREDICTION_LOCK_MINUTES } from "@/config/tournament";
 
+// a colour's brightness (0–1), and a deep but still visible shade of it (lifted a little toward white)
+const rgbOf = (hex) => { const n = parseInt(String(hex).replace('#', ''), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+const lum = (hex) => { const [r, g, b] = rgbOf(hex); return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255; };
+const deepShade = (hex) => {
+  const [r, g, b] = rgbOf(hex);
+  const up = (c) => Math.round(c + (255 - c) * 0.18).toString(16).padStart(2, '0');
+  return `#${up(r)}${up(g)}${up(b)}`;
+};
+
 // ── Slot digit ────────────────────────────────────────────────────────────────
 function SlotDigit({ target, delay = 0, small = false }) {
   const [num, setNum]       = useState(Math.floor(Math.random() * 9));
@@ -82,8 +91,15 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
 
   useModalBackButton(isOpen, onClose);
   // the two clubs' colours (as in the arena's forecast), to tell their columns apart
-  const colA = match ? liquidColor(getTeamColor(match.team_a, '#2f7bff')) : null;
-  const colB = match ? liquidColor(getTeamColor(match.team_b, '#ff7a1a')) : null;
+  // When both come out the same (every blue becomes the same cyan, e.g. City and Paris), the club with
+  // the darker colour gets its own deep shade instead, so the two columns can be told apart.
+  const rawA = match ? getTeamColor(match.team_a, '#2f7bff') : null;
+  const rawB = match ? getTeamColor(match.team_b, '#ff7a1a') : null;
+  let colA = match ? liquidColor(rawA) : null;
+  let colB = match ? liquidColor(rawB) : null;
+  if (match && colA === colB) {
+    if (lum(rawA) <= lum(rawB)) colA = deepShade(rawA); else colB = deepShade(rawB);
+  }
 
 
   const getUserName = (userId) =>
