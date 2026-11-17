@@ -1,7 +1,7 @@
 import { LeagueTable } from "@/components/LeagueTableModal";
 import React, { useMemo, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence, useDragControls } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { calculateProbabilities, getTopScores } from './MatchOddsBar';
 import OdometerValue from '@/components/OdometerValue';
 import PitchLineupWide from './PitchLineupWide';
@@ -567,7 +567,6 @@ export default function MatchArenaSection({ match, allMatches, loading, onClose,
   const hasForm = formA.played > 0 || formB.played > 0;
   const lineups = useLineups(match.team_a, match.team_b);
   const news = useMatchNews(match.team_a, match.team_b);
-  const dragControls = useDragControls();
   useModalBackButtonOnMount(onClose);
 
   const tabs = [
@@ -609,26 +608,28 @@ export default function MatchArenaSection({ match, allMatches, loading, onClose,
         onClick={onClose}
         className="fixed inset-0 z-[70] bg-black/55"
       />
+      {/* the whole screen, like the 1X2 window: its name and a close button on top; it rises from the
+          bottom like a bottom sheet and drops back down on close */}
       <motion.div
         key="arena-sheet"
         initial={{ y: '100%' }}
-        animate={{ y: 0 }}
-        exit={{ y: '100%' }}
-        transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-        drag="y"
-        dragListener={false}
-        dragControls={dragControls}
-        dragConstraints={{ top: 0, bottom: 0 }}
-        dragElastic={{ top: 0, bottom: 0.6 }}
-        onDragEnd={(e, info) => { if (info.offset.y > 90 || info.velocity.y > 500) onClose(); }}
-        className="fixed inset-x-0 bottom-0 z-[71] mx-auto max-w-lg rounded-t-3xl flex flex-col"
-        style={{ height: '82vh', background: 'linear-gradient(180deg,#13265a,#0a1226)', borderTop: '1px solid rgba(255,255,255,0.18)' }}
+        animate={{ y: 0, transition: { duration: 0.42, ease: [0.32, 0.72, 0, 1] } }}
+        exit={{ y: '100%', transition: { duration: 0.28, ease: [0.4, 0, 1, 1] } }}
+        className="fixed inset-0 z-[80] text-white"
+        style={{ background: 'linear-gradient(170deg,#13265a 0%,#0d1838 45%,#0a1226 100%)' }}
         dir="rtl"
       >
-        {/* Drag handle + matchup header — the only drag area, so the content scrolls freely */}
-        <div onPointerDown={(e) => dragControls.start(e)} className="flex-shrink-0 cursor-grab touch-none pt-2 pb-3">
-          <div className="flex justify-center"><div className="w-10 h-1 rounded-full bg-white/30" /></div>
-          <MatchupPlates match={match} className="mx-3 mt-2" />
+        <div className="mx-auto flex h-full max-w-md flex-col">
+        <div className="flex-shrink-0 pb-3">
+          <div className="flex items-center justify-between px-4 pt-4 pb-2">
+            <span className="inline-flex items-center gap-1.5 font-bold text-[11px] px-2.5 py-0.5" style={{ background: 'linear-gradient(180deg,#fef08a,#facc15)', color: '#422006', transform: 'skewX(-12deg)' }}>
+              <span className="inline-flex items-center gap-1.5" style={{ transform: 'skewX(12deg)' }}>זירת המשחק</span>
+            </span>
+            <button type="button" onClick={onClose} aria-label="סגירה" className="w-9 h-9 grid place-items-center text-white/80" style={{ background: 'rgba(255,255,255,.08)', transform: 'skewX(-10deg)' }}>
+              <span style={{ transform: 'skewX(10deg)' }}>✕</span>
+            </button>
+          </div>
+          <MatchupPlates match={match} className="mx-3" />
         </div>
 
         {/* Category tabs — same broadcast look as the 1X2 panel: skewed, white when active */}
@@ -653,6 +654,7 @@ export default function MatchArenaSection({ match, allMatches, loading, onClose,
           <AnimatePresence mode="wait">
             <motion.div key={tab} {...sheetFade}>{body}</motion.div>
           </AnimatePresence>
+        </div>
         </div>
       </motion.div>
     </>,

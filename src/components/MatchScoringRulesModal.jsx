@@ -270,16 +270,17 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
           key="x12-panel"
           className="fixed inset-0 z-[80] overflow-hidden text-white"
           dir="rtl"
-          initial={{ ...fromCard(rect), opacity: 0, borderRadius: 18 }}
-          animate={{ x: 0, y: 0, scaleX: 1, scaleY: 1, opacity: 1, borderRadius: 0, transition: { duration: 0.4, ease: EASE, opacity: { duration: 0.14 } } }}
-          exit={{ ...fromCard(rect), opacity: 0, borderRadius: 18, transition: { duration: 0.3, ease: EASE, opacity: { duration: 0.28, ease: "easeIn" } } }}
-          style={{ background: PANEL_BG, transformOrigin: "0 0" }}
+          // rises from the bottom like a bottom sheet and drops back down on close (transform only)
+          initial={{ y: "100%" }}
+          animate={{ y: 0, transition: { duration: 0.42, ease: [0.32, 0.72, 0, 1] } }}
+          exit={{ y: "100%", transition: { duration: 0.28, ease: [0.4, 0, 1, 1] } }}
+          style={{ background: PANEL_BG }}
           transformTemplate={keepLayer}
         >
           <motion.div
             className="mx-auto flex h-full max-w-md flex-col"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1, transition: { delay: 0.3, duration: 0.18 } }}
+            animate={{ opacity: 1, transition: { delay: 0.12, duration: 0.18 } }}
             exit={{ opacity: 0, transition: { duration: 0.08 } }}
           >
             {/* header */}
