@@ -431,11 +431,14 @@ export default function Predictions() {
     return isMatchLocked(m.match_date) ? 'missed' : 'todo';
   };
   const pickStory = (id) => {
+    if (storyId) storyDirRef.current = storyFlat.findIndex((m) => m.id === id) >= storyFlat.findIndex((m) => m.id === storyId) ? 1 : -1;
     setStoryId(id);
     const m = matches.find((x) => x.id === id);
     if (m) setActiveDateKey(moment(m.match_date).format('YYYY-MM-DD'));
   };
+  const storyDirRef = useRef(1); // the side the next card comes in from
   const storyStep = (d) => {
+    storyDirRef.current = d;
     const i = storyFlat.findIndex((m) => m.id === storyId);
     const j = Math.max(0, Math.min(storyFlat.length - 1, i + d));
     if (storyFlat[j] && j !== i) pickStory(storyFlat[j].id);
@@ -446,7 +449,6 @@ export default function Predictions() {
     const first = storyFlat.find((m) => storyStatus(m) === 'todo') || storyFlat.find((m) => !m.is_finished) || storyFlat[storyFlat.length - 1];
     pickStory(first.id);
   }, [storyMode, storyFlat]); // eslint-disable-line react-hooks/exhaustive-deps
-  const swipeRef = useRef(null);
 
   // Initialize expanded dates: expand today + future, collapse past
   useEffect(() => {
@@ -827,14 +829,7 @@ export default function Predictions() {
                       transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                       className="overflow-hidden"
                     >
-                      <div ref={el => matchGridRefs.current[dateKey] = el} className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3 pb-2"
-                        // stories: a sideways swipe on the card goes to the next / previous match
-                        onTouchStart={storyMode ? (e) => { const t = e.touches[0]; swipeRef.current = { x: t.clientX, y: t.clientY }; } : undefined}
-                        onTouchEnd={storyMode ? (e) => {
-                          const s0 = swipeRef.current; swipeRef.current = null; if (!s0) return;
-                          const t = e.changedTouches[0]; const dx = t.clientX - s0.x, dy = t.clientY - s0.y;
-                          if (Math.abs(dx) > 60 && Math.abs(dy) < 50) storyStep(dx < 0 ? 1 : -1);
-                        } : undefined}>
+                      <div ref={el => matchGridRefs.current[dateKey] = el} className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3 pb-2">
                         {(storyMode ? dayMatches.filter((m) => m.id === storyId) : dayMatches).map((match, index) => {
             const isLocked = isMatchLocked(match.match_date);
             const timeInfo = getTimeUntilLock(match.match_date);
@@ -844,9 +839,21 @@ export default function Predictions() {
               <motion.div
                 key={match.id}
                 ref={el => matchCardRefs.current[match.id] = el}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.06 }}
+                initial={storyMode ? { opacity: 0, x: storyDirRef.current * 60 } : { opacity: 0, scale: 0.95 }}
+                animate={storyMode ? { opacity: 1, x: 0 } : { opacity: 1, scale: 1 }}
+                transition={storyMode ? { type: 'spring', stiffness: 380, damping: 34 } : { delay: index * 0.06 }}
+                // stories: drag the card sideways with a finger — far enough (or fast enough) goes to the
+                // next / previous match, otherwise it springs back
+                {...(storyMode ? {
+                  drag: 'x',
+                  dragDirectionLock: true,
+                  dragConstraints: { left: 0, right: 0 },
+                  dragElastic: 0.55,
+                  onDragEnd: (e, info) => {
+                    const go = info.offset.x < -70 || info.velocity.x < -500 ? 1 : info.offset.x > 70 || info.velocity.x > 500 ? -1 : 0;
+                    if (go) storyStep(go);
+                  },
+                } : {})}
                 className="h-full">
 
                 <div className="h-full relative overflow-hidden" style={{ borderRadius: 18 }}>

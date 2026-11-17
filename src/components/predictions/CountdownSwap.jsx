@@ -94,7 +94,7 @@ export default function CountdownSwap({ timeInfo, date, compact = false }) {
                 // the date with the weekday under it — together about as tall as the time
                 <span style={{ ...UP, display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1 }}>
                   <span style={{ font: `900 ${Z.date}px ${NUM}`, color: 'rgba(255,255,255,0.62)', letterSpacing: '0.06em' }}>{m.format('DD.MM')}</span>
-                  <span style={{ font: `900 9px ${NUM}`, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.14em', marginTop: 2 }}>{m.clone().locale('en').format('dddd').toUpperCase()}</span>
+                  <span style={{ font: `900 9px ${NUM}`, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.16em', marginTop: 2 }}>{m.clone().locale('en').format('ddd').toUpperCase()}</span>
                 </span>
               ) : (
                 <span style={{ ...UP, font: `900 ${Z.date}px ${NUM}`, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.06em' }}>{m.format('D.MM')}</span>
