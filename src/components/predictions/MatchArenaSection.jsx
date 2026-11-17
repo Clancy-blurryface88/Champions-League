@@ -640,6 +640,7 @@ export default function MatchArenaSection({ match, allMatches, loading, onClose,
               <button
                 key={t.id}
                 type="button"
+                data-tour-tab={t.id}
                 onClick={() => setTab(t.id)}
                 className="flex-1 py-2 text-[12px] font-bold"
                 style={{ transform: 'skewX(-12deg)', background: on ? '#fff' : 'rgba(255,255,255,.07)', color: on ? '#070822' : '#9aa3d6' }}

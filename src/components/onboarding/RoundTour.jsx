@@ -55,11 +55,29 @@ const rectOf = (name) => {
   return el ? el.getBoundingClientRect() : null;
 };
 
-export function Tour({ steps, storageKey, onDone, badge, z = 120 }) {
-  const [i, setI] = React.useState(0);
+export function Tour({ steps: allSteps, storageKey, onDone, badge, z = 120 }) {
+  const [at, setI] = React.useState(0);
   const [rect, setRect] = React.useState(null);
+  // a step can open a tab of the window first (step.tab); a tab the window doesn't have for this match
+  // (no line-ups yet, no exact-score odds) drops its step
+  const [missing, setMissing] = React.useState(() => new Set());
+  const steps = allSteps.filter((s) => !s.tab || !missing.has(s.tab));
+  const i = Math.min(at, steps.length - 1);
   const step = steps[i];
   const last = i === steps.length - 1;
+
+  React.useEffect(() => {
+    if (!step.tab) return undefined;
+    let tries = 0, t = 0;
+    const open = () => {
+      const b = document.querySelector(`[data-tour-tab="${step.tab}"]`);
+      if (b) { b.click(); return; }
+      if (++tries > 12) { setMissing((m) => new Set(m).add(step.tab)); return; }
+      t = setTimeout(open, 100);
+    };
+    open();
+    return () => clearTimeout(t);
+  }, [step.tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // bring the step's part into view, then follow it (it can move: animations, scrolling)
   React.useEffect(() => {
@@ -69,16 +87,21 @@ export function Tour({ steps, storageKey, onDone, badge, z = 120 }) {
     const tick = () => { const r = rectOf(step.target); if (r) setRect((p) => (p && Math.abs(p.top - r.top) < 0.5 && Math.abs(p.left - r.left) < 0.5 && Math.abs(p.width - r.width) < 0.5 && Math.abs(p.height - r.height) < 0.5 ? p : { top: r.top, left: r.left, width: r.width, height: r.height })); raf = requestAnimationFrame(tick); };
     tick();
     return () => cancelAnimationFrame(raf);
-  }, [i]);
+  }, [i, step.target]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pad = step.pad;
-  const box = rect
-    ? { top: rect.top - pad, left: rect.left - pad, width: rect.width + pad * 2, height: rect.height + pad * 2 }
-    : { top: window.innerHeight * 0.32, left: window.innerWidth / 2, width: 0, height: 0 };
   const vh = window.innerHeight, vw = window.innerWidth;
+  // the lit part, cut to the screen (a long tab — the league table — runs far below it)
+  const box = (() => {
+    if (!rect) return { top: vh * 0.32, left: vw / 2, width: 0, height: 0 };
+    const top = Math.max(4, rect.top - pad), bottom = Math.min(vh - 4, rect.top + rect.height + pad);
+    return { top, left: rect.left - pad, width: rect.width + pad * 2, height: Math.max(0, bottom - top) };
+  })();
   const cardW = Math.min(340, vw - 32);
   const below = box.top + box.height + 230 < vh; // room for the card under the lit part?
-  const cardTop = below ? box.top + box.height + 12 : Math.max(12, box.top - 12);
+  const above = !below && box.top > 230; // or over it?
+  // no room either side: the card sits at the bottom of the screen, over the lit part
+  const cardTop = below ? box.top + box.height + 12 : above ? box.top - 12 : vh - 16;
   const finish = () => { try { localStorage.setItem(storageKey, 'done'); } catch {} onDone?.(); };
 
   return createPortal(
@@ -164,28 +187,43 @@ export default function RoundTour({ onDone }) {
 
 // the three windows under each match card
 export const WINDOW_TOURS = {
-  x12: { key: 'tour_x12_v1', steps: [
-    { target: 'x12-tabs', noScroll: true, radius: 12, pad: 6, title: '1X2 – ניקוד ויחסים', subtitle: 'שלוש לשוניות מידע', rows: [
-      { key: 'סימולטור', color: Y, text: 'בוחרים תוצאה ורואים כמה נקודות היא שווה' },
-      { key: 'יחסים', color: BLUE, text: 'סיכויי המשחק ושווי כל סוג הימור' },
-      { key: 'תוצאה מדויקת', color: G, text: 'הסיכוי לכל תוצאה אפשרית' },
+  x12: { key: 'tour_x12_v2', steps: [
+    { tab: 'sim', target: 'x12-body', noScroll: true, radius: 16, pad: 4, title: 'סימולטור', subtitle: 'כמה שווה הניחוש שלך', rows: [
+      { key: 'גלגלים', color: Y, text: 'גוללים תוצאה לכל קבוצה' },
+      { key: 'פירוט', color: G, text: 'הנקודות לכל רכיב שפגעת בו' },
+      { key: 'סה״כ', color: W, text: 'הניקוד הכולל לתוצאה שבחרת' },
     ] },
-    { target: 'x12-body', noScroll: true, radius: 16, pad: 4, title: 'סימולטור הניקוד', subtitle: 'חישוב הנקודות לפני הניחוש', rows: [
-      { key: 'גלגלים', color: Y, text: 'קביעת תוצאה לכל קבוצה' },
-      { key: 'פירוט', color: G, text: 'הנקודות לפי כל רכיב בניחוש' },
+    { tab: 'markets', target: 'x12-body', noScroll: true, radius: 16, pad: 4, title: 'יחסים', subtitle: 'הנקודות לכל סוג הימור', rows: [
+      { key: 'כיוון משחק', color: BLUE, text: 'ניצחון בית, תיקו או ניצחון חוץ' },
+      { key: 'שתי כובשות', color: Y, text: 'האם שתי הקבוצות יבקיעו' },
+      { key: 'טווח שערים', color: G, text: 'סך השערים: 0–2, 3–4 או 5+' },
+      { key: 'נקודות', color: W, text: 'פחות סביר – יותר נקודות' },
+    ] },
+    { tab: 'exact', target: 'x12-body', noScroll: true, radius: 16, pad: 4, title: 'תוצאה מדויקת', subtitle: 'פגיעה בתוצאה המדויקת', rows: [
+      { key: 'לוח', color: Y, text: 'הנקודות לכל תוצאה אפשרית' },
+      { key: 'תצוגה', color: BLUE, text: 'בעמודות 1/X/2 או באלכסון התיקו' },
     ] },
   ] },
-  arena: { key: 'tour_arena_v1', steps: [
-    { target: 'arena-tabs', noScroll: true, radius: 12, pad: 6, title: 'זירת המשחק', subtitle: 'כל הנתונים על המשחק', rows: [
-      { key: '5 אחרונים', color: W, text: 'התוצאות האחרונות של שתי הקבוצות' },
-      { key: 'תחזית', color: Y, text: 'סיכויי ניצחון ותוצאות צפויות' },
-      { key: 'ראש בראש', color: BLUE, text: 'המפגשים הקודמים בין הקבוצות' },
-      { key: 'הרכבים', color: G, text: 'ההרכבים, כשהם מתפרסמים' },
-      { key: 'טבלה', color: GREY, text: 'מיקום הקבוצות בטבלת הליגה' },
+  arena: { key: 'tour_arena_v2', steps: [
+    { tab: 'form', target: 'arena-body', noScroll: true, radius: 16, pad: 4, title: '5 אחרונים', subtitle: 'הכושר של שתי הקבוצות', rows: [
+      { key: 'תוצאות', color: G, text: 'חמשת המשחקים האחרונים של כל קבוצה' },
+      { key: 'מסגרת', color: BLUE, text: 'ליגת האלופות בלבד או כל המסגרות' },
     ] },
-    { target: 'arena-body', noScroll: true, radius: 16, pad: 4, title: 'התחזית', subtitle: 'סיכויים לפי יחסי ההימורים', rows: [
+    { tab: 'odds', target: 'arena-body', noScroll: true, radius: 16, pad: 4, title: 'תחזית', subtitle: 'לפי יחסי ההימורים', rows: [
       { key: 'אחוזים', color: Y, text: 'הסיכוי לניצחון, תיקו או הפסד' },
-      { key: 'תוצאות צפויות', color: G, text: 'התוצאות המדויקות הסבירות ביותר' },
+      { key: 'תוצאות צפויות', color: G, text: 'התוצאות עם הסיכוי הגבוה ביותר' },
+    ] },
+    { tab: 'h2h', target: 'arena-body', noScroll: true, radius: 16, pad: 4, title: 'ראש בראש', subtitle: 'המפגשים הקודמים', rows: [
+      { key: 'היסטוריה', color: BLUE, text: 'תוצאות המשחקים בין שתי הקבוצות' },
+    ] },
+    { tab: 'lineups', target: 'arena-body', noScroll: true, radius: 16, pad: 4, title: 'הרכבים', subtitle: 'מתפרסמים לפני המשחק', rows: [
+      { key: 'מגרש', color: G, text: 'ההרכב הפותח של שתי הקבוצות' },
+    ] },
+    { tab: 'table', target: 'arena-body', noScroll: true, radius: 16, pad: 4, title: 'טבלה', subtitle: 'טבלת שלב הליגה', rows: [
+      { key: 'מסומנות', color: Y, text: 'שתי הקבוצות של המשחק' },
+      { key: '1–8', color: G, ltr: true, text: 'עולות ישירות לשמינית הגמר' },
+      { key: '9–24', color: Y, ltr: true, text: 'פלייאוף' },
+      { key: '25–36', color: '#f87171', ltr: true, text: 'מודחות' },
     ] },
   ] },
   bets: { key: 'tour_bets_v1', steps: [
