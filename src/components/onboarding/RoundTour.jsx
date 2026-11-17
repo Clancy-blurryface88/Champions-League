@@ -1,6 +1,34 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
+
+// The dimmed screen with a lit hole on the step's part. It used to be one box with a huge shadow
+// (0 0 0 9999px) around it; phones sometimes failed to paint part of that shadow while it moved, and
+// the page flashed through it at full brightness ("like lightning"). Now it's one SVG the size of the
+// screen: a rectangle with a rounded hole cut out (even-odd), the hole following a spring.
+const SPRING = { stiffness: 260, damping: 30 };
+function Dim({ box, radius, outline }) {
+  const t = useSpring(box.top, SPRING), l = useSpring(box.left, SPRING);
+  const w = useSpring(box.width, SPRING), h = useSpring(box.height, SPRING);
+  React.useEffect(() => { t.set(box.top); l.set(box.left); w.set(box.width); h.set(box.height); }, [box.top, box.left, box.width, box.height]); // eslint-disable-line react-hooks/exhaustive-deps
+  const d = useTransform([t, l, w, h], ([T, L, W, H]) => {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const rr = Math.max(0, Math.min(radius, W / 2, H / 2));
+    const outer = `M0 0H${vw}V${vh}H0Z`;
+    if (W < 1 || H < 1) return outer;
+    return `${outer}M${L + rr} ${T}H${L + W - rr}A${rr} ${rr} 0 0 1 ${L + W} ${T + rr}V${T + H - rr}A${rr} ${rr} 0 0 1 ${L + W - rr} ${T + H}H${L + rr}A${rr} ${rr} 0 0 1 ${L} ${T + H - rr}V${T + rr}A${rr} ${rr} 0 0 1 ${L + rr} ${T}Z`;
+  });
+  return (
+    <>
+      <svg width="100%" height="100%" style={{ position: 'fixed', inset: 0, pointerEvents: 'none' }}>
+        <motion.path d={d} fill="rgba(2,6,23,0.8)" fillRule="evenodd" />
+      </svg>
+      {outline && (
+        <motion.div style={{ position: 'fixed', top: t, left: l, width: w, height: h, borderRadius: radius, outline: '1.5px solid rgba(250,204,21,0.75)', pointerEvents: 'none' }} />
+      )}
+    </>
+  );
+}
 
 // The round 5 first-time tour, in parts that follow one another (Predictions runs the chain):
 //   round     the round page: the stories strip, the card (timer, teams, score), sending; ends on a summary
@@ -251,12 +279,7 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
         <span style={{ position: 'fixed', top: 'max(10px, env(safe-area-inset-top))', left: '50%', transform: 'translateX(-50%)', padding: '4px 12px', borderRadius: 999, font: '800 11px Outfit, system-ui', color: '#1a1405', background: 'linear-gradient(135deg,#fde047,#eab308)', boxShadow: '0 4px 14px rgba(0,0,0,.4)', zIndex: 1, pointerEvents: 'none' }}>{badge}</span>
       )}
       {/* the dimmed page with a lit hole on the step's part */}
-      <motion.div
-        initial={false}
-        animate={{ top: box.top, left: box.left, width: box.width, height: box.height, borderRadius: step.radius || 16, opacity: target ? 1 : 1 }}
-        transition={{ type: 'spring', stiffness: 260, damping: 30 }}
-        style={{ position: 'fixed', boxShadow: '0 0 0 9999px rgba(2,6,23,0.8)', outline: target ? '1.5px solid rgba(250,204,21,0.75)' : 'none', pointerEvents: 'none' }}
-      />
+      <Dim box={box} radius={step.radius || 16} outline={!!target} />
       {/* a tap step: a pulsing ring and a finger on the button */}
       {step.tap && rect && (
         <>
