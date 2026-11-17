@@ -9,10 +9,14 @@ import { motion } from 'framer-motion';
 
 const NUM = 'var(--num-font)';
 const RING = {
-  done: 'conic-gradient(#4ade80,#16a34a,#86efac,#4ade80)',
-  todo: 'conic-gradient(#facc15,#f59e0b,#fde68a,#facc15)',
-  missed: 'conic-gradient(#475569,#334155,#64748b,#475569)',
+  done: '#4ade80,#16a34a,#86efac,#4ade80',
+  todo: '#facc15,#f59e0b,#fde68a,#facc15',
+  missed: '#475569,#334155,#64748b,#475569',
 };
+// The chosen ring "turns" by turning its gradient's angle (a registered CSS property), not by rotating an
+// element: a rotating square grew the strip's scroll area every frame (the page jumped), and clipping it
+// to a circle cut the ring's edges and made it shimmer. Where the property isn't supported it stays still.
+const RING_CSS = `@property --rs-a{syntax:'<angle>';inherits:false;initial-value:0deg}@keyframes rs-turn{to{--rs-a:360deg}}`;
 const SIZE = 60, CREST = 48, INNER = 27.5; // ring 2.5px wide
 const RING_MASK = { WebkitMask: `radial-gradient(circle,transparent ${INNER}px,#000 ${INNER + 0.5}px)`, mask: `radial-gradient(circle,transparent ${INNER}px,#000 ${INNER + 0.5}px)` };
 
@@ -86,7 +90,8 @@ export default function RoundStories({ dateKeys, matchesByDate, selectedId, onSe
 
   return (
     // scrolls sideways only: no vertical scrolling or overscroll, so the strip stays put
-    <div ref={ref} dir="rtl" style={{ display: 'flex', alignItems: 'center', gap: 10, overflowX: 'auto', overflowY: 'hidden', overscrollBehavior: 'contain', touchAction: 'pan-x', scrollbarWidth: 'none', padding: '8px 4px 6px', marginTop: 4 }}>
+    <div ref={ref} dir="rtl" style={{ display: 'flex', alignItems: 'center', gap: 10, overflowX: 'auto', overflowY: 'hidden', overscrollBehavior: 'contain', touchAction: 'pan-x', scrollbarWidth: 'none', padding: '8px 6px 6px', marginTop: 4 }}>
+      <style>{RING_CSS}</style>
       {dateKeys.map((key) => (
         <React.Fragment key={key}>
           <DayMark dateKey={key} />
@@ -94,14 +99,10 @@ export default function RoundStories({ dateKeys, matchesByDate, selectedId, onSe
             const on = m.id === selectedId;
             return (
               <button key={m.id} data-mid={m.id} type="button" onClick={() => onSelect(m.id)} aria-label={`${m.team_a} – ${m.team_b}`}
-                style={{ flex: '0 0 auto', padding: '2px 0', WebkitTapHighlightColor: 'transparent', contain: 'layout paint' }}>
+                style={{ flex: '0 0 auto', padding: '2px 0', WebkitTapHighlightColor: 'transparent' }}>
                 <motion.span animate={{ scale: on ? 1.06 : 1 }} transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-                  style={{ position: 'relative', display: 'grid', placeItems: 'center', width: SIZE, height: SIZE, borderRadius: '50%', overflow: 'hidden' }}>
-                  <motion.span
-                    animate={{ rotate: on ? 360 : 0 }}
-                    transition={on ? { duration: 6, repeat: Infinity, ease: 'linear' } : { duration: 0.4 }}
-                    style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: RING[statusOf(m)], ...RING_MASK }}
-                  />
+                  style={{ position: 'relative', display: 'grid', placeItems: 'center', width: SIZE, height: SIZE }}>
+                  <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: `conic-gradient(from var(--rs-a, 0deg), ${RING[statusOf(m)]})`, animation: on ? 'rs-turn 6s linear infinite' : 'none', ...RING_MASK }} />
                   <Pair m={m} circle={circle} on={on} />
                 </motion.span>
               </button>
