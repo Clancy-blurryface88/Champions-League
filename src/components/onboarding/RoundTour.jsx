@@ -245,6 +245,13 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
     const top = Math.max(4, rect.top - pad), bottom = Math.min(vh - 4, rect.top + rect.height + pad);
     return { top, left: rect.left - pad, width: rect.width + pad * 2, height: Math.max(0, bottom - top) };
   })();
+  // the hole moves only to a part that has stopped moving: chasing a window while it slid up made the
+  // hole (and the page under it) jump across the screen. Until then it stays where it last settled —
+  // or, at the start of a tour, the whole screen stays dim.
+  const settledBoxRef = React.useRef(null);
+  const steady = settled === i || !target;
+  if (steady) settledBoxRef.current = box;
+  const holeBox = steady ? box : (settledBoxRef.current || { top: vh * 0.36, left: vw / 2, width: 0, height: 0 });
   const cardW = Math.min(340, vw - 32);
   // the card's real height (texts differ in length), for placing it
   // measured the moment the card is put on the page (before it's drawn): measuring later, on the next
@@ -279,9 +286,9 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
         <span style={{ position: 'fixed', top: 'max(10px, env(safe-area-inset-top))', left: '50%', transform: 'translateX(-50%)', padding: '4px 12px', borderRadius: 999, font: '800 11px Outfit, system-ui', color: '#1a1405', background: 'linear-gradient(135deg,#fde047,#eab308)', boxShadow: '0 4px 14px rgba(0,0,0,.4)', zIndex: 1, pointerEvents: 'none' }}>{badge}</span>
       )}
       {/* the dimmed page with a lit hole on the step's part */}
-      <Dim box={box} radius={step.radius || 16} outline={!!target} />
+      <Dim box={holeBox} radius={step.radius || 16} outline={holeBox.width > 0} />
       {/* a tap step: a pulsing ring and a finger on the button */}
-      {step.tap && rect && (
+      {step.tap && rect && settled === i && (
         <>
           <motion.div
             key={`pulse-${i}`}
