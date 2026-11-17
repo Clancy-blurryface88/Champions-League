@@ -5,8 +5,12 @@ import { motion } from 'framer-motion';
 // The match card's countdown pill as a soft 3D cube: the front shows the countdown, and every few
 // seconds it turns over to the kick-off time (large) and the date (small) with a slanted divider,
 // then back. The side turning away goes dark. A tap turns it at once. Both sides are the same size.
+// `compact` (round 8, the test round): a little smaller, and the date has the weekday under it.
 
-const W = 204, H = 50;
+const SIZES = {
+  normal: { W: 204, H: 50, num: 19, label: 9, time: 24, date: 16, div: 28 },
+  compact: { W: 184, H: 44, num: 17, label: 8, time: 22, date: 13, div: 24 },
+};
 const SHOW_MS = 7000; // how long each side stays before turning
 const TURN = { duration: 1.2, ease: [0.6, 0.05, 0.25, 1] };
 // No backdrop-filter here: a blurred backdrop inside the turning 3D cube (two per card, every card on
@@ -21,9 +25,9 @@ const GLASS = {
 const UP = { transform: 'skewX(12deg)' };
 const NUM = 'var(--num-font)';
 // thin slanted divider that fades out at both ends (between countdown units, and between date and time)
-const DIVIDER = { width: 1.5, height: 28, background: 'linear-gradient(transparent, rgba(255,255,255,0.45), transparent)', transform: 'skewX(12deg) rotate(12deg)' };
+const DIVIDER = { width: 1.5, background: 'linear-gradient(transparent, rgba(255,255,255,0.45), transparent)', transform: 'skewX(12deg) rotate(12deg)' };
 
-function Pill({ children }) {
+function Pill({ W, H, children }) {
   return (
     <div dir="rtl" className="relative flex items-center overflow-hidden" style={{ width: W, height: H, ...GLASS }}>
       <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.14) 0%, transparent 100%)', borderRadius: '16px 16px 0 0' }} />
@@ -32,7 +36,10 @@ function Pill({ children }) {
   );
 }
 
-export default function CountdownSwap({ timeInfo, date }) {
+export default function CountdownSwap({ timeInfo, date, compact = false }) {
+  const Z = compact ? SIZES.compact : SIZES.normal;
+  const { W, H } = Z;
+  const div = { ...DIVIDER, height: Z.div };
   const [face, setFace] = React.useState(0);
   const [taps, setTaps] = React.useState(0);
   React.useEffect(() => {
@@ -68,24 +75,32 @@ export default function CountdownSwap({ timeInfo, date }) {
     >
       <motion.div initial={false} animate={{ rotateX: face * 90 }} transition={TURN} className="relative" style={{ width: W, height: H, transformStyle: 'preserve-3d' }}>
         {side(0, (
-          <Pill>
+          <Pill W={W} H={H}>
             {units.map((u, i) => (
               <React.Fragment key={u.label}>
-                {i > 0 && <span className="shrink-0" style={DIVIDER} />}
+                {i > 0 && <span className="shrink-0" style={div} />}
                 <div className="flex flex-1 flex-col items-center" style={UP}>
-                  <span className="font-black leading-none mb-0.5" style={{ fontFamily: NUM, fontSize: 19, color: 'rgba(255,255,255,0.92)' }}>{u.val}</span>
-                  <span className="text-[9px] font-semibold" style={{ color: 'rgba(255,255,255,0.45)' }}>{u.label}</span>
+                  <span className="font-black leading-none mb-0.5" style={{ fontFamily: NUM, fontSize: Z.num, color: 'rgba(255,255,255,0.92)' }}>{u.val}</span>
+                  <span className="font-semibold" style={{ fontSize: Z.label, color: 'rgba(255,255,255,0.45)' }}>{u.label}</span>
                 </div>
               </React.Fragment>
             ))}
           </Pill>
         ))}
         {side(1, (
-          <Pill>
-            <div className="flex w-full items-center justify-center" style={{ gap: 14 }}>
-              <span style={{ ...UP, font: `900 16px ${NUM}`, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.06em' }}>{m.format('D.MM')}</span>
-              <span style={DIVIDER} />
-              <span style={{ ...UP, font: `900 24px ${NUM}`, color: 'rgba(255,255,255,0.95)', lineHeight: 1 }}>{m.format('HH:mm')}</span>
+          <Pill W={W} H={H}>
+            <div className="flex w-full items-center justify-center" style={{ gap: compact ? 12 : 14 }}>
+              {compact ? (
+                // the date with the weekday under it — together about as tall as the time
+                <span style={{ ...UP, display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1 }}>
+                  <span style={{ font: `900 ${Z.date}px ${NUM}`, color: 'rgba(255,255,255,0.62)', letterSpacing: '0.06em' }}>{m.format('DD.MM')}</span>
+                  <span style={{ font: `900 9px ${NUM}`, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.14em', marginTop: 2 }}>{m.clone().locale('en').format('dddd').toUpperCase()}</span>
+                </span>
+              ) : (
+                <span style={{ ...UP, font: `900 ${Z.date}px ${NUM}`, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.06em' }}>{m.format('D.MM')}</span>
+              )}
+              <span style={div} />
+              <span style={{ ...UP, font: `900 ${Z.time}px ${NUM}`, color: 'rgba(255,255,255,0.95)', lineHeight: 1 }}>{m.format('HH:mm')}</span>
             </div>
           </Pill>
         ))}

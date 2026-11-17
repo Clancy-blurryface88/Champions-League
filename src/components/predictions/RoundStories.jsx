@@ -26,8 +26,9 @@ function Pair({ m }) {
   return (
     <span style={{ position: 'relative', width: s, height: s, borderRadius: '50%', overflow: 'hidden', display: 'block', background: '#0b1426' }}>
       <span style={{ position: 'absolute', inset: 0, clipPath: 'polygon(0 0,62% 0,38% 100%,0 100%)', background: 'rgba(255,255,255,.06)' }} />
-      <Crest src={m.team_a_logo} s={s * 0.44} style={{ position: 'absolute', left: s * 0.08, top: s * 0.14 }} />
-      <Crest src={m.team_b_logo} s={s * 0.44} style={{ position: 'absolute', right: s * 0.08, bottom: s * 0.14 }} />
+      {/* the crests keep a little room from the divider */}
+      <Crest src={m.team_a_logo} s={s * 0.37} style={{ position: 'absolute', left: s * 0.09, top: s * 0.13 }} />
+      <Crest src={m.team_b_logo} s={s * 0.37} style={{ position: 'absolute', right: s * 0.09, bottom: s * 0.13 }} />
       {/* slanted divider: brighter in the middle, fading out at both ends */}
       <span style={{ position: 'absolute', left: '50%', top: -4, bottom: -4, width: 1, marginLeft: -0.5, background: 'linear-gradient(transparent,rgba(255,255,255,.5),transparent)', transform: 'rotate(14deg)' }} />
     </span>

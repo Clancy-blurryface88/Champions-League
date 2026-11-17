@@ -880,7 +880,7 @@ export default function Predictions() {
                     {!(timeInfo.status === 'locked' || timeInfo.status === 'finished') && (
                     // raised 28px into the room above; the extra bottom margin keeps everything below in place
                     <div className="flex justify-center" style={{ marginTop: -28, marginBottom: 40 }}>
-                      <CountdownSwap timeInfo={timeInfo} date={match.match_date} />
+                      <CountdownSwap timeInfo={timeInfo} date={match.match_date} compact={storyMode} />
                     </div>
                     )}
 
