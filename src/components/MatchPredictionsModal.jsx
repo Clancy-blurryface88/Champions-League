@@ -165,7 +165,7 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
               <span className="inline-block font-bold text-[11px] px-2.5 py-0.5" style={{ background: 'linear-gradient(135deg,#16a34a,#15803d)', color: '#fff', transform: 'skewX(-12deg)' }}>
                 <span className="inline-block" style={{ transform: 'skewX(12deg)' }}>BETS</span>
               </span>
-              <button onClick={onClose} aria-label="סגירה" className="w-9 h-9 grid place-items-center text-white/80" style={{ background: 'rgba(255,255,255,.08)', transform: 'skewX(-10deg)' }}>
+              <button data-tour="bets-close" onClick={onClose} aria-label="סגירה" className="w-9 h-9 grid place-items-center text-white/80" style={{ background: 'rgba(255,255,255,.08)', transform: 'skewX(-10deg)' }}>
                 <span style={{ transform: 'skewX(10deg)' }}>✕</span>
               </button>
             </div>

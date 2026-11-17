@@ -67,6 +67,12 @@ const WHEEL_ROWS = [null, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 function ScoreWheel({ value, onChange }) {
   const ref = useRef(null);
   useEffect(() => { ref.current?.scrollTo({ top: WHEEL_ROWS.indexOf(value) * WHEEL_ITEM }); }, []);
+  // a value set from outside (the tour's example) rolls the wheel to it
+  useEffect(() => {
+    const el = ref.current;
+    const want = WHEEL_ROWS.indexOf(value) * WHEEL_ITEM;
+    if (el && Math.abs(el.scrollTop - want) > WHEEL_ITEM / 2) el.scrollTo({ top: want, behavior: "smooth" });
+  }, [value]);
   const onScroll = () => {
     const idx = Math.max(0, Math.min(WHEEL_ROWS.length - 1, Math.round(ref.current.scrollTop / WHEEL_ITEM)));
     if (WHEEL_ROWS[idx] !== value) onChange(WHEEL_ROWS[idx]);
@@ -236,6 +242,21 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
   }, [match?.id]);
 
   useModalBackButton(isOpen, onClose);
+
+  // the round tour's example on the simulator: 1–1, then 2–2, with the points they're worth
+  useEffect(() => {
+    let ts = [];
+    const play = () => {
+      ts.forEach(clearTimeout);
+      setSimA(null); setSimB(null);
+      ts = [
+        setTimeout(() => { setSimA(1); setSimB(1); }, 400),
+        setTimeout(() => { setSimA(2); setSimB(2); }, 3400),
+      ];
+    };
+    window.addEventListener("tour:sim-demo", play);
+    return () => { window.removeEventListener("tour:sim-demo", play); ts.forEach(clearTimeout); };
+  }, []);
 
   // No body scroll lock: the panel covers the whole screen and contains its own
   // scrolling (overscroll-contain). Toggling body overflow made the browser redraw

@@ -93,7 +93,7 @@ function PillActions({ onOdds, onPredictions, onArena }) {
       {items.map((b, i) => (
         <React.Fragment key={b.k}>
           {i > 0 && <span style={PILL_DIVIDER} />}
-          <button type="button" aria-label={b.label} onClick={(e) => { e.stopPropagation(); b.on?.(); }}
+          <button type="button" aria-label={b.label} data-tour={`btn-${b.k}`} onClick={(e) => { e.stopPropagation(); b.on?.(); }}
             onPointerDown={() => setDown(i)} onPointerUp={() => setDown(null)} onPointerLeave={() => setDown(null)}
             className="relative h-full grid place-items-center" style={{ flex: b.flex, background: down === i ? 'rgba(255,255,255,0.08)' : 'transparent', transition: 'background .12s' }}>
             <span style={{ transform: 'skewX(12deg)', display: 'inline-flex' }}>{b.node}</span>

@@ -32,7 +32,7 @@ import CountdownSwap from "../components/predictions/CountdownSwap";
 import RankSheen from "../components/predictions/RankSheen";
 import RoundStories from "../components/predictions/RoundStories";
 import { storySlide } from "../components/predictions/storySlide";
-import RoundTour, { ROUND_TOUR_KEY, Tour, WINDOW_TOURS } from "../components/onboarding/RoundTour";
+import { Tour, TOURS } from "../components/onboarding/RoundTour";
 import RoundHeader from "../components/predictions/RoundHeader";
 import TeamFlag from "@/components/TeamFlag";
 import LeagueTableModal from "@/components/LeagueTableModal";
@@ -454,31 +454,19 @@ export default function Predictions() {
     const j = Math.max(0, Math.min(storyFlat.length - 1, i + d));
     if (storyFlat[j] && j !== i) pickStory(storyFlat[j].id);
   };
-  // the round page's short tour: once, on round 5 only (?tour in the address shows it again there)
-  const [tourOn, setTourOn] = useState(false);
+  // The round 5 tour (RoundTour.jsx): the round page, then the three buttons under the card one by one —
+  // the user taps each (only it can be tapped), its window opens over an example match from an earlier
+  // round (round 5 has no odds or predictions yet) and is shown tab by tab. Only after BETS is closed can
+  // the user start predicting. Each part is done once; a visit left half way goes on from the next part.
+  // ?tour in the address runs it all again.
+  const [tourSeg, setTourSeg] = useState(null);
+  const [demoMatch, setDemoMatch] = useState(undefined); // undefined: still looking, null: none found
+  const tourStartedRef = useRef(false);
+  const tourArenaRef = useRef(null); // the card whose arena the tour opened
+  const tourDone = (k) => { try { return localStorage.getItem(TOURS[k].key) === 'done'; } catch { return false; } };
+  const markTour = (k) => { try { localStorage.setItem(TOURS[k].key, 'done'); } catch { /* private mode */ } };
   useEffect(() => {
-    // only on round 5 (the next round) — after it everyone knows the page
-    if (!storyMode || !storyId || loading || currentRound?.order !== 5) return undefined;
-    let seen = false;
-    try { seen = localStorage.getItem(ROUND_TOUR_KEY) === 'done'; } catch {}
-    if (seen && !new URLSearchParams(window.location.search).has('tour')) return undefined;
-    const t = setTimeout(() => setTourOn(true), 900); // after the sheet and the card have come in
-    return () => clearTimeout(t);
-  }, [storyMode, storyId, loading]);
-
-  // The 1X2 / match arena / BETS windows each get a short tour the first time they're opened on round 5.
-  // Round 5 has no odds or predictions to show yet, so during its tour a window shows an example match
-  // from round 4; when the tour ends it switches to the real match.
-  const [windowTour, setWindowTour] = useState(null); // 'x12' | 'arena' | 'bets'
-  const [demoMatch, setDemoMatch] = useState(null);
-  const windowTourPending = (k) => {
-    if (currentRound?.order !== 5 || !demoMatch) return false;
-    let seen = false;
-    try { seen = localStorage.getItem(WINDOW_TOURS[k].key) === 'done'; } catch {}
-    return !seen || new URLSearchParams(window.location.search).has('tour');
-  };
-  useEffect(() => {
-    if (currentRound?.order !== 5 || demoMatch) return;
+    if (currentRound?.order !== 5 || demoMatch !== undefined) return;
     (async () => {
       try {
         // round 4 — or the latest earlier round that has finished matches
@@ -489,42 +477,31 @@ export default function Predictions() {
           const pick = ms.find((m) => m.score_odds && Object.keys(m.score_odds).length) || ms[0];
           if (pick) { setDemoMatch({ ...pick, _order: order }); return; }
         }
-      } catch { /* no example: the windows open without a tour */ }
+      } catch { /* no example: the windows' parts are skipped */ }
+      setDemoMatch(null);
     })();
   }, [currentRound?.order]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!storyMode || !storyId || loading || currentRound?.order !== 5 || demoMatch === undefined || tourStartedRef.current) return undefined;
+    const replay = new URLSearchParams(window.location.search).has('tour');
+    let seg = null;
+    if (replay || !tourDone('round')) seg = 'round';
+    else if (demoMatch) seg = ['x12', 'arena', 'bets'].filter((k) => !tourDone(k)).map((k) => `tap-${k}`)[0] || null;
+    if (!seg) return undefined;
+    const t = setTimeout(() => { tourStartedRef.current = true; setTourSeg(seg); }, 900); // after the sheet and the card
+    return () => clearTimeout(t);
+  }, [storyMode, storyId, loading, demoMatch, currentRound?.order]); // eslint-disable-line react-hooks/exhaustive-deps
+  // the next part, once the window before it has slid away
+  const tourThen = (next) => { setTourSeg(null); setTimeout(() => setTourSeg(next), 450); };
+  const onTourDone = (seg) => {
+    if (seg === 'round') { markTour('round'); setTourSeg(demoMatch ? 'tap-x12' : null); }
+    else if (seg === 'x12') { markTour('x12'); handleCloseScoringRules(); tourThen('tap-arena'); }
+    else if (seg === 'arena') { markTour('arena'); if (tourArenaRef.current) toggleArena(tourArenaRef.current); tourThen('tap-bets'); }
+  };
   const openArena = (matchId) => {
-    if (!arenaOpen.has(matchId) && windowTourPending('arena')) setWindowTour('arena');
+    if (tourSeg === 'tap-arena' && !arenaOpen.has(matchId)) { tourArenaRef.current = matchId; setTourSeg('arena'); }
     toggleArena(matchId);
   };
-
-  // After the round tour the three windows follow one by one — 1X2, then (once it's closed) the match
-  // arena, then BETS — so every option has been seen before the first prediction. If the page is left
-  // half way, the chain picks up at the next unseen window on the next visit.
-  const tourChainRef = useRef(false);
-  const TOUR_CHAIN = ['x12', 'arena', 'bets'];
-  const chainNext = (after) => {
-    const from = after ? TOUR_CHAIN.indexOf(after) + 1 : 0;
-    const k = TOUR_CHAIN.slice(from).find((x) => windowTourPending(x));
-    const m = storyFlat.find((x) => x.id === storyId) || storyFlat[0];
-    if (!k || !m) { tourChainRef.current = false; return; }
-    tourChainRef.current = true;
-    // after the previous window has slid away
-    setTimeout(() => {
-      if (k === 'x12') handleShowScoringRules(m);
-      else if (k === 'arena') openArena(m.id);
-      else handleShowPredictions(m);
-    }, after ? 450 : 350);
-  };
-  // the round tour was finished on an earlier visit but a window's tour wasn't: carry on from there
-  useEffect(() => {
-    if (!storyMode || !storyId || loading || !demoMatch || tourChainRef.current || tourOn) return undefined;
-    if (new URLSearchParams(window.location.search).has('tour')) return undefined;
-    let seen = false;
-    try { seen = localStorage.getItem(ROUND_TOUR_KEY) === 'done'; } catch {}
-    if (!seen) return undefined;
-    const t = setTimeout(() => chainNext(), 900);
-    return () => clearTimeout(t);
-  }, [storyMode, storyId, loading, demoMatch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // open on the first match still waiting for a prediction (or the next one to play)
   useEffect(() => {
@@ -683,11 +660,11 @@ export default function Predictions() {
 
   // NEW: Handle scoring rules modal open
   const handleShowScoringRules = (realMatch) => {
-    const touring = windowTourPending('x12');
-    if (touring) setWindowTour('x12');
-    const match = touring ? { ...demoMatch, _real: realMatch } : realMatch;
+    const touring = tourSeg === 'tap-x12' && demoMatch;
+    if (touring) setTourSeg('x12');
+    const match = touring ? demoMatch : realMatch;
     // the panel grows out of this match card
-    setRulesOriginRect(matchCardRefs.current[match.id]?.getBoundingClientRect() || null);
+    setRulesOriginRect(matchCardRefs.current[realMatch.id]?.getBoundingClientRect() || null);
     setSelectedMatchForRules(match);
     setShowScoringRulesModal(true);
   };
@@ -696,14 +673,13 @@ export default function Predictions() {
   const handleCloseScoringRules = () => {
     setShowScoringRulesModal(false);
     setSelectedMatchForRules(null);
-    if (tourChainRef.current) chainNext('x12');
   };
 
   // NEW: Handle predictions modal open
   const handleShowPredictions = (realMatch) => {
-    const touring = windowTourPending('bets');
-    if (touring) setWindowTour('bets');
-    setSelectedMatchForPredictions(touring ? { ...demoMatch, _real: realMatch } : realMatch);
+    const touring = tourSeg === 'tap-bets' && demoMatch;
+    if (touring) setTourSeg('bets');
+    setSelectedMatchForPredictions(touring ? demoMatch : realMatch);
     setShowPredictionsModal(true);
   };
 
@@ -711,7 +687,7 @@ export default function Predictions() {
   const handleClosePredictions = () => {
     setShowPredictionsModal(false);
     setSelectedMatchForPredictions(null);
-    tourChainRef.current = false; // the last window: the tours are over
+    if (tourSeg === 'bets') { markTour('bets'); setTourSeg(null); } // the tour's last tap: all seen
   };
 
   // Opens TeamFixturesModal for the clicked team's logo — fetches league-phase
@@ -1133,11 +1109,11 @@ export default function Predictions() {
                       {arenaOpen.has(match.id) && (
                         <MatchArenaSection
                           key={`arena-${match.id}`}
-                          match={windowTour === 'arena' && demoMatch ? demoMatch : match}
+                          match={tourSeg === 'arena' && demoMatch ? demoMatch : match}
                           isLocked={isLocked}
                           allMatches={allMatchesForForm}
                           loading={arenaMatchesLoading}
-                          onClose={() => { toggleArena(match.id); if (tourChainRef.current) chainNext('arena'); }}
+                          onClose={() => toggleArena(match.id)}
                           showTable={storyMode}
                         />
                       )}
@@ -1325,20 +1301,13 @@ export default function Predictions() {
 
 
         {/* NEW: Predictions Modal */}
-        {tourOn && <RoundTour onDone={() => { setTourOn(false); chainNext(); }} />}
-        {windowTour && (
+        {tourSeg && (
           <Tour
-            key={windowTour}
-            steps={WINDOW_TOURS[windowTour].steps}
-            storageKey={WINDOW_TOURS[windowTour].key}
-            badge={`דוגמה ממשחק במחזור ${demoMatch?._order ?? 4}`}
-            z={140}
-            onDone={() => {
-              // back to the real match the window was opened for
-              if (windowTour === 'x12' && selectedMatchForRules?._real) setSelectedMatchForRules(selectedMatchForRules._real);
-              if (windowTour === 'bets' && selectedMatchForPredictions?._real) setSelectedMatchForPredictions(selectedMatchForPredictions._real);
-              setWindowTour(null);
-            }}
+            key={tourSeg}
+            steps={TOURS[tourSeg].steps}
+            badge={TOURS[tourSeg].example ? `דוגמה ממשחק במחזור ${demoMatch?._order ?? 4}` : undefined}
+            z={TOURS[tourSeg].example ? 140 : 120}
+            onDone={() => onTourDone(tourSeg)}
           />
         )}
 
