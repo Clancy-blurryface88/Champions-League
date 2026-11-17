@@ -454,10 +454,11 @@ export default function Predictions() {
     const j = Math.max(0, Math.min(storyFlat.length - 1, i + d));
     if (storyFlat[j] && j !== i) pickStory(storyFlat[j].id);
   };
-  // first visit: the round page's short tour (once; ?tour in the address shows it again)
+  // the round page's short tour: once, on round 5 only (?tour in the address shows it again there)
   const [tourOn, setTourOn] = useState(false);
   useEffect(() => {
-    if (!storyMode || !storyId || loading) return undefined;
+    // only on round 5 (the next round) — after it everyone knows the page
+    if (!storyMode || !storyId || loading || currentRound?.order !== 5) return undefined;
     let seen = false;
     try { seen = localStorage.getItem(ROUND_TOUR_KEY) === 'done'; } catch {}
     if (seen && !new URLSearchParams(window.location.search).has('tour')) return undefined;
