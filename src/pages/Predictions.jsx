@@ -908,7 +908,8 @@ export default function Predictions() {
                       date (CountdownSwap). Once it's locked or over there's no countdown, so the date
                       and kick-off hang from the card's top edge instead. */}
                   {(timeInfo.status === 'locked' || timeInfo.status === 'finished') && <MatchDateTag date={match.match_date} />}
-                  <CardContent className="p-5 pt-12 flex-1 flex flex-col justify-between">
+                  {/* relative + z: the card content sits above the starball art and the glass overlays (they used to paint over it) */}
+                  <CardContent className="relative z-[2] p-5 pt-12 flex-1 flex flex-col justify-between">
                     {!(timeInfo.status === 'locked' || timeInfo.status === 'finished') && (
                     // raised 28px into the room above; the extra bottom margin keeps everything below in place
                     <div className="flex justify-center" style={{ marginTop: -28, marginBottom: 40 }}>
