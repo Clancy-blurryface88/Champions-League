@@ -886,6 +886,9 @@ export default function Predictions() {
                   className={`relative transition-all duration-300 h-full flex flex-col overflow-hidden ${isLocked ? 'opacity-65' : ''}`}
                   style={{
                     background: isLocked ? 'rgba(10,18,35,0.45)' : 'rgba(5,10,18,0.75)',
+                    // stories: the card slides and is dragged; a blurred backdrop under a moving card
+                    // flickered on phones, and with one card on screen there is little behind it to blur
+                    ...(storyMode ? { backdropFilter: 'none', WebkitBackdropFilter: 'none' } : {}),
                   }}
                 >
                   {/* Champions League starball background art — alternates between two

@@ -85,7 +85,8 @@ export default function RoundStories({ dateKeys, matchesByDate, selectedId, onSe
   }, [selectedId]);
 
   return (
-    <div ref={ref} dir="rtl" style={{ display: 'flex', alignItems: 'center', gap: 10, overflowX: 'auto', scrollbarWidth: 'none', padding: '8px 4px 4px', marginTop: 4 }}>
+    // scrolls sideways only: no vertical scrolling or overscroll, so the strip stays put
+    <div ref={ref} dir="rtl" style={{ display: 'flex', alignItems: 'center', gap: 10, overflowX: 'auto', overflowY: 'hidden', overscrollBehavior: 'contain', touchAction: 'pan-x', scrollbarWidth: 'none', padding: '8px 4px 6px', marginTop: 4 }}>
       {dateKeys.map((key) => (
         <React.Fragment key={key}>
           <DayMark dateKey={key} />
@@ -93,9 +94,9 @@ export default function RoundStories({ dateKeys, matchesByDate, selectedId, onSe
             const on = m.id === selectedId;
             return (
               <button key={m.id} data-mid={m.id} type="button" onClick={() => onSelect(m.id)} aria-label={`${m.team_a} – ${m.team_b}`}
-                style={{ flex: '0 0 auto', padding: '2px 0', WebkitTapHighlightColor: 'transparent' }}>
+                style={{ flex: '0 0 auto', padding: '2px 0', WebkitTapHighlightColor: 'transparent', contain: 'layout paint' }}>
                 <motion.span animate={{ scale: on ? 1.06 : 1 }} transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-                  style={{ position: 'relative', display: 'grid', placeItems: 'center', width: SIZE, height: SIZE }}>
+                  style={{ position: 'relative', display: 'grid', placeItems: 'center', width: SIZE, height: SIZE, borderRadius: '50%', overflow: 'hidden' }}>
                   <motion.span
                     animate={{ rotate: on ? 360 : 0 }}
                     transition={on ? { duration: 6, repeat: Infinity, ease: 'linear' } : { duration: 0.4 }}
