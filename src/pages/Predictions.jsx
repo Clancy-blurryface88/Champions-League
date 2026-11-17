@@ -32,7 +32,7 @@ import CountdownSwap from "../components/predictions/CountdownSwap";
 import RankSheen from "../components/predictions/RankSheen";
 import RoundStories from "../components/predictions/RoundStories";
 import { storySlide } from "../components/predictions/storySlide";
-import RoundTour, { ROUND_TOUR_KEY } from "../components/onboarding/RoundTour";
+import RoundTour, { ROUND_TOUR_KEY, Tour, WINDOW_TOURS } from "../components/onboarding/RoundTour";
 import RoundHeader from "../components/predictions/RoundHeader";
 import TeamFlag from "@/components/TeamFlag";
 import LeagueTableModal from "@/components/LeagueTableModal";
@@ -466,6 +466,37 @@ export default function Predictions() {
     return () => clearTimeout(t);
   }, [storyMode, storyId, loading]);
 
+  // The 1X2 / match arena / BETS windows each get a short tour the first time they're opened on round 5.
+  // Round 5 has no odds or predictions to show yet, so during its tour a window shows an example match
+  // from round 4; when the tour ends it switches to the real match.
+  const [windowTour, setWindowTour] = useState(null); // 'x12' | 'arena' | 'bets'
+  const [demoMatch, setDemoMatch] = useState(null);
+  const windowTourPending = (k) => {
+    if (currentRound?.order !== 5 || !demoMatch) return false;
+    let seen = false;
+    try { seen = localStorage.getItem(WINDOW_TOURS[k].key) === 'done'; } catch {}
+    return !seen || new URLSearchParams(window.location.search).has('tour');
+  };
+  useEffect(() => {
+    if (currentRound?.order !== 5 || demoMatch) return;
+    (async () => {
+      try {
+        // round 4 — or the latest earlier round that has finished matches
+        for (const order of [4, 3, 2, 1]) {
+          const [rd] = await Round.filter({ order });
+          if (!rd) continue;
+          const ms = (await Match.filter({ round_id: rd.id })).filter((m) => m.is_finished);
+          const pick = ms.find((m) => m.score_odds && Object.keys(m.score_odds).length) || ms[0];
+          if (pick) { setDemoMatch({ ...pick, _order: order }); return; }
+        }
+      } catch { /* no example: the windows open without a tour */ }
+    })();
+  }, [currentRound?.order]); // eslint-disable-line react-hooks/exhaustive-deps
+  const openArena = (matchId) => {
+    if (!arenaOpen.has(matchId) && windowTourPending('arena')) setWindowTour('arena');
+    toggleArena(matchId);
+  };
+
   // open on the first match still waiting for a prediction (or the next one to play)
   useEffect(() => {
     if (!storyMode || storyId || !storyFlat.length) return;
@@ -622,7 +653,10 @@ export default function Predictions() {
   };
 
   // NEW: Handle scoring rules modal open
-  const handleShowScoringRules = (match) => {
+  const handleShowScoringRules = (realMatch) => {
+    const touring = windowTourPending('x12');
+    if (touring) setWindowTour('x12');
+    const match = touring ? { ...demoMatch, _real: realMatch } : realMatch;
     // the panel grows out of this match card
     setRulesOriginRect(matchCardRefs.current[match.id]?.getBoundingClientRect() || null);
     setSelectedMatchForRules(match);
@@ -636,8 +670,10 @@ export default function Predictions() {
   };
 
   // NEW: Handle predictions modal open
-  const handleShowPredictions = (match) => {
-    setSelectedMatchForPredictions(match);
+  const handleShowPredictions = (realMatch) => {
+    const touring = windowTourPending('bets');
+    if (touring) setWindowTour('bets');
+    setSelectedMatchForPredictions(touring ? { ...demoMatch, _real: realMatch } : realMatch);
     setShowPredictionsModal(true);
   };
 
@@ -924,7 +960,7 @@ export default function Predictions() {
                     {!(timeInfo.status === 'locked' || timeInfo.status === 'finished') && (
                     // raised 28px into the room above; the extra bottom margin keeps everything below in place
                     <div className="flex justify-center" style={{ marginTop: -28, marginBottom: 40 }}>
-                      <CountdownSwap timeInfo={timeInfo} date={match.match_date} compact={storyMode} />
+                      <span data-tour="timer" style={{ display: 'inline-flex' }}><CountdownSwap timeInfo={timeInfo} date={match.match_date} compact={storyMode} /></span>
                     </div>
                     )}
 
@@ -994,7 +1030,7 @@ export default function Predictions() {
                         </div>
 
                         {/* Row 2: home / away label and table position under each crest (no team name: the crest says it) */}
-                        <div style={{ gridColumn: 1, gridRow: 2, alignSelf: 'start' }}
+                        <div data-tour="team-info" style={{ gridColumn: 1, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center">
                           <span className="leading-none text-center" style={{ ...HOME_AWAY_FONT, color: 'rgba(255,255,255,0.78)', textShadow: '0 1px 3px rgba(0,0,0,0.85)' }}>(Home)</span>
                           {teamPositions[match.team_a] && (
@@ -1066,7 +1102,7 @@ export default function Predictions() {
                       {arenaOpen.has(match.id) && (
                         <MatchArenaSection
                           key={`arena-${match.id}`}
-                          match={match}
+                          match={windowTour === 'arena' && demoMatch ? demoMatch : match}
                           isLocked={isLocked}
                           allMatches={allMatchesForForm}
                           loading={arenaMatchesLoading}
@@ -1083,7 +1119,7 @@ export default function Predictions() {
                         pill={storyMode}
                         onOdds={() => handleShowScoringRules(match)}
                         onPredictions={() => handleShowPredictions(match)}
-                        onArena={() => toggleArena(match.id)} />
+                        onArena={() => openArena(match.id)} />
                     </div>
                   </CardContent>
                 </LiquidGlassCard>
@@ -1259,6 +1295,21 @@ export default function Predictions() {
 
         {/* NEW: Predictions Modal */}
         {tourOn && <RoundTour onDone={() => setTourOn(false)} />}
+        {windowTour && (
+          <Tour
+            key={windowTour}
+            steps={WINDOW_TOURS[windowTour].steps}
+            storageKey={WINDOW_TOURS[windowTour].key}
+            badge={`דוגמה ממשחק במחזור ${demoMatch?._order ?? 4}`}
+            z={140}
+            onDone={() => {
+              // back to the real match the window was opened for
+              if (windowTour === 'x12' && selectedMatchForRules?._real) setSelectedMatchForRules(selectedMatchForRules._real);
+              if (windowTour === 'bets' && selectedMatchForPredictions?._real) setSelectedMatchForPredictions(selectedMatchForPredictions._real);
+              setWindowTour(null);
+            }}
+          />
+        )}
 
         <MatchPredictionsModal
           isOpen={showPredictionsModal}

@@ -295,7 +295,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
             <MatchupPlates match={m} className="mx-3" />
 
             {/* tabs */}
-            <div className="flex gap-1 mx-3 mt-3">
+            <div data-tour="x12-tabs" className="flex gap-1 mx-3 mt-3">
               {tabs.map(([id, label]) => (
                 <button key={id} onClick={() => setTab(id)} className="flex-1 py-2 text-[12px] font-bold" style={{ transform: "skewX(-12deg)", background: tab === id ? "#fff" : "rgba(255,255,255,.07)", color: tab === id ? INK : MUTED }}>
                   <span className="inline-block" style={{ transform: "skewX(12deg)" }}>{label}</span>
@@ -307,7 +307,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
             <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-4">
               <motion.div key={tab} {...tabSwap}>
                   {tab === "sim" && (
-                    <div>
+                    <div data-tour="x12-body">
                       <div className="mb-2"><Skew>סימולטור · כמה שווה הניחוש שלך</Skew></div>
                       <div key={m.id} className="flex items-center justify-center gap-3 py-3" dir="ltr" style={{ background: "rgba(255,255,255,.04)", borderTop: `3px solid ${CY}` }}>
                         <div className="flex flex-col items-center gap-1 min-w-0" style={{ width: SZ.logo + 28 }}>

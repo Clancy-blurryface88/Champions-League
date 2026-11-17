@@ -633,7 +633,7 @@ export default function MatchArenaSection({ match, allMatches, loading, onClose,
         </div>
 
         {/* Category tabs — same broadcast look as the 1X2 panel: skewed, white when active */}
-        <div className="flex-shrink-0 mx-3 mb-3 flex gap-1">
+        <div data-tour="arena-tabs" className="flex-shrink-0 mx-3 mb-3 flex gap-1">
           {tabs.map((t) => {
             const on = tab === t.id;
             return (
@@ -652,7 +652,7 @@ export default function MatchArenaSection({ match, allMatches, loading, onClose,
 
         <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-6">
           <AnimatePresence mode="wait">
-            <motion.div key={tab} {...sheetFade}>{body}</motion.div>
+            <motion.div key={tab} {...sheetFade} data-tour="arena-body">{body}</motion.div>
           </AnimatePresence>
         </div>
         </div>

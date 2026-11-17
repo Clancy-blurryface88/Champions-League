@@ -188,7 +188,7 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
                       of each, the share of predictions as the forecast's liquid-filled square (same fill
                       and rolling number); the clubs' columns are tinted in their own colours */}
                   <style>{PROB_CSS}</style>
-                  <div dir="ltr" className="grid grid-cols-3 gap-1.5">
+                  <div data-tour="bets-cols" dir="ltr" className="grid grid-cols-3 gap-1.5">
                     {[0, 1, 2].map((k) => {
                       const list = rows.filter((r) => outcome(r) === k);
                       const c = k === 0 ? colA : k === 2 ? colB : null;
@@ -207,6 +207,7 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
                           {list.map((r) => (
                             <motion.div
                               key={`${r.gi}-${r.ui}`}
+                              data-tour={r.gi === 0 && r.ui === 0 ? 'bets-row' : undefined}
                               initial={{ opacity: 0, x: 20, filter: 'blur(6px)' }}
                               animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
                               transition={{ delay: r.gi * 0.15 + r.ui * 0.08, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
