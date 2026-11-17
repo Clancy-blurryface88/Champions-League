@@ -20,9 +20,17 @@ function Crest({ src, s, style }) {
   return src ? <img src={src} alt="" draggable={false} style={{ width: s, height: s, objectFit: 'contain', filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.55))', ...style }} /> : null;
 }
 
-// both crests in a circle, split by a soft slanted line
-function Pair({ m }) {
+// both crests in a circle, split by a soft slanted line ('split'), or big crests meeting in the middle ('big')
+function Pair({ m, circle = 'split' }) {
   const s = CREST;
+  if (circle === 'big') {
+    return (
+      <span style={{ position: 'relative', width: s, height: s, borderRadius: '50%', overflow: 'hidden', display: 'block', background: '#0b1426' }}>
+        <Crest src={m.team_a_logo} s={28} style={{ position: 'absolute', left: 3, top: 6 }} />
+        <Crest src={m.team_b_logo} s={28} style={{ position: 'absolute', right: 3, bottom: 6 }} />
+      </span>
+    );
+  }
   return (
     <span style={{ position: 'relative', width: s, height: s, borderRadius: '50%', overflow: 'hidden', display: 'block', background: '#0b1426' }}>
       <span style={{ position: 'absolute', inset: 0, clipPath: 'polygon(0 0,62% 0,38% 100%,0 100%)', background: 'rgba(255,255,255,.06)' }} />
@@ -49,7 +57,7 @@ function DayMark({ dateKey }) {
   );
 }
 
-export default function RoundStories({ dateKeys, matchesByDate, selectedId, onSelect, statusOf }) {
+export default function RoundStories({ dateKeys, matchesByDate, selectedId, onSelect, statusOf, circle = 'split' }) {
   const ref = React.useRef(null);
   // keep the chosen match in the middle of the strip
   React.useEffect(() => {
@@ -76,7 +84,7 @@ export default function RoundStories({ dateKeys, matchesByDate, selectedId, onSe
                     transition={on ? { duration: 6, repeat: Infinity, ease: 'linear' } : { duration: 0.4 }}
                     style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: RING[statusOf(m)], ...RING_MASK }}
                   />
-                  <Pair m={m} />
+                  <Pair m={m} circle={circle} />
                 </motion.span>
               </button>
             );

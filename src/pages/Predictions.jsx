@@ -418,9 +418,11 @@ export default function Predictions() {
 
   const sortedDateKeys = useMemo(() => Object.keys(matchesByDate).sort(), [matchesByDate]);
 
-  // Round 8 tries the "stories" layout: a strip of the round's matches under the days bar, and one match
-  // card at a time below it (picked in the strip, or by swiping the card sideways). Other rounds unchanged.
-  const storyMode = currentRound?.order === 8;
+  // Rounds 7 and 8 (the test rounds) try the "stories" layout: a strip of the round's matches on top, and
+  // one match card at a time below it (picked in the strip, or by swiping the card sideways). Round 7
+  // draws the strip's circles with big crests meeting in the middle. Other rounds unchanged.
+  const storyMode = currentRound?.order === 8 || currentRound?.order === 7;
+  const storyCircle = currentRound?.order === 7 ? 'big' : 'split';
   const storyModeRef = useRef(false);
   storyModeRef.current = storyMode;
   const [storyId, setStoryId] = useState(null);
@@ -720,7 +722,7 @@ export default function Predictions() {
 
         {/* Round 8: the stories strip alone, on the round's own background (the table is a tab in the match arena) */}
         {storyMode && storyId && expandedDates !== null && (
-          <RoundStories dateKeys={sortedDateKeys} matchesByDate={matchesByDate} selectedId={storyId} onSelect={pickStory} statusOf={storyStatus} />
+          <RoundStories dateKeys={sortedDateKeys} matchesByDate={matchesByDate} selectedId={storyId} onSelect={pickStory} statusOf={storyStatus} circle={storyCircle} />
         )}
 
         {/* Week Strip */}
