@@ -37,8 +37,13 @@ export function LeagueTable({ highlightTeams = {} }) {
   }, []);
 
   // Scroll the first highlighted team's row into view once the table has data
+  // once: it used to run again whenever the parent re-rendered (a new highlightTeams object each time),
+  // pulling the table back to the first team while you scrolled toward the other one
+  const scrolledRef = useRef(false);
   useEffect(() => {
+    if (scrolledRef.current) return;
     if (!loading && (highlightTeams.home || highlightTeams.away) && highlightRowRef.current) {
+      scrolledRef.current = true;
       highlightRowRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }, [loading, highlightTeams]);
