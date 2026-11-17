@@ -985,14 +985,14 @@ export default function Predictions() {
                         {/* Row 2: home / away label and table position under each crest (no team name: the crest says it) */}
                         <div style={{ gridColumn: 1, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center">
-                          <span className="text-[10.5px] font-extrabold leading-none text-center" style={{ color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.85)' }}>(Home)</span>
+                          <span className="text-[10.5px] font-extrabold leading-none text-center" style={{ color: 'rgba(255,255,255,0.78)', textShadow: '0 1px 3px rgba(0,0,0,0.85)' }}>(Home)</span>
                           {teamPositions[match.team_a] && (
                             <RankSheen value={teamPositions[match.team_a].pos} color={teamPositions[match.team_a].color} />
                           )}
                         </div>
                         <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center">
-                          <span className="text-[10.5px] font-extrabold leading-none text-center" style={{ color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.85)' }}>(Away)</span>
+                          <span className="text-[10.5px] font-extrabold leading-none text-center" style={{ color: 'rgba(255,255,255,0.78)', textShadow: '0 1px 3px rgba(0,0,0,0.85)' }}>(Away)</span>
                           {teamPositions[match.team_b] && (
                             <RankSheen value={teamPositions[match.team_b].pos} color={teamPositions[match.team_b].color} />
                           )}
