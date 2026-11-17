@@ -29,6 +29,7 @@ import DaysBar from "../components/predictions/DaysBar";
 import CardActions from "../components/predictions/CardActions";
 import MatchDateTag from "../components/predictions/MatchDateTag";
 import CountdownSwap from "../components/predictions/CountdownSwap";
+import RankSheen from "../components/predictions/RankSheen";
 import RoundHeader from "../components/predictions/RoundHeader";
 import TeamFlag from "@/components/TeamFlag";
 import LeagueTableModal from "@/components/LeagueTableModal";
@@ -39,81 +40,6 @@ import { loadLeagueTableOverride, applyOverride } from '@/utils/standingsOverrid
 import { calcStandings } from '@/utils/standings';
 import { STAGES, DIRECT_R16_CUTOFF, PLAYOFF_CUTOFF } from '@/config/tournament';
 import { pickWeightedScore } from '@/utils/pickWeightedScore';
-
-// --- Slot-machine position badge (starts when element enters viewport) ---
-function SlotBadge({ value, color }) {
-  const [displayed, setDisplayed] = useState(1);
-  const [settled, setSettled]     = useState(false);
-  const [inView, setInView]       = useState(false);
-  const badgeRef                  = useRef(null);
-
-  // Trigger when the badge scrolls into view — plus a safety-net timeout,
-  // since the observer can miss the intersection while nested inside
-  // ancestors mid framer-motion transform (scale/opacity entrance
-  // animations), which otherwise left the badge stuck on its initial
-  // placeholder value forever instead of the real position.
-  useEffect(() => {
-    const el = badgeRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setInView(true); obs.disconnect(); } },
-      { threshold: 0.5 }
-    );
-    obs.observe(el);
-    const fallback = setTimeout(() => setInView(true), 700);
-    return () => { obs.disconnect(); clearTimeout(fallback); };
-  }, []);
-
-  // Slot machine — runs only after entering viewport
-  useEffect(() => {
-    if (!value || !inView) return;
-    let elapsed = 0;
-    let current = 1;
-    let tid;
-    const DURATION = 2000;
-
-    const tick = () => {
-      if (elapsed >= DURATION) {
-        setDisplayed(value);
-        setSettled(true);
-        return;
-      }
-      const progress = elapsed / DURATION;
-      const interval = 55 + 280 * Math.pow(progress, 2.5);
-      current = current >= 4 ? 1 : current + 1;
-      setDisplayed(current);
-      elapsed += interval;
-      tid = setTimeout(tick, interval);
-    };
-
-    tick();
-    return () => clearTimeout(tid);
-  }, [value, inView]);
-
-  const borderColor = settled ? color : 'rgba(255,255,255,0.25)';
-  const corners = [
-    { top:0, left:0,  borderTop:`1.5px solid ${borderColor}`, borderLeft:`1.5px solid ${borderColor}` },
-    { top:0, right:0, borderTop:`1.5px solid ${borderColor}`, borderRight:`1.5px solid ${borderColor}` },
-    { bottom:0, left:0,  borderBottom:`1.5px solid ${borderColor}`, borderLeft:`1.5px solid ${borderColor}` },
-    { bottom:0, right:0, borderBottom:`1.5px solid ${borderColor}`, borderRight:`1.5px solid ${borderColor}` },
-  ];
-  return (
-    <span
-      ref={badgeRef}
-      style={{
-        position:'relative', display:'inline-flex', alignItems:'center', justifyContent:'center',
-        fontSize:11, fontWeight:800, color: settled ? color : 'rgba(255,255,255,0.5)',
-        padding:'3px 6px', lineHeight:1, marginTop:6, minWidth:20, textAlign:'center',
-        transition: settled ? 'color 0.35s ease' : 'none',
-      }}
-    >
-      {corners.map((s, i) => (
-        <span key={i} style={{ position:'absolute', width:5, height:5, ...s, transition: settled ? 'border-color 0.35s ease' : 'none' }} />
-      ))}
-      {displayed}
-    </span>
-  );
-}
 
 // --- Standings helper: single flat league table, no groups ---
 function _computeTeamPositions(allMatches, leagueTableOverride = []) {
@@ -986,7 +912,7 @@ export default function Predictions() {
                             WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent',
                           }}>(Home)</span>
                           {teamPositions[match.team_a] && (
-                            <SlotBadge value={teamPositions[match.team_a].pos} color={teamPositions[match.team_a].color} />
+                            <RankSheen value={teamPositions[match.team_a].pos} color={teamPositions[match.team_a].color} />
                           )}
                         </div>
                         <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
@@ -996,7 +922,7 @@ export default function Predictions() {
                             WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent',
                           }}>(Away)</span>
                           {teamPositions[match.team_b] && (
-                            <SlotBadge value={teamPositions[match.team_b].pos} color={teamPositions[match.team_b].color} />
+                            <RankSheen value={teamPositions[match.team_b].pos} color={teamPositions[match.team_b].color} />
                           )}
                         </div>
                       </div>

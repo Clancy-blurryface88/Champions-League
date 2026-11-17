@@ -18,7 +18,7 @@ import IntroVideoModal from "./components/IntroVideoModal";
 import ExactHitsPanel from "./components/ExactHitsPanel";
 // This import is kept as per outline
 import { createPageUrl } from "@/utils";
-import { LoaderBar } from "./components/ui/LoaderBar";
+import LoadingScreen from "./components/LoadingScreen";
 import AppBackground from "./components/AppBackground";
 import { TOURNAMENT_CODE } from "@/config/tournament";
 import LiveDataPanel from "./components/LiveDataPanel"; // Added: Import LiveDataPanel
@@ -853,11 +853,8 @@ export default function Layout({ children, currentPageName }) {
             animation: shine 2s linear infinite;
           }
         `}</style>
-        <div className="min-h-screen text-white relative overflow-hidden" style={{ background: '#030d0a' }}>
-          <div className="relative z-10 text-center">
-            <LoaderBar text="LOADING" />
-          </div>
-        </div>
+        {/* the same full-screen loader as the pages: the app opening shows one pitch (13), not two */}
+        <LoadingScreen />
       </>);
   }
 
