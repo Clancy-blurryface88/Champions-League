@@ -42,6 +42,14 @@ import { calcStandings } from '@/utils/standings';
 import { STAGES, DIRECT_R16_CUTOFF, PLAYOFF_CUTOFF } from '@/config/tournament';
 import { pickWeightedScore } from '@/utils/pickWeightedScore';
 
+// stories: how a card slides in and out (custom = 1 going to the next match, -1 to the previous):
+// the next one comes in from the left and the old card leaves to the right; the previous the other way
+const STORY_SLIDE = {
+  enter: (d) => ({ x: d > 0 ? -380 : 380, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (d) => ({ x: d > 0 ? 380 : -380, opacity: 0 }),
+};
+
 // --- Standings helper: single flat league table, no groups ---
 function _computeTeamPositions(allMatches, leagueTableOverride = []) {
   const leaguePhaseMatches = allMatches.filter(m => m.stage === STAGES.LEAGUE_PHASE);
@@ -422,7 +430,8 @@ export default function Predictions() {
   // and one match card at a time below it (picked in the strip, or by swiping the card sideways). Each
   // draws the strip's circles its own way: 8 split by a soft line, 7 big crests meeting in the middle,
   // 6 grey crests whose colour opens out from the centre when chosen. Other rounds unchanged.
-  const STORY_CIRCLES = { 6: 'reveal', 7: 'big', 8: 'split' };
+  // the final circle (big crests in grey; the chosen match's colour opens from the centre) on all three
+  const STORY_CIRCLES = { 6: 'bigReveal', 7: 'bigReveal', 8: 'bigReveal' };
   const storyMode = !!STORY_CIRCLES[currentRound?.order];
   const storyCircle = STORY_CIRCLES[currentRound?.order] || 'split';
   const storyModeRef = useRef(false);
@@ -443,7 +452,7 @@ export default function Predictions() {
     const m = matches.find((x) => x.id === id);
     if (m) setActiveDateKey(moment(m.match_date).format('YYYY-MM-DD'));
   };
-  const storyDirRef = useRef(1); // the side the next card comes in from
+  const storyDirRef = useRef(1); // 1 = going to the next match, -1 = to the previous one
   const storyStep = (d) => {
     storyDirRef.current = d;
     const i = storyFlat.findIndex((m) => m.id === storyId);
@@ -836,7 +845,8 @@ export default function Predictions() {
                       transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                       className="overflow-hidden"
                     >
-                      <div ref={el => matchGridRefs.current[dateKey] = el} className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3 pb-2">
+                      <div ref={el => matchGridRefs.current[dateKey] = el} className="relative grid grid-cols-1 md:grid-cols-2 gap-6 pt-3 pb-2">
+                        <AnimatePresence initial={false} mode="popLayout" custom={storyDirRef.current}>
                         {(storyMode ? dayMatches.filter((m) => m.id === storyId) : dayMatches).map((match, index) => {
             const isLocked = isMatchLocked(match.match_date);
             const timeInfo = getTimeUntilLock(match.match_date);
@@ -846,21 +856,29 @@ export default function Predictions() {
               <motion.div
                 key={match.id}
                 ref={el => matchCardRefs.current[match.id] = el}
-                initial={storyMode ? { opacity: 0, x: storyDirRef.current * 60 } : { opacity: 0, scale: 0.95 }}
-                animate={storyMode ? { opacity: 1, x: 0 } : { opacity: 1, scale: 1 }}
-                transition={storyMode ? { type: 'spring', stiffness: 380, damping: 34 } : { delay: index * 0.06 }}
-                // stories: drag the card sideways with a finger — far enough (or fast enough) goes to the
-                // next / previous match, otherwise it springs back
+                // stories: the card follows the finger sideways; let go far / fast enough and it slides out
+                // while the next one slides in from the other side. Right-to-left app: dragging to the
+                // right brings the next match (the one to the left in the strip), to the left the previous.
                 {...(storyMode ? {
+                  custom: storyDirRef.current,
+                  variants: STORY_SLIDE,
+                  initial: 'enter',
+                  animate: 'center',
+                  exit: 'exit',
+                  transition: { x: { type: 'spring', stiffness: 260, damping: 30 }, opacity: { duration: 0.2 } },
                   drag: 'x',
                   dragDirectionLock: true,
                   dragConstraints: { left: 0, right: 0 },
-                  dragElastic: 0.55,
+                  dragElastic: 0.7,
                   onDragEnd: (e, info) => {
-                    const go = info.offset.x < -70 || info.velocity.x < -500 ? 1 : info.offset.x > 70 || info.velocity.x > 500 ? -1 : 0;
+                    const go = info.offset.x > 70 || info.velocity.x > 450 ? 1 : info.offset.x < -70 || info.velocity.x < -450 ? -1 : 0;
                     if (go) storyStep(go);
                   },
-                } : {})}
+                } : {
+                  initial: { opacity: 0, scale: 0.95 },
+                  animate: { opacity: 1, scale: 1 },
+                  transition: { delay: index * 0.06 },
+                })}
                 className="h-full">
 
                 <div className="h-full relative overflow-hidden" style={{ borderRadius: 18 }}>
@@ -1054,8 +1072,9 @@ export default function Predictions() {
 
                     {/* The bottom buttons (1 X 2 / match arena / ניחושים), split like the days bar. Solid
                         gradients only: clip-path together with backdrop-filter broke rendering before. */}
-                    <div className="-mx-3 -mb-3 mt-5">
+                    <div className={storyMode ? 'mt-5 flex justify-center' : '-mx-3 -mb-3 mt-5'}>
                       <CardActions
+                        pill={storyMode}
                         onOdds={() => handleShowScoringRules(match)}
                         onPredictions={() => handleShowPredictions(match)}
                         onArena={() => toggleArena(match.id)} />
@@ -1066,6 +1085,7 @@ export default function Predictions() {
               </motion.div>
             );
                         })}
+                        </AnimatePresence>
                       </div>
                     </motion.div>
                   )}

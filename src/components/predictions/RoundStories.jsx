@@ -21,14 +21,22 @@ function Crest({ src, s, style }) {
 }
 
 // both crests in a circle, split by a soft slanted line ('split'); big crests meeting in the middle
-// ('big'); or 'reveal': the split circle in grey, and when chosen its colour opens out from the centre
+// ('big'; 'bigReveal' = those in grey, the colour opening out when chosen: the final design); or 'reveal': the split circle in grey, and when chosen its colour opens out from the centre
 function Pair({ m, circle = 'split', on = false }) {
   const s = CREST;
-  if (circle === 'big') {
+  if (circle === 'big' || circle === 'bigReveal') {
+    const big = (style) => <>
+      <Crest src={m.team_a_logo} s={28} style={{ position: 'absolute', left: 3, top: 6, ...style }} />
+      <Crest src={m.team_b_logo} s={28} style={{ position: 'absolute', right: 3, bottom: 6, ...style }} />
+    </>;
     return (
       <span style={{ position: 'relative', width: s, height: s, borderRadius: '50%', overflow: 'hidden', display: 'block', background: '#0b1426' }}>
-        <Crest src={m.team_a_logo} s={28} style={{ position: 'absolute', left: 3, top: 6 }} />
-        <Crest src={m.team_b_logo} s={28} style={{ position: 'absolute', right: 3, bottom: 6 }} />
+        {circle === 'bigReveal' ? <>
+          {big({ filter: 'grayscale(1) brightness(.85) drop-shadow(0 1px 3px rgba(0,0,0,.55))' })}
+          <motion.span initial={false} animate={{ clipPath: on ? 'circle(75% at 50% 50%)' : 'circle(0% at 50% 50%)' }} transition={{ duration: 0.5, ease: 'easeOut' }} style={{ position: 'absolute', inset: 0 }}>
+            {big()}
+          </motion.span>
+        </> : big()}
       </span>
     );
   }

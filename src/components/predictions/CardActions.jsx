@@ -37,7 +37,7 @@ function shape(i, parts, W) {
 }
 
 // arenaPx: width of the middle (arena) part in px; the two side parts share the rest equally
-export default function CardActions({ onOdds, onPredictions, onArena, arenaPx = 66 }) {
+function BarActions({ onOdds, onPredictions, onArena, arenaPx = 66 }) {
   const box = useRef(null);
   const [W, setW] = useState(0);
   const [down, setDown] = useState(null);
@@ -73,4 +73,38 @@ export default function CardActions({ onOdds, onPredictions, onArena, arenaPx = 
       })}
     </div>
   );
+}
+
+// The same three buttons as one glass pill built like the match card's countdown (CountdownSwap): the
+// app's slant, a soft light at the top, and thin slanted dividers that fade out at both ends. Used on the
+// stories test rounds.
+const PILL_DIVIDER = { width: 1.5, height: 26, background: 'linear-gradient(transparent, rgba(255,255,255,0.45), transparent)', transform: 'skewX(12deg) rotate(12deg)', flexShrink: 0 };
+function PillActions({ onOdds, onPredictions, onArena }) {
+  const [down, setDown] = useState(null);
+  const items = [
+    { k: 'odds', on: onOdds, flex: 1, node: <span dir="ltr" style={{ ...LABEL, fontSize: 16, color: '#93c5fd' }}>1 X 2</span> },
+    { k: 'arena', on: onArena, flex: 0.62, label: 'זירת המשחק', node: <PitchIcon c="#facc15" /> },
+    { k: 'bets', on: onPredictions, flex: 1, node: <span style={{ ...LABEL, fontSize: 16, color: '#86efac' }}>BETS</span> },
+  ];
+  return (
+    <div dir="ltr" className="relative flex items-center overflow-hidden" style={{ width: '92%', maxWidth: 300, height: 44, transform: 'skewX(-12deg)', borderRadius: 16,
+      background: 'linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.05)), rgba(5,10,18,0.35)', border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.35)' }}>
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-1/2" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.14) 0%, transparent 100%)' }} />
+      {items.map((b, i) => (
+        <React.Fragment key={b.k}>
+          {i > 0 && <span style={PILL_DIVIDER} />}
+          <button type="button" aria-label={b.label} onClick={(e) => { e.stopPropagation(); b.on?.(); }}
+            onPointerDown={() => setDown(i)} onPointerUp={() => setDown(null)} onPointerLeave={() => setDown(null)}
+            className="relative h-full grid place-items-center" style={{ flex: b.flex, background: down === i ? 'rgba(255,255,255,0.08)' : 'transparent', transition: 'background .12s' }}>
+            <span style={{ transform: 'skewX(12deg)', display: 'inline-flex' }}>{b.node}</span>
+          </button>
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
+// pill: the glass-pill version (stories test rounds); otherwise the coloured bar
+export default function CardActions({ pill = false, ...props }) {
+  return pill ? <PillActions {...props} /> : <BarActions {...props} />;
 }
