@@ -685,19 +685,8 @@ export default function Layout({ children, currentPageName }) {
       return;
     }
 
-    // For Dashboard upper half OR any other page - allow swipe gestures
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 100; // Swiped left (finger moved from right to left)
-    const isRightSwipe = distance < -100; // Swiped right (finger moved from left to right)
-    const screenWidth = window.innerWidth;
-    const centerZone = screenWidth * 0.3; // 30% of screen width from each side
-
-    // Check if swipe started in the center area of the screen
-    if (touchStart > centerZone && touchStart < screenWidth - centerZone) {
-      if (isRightSwipe) {
-        setShowLeaderboard(true);
-      }
-    }
+    // The leaderboard used to open on a swipe right from the middle of the screen. It opens only from
+    // its button now: the round page's cards are swiped sideways to move between matches.
 
     // Reset touch positions
     setTouchStart(null);
