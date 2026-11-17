@@ -20,7 +20,7 @@ function Crest({ src, s, style }) {
   return src ? <img src={src} alt="" draggable={false} style={{ width: s, height: s, objectFit: 'contain', filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.55))', ...style }} /> : null;
 }
 
-// both crests in a circle, split by a slanted line
+// both crests in a circle, split by a soft slanted line
 function Pair({ m }) {
   const s = CREST;
   return (
@@ -28,7 +28,8 @@ function Pair({ m }) {
       <span style={{ position: 'absolute', inset: 0, clipPath: 'polygon(0 0,62% 0,38% 100%,0 100%)', background: 'rgba(255,255,255,.06)' }} />
       <Crest src={m.team_a_logo} s={s * 0.44} style={{ position: 'absolute', left: s * 0.08, top: s * 0.14 }} />
       <Crest src={m.team_b_logo} s={s * 0.44} style={{ position: 'absolute', right: s * 0.08, bottom: s * 0.14 }} />
-      <span style={{ position: 'absolute', left: '50%', top: -4, bottom: -4, width: 1, background: 'rgba(255,255,255,.25)', transform: 'rotate(14deg)' }} />
+      {/* slanted divider: brighter in the middle, fading out at both ends */}
+      <span style={{ position: 'absolute', left: '50%', top: -4, bottom: -4, width: 1, marginLeft: -0.5, background: 'linear-gradient(transparent,rgba(255,255,255,.5),transparent)', transform: 'rotate(14deg)' }} />
     </span>
   );
 }
