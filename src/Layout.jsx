@@ -32,6 +32,7 @@ import RoundSummaryReveal from "./components/roundSummary/RoundSummaryReveal";
 import { computeRoundSummary } from "./utils/roundSummary";
 import PushInvite, { PUSH_INVITE_SNOOZE_MS, pushInviteSnoozeKey } from "./components/PushInvite";
 import NotificationsSheet from "./components/NotificationsSheet";
+import { Tour, TOURS } from "./components/onboarding/RoundTour";
 
 function localDayKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -135,6 +136,16 @@ export default function Layout({ children, currentPageName }) {
   const [showYearlySummary, setShowYearlySummary] = useState(false); // NEW: State for YearlySummaryPanel
   const [showPushBanner, setShowPushBanner] = useState(false);
   const [showNotifSheet, setShowNotifSheet] = useState(false);
+  // The notifications tour: once, on the main screen, after every other first-time screen is done.
+  // Its on / off and "show again to everyone" come from the admin panel (app_settings), like the
+  // round tour's: a finish before the last reset counts as not seen.
+  const [notifTour, setNotifTour] = useState(null); // 'notif-tap' | 'notif'
+  const [tourCfg, setTourCfg] = useState(null);
+  useEffect(() => {
+    AppSettings.list()
+      .then((l) => setTourCfg({ on: l[0]?.tour_enabled !== false, resetAt: l[0]?.tour_reset_at ? Date.parse(l[0].tour_reset_at) : 0 }))
+      .catch(() => setTourCfg({ on: true, resetAt: 0 }));
+  }, []);
   const [notifPermission, setNotifPermission] = useState(
     typeof Notification !== 'undefined' ? Notification.permission : 'default'
   );
@@ -817,6 +828,18 @@ export default function Layout({ children, currentPageName }) {
   };
 
   // Show loading while checking auth
+  const isHome = location.pathname === '/' || location.pathname.includes('Dashboard');
+  const firstScreensBusy = showWelcomeModal || showGeneralPredictionsOnboarding || showIntroVideo || showPushBanner || showLiveIntro || showNextMatchIntro || showFinalResults || showNotifSheet;
+  useEffect(() => {
+    if (!user || !tourCfg?.on || !isHome || firstScreensBusy || notifTour) return undefined;
+    let v = null;
+    try { v = localStorage.getItem(TOURS.notif.key); } catch { /* private mode */ }
+    const replay = new URLSearchParams(window.location.search).has('notiftour');
+    if (!replay && v && Number(v) >= (tourCfg.resetAt || 0)) return undefined;
+    const t = setTimeout(() => setNotifTour('notif-tap'), 1500); // after the screen has settled
+    return () => clearTimeout(t);
+  }, [user, tourCfg, isHome, firstScreensBusy]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (authLoading) {
     return (
       <>
@@ -1133,7 +1156,8 @@ export default function Layout({ children, currentPageName }) {
             <motion.button
               whileTap={{ scale: 0.92 }}
               aria-label="התראות"
-              onClick={() => setShowNotifSheet(true)}
+              data-tour="bell"
+              onClick={() => { if (notifTour === 'notif-tap') setNotifTour('notif'); setShowNotifSheet(true); }}
               // mt: centered on the 42px name pill beside it (36px bell)
               className="mt-[3px] flex items-center justify-center rounded-full w-9 h-9 transition-all duration-200"
               style={{
@@ -1565,6 +1589,18 @@ export default function Layout({ children, currentPageName }) {
         {/* Push invite — held back until the full onboarding chain (welcome
             name, general questions, intro video) is done, same reasoning as
             the live/next-match intro overlays below. */}
+        {notifTour && (
+          <Tour
+            key={notifTour}
+            steps={TOURS[notifTour].steps}
+            z={notifTour === 'notif' ? 140 : 120}
+            onDone={() => {
+              if (notifTour !== 'notif') return;
+              try { localStorage.setItem(TOURS.notif.key, String(Math.max(Date.now(), (tourCfg?.resetAt || 0) + 1))); } catch { /* private mode */ }
+              setNotifTour(null);
+            }}
+          />
+        )}
         <NotificationsSheet
           open={showNotifSheet}
           onClose={() => setShowNotifSheet(false)}

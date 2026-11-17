@@ -60,7 +60,7 @@ function Tabs({ tab, setTab }) {
         const on = tab === k;
         const clip = i === 0 ? 'polygon(0 0,100% 0,100% 100%,6% 100%)' : 'polygon(0 0,94% 0,100% 100%,0 100%)';
         return (
-          <motion.button type="button" key={k} whileTap={{ scale: 0.98 }} onClick={() => setTab(k)} className={`relative flex flex-1 items-center justify-center gap-2 ${i ? '-mr-1.5' : ''}`} style={{ clipPath: clip, background: on ? ROYAL : 'rgba(255,255,255,0.06)', transition: 'background 0.2s' }}>
+          <motion.button type="button" key={k} data-tour-tab={k} whileTap={{ scale: 0.98 }} onClick={() => setTab(k)} className={`relative flex flex-1 items-center justify-center gap-2 ${i ? '-mr-1.5' : ''}`} style={{ clipPath: clip, background: on ? ROYAL : 'rgba(255,255,255,0.06)', transition: 'background 0.2s' }}>
             <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon points={i === 0 ? '0,0 100,0 100,100 6,100' : '0,0 94,0 100,100 0,100'} fill="none" stroke={on ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)'} strokeWidth="3" vectorEffect="non-scaling-stroke" /></svg>
             {k === 'live' && <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-60" style={{ animationDuration: '2s' }} /><span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" /></span>}
             <span className="text-[14px] font-bold text-white">{NOTIF_TABS[k].label}</span>
@@ -167,10 +167,10 @@ export default function NotificationsSheet({ open, onClose, granted, onEnable })
             <div className="sticky top-0 z-10 px-4 pb-3 pt-3" style={{ background: '#0e1d45' }}>
               <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-white/25" />
               <div dir="ltr" className="mb-3 flex items-center justify-center gap-2"><Bell className="h-5 w-5" style={{ color: GOLD }} /><span className="text-[17px] font-bold text-white">התראות</span></div>
-              <Tabs tab={tab} setTab={setTab} />
+              <div data-tour="notif-tabs"><Tabs tab={tab} setTab={setTab} /></div>
             </div>
 
-            <div className="mx-4 mt-1 flex items-center justify-between rounded-2xl px-3 py-2.5" style={{ background: granted ? 'rgba(52,211,153,0.10)' : 'rgba(245,197,24,0.10)', border: `1px solid ${granted ? 'rgba(52,211,153,0.35)' : 'rgba(245,197,24,0.4)'}` }}>
+            <div data-tour="notif-status" className="mx-4 mt-1 flex items-center justify-between rounded-2xl px-3 py-2.5" style={{ background: granted ? 'rgba(52,211,153,0.10)' : 'rgba(245,197,24,0.10)', border: `1px solid ${granted ? 'rgba(52,211,153,0.35)' : 'rgba(245,197,24,0.4)'}` }}>
               <div className="text-right">
                 <div className="text-[13px] font-bold text-white">{granted ? 'התראות פעילות במכשיר הזה' : 'התראות כבויות במכשיר הזה'}</div>
                 <div className="text-[11px] text-slate-400">{granted ? 'אפשר לבחור למטה מה לקבל' : 'הפעילו כדי לקבל את ההתראות שבחרתם'}</div>
@@ -181,8 +181,8 @@ export default function NotificationsSheet({ open, onClose, granted, onEnable })
             <AnimatePresence mode="wait" initial={false}>
               <motion.div key={tab} initial={{ opacity: 0, x: tab === 'live' ? -12 : 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
                 className="mx-4 mt-3 space-y-3" style={{ opacity: active ? 1 : 0.5, pointerEvents: active ? 'auto' : 'none' }}>
-                {tab === 'live' && <MinutePicker minute={minute} setMinute={setMinute} onCommit={commitMinute} />}
-                <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04]">
+                {tab === 'live' && <div data-tour="notif-minute"><MinutePicker minute={minute} setMinute={setMinute} onCommit={commitMinute} /></div>}
+                <div data-tour="notif-list" className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04]">
                   {NOTIF_TABS[tab].items.map(([k, icon, title, sub], i) => (
                     <div key={k} className={`flex items-center gap-3 px-3 py-2.5 ${i ? 'border-t border-white/[0.06]' : ''}`}>
                       <span className="text-[18px]">{icon}</span>

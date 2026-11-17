@@ -34,7 +34,7 @@ export default function AdminTour() {
 
   return (
     <div dir="rtl" className="space-y-4 max-w-md">
-      <h2 className="text-xl font-bold text-white">הדרכת מחזור 5</h2>
+      <h2 className="text-xl font-bold text-white">הדרכות – מחזור 5 והתראות</h2>
 
       <div className="rounded-xl bg-slate-800 border border-slate-700 p-4 flex items-center justify-between gap-4">
         <div>
@@ -57,7 +57,7 @@ export default function AdminTour() {
       <div className="rounded-xl bg-slate-800 border border-slate-700 p-4 space-y-3">
         <div>
           <div className="text-white font-semibold">איפוס צפייה לכולם</div>
-          <div className="text-sm text-slate-400">ההדרכה תופיע שוב מההתחלה לכל המשתמשים, בכניסה הבאה למחזור 5</div>
+          <div className="text-sm text-slate-400">ההדרכות יופיעו שוב מההתחלה לכל המשתמשים: הדרכת ההתראות במסך הראשי, והדרכת המחזור בכניסה הבאה למחזור 5</div>
           <div className="text-xs text-slate-500 mt-1">
             איפוס אחרון: {resetAt ? resetAt.toLocaleString("he-IL", { dateStyle: "short", timeStyle: "short" }) : "לא בוצע"}
           </div>
