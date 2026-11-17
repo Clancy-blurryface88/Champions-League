@@ -9,10 +9,10 @@ import { motion } from 'framer-motion';
 const W = 204, H = 50;
 const SHOW_MS = 7000; // how long each side stays before turning
 const TURN = { duration: 1.2, ease: [0.6, 0.05, 0.25, 1] };
+// No backdrop-filter here: a blurred backdrop inside the turning 3D cube (two per card, every card on
+// the page) made the round page flicker while scrolling on phones. A tinted fill gives the same glass.
 const GLASS = {
-  background: 'rgba(255,255,255,0.06)',
-  backdropFilter: 'blur(40px) saturate(180%)',
-  WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+  background: 'linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.05)), rgba(5,10,18,0.35)',
   border: '1px solid rgba(255,255,255,0.18)',
   boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.35)',
   borderRadius: 16,
