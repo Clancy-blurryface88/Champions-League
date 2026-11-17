@@ -560,7 +560,7 @@ function NewsColumns({ items, match, at = 0.85 }) {
   );
 }
 
-// showTable: adds the league table as a tab (round 8, the round we try new things on)
+// showTable: adds the league table as a tab (on the round page, which has no days bar / TABLE button)
 export default function MatchArenaSection({ match, allMatches, loading, onClose, showTable = false }) {
   const formA = useMemo(() => getTeamForm(allMatches, match.team_a), [allMatches, match.team_a]);
   const formB = useMemo(() => getTeamForm(allMatches, match.team_b), [allMatches, match.team_b]);

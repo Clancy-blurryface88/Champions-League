@@ -77,7 +77,7 @@ function BarActions({ onOdds, onPredictions, onArena, arenaPx = 66 }) {
 
 // The same three buttons as one glass pill built like the match card's countdown (CountdownSwap): the
 // app's slant, a soft light at the top, and thin slanted dividers that fade out at both ends. Used on the
-// stories test rounds.
+// round page.
 const PILL_DIVIDER = { width: 1.5, height: 26, background: 'linear-gradient(transparent, rgba(255,255,255,0.45), transparent)', transform: 'skewX(12deg) rotate(12deg)', flexShrink: 0 };
 function PillActions({ onOdds, onPredictions, onArena }) {
   const [down, setDown] = useState(null);
@@ -104,7 +104,7 @@ function PillActions({ onOdds, onPredictions, onArena }) {
   );
 }
 
-// pill: the glass-pill version (stories test rounds); otherwise the coloured bar
+// pill: the glass-pill version (the round page); otherwise the coloured bar
 export default function CardActions({ pill = false, ...props }) {
   return pill ? <PillActions {...props} /> : <BarActions {...props} />;
 }

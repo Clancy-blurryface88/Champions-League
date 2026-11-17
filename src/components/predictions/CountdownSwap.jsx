@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 // The match card's countdown pill as a soft 3D cube: the front shows the countdown, and every few
 // seconds it turns over to the kick-off time (large) and the date (small) with a slanted divider,
 // then back. The side turning away goes dark. A tap turns it at once. Both sides are the same size.
-// `compact` (round 8, the test round): a little smaller, and the date has the weekday under it.
+// `compact` (the round page): a little smaller, and the date has the weekday under it.
 
 const SIZES = {
   normal: { W: 204, H: 50, num: 19, label: 9, time: 24, date: 16, div: 28 },

@@ -426,14 +426,11 @@ export default function Predictions() {
 
   const sortedDateKeys = useMemo(() => Object.keys(matchesByDate).sort(), [matchesByDate]);
 
-  // Rounds 6, 7 and 8 (the test rounds) try the "stories" layout: a strip of the round's matches on top,
-  // and one match card at a time below it (picked in the strip, or by swiping the card sideways). Each
-  // draws the strip's circles its own way: 8 split by a soft line, 7 big crests meeting in the middle,
-  // 6 grey crests whose colour opens out from the centre when chosen. Other rounds unchanged.
-  // the final circle (big crests in grey; the chosen match's colour opens from the centre) on all three
-  const STORY_CIRCLES = { 6: 'bigReveal', 7: 'bigReveal', 8: 'bigReveal' };
-  const storyMode = !!STORY_CIRCLES[currentRound?.order];
-  const storyCircle = STORY_CIRCLES[currentRound?.order] || 'split';
+  // Every round (and every future one) uses the "stories" layout: a strip of the round's matches on
+  // top, and one match card at a time below it (picked in the strip, or by swiping the card sideways).
+  // The strip's circles: big crests in grey; the chosen match's colour opens out from the centre.
+  const storyMode = !!currentRound;
+  const storyCircle = 'bigReveal';
   const storyModeRef = useRef(false);
   storyModeRef.current = storyMode;
   const [storyId, setStoryId] = useState(null);
@@ -731,7 +728,7 @@ export default function Predictions() {
 
 
 
-        {/* Round 8: the stories strip alone, on the round's own background (the table is a tab in the match arena) */}
+        {/* The stories strip alone, on the round's own background (the table is a tab in the match arena) */}
         {storyMode && storyId && expandedDates !== null && (
           <RoundStories dateKeys={sortedDateKeys} matchesByDate={matchesByDate} selectedId={storyId} onSelect={pickStory} statusOf={storyStatus} circle={storyCircle} />
         )}
