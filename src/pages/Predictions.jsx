@@ -30,6 +30,7 @@ import CardActions from "../components/predictions/CardActions";
 import MatchDateTag from "../components/predictions/MatchDateTag";
 import CountdownSwap from "../components/predictions/CountdownSwap";
 import RankSheen from "../components/predictions/RankSheen";
+import RoundStories from "../components/predictions/RoundStories";
 import RoundHeader from "../components/predictions/RoundHeader";
 import TeamFlag from "@/components/TeamFlag";
 import LeagueTableModal from "@/components/LeagueTableModal";
@@ -262,6 +263,7 @@ export default function Predictions() {
   useEffect(() => {
     if (initialScrollDone.current) return;
     if (!activeDateKey || !expandedDates) return;
+    if (storyModeRef.current) return;
     initialScrollDone.current = true;
     // Until the round's first day (usually Tuesday) is over, the page opens at the top: the
     // round header and the days bar first, nothing to jump to yet.
@@ -292,7 +294,7 @@ export default function Predictions() {
     if (!container) return;
 
     const onScroll = () => {
-      if (isProgrammaticScrollRef.current) return;
+      if (isProgrammaticScrollRef.current || storyModeRef.current) return;
       const containerRect = container.getBoundingClientRect();
       const threshold = containerRect.top + 220;
 
@@ -415,6 +417,36 @@ export default function Predictions() {
   }, [matches]);
 
   const sortedDateKeys = useMemo(() => Object.keys(matchesByDate).sort(), [matchesByDate]);
+
+  // Round 8 tries the "stories" layout: a strip of the round's matches under the days bar, and one match
+  // card at a time below it (picked in the strip, or by swiping the card sideways). Other rounds unchanged.
+  const storyMode = currentRound?.order === 8;
+  const storyModeRef = useRef(false);
+  storyModeRef.current = storyMode;
+  const [storyId, setStoryId] = useState(null);
+  const storyFlat = useMemo(() => sortedDateKeys.flatMap((k) => matchesByDate[k]), [sortedDateKeys, matchesByDate]);
+  const storyStatus = (m) => {
+    const p = predictions[m.id];
+    if (p && p.predicted_score_a != null && p.predicted_score_b != null) return 'done';
+    return isMatchLocked(m.match_date) ? 'missed' : 'todo';
+  };
+  const pickStory = (id) => {
+    setStoryId(id);
+    const m = matches.find((x) => x.id === id);
+    if (m) setActiveDateKey(moment(m.match_date).format('YYYY-MM-DD'));
+  };
+  const storyStep = (d) => {
+    const i = storyFlat.findIndex((m) => m.id === storyId);
+    const j = Math.max(0, Math.min(storyFlat.length - 1, i + d));
+    if (storyFlat[j] && j !== i) pickStory(storyFlat[j].id);
+  };
+  // open on the first match still waiting for a prediction (or the next one to play)
+  useEffect(() => {
+    if (!storyMode || storyId || !storyFlat.length) return;
+    const first = storyFlat.find((m) => storyStatus(m) === 'todo') || storyFlat.find((m) => !m.is_finished) || storyFlat[storyFlat.length - 1];
+    pickStory(first.id);
+  }, [storyMode, storyFlat]); // eslint-disable-line react-hooks/exhaustive-deps
+  const swipeRef = useRef(null);
 
   // Initialize expanded dates: expand today + future, collapse past
   useEffect(() => {
@@ -695,11 +727,14 @@ export default function Predictions() {
           <DaysBar
             dateKeys={sortedDateKeys}
             activeKey={activeDateKey}
-            onPick={scrollToDate}
+            onPick={storyMode ? (k) => matchesByDate[k]?.[0] && pickStory(matchesByDate[k][0].id) : scrollToDate}
             onTable={() => { setLeagueTableHighlight({}); setShowLeagueTable(true); }}
             stripRef={dateStripRef}
             tabRef={(key, el) => { dateTabRefs.current[key] = el; }}
           />
+          {storyMode && storyId && (
+            <RoundStories dateKeys={sortedDateKeys} matchesByDate={matchesByDate} selectedId={storyId} onSelect={pickStory} statusOf={storyStatus} />
+          )}
           </div>
         )}
 
@@ -713,7 +748,8 @@ export default function Predictions() {
             const lockedCount = dayMatches.filter(m => isMatchLocked(m.match_date)).length;
             const allLocked = lockedCount === dayMatches.length;
             const hasLockedMatches = lockedCount > 0;
-            const isOpen = !forcedClosed.has(dateKey) && (expandedDates.has(dateKey) || hasLockedMatches);
+            const isOpen = storyMode || (!forcedClosed.has(dateKey) && (expandedDates.has(dateKey) || hasLockedMatches));
+            if (storyMode && !dayMatches.some((m) => m.id === storyId)) return null;
             const openCount = dayMatches.length - lockedCount;
 
             const dayOfWeek = moment(dateKey).locale('he').format('dddd');
@@ -726,7 +762,7 @@ export default function Predictions() {
                   ref={el => dateRefs.current[dateKey] = el}
                   onClick={() => toggleDate(dateKey)}
                   className="w-full group"
-                  style={{ scrollMarginTop: '195px' }}
+                  style={{ scrollMarginTop: '195px', display: storyMode ? 'none' : undefined }}
                 >
                   {/* Gradient line top */}
                   <div className="h-px bg-gradient-to-r from-transparent via-sky-400/30 to-transparent mb-3" />
@@ -789,8 +825,15 @@ export default function Predictions() {
                       transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                       className="overflow-hidden"
                     >
-                      <div ref={el => matchGridRefs.current[dateKey] = el} className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3 pb-2">
-                        {dayMatches.map((match, index) => {
+                      <div ref={el => matchGridRefs.current[dateKey] = el} className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3 pb-2"
+                        // stories: a sideways swipe on the card goes to the next / previous match
+                        onTouchStart={storyMode ? (e) => { const t = e.touches[0]; swipeRef.current = { x: t.clientX, y: t.clientY }; } : undefined}
+                        onTouchEnd={storyMode ? (e) => {
+                          const s0 = swipeRef.current; swipeRef.current = null; if (!s0) return;
+                          const t = e.changedTouches[0]; const dx = t.clientX - s0.x, dy = t.clientY - s0.y;
+                          if (Math.abs(dx) > 60 && Math.abs(dy) < 50) storyStep(dx < 0 ? 1 : -1);
+                        } : undefined}>
+                        {(storyMode ? dayMatches.filter((m) => m.id === storyId) : dayMatches).map((match, index) => {
             const isLocked = isMatchLocked(match.match_date);
             const timeInfo = getTimeUntilLock(match.match_date);
             const prediction = predictions[match.id] || {};
