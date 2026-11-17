@@ -233,22 +233,25 @@ TOURS.notif = { key: 'tour_notif_v2', steps: [
 // one tap (the points gap), then the rank journey button — only it can be tapped — and inside it the
 // views, the players to show and the timeline.
 TOURS.lb = { key: 'tour_lb_v1', steps: [
-  { target: 'lb-list', noScroll: true, radius: 14, pad: 2, title: 'טבלת המשתתפים', subtitle: 'הדירוג הכללי של כל המשתתפים', rows: [
+  { target: 'lb-list', noScroll: true, radius: 14, pad: 2, title: 'טבלת המשתתפים', subtitle: 'טבלה המציגה את הדירוג הכללי של כל המשתתפים', rows: [
     { key: 'מספר ברקע', color: W, text: 'המקום בטבלה' },
     { key: 'Pts', color: G, ltr: true, text: 'סך הנקודות' },
     { key: 'זהב, כסף, ארד', color: Y, text: 'שלושת המקומות הראשונים' },
   ] },
-  { target: 'lb-card', event: 'tour:lb-expand', radius: 10, pad: 4, title: 'לחיצה ממושכת', subtitle: 'החזיקו את האצבע על משתתף', rows: [
-    { key: 'פגיעות', color: Y, text: 'מספר הפגיעות המדויקות' },
-    { key: 'כיוונים', color: G, text: 'ניחושי כיוון נכונים' },
+  { target: 'lb-card', radius: 10, pad: 4, title: 'כרטיס הדירוג', lines: [
+    'יש מספר אפשרויות לצפייה בנתונים שונים, על ידי לחיצות על כרטיס הדירוג.',
+  ] },
+  { target: 'lb-card', event: 'tour:lb-expand', radius: 10, pad: 4, title: 'לחיצה ממושכת', subtitle: 'החזיקו את האצבע על משתתף על מנת לפתוח מידע נוסף של כרטיס המיקום', rows: [
+    { key: 'פגיעות', color: Y, text: 'מספר הפגיעות המדויקות שצברתם' },
+    { key: 'כיוונים', color: G, text: 'כמות ניחושי כיוון נכונים' },
     { key: 'רצף', color: W, text: 'רצף הניחושים הנכונים' },
   ] },
-  { target: 'lb-gap', event: 'tour:lb-gap', noScroll: true, radius: 16, pad: 2, title: 'לחיצה אחת', subtitle: 'פער הנקודות מול כל המשתתפים', rows: [
-    { key: 'ירוק', color: G, text: 'משתתף שמקדים, ובכמה נקודות' },
-    { key: 'אדום', color: RED, text: 'משתתף שמאחור, ובכמה נקודות' },
-    { key: 'לחיצה', color: W, text: 'על משתתף אחר בודקת את הפער מולו' },
+  { target: 'lb-gap', event: 'tour:lb-gap', noScroll: true, radius: 16, pad: 2, title: 'לחיצה אחת', subtitle: 'תציג טבלה עם חיווי של פער הנקודות מול כל המשתתפים', rows: [
+    { key: 'ירוק', color: G, text: 'משתתף שמקדים, ובכמה נקודות הוא מעליכם בטבלה' },
+    { key: 'אדום', color: RED, text: 'משתתף שמאחור, ובכמה נקודות הוא אחריכם בטבלה' },
+    { key: 'לחיצה', color: W, text: 'על משתתף אחר בודקת את הפער מולו, כך שניתן להחליף בין המשתתפים' },
   ] },
-  { tap: true, target: 'lb-journey', event: 'tour:lb-gap-close', radius: 16, pad: 4, title: 'מסלול הדירוג', subtitle: 'איך המקום של כל משתתף השתנה לאורך העונה', lines: ['לחצו על הכפתור המסומן'] },
+  { tap: true, target: 'lb-journey', event: 'tour:lb-gap-close', radius: 16, pad: 4, title: 'מסלול הדירוג', subtitle: 'בנוסף, בחלק התחתון יש אפשרות לצפייה בשינוי הדירוג לאורך הטורניר', lines: ['לחצו על הכפתור המסומן'] },
 ] };
 TOURS.journey = { key: 'tour_lb_v1', steps: [
   { target: 'rj-views', noScroll: true, radius: 14, pad: 4, title: 'תצוגה', subtitle: 'שתי דרכים לראות את העונה', rows: [
@@ -258,15 +261,14 @@ TOURS.journey = { key: 'tour_lb_v1', steps: [
   ] },
   { target: 'rj-people', noScroll: true, radius: 14, pad: 4, title: 'בחירת משתתפים', subtitle: 'את מי לראות בגרף', rows: [
     { key: 'זהב', color: Y, text: 'הקו שלך' },
-    { key: 'רק אני / כולם', color: W, text: 'רק אתם, או כל המשתתפים' },
-    { key: 'שם', color: BLUE, text: 'לחיצה מוסיפה או מסירה משתתף' },
+    { key: 'רק אני / כולם', color: W, text: 'הצגת הנתונים בהתאם לבחירה: רק אתם, או כל המשתתפים' },
+    { key: 'שם', color: BLUE, text: 'לחיצה על שם משתתף מוסיפה או מסירה אותו מהגרף' },
   ] },
-  { target: 'rj-timeline', noScroll: true, radius: 14, pad: 6, title: 'ציר הזמן', subtitle: 'מנגנים את העונה מההתחלה', rows: [
+  { final: true, target: 'rj-timeline', noScroll: true, radius: 14, pad: 6, title: 'ציר הזמן', subtitle: 'מנגנים את העונה מההתחלה', rows: [
     { key: 'ניגון', color: G, text: 'המסלול רץ ערב אחרי ערב' },
-    { key: 'מהירות', color: W, text: 'קצב הניגון' },
-    { key: 'גרירה', color: Y, text: 'מעבר לכל ערב או מחזור' },
+    { key: 'מהירות', color: W, text: 'קצב הניגון ניתן לשינוי' },
+    { key: 'גרירה', color: Y, text: 'מעבר ידני לכל ערב או מחזור' },
   ] },
-  { summary: true, title: 'זהו, ראית את כל הטבלה', lines: ['אפשר לחזור למסלול הדירוג בכל זמן, מתחתית הטבלה.'] },
 ] };
 
 const rectOf = (name) => {
@@ -507,8 +509,9 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
                 {content.map((_, k) => <span key={k} style={{ width: k === n ? 16 : 6, height: 6, borderRadius: 3, background: k <= n ? '#facc15' : 'rgba(255,255,255,0.22)', transition: 'all .25s' }} />)}
               </div>
               <div className="flex gap-2">
-                {i > 0 && <button type="button" onClick={() => setI(i - 1)} style={BTN_SOFT}>הקודם</button>}
-                <button type="button" onClick={next} style={BTN_MAIN}>הבא</button>
+                {step.final ? <button type="button" onClick={() => setI(0)} style={BTN_SOFT}>↻ צפה שוב</button>
+                  : i > 0 && <button type="button" onClick={() => setI(i - 1)} style={BTN_SOFT}>הקודם</button>}
+                <button type="button" onClick={next} style={BTN_MAIN}>{step.final ? 'סגירה' : 'הבא'}</button>
               </div>
             </div>
           )}
