@@ -90,7 +90,7 @@ export default function RoundStories({ dateKeys, matchesByDate, selectedId, onSe
 
   return (
     // scrolls sideways only: no vertical scrolling or overscroll, so the strip stays put
-    <div ref={ref} dir="rtl" style={{ display: 'flex', alignItems: 'center', gap: 10, overflowX: 'auto', overflowY: 'hidden', overscrollBehavior: 'contain', touchAction: 'pan-x', scrollbarWidth: 'none', padding: '8px 6px 6px', marginTop: 4 }}>
+    <div ref={ref} dir="rtl" style={{ display: 'flex', alignItems: 'center', gap: 10, overflowX: 'auto', overflowY: 'hidden', overscrollBehavior: 'contain', touchAction: 'pan-x', scrollbarWidth: 'none', padding: '12px 6px 10px', marginTop: 0 }}>
       <style>{RING_CSS}</style>
       {dateKeys.map((key) => (
         <React.Fragment key={key}>
@@ -99,8 +99,10 @@ export default function RoundStories({ dateKeys, matchesByDate, selectedId, onSe
             const on = m.id === selectedId;
             return (
               <button key={m.id} data-mid={m.id} type="button" onClick={() => onSelect(m.id)} aria-label={`${m.team_a} – ${m.team_b}`}
-                style={{ flex: '0 0 auto', padding: '2px 0', WebkitTapHighlightColor: 'transparent' }}>
-                <motion.span animate={{ scale: on ? 1.06 : 1 }} transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                // the chosen match is drawn 1.2× larger; it gets a little room on both sides so it
+                // doesn't overlap its neighbours
+                style={{ flex: '0 0 auto', padding: '2px 0', margin: on ? '0 6px' : 0, transition: 'margin .25s', WebkitTapHighlightColor: 'transparent' }}>
+                <motion.span animate={{ scale: on ? 1.2 : 1 }} transition={{ type: 'spring', stiffness: 380, damping: 26 }}
                   style={{ position: 'relative', display: 'grid', placeItems: 'center', width: SIZE, height: SIZE }}>
                   <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: `conic-gradient(from var(--rs-a, 0deg), ${RING[statusOf(m)]})`, animation: on ? 'rs-turn 6s linear infinite' : 'none', ...RING_MASK }} />
                   <Pair m={m} circle={circle} on={on} />
