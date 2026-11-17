@@ -75,7 +75,7 @@ function DayMark({ dateKey }) {
       <span style={{ width: 1, alignSelf: 'stretch', background: 'linear-gradient(transparent,rgba(255,255,255,.35),transparent)' }} />
       <span dir="ltr" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1 }}>
         <span style={{ font: `900 16px ${NUM}`, letterSpacing: '.08em', color: '#e2e8f0' }}>{d.locale('en').format('ddd').toUpperCase()}</span>
-        <span style={{ font: `900 11px ${NUM}`, letterSpacing: '.06em', color: '#64748b', marginTop: 3 }}>{d.format('DD.MM')}</span>
+        <span style={{ font: `900 11px ${NUM}`, letterSpacing: '.06em', color: '#cbd5e1', marginTop: 3 }}>{d.format('DD.MM')}</span>
       </span>
     </span>
   );
