@@ -42,6 +42,9 @@ import { calcStandings } from '@/utils/standings';
 import { STAGES, DIRECT_R16_CUTOFF, PLAYOFF_CUTOFF } from '@/config/tournament';
 import { pickWeightedScore } from '@/utils/pickWeightedScore';
 
+// the (Home) / (Away) labels under the crests: Exo 2, italic
+const HOME_AWAY_FONT = { fontFamily: "'Exo 2', sans-serif", fontWeight: 800, fontStyle: 'italic', fontSize: 11, letterSpacing: '0.02em' };
+
 // stories: how a card slides in and out (custom = 1 going to the next match, -1 to the previous):
 // the next one comes in from the left and the old card leaves to the right; the previous the other way
 const STORY_SLIDE = {
@@ -985,14 +988,14 @@ export default function Predictions() {
                         {/* Row 2: home / away label and table position under each crest (no team name: the crest says it) */}
                         <div style={{ gridColumn: 1, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center">
-                          <span className="text-[10.5px] font-extrabold leading-none text-center" style={{ color: 'rgba(255,255,255,0.78)', textShadow: '0 1px 3px rgba(0,0,0,0.85)' }}>(Home)</span>
+                          <span className="leading-none text-center" style={{ ...HOME_AWAY_FONT, color: 'rgba(255,255,255,0.78)', textShadow: '0 1px 3px rgba(0,0,0,0.85)' }}>(Home)</span>
                           {teamPositions[match.team_a] && (
                             <RankSheen value={teamPositions[match.team_a].pos} color={teamPositions[match.team_a].color} />
                           )}
                         </div>
                         <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center">
-                          <span className="text-[10.5px] font-extrabold leading-none text-center" style={{ color: 'rgba(255,255,255,0.78)', textShadow: '0 1px 3px rgba(0,0,0,0.85)' }}>(Away)</span>
+                          <span className="leading-none text-center" style={{ ...HOME_AWAY_FONT, color: 'rgba(255,255,255,0.78)', textShadow: '0 1px 3px rgba(0,0,0,0.85)' }}>(Away)</span>
                           {teamPositions[match.team_b] && (
                             <RankSheen value={teamPositions[match.team_b].pos} color={teamPositions[match.team_b].color} />
                           )}

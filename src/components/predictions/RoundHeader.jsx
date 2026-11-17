@@ -21,7 +21,7 @@ export default function RoundHeader({ name, sent }) {
       <div className="flex items-center gap-2.5">
         <div className="h-px flex-1" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.4))' }} />
         <div dir="ltr" className="flex items-center gap-2.5">
-          <span style={{ ...NUM, fontSize: 22, letterSpacing: '0.08em', color: '#fff' }}>{label}</span>
+          <span style={{ ...NUM, fontSize: 28, letterSpacing: '0.08em', color: '#fff' }}>{label}</span>
           {num && <span style={{ ...NUM, fontSize: 40, lineHeight: 1, color: '#fff' }}>{num}</span>}
         </div>
         <div className="h-px flex-1" style={{ background: 'linear-gradient(90deg,rgba(255,255,255,0.4),transparent)' }} />
