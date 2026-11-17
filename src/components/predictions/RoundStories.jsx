@@ -2,8 +2,8 @@ import React from 'react';
 import moment from 'moment';
 import { motion } from 'framer-motion';
 
-// The round as "stories": a strip of the round's matches that scrolls sideways under the days bar, the
-// days split by a thin line with the day in English. Each match is a circle with both crests; its ring is
+// The round as "stories": a strip of the round's matches that scrolls sideways at the top of the round,
+// the days split by a thin line with the day in English and its date. Each match is a circle with both crests; its ring is
 // green once you've predicted it, yellow while it's still open and waiting for you, grey if it closed
 // without a prediction. The chosen match's ring turns slowly. Picking a match shows its card below.
 
@@ -33,12 +33,15 @@ function Pair({ m }) {
   );
 }
 
+// the day as plain text (English), its date under it, after a thin line
 function DayMark({ dateKey }) {
+  const d = moment(dateKey);
   return (
-    <span dir="ltr" style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: 4, alignSelf: 'stretch' }}>
-      <span style={{ width: 1, alignSelf: 'stretch', background: 'linear-gradient(transparent,rgba(255,255,255,.4),transparent)' }} />
-      <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', font: `900 17px ${NUM}`, letterSpacing: '.1em', color: 'transparent', WebkitTextStroke: '1px rgba(255,255,255,.6)' }}>
-        {moment(dateKey).locale('en').format('ddd').toUpperCase()}
+    <span style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'stretch' }}>
+      <span style={{ width: 1, alignSelf: 'stretch', background: 'linear-gradient(transparent,rgba(255,255,255,.35),transparent)' }} />
+      <span dir="ltr" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1 }}>
+        <span style={{ font: `900 16px ${NUM}`, letterSpacing: '.08em', color: '#e2e8f0' }}>{d.locale('en').format('ddd').toUpperCase()}</span>
+        <span style={{ font: `900 11px ${NUM}`, letterSpacing: '.06em', color: '#64748b', marginTop: 3 }}>{d.format('DD.MM')}</span>
       </span>
     </span>
   );

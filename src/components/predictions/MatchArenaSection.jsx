@@ -1,3 +1,4 @@
+import { LeagueTable } from "@/components/LeagueTableModal";
 import React, { useMemo, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
@@ -559,7 +560,8 @@ function NewsColumns({ items, match, at = 0.85 }) {
   );
 }
 
-export default function MatchArenaSection({ match, allMatches, loading, onClose }) {
+// showTable: adds the league table as a tab (round 8, the round we try new things on)
+export default function MatchArenaSection({ match, allMatches, loading, onClose, showTable = false }) {
   const formA = useMemo(() => getTeamForm(allMatches, match.team_a), [allMatches, match.team_a]);
   const formB = useMemo(() => getTeamForm(allMatches, match.team_b), [allMatches, match.team_b]);
   const hasForm = formA.played > 0 || formB.played > 0;
@@ -573,6 +575,7 @@ export default function MatchArenaSection({ match, allMatches, loading, onClose 
     { id: 'odds', label: 'תחזית' },
     { id: 'h2h', label: 'ראש בראש' },
     ...(lineups ? [{ id: 'lineups', label: 'הרכבים' }] : []),
+    ...(showTable ? [{ id: 'table', label: 'טבלה' }] : []),
   ];
   const [tab, setTab] = useState('odds');
   const [formScope, setFormScope] = useState('cl');
@@ -592,6 +595,7 @@ export default function MatchArenaSection({ match, allMatches, loading, onClose 
       return <HeadToHead inline teamA={match.team_a?.trim()} teamB={match.team_b?.trim()} logoA={match.team_a_logo} logoB={match.team_b_logo} allMatches={allMatches} />;
     }
     if (tab === 'lineups' && lineups) return <PitchLineupWide home={lineups.homeTeam} away={lineups.awayTeam} />;
+    if (tab === 'table' && showTable) return <LeagueTable highlightTeams={{ home: match.team_a, away: match.team_b }} />;
     return null;
   })();
 

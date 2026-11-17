@@ -9,14 +9,14 @@ import { calcStandings, calcSplitStandings } from "@/utils/standings";
 import { loadLeagueTableOverride, applyOverride } from "@/utils/standingsOverride";
 import { STAGES, DIRECT_R16_CUTOFF, PLAYOFF_CUTOFF } from "@/config/tournament";
 
-export default function LeagueTableModal({ onClose, highlightTeams = {} }) {
+// The league table itself — loads the league-phase results and shows total / home / away. Used in the
+// modal below and, inline, as a tab of the match arena.
+export function LeagueTable({ highlightTeams = {} }) {
   const [matches, setMatches] = useState([]);
   const [override, setOverride] = useState([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('total'); // 'total' | 'home' | 'away'
   const highlightRowRef = useRef(null);
-
-  useModalBackButtonOnMount(onClose);
 
   useEffect(() => {
     const load = async () => {
@@ -54,48 +54,17 @@ export default function LeagueTableModal({ onClose, highlightTeams = {} }) {
   const posClass = (pos) =>
     pos <= DIRECT_R16_CUTOFF ? "text-green-400" : pos <= PLAYOFF_CUTOFF ? "text-yellow-400" : "text-red-400";
 
-  return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-        onClick={onClose}
-      >
-        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-
-        <motion.div
-          initial={{ y: "100%", opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: "100%", opacity: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          onClick={(e) => e.stopPropagation()}
-          className="relative w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-slate-900 border border-slate-700"
-        >
-          <div className="sticky top-0 z-10 bg-slate-900 border-b border-slate-700">
-            <div className="flex items-center justify-between px-5 py-3">
-              <div className="flex items-center gap-2">
-                <h2 className="text-white font-bold text-lg">טבלת הליגה</h2>
-                {hasOverride && (
-                  <span className="text-[10px] bg-orange-400/15 text-orange-400 border border-orange-400/30 px-1.5 py-0.5 rounded-full">
-                    סידור ידני
-                  </span>
-                )}
-              </div>
-              <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          <div className="p-4">
-            {loading ? (
+  return loading ? (
               <div className="py-16 flex items-center justify-center">
                 <OrbitSpinner size={40} />
               </div>
             ) : (
               <div>
+                {hasOverride && (
+                  <div className="flex justify-center mb-2">
+                    <span className="text-[10px] bg-orange-400/15 text-orange-400 border border-orange-400/30 px-1.5 py-0.5 rounded-full">סידור ידני</span>
+                  </div>
+                )}
                 <div className="flex gap-1.5 bg-slate-800/60 rounded-lg p-1 mb-3">
                   {[{ key: 'total', label: 'מצטבר' }, { key: 'home', label: 'בית' }, { key: 'away', label: 'חוץ' }].map((t) => (
                     <button
@@ -177,7 +146,43 @@ export default function LeagueTableModal({ onClose, highlightTeams = {} }) {
                   </div>
                 )}
               </div>
-            )}
+            );
+}
+
+export default function LeagueTableModal({ onClose, highlightTeams = {} }) {
+  useModalBackButtonOnMount(onClose);
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+        onClick={onClose}
+      >
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+
+        <motion.div
+          initial={{ y: "100%", opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: "100%", opacity: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          onClick={(e) => e.stopPropagation()}
+          className="relative w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-slate-900 border border-slate-700"
+        >
+          <div className="sticky top-0 z-10 bg-slate-900 border-b border-slate-700">
+            <div className="flex items-center justify-between px-5 py-3">
+              <div className="flex items-center gap-2">
+                <h2 className="text-white font-bold text-lg">טבלת הליגה</h2>
+              </div>
+              <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="p-4">
+            <LeagueTable highlightTeams={highlightTeams} />
           </div>
         </motion.div>
       </motion.div>

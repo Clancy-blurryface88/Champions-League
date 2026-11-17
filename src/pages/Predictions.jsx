@@ -713,8 +713,13 @@ export default function Predictions() {
 
 
 
+        {/* Round 8: the stories strip alone, on the round's own background (the table is a tab in the match arena) */}
+        {storyMode && storyId && expandedDates !== null && (
+          <RoundStories dateKeys={sortedDateKeys} matchesByDate={matchesByDate} selectedId={storyId} onSelect={pickStory} statusOf={storyStatus} />
+        )}
+
         {/* Week Strip */}
-        {expandedDates !== null && sortedDateKeys.length > 0 && (
+        {!storyMode && expandedDates !== null && sortedDateKeys.length > 0 && (
           <div
             className="sticky top-0 z-20 -mx-4 px-4 pt-2 pb-2 mb-2"
             style={{
@@ -727,14 +732,11 @@ export default function Predictions() {
           <DaysBar
             dateKeys={sortedDateKeys}
             activeKey={activeDateKey}
-            onPick={storyMode ? (k) => matchesByDate[k]?.[0] && pickStory(matchesByDate[k][0].id) : scrollToDate}
+            onPick={scrollToDate}
             onTable={() => { setLeagueTableHighlight({}); setShowLeagueTable(true); }}
             stripRef={dateStripRef}
             tabRef={(key, el) => { dateTabRefs.current[key] = el; }}
           />
-          {storyMode && storyId && (
-            <RoundStories dateKeys={sortedDateKeys} matchesByDate={matchesByDate} selectedId={storyId} onSelect={pickStory} statusOf={storyStatus} />
-          )}
           </div>
         )}
 
@@ -1031,6 +1033,7 @@ export default function Predictions() {
                           allMatches={allMatchesForForm}
                           loading={arenaMatchesLoading}
                           onClose={() => toggleArena(match.id)}
+                          showTable={storyMode}
                         />
                       )}
                     </AnimatePresence>
