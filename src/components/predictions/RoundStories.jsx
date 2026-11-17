@@ -18,14 +18,16 @@ const RING = {
 // to a circle cut the ring's edges and made it shimmer. Where the property isn't supported it stays still.
 const RING_CSS = `@property --rs-a{syntax:'<angle>';inherits:false;initial-value:0deg}@keyframes rs-turn{to{--rs-a:360deg}}`;
 const SIZE = 60, CREST = 48, INNER = 27.5; // ring 2.5px wide
-const RING_MASK = { WebkitMask: `radial-gradient(circle,transparent ${INNER}px,#000 ${INNER + 0.5}px)`, mask: `radial-gradient(circle,transparent ${INNER}px,#000 ${INNER + 0.5}px)` };
+const ringMask = (inner) => ({ WebkitMask: `radial-gradient(circle,transparent ${inner}px,#000 ${inner + 0.5}px)`, mask: `radial-gradient(circle,transparent ${inner}px,#000 ${inner + 0.5}px)` });
+const RING_MASK = ringMask(INNER);
+const RING_MASK_ON = ringMask(INNER - 1.5); // the chosen match's ring: 4px instead of 2.5
 
 function Crest({ src, s, style }) {
   return src ? <img src={src} alt="" draggable={false} style={{ width: s, height: s, objectFit: 'contain', filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.55))', ...style }} /> : null;
 }
 
 // both crests in a circle, split by a soft slanted line ('split'); big crests meeting in the middle
-// ('big'; 'bigReveal' = those in grey, the colour opening out when chosen: the final design); or 'reveal': the split circle in grey, and when chosen its colour opens out from the centre
+// ('big'; 'bigReveal' = those in grey, the colour sharpening in out of a blur when chosen: the final design); or 'reveal': the split circle in grey, and when chosen its colour opens out from the centre
 function Pair({ m, circle = 'split', on = false }) {
   const s = CREST;
   if (circle === 'big' || circle === 'bigReveal') {
@@ -37,7 +39,8 @@ function Pair({ m, circle = 'split', on = false }) {
       <span style={{ position: 'relative', width: s, height: s, borderRadius: '50%', overflow: 'hidden', display: 'block', background: '#0b1426' }}>
         {circle === 'bigReveal' ? <>
           {big({ filter: 'grayscale(1) brightness(.85) drop-shadow(0 1px 3px rgba(0,0,0,.55))' })}
-          <motion.span initial={false} animate={{ clipPath: on ? 'circle(75% at 50% 50%)' : 'circle(0% at 50% 50%)' }} transition={{ duration: 0.5, ease: 'easeOut' }} style={{ position: 'absolute', inset: 0 }}>
+          {/* the colour sharpens in out of a blur when the match is chosen */}
+          <motion.span initial={false} animate={{ opacity: on ? 1 : 0, filter: on ? 'blur(0px)' : 'blur(6px)' }} transition={{ duration: 0.45, ease: 'easeOut' }} style={{ position: 'absolute', inset: 0 }}>
             {big()}
           </motion.span>
         </> : big()}
@@ -104,7 +107,7 @@ export default function RoundStories({ dateKeys, matchesByDate, selectedId, onSe
                 style={{ flex: '0 0 auto', padding: '2px 0', margin: on ? '0 6px' : 0, transition: 'margin .25s', WebkitTapHighlightColor: 'transparent' }}>
                 <motion.span animate={{ scale: on ? 1.2 : 1 }} transition={{ type: 'spring', stiffness: 380, damping: 26 }}
                   style={{ position: 'relative', display: 'grid', placeItems: 'center', width: SIZE, height: SIZE }}>
-                  <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: `conic-gradient(from var(--rs-a, 0deg), ${RING[statusOf(m)]})`, animation: on ? 'rs-turn 6s linear infinite' : 'none', ...RING_MASK }} />
+                  <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: `conic-gradient(from var(--rs-a, 0deg), ${RING[statusOf(m)]})`, animation: on ? 'rs-turn 6s linear infinite' : 'none', ...(on ? RING_MASK_ON : RING_MASK) }} />
                   <Pair m={m} circle={circle} on={on} />
                 </motion.span>
               </button>
