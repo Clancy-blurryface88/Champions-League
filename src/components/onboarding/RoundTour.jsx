@@ -1,6 +1,28 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
+import { AppSettings } from '@/api/entities';
+
+// Has this device finished the tour with this key? Follows the admin panel: off = treated as seen,
+// and a finish before the last "show again to everyone" counts as not seen. ?<replay> shows it again.
+export function useTourSeen(key, replay) {
+  const [cfg, setCfg] = React.useState(null);
+  React.useEffect(() => {
+    AppSettings.list()
+      .then((l) => setCfg({ on: l[0]?.tour_enabled !== false, resetAt: l[0]?.tour_reset_at ? Date.parse(l[0].tour_reset_at) : 0 }))
+      .catch(() => setCfg({ on: true, resetAt: 0 }));
+  }, []);
+  const seen = () => {
+    if (!cfg) return null; // not known yet
+    if (!cfg.on) return true;
+    if (replay && new URLSearchParams(window.location.search).has(replay)) return false;
+    let v = null;
+    try { v = localStorage.getItem(key); } catch { /* private mode */ }
+    return !!v && (v === 'done' ? 0 : Number(v) || 0) >= cfg.resetAt;
+  };
+  const mark = () => { try { localStorage.setItem(key, String(Math.max(Date.now(), (cfg?.resetAt || 0) + 1))); } catch { /* private mode */ } };
+  return { ready: !!cfg, seen, mark };
+}
 
 // The dimmed screen with a lit hole on the step's part. It used to be one box with a huge shadow
 // (0 0 0 9999px) around it; phones sometimes failed to paint part of that shadow while it moved, and
@@ -207,6 +229,46 @@ TOURS.notif = { key: 'tour_notif_v2', steps: [
   ] },
 ] };
 
+// The table (Leaderboard) tour, the first time it's opened: the table, a long press (a player's stats),
+// one tap (the points gap), then the rank journey button — only it can be tapped — and inside it the
+// views, the players to show and the timeline.
+TOURS.lb = { key: 'tour_lb_v1', steps: [
+  { target: 'lb-list', noScroll: true, radius: 14, pad: 2, title: 'טבלת המשתתפים', subtitle: 'הדירוג הכללי של כל המשתתפים', rows: [
+    { key: 'מספר ברקע', color: W, text: 'המקום בטבלה' },
+    { key: 'Pts', color: G, ltr: true, text: 'סך הנקודות' },
+    { key: 'זהב, כסף, ארד', color: Y, text: 'שלושת המקומות הראשונים' },
+  ] },
+  { target: 'lb-card', event: 'tour:lb-expand', radius: 10, pad: 4, title: 'לחיצה ממושכת', subtitle: 'החזיקו את האצבע על משתתף', rows: [
+    { key: 'פגיעות', color: Y, text: 'מספר הפגיעות המדויקות' },
+    { key: 'כיוונים', color: G, text: 'ניחושי כיוון נכונים' },
+    { key: 'רצף', color: W, text: 'רצף הניחושים הנכונים' },
+  ] },
+  { target: 'lb-gap', event: 'tour:lb-gap', noScroll: true, radius: 16, pad: 2, title: 'לחיצה אחת', subtitle: 'פער הנקודות מול כל המשתתפים', rows: [
+    { key: 'ירוק', color: G, text: 'משתתף שמקדים, ובכמה נקודות' },
+    { key: 'אדום', color: RED, text: 'משתתף שמאחור, ובכמה נקודות' },
+    { key: 'לחיצה', color: W, text: 'על משתתף אחר בודקת את הפער מולו' },
+  ] },
+  { tap: true, target: 'lb-journey', event: 'tour:lb-gap-close', radius: 16, pad: 4, title: 'מסלול הדירוג', subtitle: 'איך המקום של כל משתתף השתנה לאורך העונה', lines: ['לחצו על הכפתור המסומן'] },
+] };
+TOURS.journey = { key: 'tour_lb_v1', steps: [
+  { target: 'rj-views', noScroll: true, radius: 14, pad: 4, title: 'תצוגה', subtitle: 'שתי דרכים לראות את העונה', rows: [
+    { key: 'מסלול דירוג', color: Y, text: 'איך המקום השתנה' },
+    { key: 'טבלה', color: W, text: 'נקודות ומקום' },
+    { key: 'ערב / מחזור', color: BLUE, text: 'כל נקודה היא ערב משחקים, או מחזור שלם' },
+  ] },
+  { target: 'rj-people', noScroll: true, radius: 14, pad: 4, title: 'בחירת משתתפים', subtitle: 'את מי לראות בגרף', rows: [
+    { key: 'זהב', color: Y, text: 'הקו שלך' },
+    { key: 'רק אני / כולם', color: W, text: 'רק אתם, או כל המשתתפים' },
+    { key: 'שם', color: BLUE, text: 'לחיצה מוסיפה או מסירה משתתף' },
+  ] },
+  { target: 'rj-timeline', noScroll: true, radius: 14, pad: 6, title: 'ציר הזמן', subtitle: 'מנגנים את העונה מההתחלה', rows: [
+    { key: 'ניגון', color: G, text: 'המסלול רץ ערב אחרי ערב' },
+    { key: 'מהירות', color: W, text: 'קצב הניגון' },
+    { key: 'גרירה', color: Y, text: 'מעבר לכל ערב או מחזור' },
+  ] },
+  { summary: true, title: 'זהו, ראית את כל הטבלה', lines: ['אפשר לחזור למסלול הדירוג בכל זמן, מתחתית הטבלה.'] },
+] };
+
 const rectOf = (name) => {
   const el = name && document.querySelector(`[data-tour="${name}"]`);
   return el ? el.getBoundingClientRect() : null;
@@ -252,6 +314,13 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
     return () => clearTimeout(t);
   }, [i, step.tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // a step's event when it isn't a tab's (a tab's is sent once the tab is open, above)
+  React.useEffect(() => {
+    if (!step.event || step.tab) return undefined;
+    const t = setTimeout(() => window.dispatchEvent(new CustomEvent(step.event)), 150);
+    return () => clearTimeout(t);
+  }, [i]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // bring the step's part into view, then follow it (it can move: animations, scrolling)
   React.useEffect(() => {
     if (!target) { setRect(null); setSettled(i); return undefined; }
@@ -261,9 +330,10 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
       const r0 = el.getBoundingClientRect();
       if (r0.top < 8 || r0.bottom > window.innerHeight - 8) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    let raf = 0, still = 0, prev = null;
+    let raf = 0, still = 0, prev = null, gone = 0;
     const tick = () => {
       const r = rectOf(target);
+      if (!r && ++gone === 90) setSettled(i); // its part never showed (~1.5s): the card alone, in the middle
       if (r) {
         const same = prev && Math.abs(prev.top - r.top) < 0.5 && Math.abs(prev.left - r.left) < 0.5 && Math.abs(prev.width - r.width) < 0.5 && Math.abs(prev.height - r.height) < 0.5;
         still = same ? still + 1 : 0;
@@ -338,10 +408,11 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
           />
           <motion.span
             key={`finger-${i}`}
-            animate={{ y: [6, -4, 6] }}
+            animate={{ y: box.top + box.height + 40 > vh ? [-6, 4, -6] : [6, -4, 6] }}
             transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
-            style={{ position: 'fixed', top: box.top + box.height + 2, left: box.left + box.width / 2 - 15, fontSize: 30, pointerEvents: 'none', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,.6))' }}
-          >👆</motion.span>
+            // under the button, or over it (pointing down) when the button is at the bottom of the screen
+            style={{ position: 'fixed', top: box.top + box.height + 40 > vh ? box.top - 38 : box.top + box.height + 2, left: box.left + box.width / 2 - 15, fontSize: 30, pointerEvents: 'none', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,.6))' }}
+          >{box.top + box.height + 40 > vh ? '👇' : '👆'}</motion.span>
         </>
       )}
       {/* a hand showing the swipe */}

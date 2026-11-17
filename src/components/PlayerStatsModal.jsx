@@ -66,7 +66,7 @@ export default function PlayerStatsModal({ isOpen, onClose, selectedPlayer: init
                         </div>
 
                         {/* Table */}
-                        <div className="overflow-y-auto flex-1 px-3 pb-4 space-y-2">
+                        <div data-tour="lb-gap" className="overflow-y-auto flex-1 px-3 pb-4 space-y-2">
                             {allParticipants.map((p, index) => {
                                 const diff = (p.total_points || 0) - selectedPoints;
                                 const isSelected = p.id === selectedPlayer.id;

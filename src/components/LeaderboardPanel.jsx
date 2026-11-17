@@ -10,6 +10,7 @@ import OdometerValue from "./OdometerValue";
 import PlayerStatsModal from "./PlayerStatsModal";
 import { ShineBorder } from "@/components/magicui/shine-border";
 import { RankJourneyButton, RankJourneySheet } from "./RankJourney";
+import { Tour, TOURS, useTourSeen } from "./onboarding/RoundTour";
 
 const LEADERBOARD_ICON_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/a99a73381_image.png";
 const GENERIC_USER_AVATAR_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/314b5002f_WhatsApp2025-07-07000346_91206de8.jpg";
@@ -27,6 +28,12 @@ export default function LeaderboardPanel({ onClose, user }) {
   const [revealedIds, setRevealedIds] = useState(() => new Set());
   const [expandedId, setExpandedId] = useState(null);
   const [showJourney, setShowJourney] = useState(false);
+
+  // The table's tour, the first time it's opened, once every card has come in. Its steps show what a
+  // long press and one tap do on a real card (yours, or the first): they send the events below.
+  const [lbTour, setLbTour] = useState(null); // 'lb' | 'journey'
+  const lbGate = useTourSeen(TOURS.lb.key, 'lbtour');
+  const lbStarted = useRef(false);
 
   // Long-press vs. short-tap on the card body: a quick tap opens the profile
   // modal, holding it down (~450ms) opens the stat accordion instead.
@@ -48,6 +55,27 @@ export default function LeaderboardPanel({ onClose, user }) {
   const handlePressCancel = (participant) => {
     clearTimeout(pressTimers.current[participant.id]);
   };
+
+  const tourCardId = (participants.find((p) => p.is_current_user) || participants[0])?.id;
+  useEffect(() => {
+    if (lbStarted.current || loading || !participants.length || revealedIds.size < participants.length || !lbGate.ready || lbGate.seen()) return undefined;
+    const t = setTimeout(() => { lbStarted.current = true; setLbTour('lb'); }, 600);
+    return () => clearTimeout(t);
+  }, [loading, participants.length, revealedIds.size, lbGate.ready]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const p = () => participants.find((x) => x.id === tourCardId);
+    const expand = () => { setIsModalOpen(false); setExpandedId(tourCardId); };
+    const gap = () => { setExpandedId(null); if (p()) { setSelectedPlayer(p()); setIsModalOpen(true); } };
+    const closeGap = () => setIsModalOpen(false);
+    window.addEventListener('tour:lb-expand', expand);
+    window.addEventListener('tour:lb-gap', gap);
+    window.addEventListener('tour:lb-gap-close', closeGap);
+    return () => {
+      window.removeEventListener('tour:lb-expand', expand);
+      window.removeEventListener('tour:lb-gap', gap);
+      window.removeEventListener('tour:lb-gap-close', closeGap);
+    };
+  }, [participants, tourCardId]);
 
   const handlePlayerClick = (player) => {
     setSelectedPlayer(player);
@@ -243,7 +271,7 @@ export default function LeaderboardPanel({ onClose, user }) {
             <h2 className="text-yellow-400 text-center leading-tight py-1" style={{ fontFamily: "'Bungee Inline', sans-serif", fontWeight: 400, fontSize: 18 }}>Leaderboard</h2>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-2">
+          <div data-tour="lb-list" className="flex-1 overflow-y-auto p-2">
             {error &&
             <div className="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-lg">
                 <p className="text-red-300 text-sm text-center">{error}</p>
@@ -302,6 +330,7 @@ export default function LeaderboardPanel({ onClose, user }) {
 
                         {/* Parallelogram card */}
                         <div
+                          data-tour={participant.id === tourCardId ? 'lb-card' : undefined}
                           onPointerDown={() => handlePressStart(participant)}
                           onPointerUp={() => handlePressEnd(participant)}
                           onPointerLeave={() => handlePressCancel(participant)}
@@ -396,8 +425,8 @@ export default function LeaderboardPanel({ onClose, user }) {
           </div>
           {/* pinned to the bottom of the panel, apart from the table */}
           {!loading && participants.length > 0 &&
-          <div className="border-t border-white/10 p-2.5" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom, 0px))' }}>
-              <RankJourneyButton onClick={() => setShowJourney(true)} />
+          <div data-tour="lb-journey" className="border-t border-white/10 p-2.5" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom, 0px))' }}>
+              <RankJourneyButton onClick={() => { setShowJourney(true); if (lbTour === 'lb') setLbTour('journey'); }} />
             </div>
           }
         </div>
@@ -409,6 +438,14 @@ export default function LeaderboardPanel({ onClose, user }) {
           }
         `}</style>
         <RankJourneySheet open={showJourney} onClose={() => setShowJourney(false)} />
+        {lbTour && (
+          <Tour
+            key={lbTour}
+            steps={TOURS[lbTour].steps}
+            z={140}
+            onDone={() => { if (lbTour === 'journey') { lbGate.mark(); setLbTour(null); } }}
+          />
+        )}
         <PlayerStatsModal 
           isOpen={isModalOpen} 
           onClose={() => setIsModalOpen(false)} 

@@ -129,7 +129,7 @@ const chip = (on) => ({ background: on ? `${GOLD}26` : "rgba(255,255,255,0.07)",
 function Timeline({ pl, n, label, tick }) {
   const step = Math.min(n - 1, Math.round(pl.p));
   return (
-    <div dir="rtl" className="mt-3 flex items-center gap-3">
+    <div data-tour="rj-timeline" dir="rtl" className="mt-3 flex items-center gap-3">
       <motion.button whileTap={{ scale: 0.92 }} onClick={pl.toggle} aria-label={pl.playing ? "עצור" : "נגן"}
         className="grid h-10 w-10 shrink-0 place-items-center rounded-full" style={{ background: GREEN, color: "#0b1430", boxShadow: `0 0 20px ${GREEN}59` }}>
         {pl.playing ? <Pause size={16} fill="currentColor" /> : pl.p >= n - 1 ? <RotateCcw size={16} strokeWidth={2.6} /> : <Play size={16} fill="currentColor" className="mr-[-2px]" />}
@@ -224,7 +224,7 @@ function LanesView({ users, idx, tick, pl, sel, setSel, stepW }) {
   useEffect(follow, [Wd]);
   return (
     <div>
-      <div dir="rtl" className="mb-2 grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.ceil((P + 1) / 2)}, minmax(0, 1fr))` }}>
+      <div data-tour="rj-people" dir="rtl" className="mb-2 grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.ceil((P + 1) / 2)}, minmax(0, 1fr))` }}>
         <motion.button whileTap={{ scale: 0.94 }} onClick={() => setSel(all ? [meId || byNow[0].id] : users.map((u) => u.id))}
           className="truncate rounded-full px-1.5 py-[5px] text-[11px] font-bold transition-colors duration-200"
           style={{ background: all ? "#fff" : "rgba(255,255,255,0.06)", color: all ? "#0b1430" : "#cbd5e1", border: "1px solid rgba(255,255,255,0.18)" }}>{all ? (meId ? "רק אני" : "רק המוביל") : "כולם"}</motion.button>
@@ -303,7 +303,7 @@ export function RankJourneyView({ data, palette, showAll = true }) {
   const VIEW = [["lanes", "מסלול דירוג", "איך המקום השתנה"], ["table", "טבלה", "נקודות ומקום"]];
   return (
     <div ref={pl.ref} dir="rtl">
-      <div className="mb-3 flex flex-col gap-2.5">
+      <div data-tour="rj-views" className="mb-3 flex flex-col gap-2.5">
         <div className="grid grid-cols-2 gap-2">
           {VIEW.map(([key, l, sub]) => { const on = view === key; return (
             <motion.button whileTap={{ scale: 0.97 }} key={key} onClick={() => setView(key)} className="flex flex-col items-center rounded-xl py-1.5 transition-colors duration-200"
