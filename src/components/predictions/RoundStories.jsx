@@ -20,8 +20,9 @@ function Crest({ src, s, style }) {
   return src ? <img src={src} alt="" draggable={false} style={{ width: s, height: s, objectFit: 'contain', filter: 'drop-shadow(0 1px 3px rgba(0,0,0,.55))', ...style }} /> : null;
 }
 
-// both crests in a circle, split by a soft slanted line ('split'), or big crests meeting in the middle ('big')
-function Pair({ m, circle = 'split' }) {
+// both crests in a circle, split by a soft slanted line ('split'); big crests meeting in the middle
+// ('big'); or 'reveal': the split circle in grey, and when chosen its colour opens out from the centre
+function Pair({ m, circle = 'split', on = false }) {
   const s = CREST;
   if (circle === 'big') {
     return (
@@ -31,12 +32,20 @@ function Pair({ m, circle = 'split' }) {
       </span>
     );
   }
+  const crests = (style) => <>
+    {/* the crests keep a little room from the divider */}
+    <Crest src={m.team_a_logo} s={s * 0.37} style={{ position: 'absolute', left: s * 0.09, top: s * 0.13, ...style }} />
+    <Crest src={m.team_b_logo} s={s * 0.37} style={{ position: 'absolute', right: s * 0.09, bottom: s * 0.13, ...style }} />
+  </>;
   return (
     <span style={{ position: 'relative', width: s, height: s, borderRadius: '50%', overflow: 'hidden', display: 'block', background: '#0b1426' }}>
       <span style={{ position: 'absolute', inset: 0, clipPath: 'polygon(0 0,62% 0,38% 100%,0 100%)', background: 'rgba(255,255,255,.06)' }} />
-      {/* the crests keep a little room from the divider */}
-      <Crest src={m.team_a_logo} s={s * 0.37} style={{ position: 'absolute', left: s * 0.09, top: s * 0.13 }} />
-      <Crest src={m.team_b_logo} s={s * 0.37} style={{ position: 'absolute', right: s * 0.09, bottom: s * 0.13 }} />
+      {circle === 'reveal' ? <>
+        {crests({ filter: 'grayscale(1) brightness(.85) drop-shadow(0 1px 3px rgba(0,0,0,.55))' })}
+        <motion.span initial={false} animate={{ clipPath: on ? 'circle(75% at 50% 50%)' : 'circle(0% at 50% 50%)' }} transition={{ duration: 0.5, ease: 'easeOut' }} style={{ position: 'absolute', inset: 0 }}>
+          {crests()}
+        </motion.span>
+      </> : crests()}
       {/* slanted divider: brighter in the middle, fading out at both ends */}
       <span style={{ position: 'absolute', left: '50%', top: -4, bottom: -4, width: 1, marginLeft: -0.5, background: 'linear-gradient(transparent,rgba(255,255,255,.5),transparent)', transform: 'rotate(14deg)' }} />
     </span>
@@ -84,7 +93,7 @@ export default function RoundStories({ dateKeys, matchesByDate, selectedId, onSe
                     transition={on ? { duration: 6, repeat: Infinity, ease: 'linear' } : { duration: 0.4 }}
                     style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: RING[statusOf(m)], ...RING_MASK }}
                   />
-                  <Pair m={m} circle={circle} />
+                  <Pair m={m} circle={circle} on={on} />
                 </motion.span>
               </button>
             );

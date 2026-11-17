@@ -418,11 +418,13 @@ export default function Predictions() {
 
   const sortedDateKeys = useMemo(() => Object.keys(matchesByDate).sort(), [matchesByDate]);
 
-  // Rounds 7 and 8 (the test rounds) try the "stories" layout: a strip of the round's matches on top, and
-  // one match card at a time below it (picked in the strip, or by swiping the card sideways). Round 7
-  // draws the strip's circles with big crests meeting in the middle. Other rounds unchanged.
-  const storyMode = currentRound?.order === 8 || currentRound?.order === 7;
-  const storyCircle = currentRound?.order === 7 ? 'big' : 'split';
+  // Rounds 6, 7 and 8 (the test rounds) try the "stories" layout: a strip of the round's matches on top,
+  // and one match card at a time below it (picked in the strip, or by swiping the card sideways). Each
+  // draws the strip's circles its own way: 8 split by a soft line, 7 big crests meeting in the middle,
+  // 6 grey crests whose colour opens out from the centre when chosen. Other rounds unchanged.
+  const STORY_CIRCLES = { 6: 'reveal', 7: 'big', 8: 'split' };
+  const storyMode = !!STORY_CIRCLES[currentRound?.order];
+  const storyCircle = STORY_CIRCLES[currentRound?.order] || 'split';
   const storyModeRef = useRef(false);
   storyModeRef.current = storyMode;
   const [storyId, setStoryId] = useState(null);
