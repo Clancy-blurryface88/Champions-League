@@ -430,7 +430,10 @@ export default function Predictions() {
     if (p && p.predicted_score_a != null && p.predicted_score_b != null) return 'done';
     return isMatchLocked(m.match_date) ? 'missed' : 'todo';
   };
+  // the crests reveal (first visit to a round) plays on each card the first time it is shown, not again
+  const revealedRef = useRef(new Set());
   const pickStory = (id) => {
+    if (storyId && storyId !== id) revealedRef.current.add(storyId);
     if (storyId) storyDirRef.current = storyFlat.findIndex((m) => m.id === id) >= storyFlat.findIndex((m) => m.id === storyId) ? 1 : -1;
     setStoryId(id);
     const m = matches.find((x) => x.id === id);
@@ -912,7 +915,7 @@ export default function Predictions() {
                               'drop-shadow(0 4px 10px rgba(0,0,0,0.5))',
                             ]}}
                             transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}>
-                            <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-[77px] h-[77px]" animate={shouldAnimate} rounded="md" />
+                            <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-[77px] h-[77px]" animate={shouldAnimate && !(storyMode && revealedRef.current.has(match.id))} rounded="md" />
                           </motion.div>
                         </div>
 
@@ -952,7 +955,7 @@ export default function Predictions() {
                               'drop-shadow(0 4px 10px rgba(0,0,0,0.5))',
                             ]}}
                             transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut', delay: 1.4 }}>
-                            <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-[77px] h-[77px]" animate={shouldAnimate} rounded="md" />
+                            <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-[77px] h-[77px]" animate={shouldAnimate && !(storyMode && revealedRef.current.has(match.id))} rounded="md" />
                           </motion.div>
                         </div>
 
