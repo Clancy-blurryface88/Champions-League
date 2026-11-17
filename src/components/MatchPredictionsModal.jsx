@@ -1,7 +1,9 @@
 import TeamFlag from "@/components/TeamFlag";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import React, { useState, useEffect, useCallback } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { createPortal } from "react-dom";
+import MatchupPlates from "@/components/predictions/MatchupPlates";
+import useCrestColours from "@/hooks/useCrestColours";
 import CrowdWisdomStats from "@/components/predictions/CrowdWisdomStats";
 import { Prediction } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
@@ -11,7 +13,7 @@ import { useModalBackButton } from "@/hooks/useModalBackButton";
 import { PREDICTION_LOCK_MINUTES } from "@/config/tournament";
 
 // ── Slot digit ────────────────────────────────────────────────────────────────
-function SlotDigit({ target, delay = 0 }) {
+function SlotDigit({ target, delay = 0, small = false }) {
   const [num, setNum]       = useState(Math.floor(Math.random() * 9));
   const [settled, setSettled] = useState(false);
 
@@ -35,7 +37,7 @@ function SlotDigit({ target, delay = 0 }) {
     <motion.span
       animate={{ color: settled ? '#097adc' : '#475569' }}
       transition={{ duration: 0.2 }}
-      className="font-black text-2xl tabular-nums leading-none"
+      className={`font-black ${small ? "text-lg" : "text-2xl"} tabular-nums leading-none`}
     >
       {num}
     </motion.span>
@@ -43,12 +45,12 @@ function SlotDigit({ target, delay = 0 }) {
 }
 
 // ── Slot score ────────────────────────────────────────────────────────────────
-function SlotScore({ scoreA, scoreB, delay = 0 }) {
+function SlotScore({ scoreA, scoreB, delay = 0, small = false }) {
   return (
-    <div className="flex items-center gap-1.5">
-      <SlotDigit target={scoreA} delay={delay} />
-      <span className="text-white/30 font-bold text-xl leading-none">–</span>
-      <SlotDigit target={scoreB} delay={delay + 0.15} />
+    <div dir="ltr" className="flex items-center gap-1.5">
+      <SlotDigit target={scoreA} delay={delay} small={small} />
+      <span className={`text-white/30 font-bold ${small ? "text-base" : "text-xl"} leading-none`}>–</span>
+      <SlotDigit target={scoreB} delay={delay + 0.15} small={small} />
     </div>
   );
 }
@@ -79,6 +81,9 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
   }, [isOpen, match, loadPredictions]);
 
   useModalBackButton(isOpen, onClose);
+  // the two clubs' colours, to tell their columns apart
+  const colA = useCrestColours(match?.team_a_logo)[0];
+  const colB = useCrestColours(match?.team_b_logo)[0];
 
 
   const getUserName = (userId) =>
@@ -111,108 +116,94 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
   const lockTime  = new Date(new Date(match.match_date).getTime() - PREDICTION_LOCK_MINUTES * 60 * 1000);
   const isLocked  = new Date() >= lockTime || match.is_finished;
   const grouped   = getGrouped();
+  // every prediction, in today's order (by group), with the delays of today's entrance
+  const rows = grouped.flatMap((g, gi) => g.users.map((name, ui) => ({ name, a: g.scoreA, b: g.scoreB, gi, ui })));
+  const outcome = (r) => (r.a > r.b ? 0 : r.a === r.b ? 1 : 2);
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent
-        className="p-0 fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-3xl max-w-sm w-full max-h-[85vh] overflow-hidden flex flex-col [&>button:last-child]:hidden border-0"
-        style={{
-          background: 'rgba(5, 10, 25, 0.72)',
-          backdropFilter: 'blur(40px) saturate(1.8)',
-          WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
-          boxShadow: '0 0 0 1px rgba(9, 122, 220,0.18), 0 32px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.07)',
-        }}
-      >
-        {/* Top gradient line */}
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-sky-400/70 to-transparent flex-shrink-0" />
-
-        {/* Back button */}
-        <div className="px-5 pt-4 pb-0 flex-shrink-0">
-          <button
-            onClick={onClose}
-            className="w-full py-2.5 rounded-2xl text-sm font-medium transition-colors tracking-wide"
-            style={{
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: 'rgba(255,255,255,0.45)',
-            }}
-          >
-            חזרה לדף הקודם
-          </button>
-        </div>
-
-        {/* Divider */}
-        <div className="flex items-center gap-3 px-5 py-2 flex-shrink-0">
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-sky-400/50" />
-          <span className="text-sky-400/70 text-[10px] uppercase tracking-[0.2em] font-semibold">ניחושים</span>
-          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-sky-400/50" />
-        </div>
-
-        {/* Predictions */}
-        <div className="flex-1 overflow-y-auto px-4 pb-3 space-y-2">
-          {loading ? (
-            <div className="flex justify-center py-10"><OrbitSpinner size={36} /></div>
-          ) : !isLocked ? (
-            <div className="flex flex-col items-center justify-center py-10 gap-3 text-center">
-              <Lock className="w-7 h-7 text-sky-400/30" />
-              <p className="text-white/40 text-sm">הניחושים ייחשפו לאחר נעילת המשחק</p>
-              <p className="text-white/20 text-xs" dir="rtl">{PREDICTION_LOCK_MINUTES} דקות לפני תחילת המשחק</p>
+  return createPortal(
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          key="bets-panel"
+          className="fixed inset-0 z-[80] text-white"
+          dir="rtl"
+          // rises from the bottom like a bottom sheet and drops back down on close
+          initial={{ y: '100%' }}
+          animate={{ y: 0, transition: { duration: 0.42, ease: [0.32, 0.72, 0, 1] } }}
+          exit={{ y: '100%', transition: { duration: 0.28, ease: [0.4, 0, 1, 1] } }}
+          style={{ background: 'linear-gradient(170deg,#0f2e1f 0%,#0a1a2a 45%,#070b18 100%)' }}
+        >
+          <div className="mx-auto flex h-full max-w-md flex-col">
+            {/* header: the window's name and a close button, like 1X2 */}
+            <div className="flex items-center justify-between px-4 pt-4 pb-2">
+              <span className="inline-block font-bold text-[11px] px-2.5 py-0.5" style={{ background: 'linear-gradient(135deg,#16a34a,#15803d)', color: '#fff', transform: 'skewX(-12deg)' }}>
+                <span className="inline-block" style={{ transform: 'skewX(12deg)' }}>BETS</span>
+              </span>
+              <button onClick={onClose} aria-label="סגירה" className="w-9 h-9 grid place-items-center text-white/80" style={{ background: 'rgba(255,255,255,.08)', transform: 'skewX(-10deg)' }}>
+                <span style={{ transform: 'skewX(10deg)' }}>✕</span>
+              </button>
             </div>
-          ) : grouped.length === 0 ? (
-            <div className="flex justify-center py-10">
-              <p className="text-white/25 text-sm">אין ניחושים למשחק זה</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {grouped.map((group, gi) => (
-                <div key={`${group.scoreA}-${group.scoreB}`} className="space-y-1.5">
-                  {group.users.map((name, ui) => {
-                    const rowDelay = gi * 0.15 + ui * 0.08;
-                    const gradientOpacity = Math.max(0.05, 0.15 - gi * 0.025);
-                    return (
-                      <motion.div
-                        key={`${gi}-${ui}`}
-                        initial={{ opacity: 0, x: 20, filter: 'blur(6px)' }}
-                        animate={{ opacity: 1, x: 0,  filter: 'blur(0px)' }}
-                        transition={{ delay: rowDelay, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                        className="relative flex items-center justify-between px-4 py-2 rounded-2xl overflow-hidden"
-                        style={{
-                          border: '1px solid rgba(255,255,255,0.08)',
-                          backdropFilter: 'blur(12px)',
-                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
-                        }}
-                      >
-                        {/* Background gradient — progress style, no effect on score */}
-                        <div
-                          className="absolute inset-0 pointer-events-none"
-                          style={{ background: `linear-gradient(90deg, rgba(59,130,246,${gradientOpacity}) 0%, transparent 65%)` }}
-                        />
-                        <span className="relative text-white/85 text-sm font-semibold truncate flex-1 min-w-0">
-                          {name}
-                        </span>
-                        <div className="relative flex items-center gap-2 flex-shrink-0">
-                          <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-5 h-5 opacity-75" />
-                          {/* Slot Machine — delay based on group, not per user row */}
-                          <SlotScore scoreA={group.scoreA} scoreB={group.scoreB} delay={gi * 0.15 + 0.1} />
-                          <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-5 h-5 opacity-75" />
-                        </div>
-                      </motion.div>
-                    );
-                  })}
+            <MatchupPlates match={match} className="mx-3" />
+
+            <div className="flex-1 overflow-y-auto overscroll-contain px-3 pt-4 pb-8">
+              {loading ? (
+                <div className="flex justify-center py-10"><OrbitSpinner size={36} /></div>
+              ) : !isLocked ? (
+                <div className="flex flex-col items-center justify-center py-10 gap-3 text-center">
+                  <Lock className="w-7 h-7 text-sky-400/30" />
+                  <p className="text-white/40 text-sm">הניחושים ייחשפו לאחר נעילת המשחק</p>
+                  <p className="text-white/20 text-xs" dir="rtl">{PREDICTION_LOCK_MINUTES} דקות לפני תחילת המשחק</p>
                 </div>
-              ))}
+              ) : rows.length === 0 ? (
+                <div className="flex justify-center py-10"><p className="text-white/25 text-sm">אין ניחושים למשחק זה</p></div>
+              ) : (
+                <>
+                  {/* three columns: home win / draw / away win — each prediction under its outcome;
+                      the clubs' columns are tinted in their own colours */}
+                  <div dir="ltr" className="grid grid-cols-3 gap-1.5">
+                    {[0, 1, 2].map((k) => {
+                      const list = rows.filter((r) => outcome(r) === k);
+                      const c = k === 0 ? colA : k === 2 ? colB : null;
+                      return (
+                        <div key={k} className="flex flex-col gap-1.5">
+                          <div className="flex flex-col items-center gap-1 py-2 rounded-xl" style={{
+                            background: c ? `linear-gradient(180deg, ${c}66, ${c}22)` : 'rgba(255,255,255,0.07)',
+                            border: `1px solid ${c ? `${c}aa` : 'rgba(255,255,255,0.12)'}`,
+                          }}>
+                            {k === 1
+                              ? <span style={{ fontFamily: 'var(--num-font)', fontWeight: 900, fontSize: 20, lineHeight: '26px' }}>X</span>
+                              : <TeamFlag logo={k === 0 ? match.team_a_logo : match.team_b_logo} name={k === 0 ? match.team_a : match.team_b} className="w-[26px] h-[26px]" animate={false} />}
+                            <span style={{ fontFamily: 'var(--num-font)', fontWeight: 900, fontSize: 12, color: 'rgba(255,255,255,0.75)' }}>{list.length}</span>
+                          </div>
+                          {list.map((r) => (
+                            <motion.div
+                              key={`${r.gi}-${r.ui}`}
+                              initial={{ opacity: 0, x: 20, filter: 'blur(6px)' }}
+                              animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                              transition={{ delay: r.gi * 0.15 + r.ui * 0.08, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                              className="flex flex-col items-center gap-0.5 px-1 py-1.5 rounded-xl"
+                              style={{ background: c ? `${c}14` : 'rgba(255,255,255,0.04)', border: `1px solid ${c ? `${c}40` : 'rgba(255,255,255,0.08)'}` }}
+                            >
+                              <span dir="rtl" className="text-[11px] font-bold truncate max-w-full">{r.name}</span>
+                              <SlotScore scoreA={r.a} scoreB={r.b} delay={r.gi * 0.15 + 0.1} small />
+                            </motion.div>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
 
-              {/* The crowd's 1/X/2 split — under everyone's predictions */}
-              <div className="pt-2">
-                <CrowdWisdomStats matchId={match.id} teamA={match.team_a} teamB={match.team_b} />
-              </div>
+                  {/* The crowd's 1/X/2 split — under everyone's predictions */}
+                  <div className="pt-4">
+                    <CrowdWisdomStats matchId={match.id} teamA={match.team_a} teamB={match.team_b} />
+                  </div>
+                </>
+              )}
             </div>
-          )}
-        </div>
-
-        {/* Bottom line */}
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-sky-400/30 to-transparent flex-shrink-0" />
-      </DialogContent>
-    </Dialog>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>,
+    document.body
   );
 }
