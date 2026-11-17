@@ -142,8 +142,9 @@ export function Tour({ steps, storageKey, onDone, badge, z = 120 }) {
               {steps.map((_, k) => <span key={k} style={{ width: k === i ? 16 : 6, height: 6, borderRadius: 3, background: k <= i ? '#facc15' : 'rgba(255,255,255,0.22)', transition: 'all .25s' }} />)}
             </div>
             <div className="flex gap-2">
+              {/* on the last step, "watch again" goes back to the first step instead of one step back */}
               {i > 0 && (
-                <button type="button" onClick={() => setI(i - 1)} style={{ padding: '7px 12px', borderRadius: 12, font: '700 12px Outfit, system-ui', color: 'rgba(255,255,255,0.75)', background: 'rgba(255,255,255,0.08)' }}>הקודם</button>
+                <button type="button" onClick={() => setI(last ? 0 : i - 1)} style={{ padding: '7px 12px', borderRadius: 12, font: '700 12px Outfit, system-ui', color: 'rgba(255,255,255,0.75)', background: 'rgba(255,255,255,0.08)' }}>{last ? '↻ צפה שוב' : 'הקודם'}</button>
               )}
               <button type="button" onClick={() => (last ? finish() : setI(i + 1))} style={{ padding: '7px 16px', borderRadius: 12, font: '800 12px Outfit, system-ui', color: '#1a1405', background: 'linear-gradient(135deg,#fde047,#eab308)' }}>
                 {last ? 'יאללה, מתחילים' : 'הבא'}
