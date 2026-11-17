@@ -99,7 +99,7 @@ export default function RoundStories({ dateKeys, matchesByDate, selectedId, onSe
 
   return (
     // scrolls sideways only: no vertical scrolling or overscroll, so the strip stays put
-    <div ref={ref} dir="rtl" style={{ display: 'flex', alignItems: 'center', gap: 10, overflowX: 'auto', overflowY: 'hidden', overscrollBehavior: 'contain', touchAction: 'pan-x', scrollbarWidth: 'none', padding: '12px 6px 10px', marginTop: 0 }}>
+    <div ref={ref} data-tour="strip" dir="rtl" style={{ display: 'flex', alignItems: 'center', gap: 10, overflowX: 'auto', overflowY: 'hidden', overscrollBehavior: 'contain', touchAction: 'pan-x', scrollbarWidth: 'none', padding: '12px 6px 10px', marginTop: 0 }}>
       <style>{RING_CSS}</style>
       {dateKeys.map((key) => (
         // one group per day, so its sticky mark only sticks while the day's matches are in view

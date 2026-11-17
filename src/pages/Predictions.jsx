@@ -32,6 +32,7 @@ import CountdownSwap from "../components/predictions/CountdownSwap";
 import RankSheen from "../components/predictions/RankSheen";
 import RoundStories from "../components/predictions/RoundStories";
 import { storySlide } from "../components/predictions/storySlide";
+import RoundTour, { ROUND_TOUR_KEY } from "../components/onboarding/RoundTour";
 import RoundHeader from "../components/predictions/RoundHeader";
 import TeamFlag from "@/components/TeamFlag";
 import LeagueTableModal from "@/components/LeagueTableModal";
@@ -453,6 +454,17 @@ export default function Predictions() {
     const j = Math.max(0, Math.min(storyFlat.length - 1, i + d));
     if (storyFlat[j] && j !== i) pickStory(storyFlat[j].id);
   };
+  // first visit: the round page's short tour (once; ?tour in the address shows it again)
+  const [tourOn, setTourOn] = useState(false);
+  useEffect(() => {
+    if (!storyMode || !storyId || loading) return undefined;
+    let seen = false;
+    try { seen = localStorage.getItem(ROUND_TOUR_KEY) === 'done'; } catch {}
+    if (seen && !new URLSearchParams(window.location.search).has('tour')) return undefined;
+    const t = setTimeout(() => setTourOn(true), 900); // after the sheet and the card have come in
+    return () => clearTimeout(t);
+  }, [storyMode, storyId, loading]);
+
   // open on the first match still waiting for a prediction (or the next one to play)
   useEffect(() => {
     if (!storyMode || storyId || !storyFlat.length) return;
@@ -854,6 +866,7 @@ export default function Predictions() {
                 // while the next one slides in from the other side. Right-to-left app: dragging to the
                 // right brings the next match (the one to the left in the strip), to the left the previous.
                 {...(storyMode ? {
+                  'data-tour': 'card',
                   custom: storyDirRef.current,
                   variants: storySlide().variants,
                   initial: 'enter',
@@ -940,7 +953,7 @@ export default function Predictions() {
                         </div>
 
                         {/* Score — spans both rows, centered */}
-                        <div className="flex items-center gap-2 px-1"
+                        <div data-tour="score" className="flex items-center gap-2 px-1"
                              style={{ gridColumn: 2, gridRow: '1 / 3', alignSelf: 'center', marginTop: -10 }}>
                           {!isLocked ? (
                             <>
@@ -1064,7 +1077,7 @@ export default function Predictions() {
 
                     {/* The bottom buttons (1 X 2 / match arena / ניחושים), split like the days bar. Solid
                         gradients only: clip-path together with backdrop-filter broke rendering before. */}
-                    <div className={storyMode ? 'mt-5 flex justify-center' : '-mx-3 -mb-3 mt-5'}>
+                    <div data-tour="actions" className={storyMode ? 'mt-5 flex justify-center' : '-mx-3 -mb-3 mt-5'}>
                       <CardActions
                         pill={storyMode}
                         onOdds={() => handleShowScoringRules(match)}
@@ -1093,7 +1106,7 @@ export default function Predictions() {
 
       {/* Round over → gold "replay" button in the same bottom bar as "send predictions" */}
       {roundOver && (
-        <div className="absolute bottom-0 left-0 right-0 flex justify-center px-4 py-2 border-t border-white/[0.08] z-20 rounded-t-3xl" style={{ background: 'rgba(10,18,40,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)' }}>
+        <div data-tour="bottom" className="absolute bottom-0 left-0 right-0 flex justify-center px-4 py-2 border-t border-white/[0.08] z-20 rounded-t-3xl" style={{ background: 'rgba(10,18,40,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)' }}>
           <motion.button
             onClick={() => navigate(createPageUrl(`Replay?round_id=${roundId}`))}
             initial={{ opacity: 0, y: 16, scale: 0.92 }}
@@ -1117,7 +1130,7 @@ export default function Predictions() {
       {/* An evening of the round is over but nothing is left to predict (the next evening's
           matches are all locked and still running) → the same gold button, for that evening */}
       {!roundOver && lastOverNight && !matches.some((match) => !isMatchLocked(match.match_date)) && (
-        <div className="absolute bottom-0 left-0 right-0 flex justify-center px-4 py-2 border-t border-white/[0.08] z-20 rounded-t-3xl" style={{ background: 'rgba(10,18,40,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)' }}>
+        <div data-tour="bottom" className="absolute bottom-0 left-0 right-0 flex justify-center px-4 py-2 border-t border-white/[0.08] z-20 rounded-t-3xl" style={{ background: 'rgba(10,18,40,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)' }}>
           <motion.button
             onClick={openNightReplay}
             initial={{ opacity: 0, y: 16, scale: 0.92 }}
@@ -1143,7 +1156,7 @@ export default function Predictions() {
         const allDone = areAllPredictionsComplete();
         const pct = total > 0 ? (filled / total) * 100 : 0;
         return (
-          <div className="absolute bottom-0 left-0 right-0 flex justify-center px-4 py-2 border-t border-white/[0.08] z-20 rounded-t-3xl" style={{ background: 'rgba(10,18,40,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)' }}>
+          <div data-tour="bottom" className="absolute bottom-0 left-0 right-0 flex justify-center px-4 py-2 border-t border-white/[0.08] z-20 rounded-t-3xl" style={{ background: 'rgba(10,18,40,0.35)', backdropFilter: 'blur(28px) saturate(1.6)', WebkitBackdropFilter: 'blur(28px) saturate(1.6)' }}>
           {/* the send/update button, and — once an evening of the round is over — a gold
               replay square for that evening at its end, in the same slanted-plate style */}
           <div className="w-full max-w-sm flex items-stretch gap-1 h-[50px]" dir="ltr">
@@ -1244,6 +1257,8 @@ export default function Predictions() {
 
 
         {/* NEW: Predictions Modal */}
+        {tourOn && <RoundTour onDone={() => setTourOn(false)} />}
+
         <MatchPredictionsModal
           isOpen={showPredictionsModal}
           onClose={handleClosePredictions}
