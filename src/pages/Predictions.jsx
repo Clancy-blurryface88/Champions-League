@@ -469,16 +469,13 @@ export default function Predictions() {
     if (currentRound?.order !== 5 || demoMatch !== undefined) return;
     (async () => {
       try {
-        // round 4 — or the latest earlier round that has finished matches
-        for (const order of [4, 3, 2, 1]) {
-          const [rd] = await Round.filter({ order });
-          if (!rd) continue;
-          const ms = (await Match.filter({ round_id: rd.id })).filter((m) => m.is_finished);
-          const pick = ms.find((m) => m.score_odds && Object.keys(m.score_odds).length) || ms[0];
-          if (pick) { setDemoMatch({ ...pick, _order: order }); return; }
-        }
-      } catch { /* no example: the windows' parts are skipped */ }
-      setDemoMatch(null);
+        // the latest finished match (one with exact-score odds if there is one), and its round's number
+        const [ms, rs] = await Promise.all([Match.filter({ is_finished: true }), Round.list()]);
+        const odds = ms.filter((m) => m.score_odds && Object.keys(m.score_odds).length);
+        const pick = [...(odds.length ? odds : ms)].sort((a, b) => new Date(b.match_date) - new Date(a.match_date))[0];
+        if (pick) { setDemoMatch({ ...pick, _order: Number(rs.find((x) => x.id === pick.round_id)?.order) || undefined }); return; }
+      } catch (e) { console.warn('tour example match', e); }
+      setDemoMatch(null); // no example: the windows are shown on the real match
     })();
   }, [currentRound?.order]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -486,7 +483,7 @@ export default function Predictions() {
     const replay = new URLSearchParams(window.location.search).has('tour');
     let seg = null;
     if (replay || !tourDone('round')) seg = 'round';
-    else if (demoMatch) seg = ['x12', 'arena', 'bets'].filter((k) => !tourDone(k)).map((k) => `tap-${k}`)[0] || null;
+    else seg = ['x12', 'arena', 'bets'].filter((k) => !tourDone(k)).map((k) => `tap-${k}`)[0] || null;
     if (!seg) return undefined;
     const t = setTimeout(() => { tourStartedRef.current = true; setTourSeg(seg); }, 900); // after the sheet and the card
     return () => clearTimeout(t);
@@ -494,7 +491,7 @@ export default function Predictions() {
   // the next part, once the window before it has slid away
   const tourThen = (next) => { setTourSeg(null); setTimeout(() => setTourSeg(next), 450); };
   const onTourDone = (seg) => {
-    if (seg === 'round') { markTour('round'); setTourSeg(demoMatch ? 'tap-x12' : null); }
+    if (seg === 'round') { markTour('round'); setTourSeg('tap-x12'); }
     else if (seg === 'x12') { markTour('x12'); handleCloseScoringRules(); tourThen('tap-arena'); }
     else if (seg === 'arena') { markTour('arena'); if (tourArenaRef.current) toggleArena(tourArenaRef.current); tourThen('tap-bets'); }
   };
@@ -660,9 +657,9 @@ export default function Predictions() {
 
   // NEW: Handle scoring rules modal open
   const handleShowScoringRules = (realMatch) => {
-    const touring = tourSeg === 'tap-x12' && demoMatch;
+    const touring = tourSeg === 'tap-x12';
     if (touring) setTourSeg('x12');
-    const match = touring ? demoMatch : realMatch;
+    const match = touring && demoMatch ? demoMatch : realMatch;
     // the panel grows out of this match card
     setRulesOriginRect(matchCardRefs.current[realMatch.id]?.getBoundingClientRect() || null);
     setSelectedMatchForRules(match);
@@ -677,9 +674,9 @@ export default function Predictions() {
 
   // NEW: Handle predictions modal open
   const handleShowPredictions = (realMatch) => {
-    const touring = tourSeg === 'tap-bets' && demoMatch;
+    const touring = tourSeg === 'tap-bets';
     if (touring) setTourSeg('bets');
-    setSelectedMatchForPredictions(touring ? demoMatch : realMatch);
+    setSelectedMatchForPredictions(touring && demoMatch ? demoMatch : realMatch);
     setShowPredictionsModal(true);
   };
 
@@ -1305,7 +1302,7 @@ export default function Predictions() {
           <Tour
             key={tourSeg}
             steps={TOURS[tourSeg].steps}
-            badge={TOURS[tourSeg].example ? `דוגמה ממשחק במחזור ${demoMatch?._order ?? 4}` : undefined}
+            badge={TOURS[tourSeg].example && demoMatch ? (demoMatch._order ? `דוגמה ממשחק במחזור ${demoMatch._order}` : 'דוגמה ממשחק קודם') : undefined}
             z={TOURS[tourSeg].example ? 140 : 120}
             onDone={() => onTourDone(tourSeg)}
           />
