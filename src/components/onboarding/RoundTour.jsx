@@ -70,7 +70,7 @@ const ROUND = [
 const tapLines = ['לחצו על הכפתור המסומן'];
 
 export const TOURS = {
-  round: { key: 'tour_round_v3', steps: ROUND },
+  round: { key: 'tour_round_v4', steps: ROUND },
   'tap-x12': { steps: [
     { target: 'actions', radius: 18, pad: 6, title: 'לפני שמנחשים', subtitle: 'שלושה כפתורי מידע', rows: [
       { key: '1X2', color: BLUE, ltr: true, text: 'ניקוד ויחסים לכל ניחוש ותוצאת המשחק' },
@@ -79,7 +79,7 @@ export const TOURS = {
     ] },
     { tap: true, target: 'btn-odds', radius: 12, pad: 4, title: 'נתחיל ב-1X2', lines: tapLines },
   ] },
-  x12: { key: 'tour_x12_v4', example: true, steps: [
+  x12: { key: 'tour_x12_v5', example: true, steps: [
     { tab: 'sim', event: 'tour:sim-demo', place: 'top', target: 'x12-body', noScroll: true, radius: 16, pad: 4, title: 'סימולטור',
       intro: ['בעזרת הסימולטור ניתן לראות כמה נקודות צפויות לכל תוצאה, על פי יחסי תוצאות המשחקים', 'לדוגמה: 1–1, ואחר כך 2–2'], rows: [
       { key: 'בורר התוצאה', color: Y, text: 'ניתן לגלילה – בוחרים תוצאה לכל קבוצה' },
@@ -99,7 +99,7 @@ export const TOURS = {
   'tap-arena': { steps: [
     { tap: true, target: 'btn-arena', radius: 12, pad: 4, title: 'עכשיו – זירת המשחק', lines: tapLines },
   ] },
-  arena: { key: 'tour_arena_v4', example: true, steps: [
+  arena: { key: 'tour_arena_v5', example: true, steps: [
     { tab: 'odds', target: 'arena-body', noScroll: true, radius: 16, pad: 4, title: 'תחזית', subtitle: 'הצגת יחסי סיכוי מנותחת לפי יחסי ההימורים', rows: [
       { key: 'אחוזים', color: Y, text: 'הסיכוי של כל קבוצה לנצח או לסיים בתיקו' },
       { key: 'תוצאות', color: G, text: 'תוצאות עם יחס הסיכוי הגבוה ביותר' },
@@ -128,7 +128,7 @@ export const TOURS = {
   'tap-bets': { steps: [
     { tap: true, target: 'btn-bets', radius: 12, pad: 4, title: 'כעת נעבור לכפתור האחרון בכרטיס המשחק – BETS', lines: tapLines },
   ] },
-  bets: { key: 'tour_bets_v3', example: true, steps: [
+  bets: { key: 'tour_bets_v4', example: true, steps: [
     { target: 'bets-cols', noScroll: true, radius: 16, pad: 6, title: 'BETS', subtitle: 'הניחושים של כל המשתתפים', rows: [
       { key: 'מתי', color: GREY, text: 'הניחושים נחשפים 10 דקות לפני המשחק, לאחר נעילת הניחושים' },
       { key: 'אחוזים', color: Y, text: 'הצגת אחוזי ניחוש עבור כל אפשרות' },
