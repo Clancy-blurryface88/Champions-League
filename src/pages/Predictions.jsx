@@ -31,6 +31,7 @@ import MatchDateTag from "../components/predictions/MatchDateTag";
 import CountdownSwap from "../components/predictions/CountdownSwap";
 import RankSheen from "../components/predictions/RankSheen";
 import RoundStories from "../components/predictions/RoundStories";
+import { storySlide } from "../components/predictions/storySlide";
 import RoundHeader from "../components/predictions/RoundHeader";
 import TeamFlag from "@/components/TeamFlag";
 import LeagueTableModal from "@/components/LeagueTableModal";
@@ -45,13 +46,6 @@ import { pickWeightedScore } from '@/utils/pickWeightedScore';
 // the (Home) / (Away) labels under the crests: Exo 2, italic
 const HOME_AWAY_FONT = { fontFamily: "'Exo 2', sans-serif", fontWeight: 800, fontStyle: 'italic', fontSize: 11, letterSpacing: '0.02em' };
 
-// stories: how a card slides in and out (custom = 1 going to the next match, -1 to the previous):
-// the next one comes in from the left and the old card leaves to the right; the previous the other way
-const STORY_SLIDE = {
-  enter: (d) => ({ x: d > 0 ? -380 : 380, opacity: 0 }),
-  center: { x: 0, opacity: 1 },
-  exit: (d) => ({ x: d > 0 ? 380 : -380, opacity: 0 }),
-};
 
 // --- Standings helper: single flat league table, no groups ---
 function _computeTeamPositions(allMatches, leagueTableOverride = []) {
@@ -861,11 +855,11 @@ export default function Predictions() {
                 // right brings the next match (the one to the left in the strip), to the left the previous.
                 {...(storyMode ? {
                   custom: storyDirRef.current,
-                  variants: STORY_SLIDE,
+                  variants: storySlide().variants,
                   initial: 'enter',
                   animate: 'center',
                   exit: 'exit',
-                  transition: { x: { type: 'spring', stiffness: 260, damping: 30 }, opacity: { duration: 0.2 } },
+                  transition: storySlide().transition,
                   drag: 'x',
                   dragDirectionLock: true,
                   dragConstraints: { left: 0, right: 0 },
