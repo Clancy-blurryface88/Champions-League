@@ -16,6 +16,8 @@ export default function RankSheen({ value, color }) {
           backgroundImage: `linear-gradient(110deg, ${color} 30%, #ffffffdd 50%, ${color} 70%)`,
           backgroundSize: '300% 100%', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent',
           animation: 'rank-sheen 4.6s ease-in-out infinite',
+          // a little brighter, with a soft dark outline, so it reads on the card art
+          filter: 'brightness(1.15) drop-shadow(0 1px 2px rgba(0,0,0,0.85))',
         }}
       >
         {value}
