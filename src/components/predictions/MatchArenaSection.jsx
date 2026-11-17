@@ -651,7 +651,7 @@ export default function MatchArenaSection({ match, allMatches, loading, onClose,
           })}
         </div>
 
-        <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-6">
+        <div data-tour="arena-scroll" className="flex-1 overflow-y-auto overscroll-contain px-4 pb-6">
           <AnimatePresence mode="wait">
             <motion.div key={tab} {...sheetFade} data-tour="arena-body">{body}</motion.div>
           </AnimatePresence>

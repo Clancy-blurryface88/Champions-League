@@ -80,18 +80,18 @@ export const TOURS = {
     { tap: true, target: 'btn-odds', radius: 12, pad: 4, title: 'נתחיל ב-1X2', lines: tapLines },
   ] },
   x12: { key: 'tour_x12_v5', example: true, steps: [
-    { tab: 'sim', event: 'tour:sim-demo', place: 'top', target: 'x12-body', noScroll: true, radius: 16, pad: 4, title: 'סימולטור',
+    { tab: 'sim', event: 'tour:sim-demo', place: 'top', target: 'x12-scroll', noScroll: true, radius: 16, pad: 4, title: 'סימולטור',
       intro: ['בעזרת הסימולטור ניתן לראות כמה נקודות צפויות לכל תוצאה, על פי יחסי תוצאות המשחקים', 'לדוגמה: 1–1, ואחר כך 2–2'], rows: [
       { key: 'בורר התוצאה', color: Y, text: 'ניתן לגלילה – בוחרים תוצאה לכל קבוצה' },
       { key: 'פירוט', color: G, text: 'תצוגה של הנקודות לכל רכיב בניחוש' },
       { key: 'סה״כ', color: W, text: 'הניקוד הכולל לתוצאה במקרה של פגיעה' },
     ] },
-    { tab: 'markets', target: 'x12-body', noScroll: true, radius: 16, pad: 4, title: 'יחסים', subtitle: 'הצגת נקודות לכל סוג הימור', rows: [
+    { tab: 'markets', target: 'x12-scroll', noScroll: true, radius: 16, pad: 4, title: 'יחסים', subtitle: 'הצגת נקודות לכל סוג הימור', rows: [
       { key: 'כיוון משחק', color: BLUE, text: 'ניצחון בית, תיקו או ניצחון חוץ' },
       { key: 'שתי כובשות', color: Y, text: 'האם שתי הקבוצות יבקיעו' },
       { key: 'טווח שערים', color: G, text: 'כמה שערים יהיו במשחק' },
     ] },
-    { tab: 'exact', target: 'x12-body', noScroll: true, radius: 16, pad: 4, title: 'תוצאה מדויקת', lines: [
+    { tab: 'exact', target: 'x12-scroll', noScroll: true, radius: 16, pad: 4, title: 'תוצאה מדויקת', lines: [
       'כאן רואים את היחס לכל תוצאה, ואפשר לראות גם בתצוגת אלכסון התיקו.',
     ] },
     { summary: true, title: 'זה היה הסבר של אזור יחסים וניקוד', lines: ['ממשיכים לזירת המשחק.'] },
@@ -100,23 +100,23 @@ export const TOURS = {
     { tap: true, target: 'btn-arena', radius: 12, pad: 4, title: 'עכשיו – זירת המשחק', lines: tapLines },
   ] },
   arena: { key: 'tour_arena_v5', example: true, steps: [
-    { tab: 'odds', target: 'arena-body', noScroll: true, radius: 16, pad: 4, title: 'תחזית', subtitle: 'הצגת יחסי סיכוי מנותחת לפי יחסי ההימורים', rows: [
+    { tab: 'odds', target: 'arena-scroll', noScroll: true, radius: 16, pad: 4, title: 'תחזית', subtitle: 'הצגת יחסי סיכוי מנותחת לפי יחסי ההימורים', rows: [
       { key: 'אחוזים', color: Y, text: 'הסיכוי של כל קבוצה לנצח או לסיים בתיקו' },
       { key: 'תוצאות', color: G, text: 'תוצאות עם יחס הסיכוי הגבוה ביותר' },
     ] },
-    { tab: 'form', target: 'arena-body', noScroll: true, radius: 16, pad: 4, title: '5 אחרונים',
+    { tab: 'form', target: 'arena-scroll', noScroll: true, radius: 16, pad: 4, title: '5 אחרונים',
       subtitle: 'הכושר של שתי הקבוצות במשחקים האחרונים בליגת האלופות או בעונת המשחקים הנוכחית', rows: [
       { key: 'ליגת האלופות', color: BLUE, text: 'הכושר של הקבוצה לפי מחזור ותוצאה בכל משחק' },
       { key: 'כל המסגרות', color: G, text: 'כלל המשחקים, בבית ובחוץ, לפי מפעלים שונים' },
     ] },
-    { tab: 'h2h', target: 'arena-body', noScroll: true, radius: 16, pad: 4, title: 'ראש בראש', subtitle: 'המפגשים הקודמים', rows: [
+    { tab: 'h2h', target: 'arena-scroll', noScroll: true, radius: 16, pad: 4, title: 'ראש בראש', subtitle: 'המפגשים הקודמים', rows: [
       { key: 'תוצאות', color: BLUE, text: 'כל המשחקים בין שתי הקבוצות בליגת האלופות, עם התוצאות ויחס השערים' },
     ] },
-    { tab: 'lineups', keep: true, target: 'arena-body', noScroll: true, radius: 16, pad: 4, title: 'הרכבים', subtitle: 'מתפרסמים כשעה לפני המשחק',
+    { tab: 'lineups', keep: true, target: 'arena-scroll', noScroll: true, radius: 16, pad: 4, title: 'הרכבים', subtitle: 'מתפרסמים כשעה לפני המשחק',
       missingSubtitle: 'הלשונית מופיעה כשעה לפני המשחק', rows: [
       { key: 'מגרש', color: G, text: 'ההרכב הפותח של שתי הקבוצות, לפי מערך משוער' },
     ] },
-    { tab: 'table', target: 'arena-body', noScroll: true, radius: 16, pad: 4, title: 'טבלה', subtitle: 'טבלת שלב הליגה', rows: [
+    { tab: 'table', target: 'arena-scroll', noScroll: true, radius: 16, pad: 4, title: 'טבלה', subtitle: 'טבלת שלב הליגה', rows: [
       { key: 'מסומנות', color: Y, text: 'שתי הקבוצות של המשחק, בכחול ובירוק לפי בית/חוץ' },
       { head: 'מקרא מיקום בטבלה:' },
       { key: '1–8', color: G, ltr: true, text: 'עולות ישירות לשמינית הגמר' },
@@ -154,6 +154,9 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
   const [missing, setMissing] = React.useState(() => new Set()); // tabs this match doesn't have
   const cardRef = React.useRef(null);
   const [cardH, setCardH] = React.useState(220);
+  // the card comes in only once its part has stopped moving (scrolling, a window sliding up, a tab
+  // swapping), so it doesn't appear in one place and jump to another
+  const [settled, setSettled] = React.useState(-1);
   const steps = allSteps.filter((s) => !s.tab || s.keep || !missing.has(s.tab));
   const i = Math.min(at, steps.length - 1);
   const step = steps[i];
@@ -183,11 +186,25 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
 
   // bring the step's part into view, then follow it (it can move: animations, scrolling)
   React.useEffect(() => {
-    if (!target) { setRect(null); return undefined; }
+    if (!target) { setRect(null); setSettled(i); return undefined; }
     const el = document.querySelector(`[data-tour="${target}"]`);
-    if (el && !step.noScroll) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    let raf = 0;
-    const tick = () => { const r = rectOf(target); if (r) setRect((p) => (p && Math.abs(p.top - r.top) < 0.5 && Math.abs(p.left - r.left) < 0.5 && Math.abs(p.width - r.width) < 0.5 && Math.abs(p.height - r.height) < 0.5 ? p : { top: r.top, left: r.left, width: r.width, height: r.height })); raf = requestAnimationFrame(tick); };
+    // scroll only when the part isn't fully on screen (scrolling the page every step made it jump)
+    if (el && !step.noScroll) {
+      const r0 = el.getBoundingClientRect();
+      if (r0.top < 8 || r0.bottom > window.innerHeight - 8) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    let raf = 0, still = 0, prev = null;
+    const tick = () => {
+      const r = rectOf(target);
+      if (r) {
+        const same = prev && Math.abs(prev.top - r.top) < 0.5 && Math.abs(prev.left - r.left) < 0.5 && Math.abs(prev.width - r.width) < 0.5 && Math.abs(prev.height - r.height) < 0.5;
+        still = same ? still + 1 : 0;
+        prev = r;
+        if (still === 8) setSettled(i); // ~8 frames without moving
+        setRect((p) => (p && Math.abs(p.top - r.top) < 0.5 && Math.abs(p.left - r.left) < 0.5 && Math.abs(p.width - r.width) < 0.5 && Math.abs(p.height - r.height) < 0.5 ? p : { top: r.top, left: r.left, width: r.width, height: r.height }));
+      }
+      raf = requestAnimationFrame(tick);
+    };
     tick();
     return () => cancelAnimationFrame(raf);
   }, [i, target]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -202,7 +219,16 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
   })();
   const cardW = Math.min(340, vw - 32);
   // the card's real height (texts differ in length), for placing it
-  React.useLayoutEffect(() => { const h = cardRef.current?.offsetHeight; if (h && Math.abs(h - cardH) > 2) setCardH(h); });
+  // measured the moment the card is put on the page (before it's drawn): measuring later, on the next
+  // render, placed a new card by the previous card's height first — it showed under its part, then jumped
+  // over it
+  const cardHRef = React.useRef(cardH);
+  const measureCard = React.useCallback((el) => {
+    cardRef.current = el;
+    if (!el) return;
+    const h = el.offsetHeight;
+    if (h && Math.abs(h - cardHRef.current) > 2) { cardHRef.current = h; setCardH(h); }
+  }, []);
   const need = cardH + 24;
   const below = box.top + box.height + need < vh; // room for the card under the lit part?
   const above = !below && box.top > need; // or over it?
@@ -259,9 +285,9 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
       )}
       {/* the card */}
       <AnimatePresence mode="wait">
-        <motion.div
+        {settled === i && <motion.div
           key={`${i}-${step.title}`}
-          ref={cardRef}
+          ref={measureCard}
           onClick={stop}
           initial={{ opacity: 0, y: below ? 10 : -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -345,7 +371,7 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
               </div>
             </div>
           )}
-        </motion.div>
+        </motion.div>}
       </AnimatePresence>
     </div>,
     document.body

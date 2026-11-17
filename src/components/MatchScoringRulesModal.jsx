@@ -325,7 +325,7 @@ export default function MatchScoringRulesModal({ isOpen, onClose, match, originR
             </div>
 
             {/* content — one tab at a time */}
-            <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-4">
+            <div data-tour="x12-scroll" className="flex-1 overflow-y-auto overscroll-contain px-3 py-4">
               <motion.div key={tab} {...tabSwap} data-tour="x12-body">
                   {tab === "sim" && (
                     <div>

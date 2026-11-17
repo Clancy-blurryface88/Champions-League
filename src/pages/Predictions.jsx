@@ -63,6 +63,14 @@ function _computeTeamPositions(allMatches, leagueTableOverride = []) {
   return positions;
 }
 
+const CARD_ART = ['match-card-bg-2.webp', 'match-card-bg-3.webp'].map((n) => {
+  if (typeof window === 'undefined') return null;
+  const img = new Image();
+  img.src = `/champions/${n}`;
+  img.decode?.().catch(() => {});
+  return img; // kept, so the decoded picture stays in memory
+});
+
 export default function Predictions() {
   const [currentRound, setCurrentRound] = useState(null);
   const [matches, setMatches] = useState([]);
