@@ -3,8 +3,8 @@ import OrbitSpinner from "@/components/OrbitSpinner";
 import React, { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import MatchupPlates from "@/components/predictions/MatchupPlates";
-import useCrestColours from "@/hooks/useCrestColours";
-import CrowdWisdomStats from "@/components/predictions/CrowdWisdomStats";
+import { ProbSquare, PROB_CSS, liquidColor } from "@/components/predictions/MatchArenaSection";
+import { getTeamColor } from "@/utils/teamColors";
 import { Prediction } from "@/api/entities";
 import { PublicProfile } from "@/api/entities";
 import { motion, AnimatePresence } from "framer-motion";
@@ -35,7 +35,7 @@ function SlotDigit({ target, delay = 0, small = false }) {
 
   return (
     <motion.span
-      animate={{ color: settled ? '#097adc' : '#475569' }}
+      animate={{ color: settled ? '#fbbf24' : '#475569' }}
       transition={{ duration: 0.2 }}
       className={`font-black ${small ? "text-lg" : "text-2xl"} tabular-nums leading-none`}
     >
@@ -81,9 +81,9 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
   }, [isOpen, match, loadPredictions]);
 
   useModalBackButton(isOpen, onClose);
-  // the two clubs' colours, to tell their columns apart
-  const colA = useCrestColours(match?.team_a_logo)[0];
-  const colB = useCrestColours(match?.team_b_logo)[0];
+  // the two clubs' colours (as in the arena's forecast), to tell their columns apart
+  const colA = match ? liquidColor(getTeamColor(match.team_a, '#2f7bff')) : null;
+  const colB = match ? liquidColor(getTeamColor(match.team_b, '#ff7a1a')) : null;
 
 
   const getUserName = (userId) =>
@@ -119,6 +119,16 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
   // every prediction, in today's order (by group), with the delays of today's entrance
   const rows = grouped.flatMap((g, gi) => g.users.map((name, ui) => ({ name, a: g.scoreA, b: g.scoreB, gi, ui })));
   const outcome = (r) => (r.a > r.b ? 0 : r.a === r.b ? 1 : 2);
+  // each outcome's share of the predictions, in whole percents adding up to 100
+  const pcts = (() => {
+    const n = [0, 1, 2].map((k) => rows.filter((r) => outcome(r) === k).length);
+    if (!rows.length) return [0, 0, 0];
+    const raw = n.map((x) => (x * 100) / rows.length);
+    const out = raw.map(Math.floor);
+    let left = 100 - out.reduce((a, b) => a + b, 0);
+    raw.map((x, i) => [x - Math.floor(x), i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if (left > 0) { out[i] += 1; left -= 1; } });
+    return out;
+  })();
 
   return createPortal(
     <AnimatePresence>
@@ -158,22 +168,25 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
                 <div className="flex justify-center py-10"><p className="text-white/25 text-sm">אין ניחושים למשחק זה</p></div>
               ) : (
                 <>
-                  {/* three columns: home win / draw / away win — each prediction under its outcome;
-                      the clubs' columns are tinted in their own colours */}
+                  {/* three columns: home win / draw / away win — each prediction under its outcome. On top
+                      of each, the share of predictions as the forecast's liquid-filled square (same fill
+                      and rolling number); the clubs' columns are tinted in their own colours */}
+                  <style>{PROB_CSS}</style>
                   <div dir="ltr" className="grid grid-cols-3 gap-1.5">
                     {[0, 1, 2].map((k) => {
                       const list = rows.filter((r) => outcome(r) === k);
                       const c = k === 0 ? colA : k === 2 ? colB : null;
                       return (
                         <div key={k} className="flex flex-col gap-1.5">
-                          <div className="flex flex-col items-center gap-1 py-2 rounded-xl" style={{
-                            background: c ? `linear-gradient(180deg, ${c}66, ${c}22)` : 'rgba(255,255,255,0.07)',
-                            border: `1px solid ${c ? `${c}aa` : 'rgba(255,255,255,0.12)'}`,
-                          }}>
-                            {k === 1
-                              ? <span style={{ fontFamily: 'var(--num-font)', fontWeight: 900, fontSize: 20, lineHeight: '26px' }}>X</span>
-                              : <TeamFlag logo={k === 0 ? match.team_a_logo : match.team_b_logo} name={k === 0 ? match.team_a : match.team_b} className="w-[26px] h-[26px]" animate={false} />}
-                            <span style={{ fontFamily: 'var(--num-font)', fontWeight: 900, fontSize: 12, color: 'rgba(255,255,255,0.75)' }}>{list.length}</span>
+                          <div className="flex">
+                            <ProbSquare
+                              index={k}
+                              label={k === 0 ? match.team_a : k === 2 ? match.team_b : 'תיקו'}
+                              logo={k === 0 ? match.team_a_logo : k === 2 ? match.team_b_logo : undefined}
+                              pct={pcts[k]}
+                              best={pcts[k] === Math.max(...pcts)}
+                              color={c || '#a3adc6'}
+                            />
                           </div>
                           {list.map((r) => (
                             <motion.div
@@ -193,10 +206,6 @@ export default function MatchPredictionsModal({ isOpen, onClose, match }) {
                     })}
                   </div>
 
-                  {/* The crowd's 1/X/2 split — under everyone's predictions */}
-                  <div className="pt-4">
-                    <CrowdWisdomStats matchId={match.id} teamA={match.team_a} teamB={match.team_b} />
-                  </div>
                 </>
               )}
             </div>
