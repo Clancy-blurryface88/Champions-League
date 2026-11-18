@@ -1,40 +1,34 @@
-import TeamFlag from "@/components/TeamFlag";
 import OrbitSpinner from "@/components/OrbitSpinner";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-
-const rowVariants   = { hidden: {}, visible: {} };
-const teamAVariants = {
-  hidden:   { x: 50, opacity: 0 },
-  visible:  { x: 0,  opacity: 1, transition: { type: 'spring', stiffness: 220, damping: 22 } },
-};
-const teamBVariants = {
-  hidden:   { x: -50, opacity: 0 },
-  visible:  { x: 0,   opacity: 1, transition: { type: 'spring', stiffness: 220, damping: 22 } },
-};
-const scoreVariants = {
-  hidden:   { opacity: 0, scale: 0.6 },
-  visible:  { opacity: 1, scale: 1,  transition: { delay: 0.2, type: 'spring', stiffness: 300, damping: 20 } },
-};
 import { Match } from "@/api/entities";
 
-// Row plates (broadcast style): one shared skew and the card's glass look
-const SKEW_T = 'skewX(-12deg)';
-const UNSKEW = 'skewX(12deg)';
-const PLATE = {
-  transform: SKEW_T,
-  borderRadius: 4,
-  border: '1px solid rgba(255,255,255,0.09)',
-  backdropFilter: 'blur(8px)',
-  WebkitBackdropFilter: 'blur(8px)',
-  background: 'rgba(255,255,255,0.02)',
-  boxShadow: '4px 4px 10px rgba(0,0,0,0.45), -2px -2px 6px rgba(255,255,255,0.05), 0 8px 24px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.05)',
-};
+// The summary before sending, as broadcast score bugs (design 98): each match a slanted navy bar with
+// each club's crest large and slightly turned in the background (70%), and the predicted score on a
+// gold plate in the middle. The bars slide in from the side one after another.
+
+const NAVY = 'linear-gradient(180deg,#14306b,#0b1b45)';
+const GOLD = 'linear-gradient(180deg,#fde047,#ca8a04)';
+const EDGE = '1px solid rgba(203,213,225,.35)';
+const SKEW = 'skewX(-10deg)';
+const UNSKEW = 'skewX(10deg)';
+const CREST = 62;
+
+function Side({ logo, side }) {
+  return (
+    <span className="relative flex-1 overflow-hidden" style={{ background: NAVY }}>
+      {logo && (
+        <img src={logo} alt="" className="absolute object-contain pointer-events-none"
+          style={{ width: CREST, height: CREST, top: '50%', marginTop: -CREST / 2, [side === 'b' ? 'right' : 'left']: -4, opacity: 0.7,
+            transform: `rotate(${side === 'b' ? 3 : -3}deg)`, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,.5))' }} />
+      )}
+    </span>
+  );
+}
 
 export default function PredictionSummary({ predictions, roundId, onConfirm, onCancel, saving }) {
   const [matches, setMatches] = useState([]);
   const [loadingMatches, setLoadingMatches] = useState(true);
-  const scrollRef = useRef(null);
 
   useEffect(() => {
     setLoadingMatches(true);
@@ -70,9 +64,10 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 80, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 280, damping: 30 }}
+        dir="rtl"
         className="w-full max-w-md rounded-t-3xl sm:rounded-3xl flex flex-col"
         style={{
-          background: 'linear-gradient(160deg, rgba(8,18,38,0.99) 0%, rgba(4,10,22,0.99) 100%)',
+          background: '#070b18',
           border: '1px solid rgba(9, 122, 220,0.18)',
           boxShadow: '0 -8px 60px rgba(9, 122, 220,0.10), 0 0 0 1px rgba(255,255,255,0.04)',
           // 'clip' visually clips the border-radius without creating a scroll container,
@@ -89,83 +84,39 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
         </div>
 
         {/* Header */}
-        <div
-          className="flex flex-col items-center justify-center px-5 pt-4 pb-4 flex-shrink-0 text-center"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
-        >
-          <h2
-            className="text-lg font-bold leading-tight"
-            style={{
-              color: '#93c5fd', // same blue as the score digits
-            }}
-          >
-            סיכום הניחושים שלך
-          </h2>
-          <p className="text-white/70 text-xs mt-0.5">עבור לפני אישור</p>
+        <div className="flex flex-col items-center justify-center px-5 pt-3 pb-3 flex-shrink-0 text-center" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+          <h2 className="text-lg font-bold leading-tight" style={{ color: '#93c5fd' }}>הניחושים שלך</h2>
+          <p className="text-white/60 text-xs mt-0.5">
+            {loadingMatches ? 'עבור לפני אישור' : `${predictionsList.length} משחקים · עבור לפני אישור`}
+          </p>
         </div>
 
-        {/* Match rows – flex-1 so it fills available space, overflow-y for scroll */}
-        <div
-          className="overflow-y-auto flex-1"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-          ref={scrollRef}
-        >
+        {/* the score bugs */}
+        <div className="overflow-y-auto flex-1" style={{ WebkitOverflowScrolling: 'touch' }}>
           {loadingMatches ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3">
               <OrbitSpinner size={36} />
               <span className="text-white/40 text-sm">טוען משחקים...</span>
             </div>
           ) : (
-            <div className="px-4 py-3 space-y-2">
-              {predictionsList.map(({ match, prediction }) => (
+            <div className="px-3.5 py-3 grid gap-[7px]">
+              {predictionsList.map(({ match, prediction }, i) => (
                 <motion.div
                   key={match.id}
-                  variants={rowVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.4, root: scrollRef }}
-                  className="flex items-stretch gap-1 px-1"
-                  style={{ height: 46 }}
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.15 + i * 0.045, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
                 >
-                  {/* Broadcast plates: home plate, score slab, away plate — all on one skew, so the
-                      breaks between them are parallel. Colours and effects are the card's own. */}
-                  {/* Team A — נכנסת מימין */}
-                  {/* framer-motion owns the transform of the animated wrapper, so the skew sits on an inner plate */}
-                  <motion.div variants={teamAVariants} className="flex-1 min-w-0 flex">
-                    <div className="flex-1 min-w-0 flex items-center justify-end px-3" style={{ ...PLATE, borderLeft: '4px solid #60a5fa' }}>
-                      <div className="flex items-center gap-1.5 min-w-0" style={{ transform: UNSKEW }}>
-                        <span className="text-white/80 text-xs font-semibold truncate text-right">{match.team_a}</span>
-                        <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-7 h-7 flex-shrink-0" />
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  {/* Score slab — מופיע אחרי הדגלים */}
-                  <motion.div variants={scoreVariants} className="flex-shrink-0 w-[74px] flex">
-                    <div
-                      className="flex-1 grid place-items-center"
-                      style={{
-                        transform: SKEW_T,
-                        borderRadius: 4,
-                        background: 'transparent',
-                        border: '1px solid rgba(96,165,250,0.6)',
-                      }}
-                    >
-                      <span className="font-black text-[19px] tabular-nums" style={{ color: '#93c5fd', transform: UNSKEW }}>
-                        {prediction.predicted_score_a} – {prediction.predicted_score_b}
-                      </span>
-                    </div>
-                  </motion.div>
-
-                  {/* Team B — נכנסת משמאל */}
-                  <motion.div variants={teamBVariants} className="flex-1 min-w-0 flex">
-                    <div className="flex-1 min-w-0 flex items-center justify-start px-3" style={PLATE}>
-                      <div className="flex items-center gap-1.5 min-w-0" style={{ transform: UNSKEW }}>
-                        <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-7 h-7 flex-shrink-0" />
-                        <span className="text-white/80 text-xs font-semibold truncate">{match.team_b}</span>
-                      </div>
-                    </div>
-                  </motion.div>
+                  {/* ltr: the home club on the left, as on the match card */}
+                  <div dir="ltr" className="flex overflow-hidden mx-auto" aria-label={`${match.team_a} ${prediction.predicted_score_a} – ${prediction.predicted_score_b} ${match.team_b}`}
+                    style={{ width: '88%', height: 40, transform: SKEW, border: EDGE, boxShadow: '0 4px 14px rgba(0,0,0,.5)' }}>
+                    <Side logo={match.team_a_logo} side="a" />
+                    <span className="relative z-[1] grid place-items-center flex-shrink-0 tabular-nums"
+                      style={{ width: 80, background: GOLD, color: '#1c1505', fontFamily: 'var(--num-font)', fontWeight: 900, fontSize: 17 }}>
+                      <span style={{ transform: UNSKEW }}>{prediction.predicted_score_a} - {prediction.predicted_score_b}</span>
+                    </span>
+                    <Side logo={match.team_b_logo} side="b" />
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -173,48 +124,32 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
         </div>
 
         {/* Footer */}
-        <div
-          className="px-4 pt-3 pb-6 space-y-2 flex-shrink-0 flex flex-col items-center"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
-        >
+        <div className="px-4 pt-3 pb-6 flex-shrink-0 flex flex-col items-center" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
           {/* side by side; reversed so the confirm button sits on the right */}
           <div className="flex flex-row-reverse gap-3 w-full max-w-sm">
-          <button
-            onClick={onConfirm}
-            disabled={saving || loadingMatches}
-            className="flex-1 py-3 rounded font-bold text-base transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              transform: SKEW_T, // same plate geometry as the rows
-              background: 'linear-gradient(rgba(4,10,22,0.98), rgba(4,10,22,0.98)) padding-box, linear-gradient(90deg, #16a34a, #22c55e) border-box',
-              border: '1.5px solid transparent',
-            }}
-          >
-            {saving ? (
-              <span className="flex items-center justify-center gap-2" style={{ color: '#4ade80', transform: UNSKEW }}>
-                <OrbitSpinner size={18} />
-                שומר...
-              </span>
-            ) : (
-              <span className="inline-block" style={{ color: '#4ade80', transform: UNSKEW }}>
-                אישור ושליחה
-              </span>
-            )}
-          </button>
-
-          <button
-            onClick={onCancel}
-            disabled={saving}
-            className="flex-1 py-3 rounded text-base font-bold transition-opacity disabled:opacity-40"
-            style={{
-              transform: SKEW_T,
-              background: 'linear-gradient(rgba(4,10,22,0.98), rgba(4,10,22,0.98)) padding-box, linear-gradient(90deg, #b91c1c, #ef4444) border-box',
-              border: '1.5px solid transparent',
-            }}
-          >
-            <span className="inline-block" style={{ transform: UNSKEW, background: 'linear-gradient(90deg, #b91c1c, #ef4444)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              ביטול
-            </span>
-          </button>
+            <button
+              onClick={onConfirm}
+              disabled={saving || loadingMatches}
+              className="flex-[1.4] py-3 rounded font-bold text-base transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ transform: 'skewX(-12deg)', background: 'linear-gradient(90deg,#16a34a,#22c55e)', color: '#fff', boxShadow: '0 6px 20px rgba(34,197,94,.25)' }}
+            >
+              {saving ? (
+                <span className="flex items-center justify-center gap-2" style={{ transform: 'skewX(12deg)' }}>
+                  <OrbitSpinner size={18} />
+                  שומר...
+                </span>
+              ) : (
+                <span className="inline-block" style={{ transform: 'skewX(12deg)' }}>אישור ושליחה</span>
+              )}
+            </button>
+            <button
+              onClick={onCancel}
+              disabled={saving}
+              className="flex-1 py-3 rounded text-base font-bold transition-opacity disabled:opacity-40"
+              style={{ transform: 'skewX(-12deg)', background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.15)', color: '#cbd5e1' }}
+            >
+              <span className="inline-block" style={{ transform: 'skewX(12deg)' }}>ביטול</span>
+            </button>
           </div>
         </div>
       </motion.div>
