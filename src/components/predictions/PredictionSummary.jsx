@@ -5,10 +5,10 @@ import { Match } from "@/api/entities";
 
 // The summary before sending, as broadcast score bugs (design 98): each match a slanted navy bar with
 // each club's crest large and slightly turned in the background (70%), and the predicted score on a
-// gold plate in the middle. The bars slide in from the side one after another.
+// deep silver plate in the middle. The bars slide in from the side one after another.
 
 const NAVY = 'linear-gradient(180deg,#14306b,#0b1b45)';
-const GOLD = 'linear-gradient(180deg,#fde047,#ca8a04)';
+const PLATE = 'linear-gradient(180deg,#e2e8f0,#64748b)'; // deep silver (option 124)
 const EDGE = '1px solid rgba(203,213,225,.35)';
 const SKEW = 'skewX(-10deg)';
 const UNSKEW = 'skewX(10deg)';
@@ -112,7 +112,7 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                     style={{ width: '88%', height: 40, transform: SKEW, border: EDGE, boxShadow: '0 4px 14px rgba(0,0,0,.5)' }}>
                     <Side logo={match.team_a_logo} side="a" />
                     <span className="relative z-[1] grid place-items-center flex-shrink-0 tabular-nums"
-                      style={{ width: 80, background: GOLD, color: '#1c1505', fontFamily: 'var(--num-font)', fontWeight: 900, fontSize: 17 }}>
+                      style={{ width: 80, background: PLATE, color: '#0b1b45', fontFamily: 'var(--num-font)', fontWeight: 900, fontSize: 17 }}>
                       <span style={{ transform: UNSKEW }}>{prediction.predicted_score_a} - {prediction.predicted_score_b}</span>
                     </span>
                     <Side logo={match.team_b_logo} side="b" />
