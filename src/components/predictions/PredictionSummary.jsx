@@ -20,7 +20,9 @@ function Side({ logo, side }) {
       {logo && (
         <img src={logo} alt="" className="absolute object-contain pointer-events-none"
           style={{ width: CREST, height: CREST, top: '50%', marginTop: -CREST / 2, [side === 'b' ? 'right' : 'left']: -4, opacity: 0.7,
-            transform: `rotate(${side === 'b' ? 3 : -3}deg)`, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,.5))' }} />
+            transform: `rotate(${side === 'b' ? 3 : -3}deg)`,
+            // a thick crest (option 179): three one-pixel steps in deep navy, then a soft shadow
+            filter: 'drop-shadow(1px 1px 0 #0a1636) drop-shadow(1px 1px 0 #08122c) drop-shadow(1px 1px 0 #060e22) drop-shadow(3px 4px 4px rgba(0,0,0,.6))' }} />
       )}
     </span>
   );
