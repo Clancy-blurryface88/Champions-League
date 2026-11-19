@@ -229,7 +229,7 @@ TOURS.lb = { key: 'tour_lb_v1', steps: [
     { key: 'Pts', color: G, ltr: true, text: 'סך הנקודות' },
     { key: 'זהב, כסף, ארד', color: Y, text: 'שלושת המקומות הראשונים' },
   ] },
-  { target: 'lb-card', radius: 10, pad: 4, title: 'כרטיס הדירוג', lines: [
+  { target: 'lb-card', event: 'tour:lb-collapse', radius: 10, pad: 4, title: 'כרטיס הדירוג', lines: [
     'יש מספר אפשרויות לצפייה בנתונים שונים, על ידי לחיצות על כרטיס הדירוג.',
   ] },
   { target: 'lb-card', event: 'tour:lb-expand', radius: 10, pad: 4, title: 'לחיצה ממושכת', subtitle: 'החזיקו את האצבע על משתתף על מנת לפתוח מידע נוסף של כרטיס המיקום', rows: [
@@ -323,15 +323,21 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
       const r0 = el.getBoundingClientRect();
       if (r0.top < 8 || r0.bottom > window.innerHeight - 8) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    let raf = 0, still = 0, prev = null, gone = 0;
+    let raf = 0, still = 0, prev = null, gone = 0, done = false;
+    // a step that sends an event (a card opening, a window sliding in or away) waits for it to start
+    // moving first: counting still frames from the tap settled on the part before it moved, so the card
+    // came in and then slid with it, or showed over a window still sliding away
+    const from = performance.now();
+    const wait = step.event && !step.tab ? 650 : 0;
+    const settle = () => { if (!done) { done = true; setSettled(i); } };
     const tick = () => {
       const r = rectOf(target);
-      if (!r && ++gone === 90) setSettled(i); // its part never showed (~1.5s): the card alone, in the middle
+      if (!r && ++gone === 90) settle(); // its part never showed (~1.5s): the card alone, in the middle
       if (r) {
         const same = prev && Math.abs(prev.top - r.top) < 0.5 && Math.abs(prev.left - r.left) < 0.5 && Math.abs(prev.width - r.width) < 0.5 && Math.abs(prev.height - r.height) < 0.5;
         still = same ? still + 1 : 0;
         prev = r;
-        if (still === 8) setSettled(i); // ~8 frames without moving
+        if (still >= 8 && performance.now() - from >= wait) settle(); // ~8 frames without moving
         setRect((p) => (p && Math.abs(p.top - r.top) < 0.5 && Math.abs(p.left - r.left) < 0.5 && Math.abs(p.width - r.width) < 0.5 && Math.abs(p.height - r.height) < 0.5 ? p : { top: r.top, left: r.left, width: r.width, height: r.height }));
       }
       raf = requestAnimationFrame(tick);
@@ -355,6 +361,14 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
   const steady = settled === i || !target;
   if (steady) settledBoxRef.current = box;
   const holeBox = steady ? box : (settledBoxRef.current || { top: vh * 0.36, left: vw / 2, width: 0, height: 0 });
+  // the card is placed by where its part settled, and stays there while the part only quivers (a
+  // window's spring settling, a pixel of scroll): following every pixel made the card shake
+  const cardBoxRef = React.useRef({ i: -1, box });
+  if (steady) {
+    const c = cardBoxRef.current;
+    if (c.i !== i || Math.abs(c.box.top - box.top) > 24 || Math.abs(c.box.height - box.height) > 24) cardBoxRef.current = { i, box };
+  }
+  const cbox = cardBoxRef.current.i === i ? cardBoxRef.current.box : box;
   const cardW = Math.min(340, vw - 32);
   // the card's real height (texts differ in length), for placing it
   // measured the moment the card is put on the page (before it's drawn): measuring later, on the next
@@ -368,10 +382,10 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
     if (h && Math.abs(h - cardHRef.current) > 2) { cardHRef.current = h; setCardH(h); }
   }, []);
   const need = cardH + 24;
-  const below = box.top + box.height + need < vh; // room for the card under the lit part?
-  const above = !below && box.top > need; // or over it?
+  const below = cbox.top + cbox.height + need < vh; // room for the card under the lit part?
+  const above = !below && cbox.top > need; // or over it?
   // no room either side: the card sits at the bottom of the screen, over the lit part
-  const cardTop = below ? box.top + box.height + 12 : above ? box.top - 12 : vh - 16;
+  const cardTop = below ? cbox.top + cbox.height + 12 : above ? cbox.top - 12 : vh - 16;
   const next = () => (last ? onDone?.() : setI(i + 1));
   const stop = (e) => e.stopPropagation();
   // a tap step: only the lit button takes a tap — four blocks cover the rest of the screen
@@ -397,15 +411,15 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
             key={`pulse-${i}`}
             animate={{ scale: [1, 1.18], opacity: [0.9, 0] }}
             transition={{ duration: 1.2, repeat: Infinity, ease: 'easeOut' }}
-            style={{ position: 'fixed', top: box.top, left: box.left, width: box.width, height: box.height, borderRadius: step.radius, border: '2px solid #facc15', pointerEvents: 'none' }}
+            style={{ position: 'fixed', top: cbox.top, left: cbox.left, width: cbox.width, height: cbox.height, borderRadius: step.radius, border: '2px solid #facc15', pointerEvents: 'none' }}
           />
           <motion.span
             key={`finger-${i}`}
-            animate={{ y: box.top + box.height + 40 > vh ? [-6, 4, -6] : [6, -4, 6] }}
+            animate={{ y: cbox.top + cbox.height + 40 > vh ? [-6, 4, -6] : [6, -4, 6] }}
             transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
             // under the button, or over it (pointing down) when the button is at the bottom of the screen
-            style={{ position: 'fixed', top: box.top + box.height + 40 > vh ? box.top - 38 : box.top + box.height + 2, left: box.left + box.width / 2 - 15, fontSize: 30, pointerEvents: 'none', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,.6))' }}
-          >{box.top + box.height + 40 > vh ? '👇' : '👆'}</motion.span>
+            style={{ position: 'fixed', top: cbox.top + cbox.height + 40 > vh ? cbox.top - 38 : cbox.top + cbox.height + 2, left: cbox.left + cbox.width / 2 - 15, fontSize: 30, pointerEvents: 'none', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,.6))' }}
+          >{cbox.top + cbox.height + 40 > vh ? '👇' : '👆'}</motion.span>
         </>
       )}
       {/* a hand showing the swipe */}
@@ -430,7 +444,7 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
           style={{
             position: 'fixed', left: (vw - cardW) / 2, width: cardW, pointerEvents: 'auto',
             // a tap step: under the finger, or over the button when it's low on the screen
-            ...(step.place === 'top' ? { top: 44 } : step.tap ? (box.top + box.height + 54 > vh - 150 ? { bottom: vh - box.top + 14 } : { top: box.top + box.height + 54 })
+            ...(step.place === 'top' ? { top: 44 } : step.tap ? (cbox.top + cbox.height + 54 > vh - 150 ? { bottom: vh - cbox.top + 14 } : { top: cbox.top + cbox.height + 54 })
               : below ? { top: cardTop } : { bottom: vh - cardTop }),
             padding: '14px 16px 12px', borderRadius: 18, color: '#fff', textAlign: step.summary ? 'center' : undefined,
             background: 'linear-gradient(170deg,#16295a,#0b1426 80%)', border: '1px solid rgba(255,255,255,0.16)',

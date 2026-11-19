@@ -67,13 +67,17 @@ export default function LeaderboardPanel({ onClose, user }) {
     const expand = () => { setIsModalOpen(false); setExpandedId(tourCardId); };
     const gap = () => { setExpandedId(null); if (p()) { setSelectedPlayer(p()); setIsModalOpen(true); } };
     const closeGap = () => setIsModalOpen(false);
+    // back to the card's step: the card closed again, and no window over it
+    const collapse = () => { setIsModalOpen(false); setExpandedId(null); };
     window.addEventListener('tour:lb-expand', expand);
     window.addEventListener('tour:lb-gap', gap);
     window.addEventListener('tour:lb-gap-close', closeGap);
+    window.addEventListener('tour:lb-collapse', collapse);
     return () => {
       window.removeEventListener('tour:lb-expand', expand);
       window.removeEventListener('tour:lb-gap', gap);
       window.removeEventListener('tour:lb-gap-close', closeGap);
+      window.removeEventListener('tour:lb-collapse', collapse);
     };
   }, [participants, tourCardId]);
 
