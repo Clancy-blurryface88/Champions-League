@@ -21,7 +21,7 @@ const LINES13 = [
   ['rect', { x: 2, y: 22, width: 5, height: 12 }], ['rect', { x: 77, y: 22, width: 5, height: 12 }],
 ];
 
-export default function PitchLoader({ variant = 9, width = 84 }) {
+export default function PitchLoader({ variant = 13, width = 84 }) {
   const h = (width * 56) / 84;
   if (variant === 13) {
     return (
@@ -50,9 +50,9 @@ export default function PitchLoader({ variant = 9, width = 84 }) {
 }
 
 // Inline loaders inside the app: nothing for the first 300ms (a quick load just shows its content),
-// then the pitch (variant 9).
+// then the pitch drawing itself and tilting back into 3D (variant 13).
 export function InlinePitchLoader({ width = 84 }) {
   const [show, setShow] = React.useState(false);
   React.useEffect(() => { const t = setTimeout(() => setShow(true), 300); return () => clearTimeout(t); }, []);
-  return <div style={{ width, height: (width * 56) / 84 }}>{show && <PitchLoader variant={9} width={width} />}</div>;
+  return <div style={{ width, height: (width * 56) / 84 }}>{show && <PitchLoader variant={13} width={width} />}</div>;
 }

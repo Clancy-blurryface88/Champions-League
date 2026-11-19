@@ -1,6 +1,6 @@
 import { InlinePitchLoader } from './PitchLoader';
 
-// Loaders of 30px and up are the pitch drawing itself (variant 9); smaller ones (inside buttons) stay
+// Loaders of 30px and up are the pitch drawing itself in 3D (variant 13); smaller ones (inside buttons) stay
 // the blue orbiting dots, since a pitch can't be read that small.
 export default function OrbitSpinner({ size = 36 }) {
   if (size >= 30) return <InlinePitchLoader width={Math.round(size * 1.8)} />;
