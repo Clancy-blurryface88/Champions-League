@@ -74,40 +74,34 @@ function Dim({ box, radius, outline }) {
 const Y = '#facc15', G = '#4ade80', GREY = '#94a3b8', BLUE = '#60a5fa', W = '#e2e8f0', RED = '#f87171';
 
 const ROUND = [
-  { target: 'strip', noScroll: true, radius: 18, pad: 4, title: 'משחקי המחזור', subtitle: 'צבע הטבעת מציין את מצב הניחוש',
-    intro: ['ניתן ללחוץ על טבעות המשחקים על מנת לנווט בין המשחקים'], rows: [
+  { target: 'strip', noScroll: true, radius: 18, pad: 4, title: 'עיצוב חדש למחזור המשחקים',
+    intro: ['המשחקים מסודרים לפי יום ושעת המשחק, מהמוקדם למאוחר, עם אפשרות בחירה בין טבעות המשחקים.'], rows: [
     { head: 'מקרא צבעי הטבעות:' },
     { key: 'צהוב', color: Y, ring: true, text: 'ממתין לניחוש שלך' },
     { key: 'ירוק', color: G, ring: true, text: 'ניחשת את תוצאת המשחק' },
     { key: 'אפור', color: GREY, ring: true, text: 'המשחק נעול לניחושים' },
   ] },
-  { target: 'card', radius: 20, pad: 4, swipe: true, title: 'מעבר בין משחקים', subtitle: 'החלקה לצדדים על הכרטיס',
-    intro: ['בדומה ללחיצה על טבעות המשחקים, ניתן לנווט בין המשחקים על ידי החלקה בין כרטיסי המשחק'], rows: [
-    { key: 'ימינה', color: W, text: 'המשחק הבא' },
-    { key: 'שמאלה', color: W, text: 'המשחק הקודם' },
-  ] },
-  { target: 'timer', radius: 16, pad: 6, title: 'זמן לניחוש', subtitle: 'מתחלף בין ספירה לאחור למועד המשחק',
-    intro: ['לכל כרטיס משחק יש טיימר עד נעילת הניחוש, ואת תאריך ושעת המשחק'], rows: [
-    { key: 'ספירה לאחור', color: Y, text: 'הזמן שנותר עד הנעילה' },
-    { key: 'תאריך ושעה', color: W, text: 'מועד שריקת הפתיחה' },
+  { target: 'card', radius: 20, pad: 4, swipe: true, title: 'מעבר בין משחקים', subtitle: 'החלקה לצדדים על הכרטיס, בנוסף למעבר בין טבעות המשחקים',
+    intro: ['בדומה ללחיצה על טבעות המשחקים, ניתן לנווט בין המשחקים על ידי החלקה בין כרטיסי המשחק ימינה ושמאלה.'] },
+  { target: 'timer', radius: 16, pad: 6, title: 'טיימר לנעילת הניחוש',
+    intro: ['לכל כרטיס משחק יש טיימר עד נעילת הניחוש, ואת תאריך ושעת המשחק.'], rows: [
     { key: 'נעילה', color: GREY, text: 'מתבצעת 10 דקות לפני המשחק' },
   ] },
-  { target: 'team-info', radius: 12, pad: 8, title: 'הקבוצות', subtitle: 'מתחת לכל סמל',
-    intro: ['מתחת לכל קבוצה מופיע חיווי בית/חוץ, ובנוסף המיקום הנוכחי בטבלה'], rows: [
+  { target: 'team-info', radius: 12, pad: 8, title: 'מיקום הקבוצות',
+    intro: ['מתחת לכל קבוצה מופיע חיווי בית/חוץ, ובנוסף המיקום הנוכחי בטבלה.'], rows: [
     { key: '(Home)', color: W, ltr: true, text: 'הקבוצה המארחת' },
     { key: '(Away)', color: W, ltr: true, text: 'הקבוצה האורחת' },
-    { key: 'מספר', color: W, text: 'מציין את המיקום בטבלת שלב הליגה, לפי הדירוג הבא:' },
+    { head: 'מיקום הקבוצה בטבלת שלב הליגה:' },
     { key: '1–8', color: G, ltr: true, text: 'עולות ישירות לשמינית הגמר' },
     { key: '9–24', color: Y, ltr: true, text: 'עולות לפלייאוף' },
     { key: '25–36', color: RED, ltr: true, text: 'מודחות' },
   ] },
-  { target: 'score', radius: 18, pad: 8, title: 'הניחוש שלך', subtitle: 'בורר התוצאה',
-    intro: ['ניחוש תוצאת המשחק על ידי בחירה בעזרת בוררי התוצאה'], rows: [
+  { target: 'score', radius: 18, pad: 8, title: 'ניחוש תוצאת המשחק', subtitle: 'על ידי בחירה בעזרת בוררי התוצאה', rows: [
     { key: 'חצים', color: Y, text: 'מספר השערים לכל קבוצה' },
     { key: 'בחר עבורי', color: G, text: 'הצעת תוצאה אוטומטית' },
   ] },
   { target: 'bottom', noScroll: true, radius: 18, pad: 2, title: 'שליחת הניחושים',
-    intro: ['בתחתית המסך מופיעים חיווי התקדמות מילוי תוצאות המשחקים, וכפתור השליחה'], rows: [
+    intro: ['בתחתית המסך, עם התקדמות מילוי תוצאות המשחקים, מופיעים חיווי וכפתור השליחה.'], rows: [
     { key: 'מונה', color: Y, text: 'כמה משחקים ניחשת במחזור' },
     { key: 'שליחה', color: G, text: 'שליחת כל הניחושים בסיום' },
   ] },
@@ -122,7 +116,7 @@ const tapLines = ['לחצו על הכפתור המסומן'];
 export const TOURS = {
   round: { key: 'tour_round_v4', steps: ROUND },
   'tap-x12': { steps: [
-    { target: 'actions', radius: 18, pad: 6, title: 'לפני שמנחשים', subtitle: 'שלושה כפתורי מידע', rows: [
+    { target: 'actions', radius: 18, pad: 6, title: 'הכפתורים', subtitle: 'בכל כרטיס משחק יש 3 כפתורים', rows: [
       { key: '1X2', color: BLUE, ltr: true, text: 'ניקוד ויחסים לכל ניחוש ותוצאת המשחק' },
       { key: 'זירת המשחק', color: Y, text: 'תחזית, כושר, טבלה ועוד מידע' },
       { key: 'BETS', color: G, ltr: true, text: 'הניחושים של כל המשתתפים' },
@@ -131,9 +125,9 @@ export const TOURS = {
   ] },
   x12: { key: 'tour_x12_v5', example: true, steps: [
     { tab: 'sim', event: 'tour:sim-demo', place: 'top', target: 'x12-scroll', noScroll: true, radius: 16, pad: 4, title: 'סימולטור',
-      intro: ['בעזרת הסימולטור ניתן לראות כמה נקודות צפויות לכל תוצאה, על פי יחסי תוצאות המשחקים', 'לדוגמה: 1–1, ואחר כך 2–2'], rows: [
-      { key: 'בורר התוצאה', color: Y, text: 'ניתן לגלילה – בוחרים תוצאה לכל קבוצה' },
-      { key: 'פירוט', color: G, text: 'תצוגה של הנקודות לכל רכיב בניחוש' },
+      intro: ['מאפשר לראות כמה נקודות צפויות במקרה של כל תוצאה, על פי היחסים של המשחק.', 'לדוגמה: 1–1, ואחר כך 2–2'], rows: [
+      { key: 'בורר התוצאה', color: Y, text: 'בוחרים תוצאה לכל קבוצה' },
+      { key: 'פירוט', color: G, text: 'כמות הנקודות לכל ניחוש' },
       { key: 'סה״כ', color: W, text: 'הניקוד הכולל לתוצאה במקרה של פגיעה' },
     ] },
     { tab: 'markets', target: 'x12-scroll', noScroll: true, radius: 16, pad: 4, title: 'יחסים', subtitle: 'הצגת נקודות לכל סוג הימור', rows: [
@@ -151,23 +145,22 @@ export const TOURS = {
   ] },
   arena: { key: 'tour_arena_v5', example: true, steps: [
     { tab: 'odds', target: 'arena-scroll', noScroll: true, radius: 16, pad: 4, title: 'תחזית', subtitle: 'הצגת יחסי סיכוי מנותחת לפי יחסי ההימורים', rows: [
-      { key: 'אחוזים', color: Y, text: 'הסיכוי של כל קבוצה לנצח או לסיים בתיקו' },
+      { key: 'אחוזים', color: Y, text: 'הסיכוי של כל קבוצה לנצח' },
       { key: 'תוצאות', color: G, text: 'תוצאות עם יחס הסיכוי הגבוה ביותר' },
     ] },
     { tab: 'form', target: 'arena-scroll', noScroll: true, radius: 16, pad: 4, title: '5 אחרונים',
       subtitle: 'הכושר של שתי הקבוצות במשחקים האחרונים בליגת האלופות או בעונת המשחקים הנוכחית', rows: [
       { key: 'ליגת האלופות', color: BLUE, text: 'הכושר של הקבוצה לפי מחזור ותוצאה בכל משחק' },
-      { key: 'כל המסגרות', color: G, text: 'כלל המשחקים, בבית ובחוץ, לפי מפעלים שונים' },
+      { key: 'כל המסגרות', color: G, text: 'הצגה של כלל המשחקים, בבית ובחוץ, לפי מפעלים שונים' },
     ] },
-    { tab: 'h2h', target: 'arena-scroll', noScroll: true, radius: 16, pad: 4, title: 'ראש בראש', subtitle: 'המפגשים הקודמים', rows: [
-      { key: 'תוצאות', color: BLUE, text: 'כל המשחקים בין שתי הקבוצות בליגת האלופות, עם התוצאות ויחס השערים' },
+    { tab: 'h2h', target: 'arena-scroll', noScroll: true, radius: 16, pad: 4, title: 'ראש בראש', lines: [
+      'תוצאות כל המשחקים בין שתי הקבוצות, אשר שוחקו במסגרת ליגת האלופות, עם התייחסות ליחס השערים.',
     ] },
     { tab: 'lineups', keep: true, target: 'arena-scroll', noScroll: true, radius: 16, pad: 4, title: 'הרכבים', subtitle: 'מתפרסמים כשעה לפני המשחק',
-      missingSubtitle: 'הלשונית מופיעה כשעה לפני המשחק', rows: [
-      { key: 'מגרש', color: G, text: 'ההרכב הפותח של שתי הקבוצות, לפי מערך משוער' },
+      missingSubtitle: 'הלשונית מופיעה כשעה לפני המשחק', lines: [
+      'ההרכב הפותח של שתי הקבוצות, לפי מערך משוער.',
     ] },
-    { tab: 'table', target: 'arena-scroll', noScroll: true, radius: 16, pad: 4, title: 'טבלה', subtitle: 'טבלת שלב הליגה', rows: [
-      { key: 'מסומנות', color: Y, text: 'שתי הקבוצות של המשחק, בכחול ובירוק לפי בית/חוץ' },
+    { tab: 'table', target: 'arena-scroll', noScroll: true, radius: 16, pad: 4, title: 'טבלת שלב הליגה', rows: [
       { head: 'מקרא מיקום בטבלה:' },
       { key: '1–8', color: G, ltr: true, text: 'עולות ישירות לשמינית הגמר' },
       { key: '9–24', color: Y, ltr: true, text: 'עולות לפלייאוף' },
@@ -180,8 +173,8 @@ export const TOURS = {
   ] },
   bets: { key: 'tour_bets_v4', example: true, steps: [
     { target: 'bets-cols', noScroll: true, radius: 16, pad: 6, title: 'BETS', subtitle: 'הניחושים של כל המשתתפים', rows: [
-      { key: 'מתי', color: GREY, text: 'הניחושים נחשפים 10 דקות לפני המשחק, לאחר נעילת הניחושים' },
-      { key: 'אחוזים', color: Y, text: 'הצגת אחוזי ניחוש עבור כל אפשרות' },
+      { key: 'מתי', color: GREY, text: 'נחשפים לאחר נעילת הניחושים' },
+      { key: 'אחוזים', color: Y, text: 'הצגת אחוזי ניחוש בהתאם לניחושים' },
       { key: 'עמודות', color: G, text: 'כל משתתף מוצג יחד עם התוצאה שניחש' },
     ] },
     { summary: true, title: 'זהו, זה היה הסבר על עמוד המחזור והאפשרויות השונות בו', lines: ['עכשיו אפשר להתחיל לנחש.', 'בהצלחה!'] },
