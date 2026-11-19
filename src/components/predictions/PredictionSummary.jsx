@@ -15,6 +15,21 @@ const SKEW = 'skewX(-10deg)';
 const UNSKEW = 'skewX(10deg)';
 const CREST = 62;
 
+// Rolling digits (odometer): a column 0–9 behind a one-digit window slides up until the predicted
+// number stops in it, slowing down at the end. Numbers past 9 just show as they are.
+const ROW_H = 20;
+function RollDigit({ value, delay }) {
+  const v = Number(value);
+  if (!(v >= 0 && v <= 9)) return <span>{value}</span>;
+  return (
+    <span className="inline-block overflow-hidden" style={{ height: ROW_H }}>
+      <motion.span className="grid" initial={{ y: 0 }} animate={{ y: -v * ROW_H }} transition={{ delay, duration: 0.95, ease: [0.16, 1, 0.3, 1] }}>
+        {Array.from({ length: 10 }, (_, n) => <span key={n} className="grid place-items-center" style={{ height: ROW_H }}>{n}</span>)}
+      </motion.span>
+    </span>
+  );
+}
+
 function Side({ logo, side }) {
   return (
     <span className="relative flex-1 overflow-hidden" style={{ background: NAVY }}>
@@ -135,7 +150,11 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                     <Side logo={match.team_a_logo} side="a" />
                     <span className="relative z-[1] grid place-items-center flex-shrink-0 tabular-nums"
                       style={{ width: 80, background: PLATE, color: '#0b1b45', fontFamily: 'var(--num-font)', fontWeight: 900, fontSize: 17 }}>
-                      <span style={{ transform: UNSKEW }}>{prediction.predicted_score_a} - {prediction.predicted_score_b}</span>
+                      <span className="inline-flex items-center" style={{ transform: UNSKEW, gap: 5 }}>
+                        <RollDigit value={prediction.predicted_score_a} delay={0.45 + i * 0.045} />
+                        <span>-</span>
+                        <RollDigit value={prediction.predicted_score_b} delay={0.57 + i * 0.045} />
+                      </span>
                     </span>
                     <Side logo={match.team_b_logo} side="b" />
                   </div>
