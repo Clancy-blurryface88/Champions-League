@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useModalBackButton } from "@/hooks/useModalBackButton";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSheetDrag, SheetGrip } from "@/components/ui/SheetGrip";
 import { X, Clock, CheckCircle, Calendar } from "lucide-react";
 import { Match } from "@/api/entities";
 import TeamFlag from "@/components/TeamFlag";
@@ -102,6 +103,7 @@ function MatchCard({ match }) {
 }
 
 export default function MatchesByDateSheet({ isOpen, onClose }) {
+  const { controls: grip, sheetProps } = useSheetDrag(onClose);
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -155,16 +157,17 @@ export default function MatchesByDateSheet({ isOpen, onClose }) {
 
           {/* Sheet */}
           <motion.div
+            {...sheetProps}
             className="fixed inset-x-0 bottom-0 z-[60] bg-[#0d1526] rounded-t-3xl flex flex-col max-h-[85vh] shadow-2xl border-t border-white/8"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 32, mass: 0.9 }}
           >
-            {/* Handle */}
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+            {/* Handle: tap or drag down to close */}
+            <SheetGrip controls={grip} onClose={onClose} className="pt-3 pb-2 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-white/15" />
-            </div>
+            </SheetGrip>
 
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-3 flex-shrink-0">

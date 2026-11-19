@@ -2,6 +2,7 @@ import OrbitSpinner from "@/components/OrbitSpinner";
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Match } from "@/api/entities";
+import { useSheetDrag, SheetGrip } from "@/components/ui/SheetGrip";
 
 // The summary before sending, as broadcast score bugs (design 98): each match a slanted navy bar with
 // each club's crest large and slightly turned in the background (70%), and the predicted score on a
@@ -31,6 +32,7 @@ function Side({ logo, side }) {
 export default function PredictionSummary({ predictions, roundId, onConfirm, onCancel, saving }) {
   const [matches, setMatches] = useState([]);
   const [loadingMatches, setLoadingMatches] = useState(true);
+  const { controls: grip, sheetProps } = useSheetDrag(() => { if (!saving) onCancel(); });
 
   useEffect(() => {
     setLoadingMatches(true);
@@ -62,6 +64,7 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
       onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
     >
       <motion.div
+        {...sheetProps}
         initial={{ y: 80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 80, opacity: 0 }}
@@ -81,9 +84,9 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle – mobile */}
-        <div className="flex justify-center pt-3 sm:hidden flex-shrink-0">
+        <SheetGrip controls={grip} onClose={() => { if (!saving) onCancel(); }} className="pt-3 pb-1 sm:hidden flex-shrink-0">
           <div className="w-10 h-1 rounded-full bg-white/20" />
-        </div>
+        </SheetGrip>
 
         {/* Header */}
         <div className="flex flex-col items-center justify-center px-5 pt-3 pb-3 flex-shrink-0 text-center" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>

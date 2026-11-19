@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Check } from 'lucide-react';
 import { supabase } from '@/api/supabase';
+import { useSheetDrag, SheetGrip } from '@/components/ui/SheetGrip';
 
 // The menu behind the bell next to the name. On top: is this device getting pushes
 // (with "הפעלה" when not). Below: two tabs styled like the days bar, "כללי" and
@@ -155,17 +156,18 @@ export default function NotificationsSheet({ open, onClose, granted, onEnable })
   };
 
   const active = granted && loaded;
+  const { controls: grip, sheetProps } = useSheetDrag(onClose);
 
   return (
     <AnimatePresence>
       {open && (
         <motion.div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
-          <motion.div dir="rtl" onClick={(e) => e.stopPropagation()} initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+          <motion.div {...sheetProps} dir="rtl" onClick={(e) => e.stopPropagation()} initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', duration: 0.4, bounce: 0 }}
             className="relative max-h-[88vh] w-full max-w-md overflow-y-auto rounded-t-3xl border-t border-white/15 pb-8"
             style={{ background: 'linear-gradient(180deg,#0e1d45,#070f26)' }}>
             <div className="sticky top-0 z-10 px-4 pb-3 pt-3" style={{ background: '#0e1d45' }}>
-              <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-white/25" />
+              <SheetGrip controls={grip} onClose={onClose} className="-mt-1 mb-2 py-1.5"><div className="h-1.5 w-10 rounded-full bg-white/25" /></SheetGrip>
               <div dir="ltr" className="mb-3 flex items-center justify-center gap-2"><Bell className="h-5 w-5" style={{ color: GOLD }} /><span className="text-[17px] font-bold text-white">התראות</span></div>
               <div data-tour="notif-tabs"><Tabs tab={tab} setTab={setTab} /></div>
             </div>
