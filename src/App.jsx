@@ -38,6 +38,8 @@ const PRELOAD_IMAGES = ['/champions/ch-logo.png', '/champions/ch-trophy.webp', '
 const INTRO_CLIPS = [
   ['/champions/intro-portrait.mp4', '/champions/intro-landscape.mp4'],
   ['/champions/intro-portrait-2.mp4', '/champions/intro-landscape-2.mp4'],
+  // the starball forming into the logo (landscape: the same clip centred on a blurred copy of itself)
+  ['/champions/intro-portrait-3.mp4', '/champions/intro-landscape-3.mp4'],
 ];
 const introSrc = () => {
   let last = -1;
