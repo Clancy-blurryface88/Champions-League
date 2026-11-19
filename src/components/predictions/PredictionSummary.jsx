@@ -53,6 +53,18 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
       prediction.predicted_score_a != null &&
       prediction.predicted_score_b != null
     );
+  // by the day they're played (local date), each with its date only
+  const byDay = [];
+  predictionsList.forEach((row, i) => {
+    const d = new Date(row.match.match_date);
+    const key = d.toDateString();
+    let g = byDay[byDay.length - 1];
+    if (!g || g.key !== key) {
+      g = { key, label: d.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'numeric' }), items: [] };
+      byDay.push(g);
+    }
+    g.items.push({ ...row, i });
+  });
 
   return (
     <motion.div
@@ -91,9 +103,6 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
         {/* Header */}
         <div className="flex flex-col items-center justify-center px-5 pt-3 pb-3 flex-shrink-0 text-center" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <h2 className="text-lg font-bold leading-tight" style={{ color: '#93c5fd' }}>הניחושים שלך</h2>
-          <p className="text-white/60 text-xs mt-0.5">
-            {loadingMatches ? 'עבור לפני אישור' : `${predictionsList.length} משחקים · עבור לפני אישור`}
-          </p>
         </div>
 
         {/* the score bugs */}
@@ -104,8 +113,16 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
               <span className="text-white/40 text-sm">טוען משחקים...</span>
             </div>
           ) : (
-            <div className="px-3.5 py-3 grid gap-[7px]">
-              {predictionsList.map(({ match, prediction }, i) => (
+            <div className="px-3.5 pb-3">
+              {byDay.map(({ key, label, items }) => (
+                <div key={key}>
+                  <div className="sticky top-0 z-[3] flex justify-center pt-2.5 pb-2" style={{ background: 'linear-gradient(#070b18 72%, rgba(7,11,24,0))' }}>
+                    <span style={{ padding: '3px 14px', transform: SKEW, background: PLATE, color: '#0b1b45', fontWeight: 800, fontSize: 11.5 }}>
+                      <span className="inline-block" style={{ transform: UNSKEW }}>{label}</span>
+                    </span>
+                  </div>
+                  <div className="grid gap-[7px] mb-1.5">
+              {items.map(({ match, prediction, i }) => (
                 <motion.div
                   key={match.id}
                   initial={{ opacity: 0, x: -30 }}
@@ -124,6 +141,9 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                   </div>
                 </motion.div>
               ))}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -135,7 +155,7 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
             <button
               onClick={onConfirm}
               disabled={saving || loadingMatches}
-              className="flex-[1.4] py-3 rounded font-bold text-base transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-3 rounded font-bold text-base transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ transform: 'skewX(-12deg)', background: 'linear-gradient(90deg,#16a34a,#22c55e)', color: '#fff', boxShadow: '0 6px 20px rgba(34,197,94,.25)' }}
             >
               {saving ? (
@@ -144,14 +164,14 @@ export default function PredictionSummary({ predictions, roundId, onConfirm, onC
                   שומר...
                 </span>
               ) : (
-                <span className="inline-block" style={{ transform: 'skewX(12deg)' }}>אישור ושליחה</span>
+                <span className="inline-block" style={{ transform: 'skewX(12deg)' }}>שליחה</span>
               )}
             </button>
             <button
               onClick={onCancel}
               disabled={saving}
               className="flex-1 py-3 rounded text-base font-bold transition-opacity disabled:opacity-40"
-              style={{ transform: 'skewX(-12deg)', background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.15)', color: '#cbd5e1' }}
+              style={{ transform: 'skewX(-12deg)', background: 'linear-gradient(90deg,#b91c1c,#ef4444)', color: '#fff', boxShadow: '0 6px 20px rgba(239,68,68,.25)' }}
             >
               <span className="inline-block" style={{ transform: 'skewX(12deg)' }}>ביטול</span>
             </button>
