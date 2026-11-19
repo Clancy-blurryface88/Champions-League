@@ -192,39 +192,37 @@ export const TOURS = {
 // The notifications tour, on the main screen: the bell (only it can be tapped), then the notifications
 // menu part by part — the device's status, the two tabs, each tab's switches, the LIVE minute.
 TOURS['notif-tap'] = { steps: [
-  { target: 'bell', radius: 999, pad: 6, title: 'מערכת ההתראות החדשה', subtitle: 'בוחרים בדיוק אילו התראות לקבל, ואילו מעדיפים שלא', rows: [
-    { head: 'חיווי האם אתם רשומים להתראות:' },
+  { target: 'bell', radius: 999, pad: 6, title: 'חדש באפליקציה 🆕 – מערכת ההתראות החדשה', subtitle: 'בוחרים בדיוק אילו התראות לקבל, ואילו מעדיפים שלא', rows: [
+    { head: 'האם אתם רשומים להתראות?' },
     { key: 'זהב', color: '#f5c518', text: 'ההתראות פעילות במכשיר הזה' },
     { key: 'אפור', color: GREY, text: 'ההתראות כבויות במכשיר הזה' },
   ] },
-  { tap: true, target: 'bell', radius: 999, pad: 6, title: 'נכנסים להגדרות', subtitle: 'ועכשיו למערכת החדשה', lines: ['לחצו על הפעמון'] },
+  { tap: true, target: 'bell', radius: 999, pad: 6, title: 'נכנסים להגדרות', lines: ['לחצו על הפעמון'] },
 ] };
-TOURS.notif = { key: 'tour_notif_v2', steps: [
-  { target: 'notif-status', noScroll: true, radius: 16, pad: 4, title: 'מצב ההתראות', subtitle: 'ההגדרות במכשיר הזה', rows: [
+TOURS.notif = { key: 'tour_notif_v3', steps: [
+  { target: 'notif-status', noScroll: true, radius: 16, pad: 4, title: 'מצב ההתראות',
+    intro: ['חיווי האם אתם רשומים להתראות.', 'במידה ולא, תצטרכו להפעיל את האפשרות לקבלת התראות.'], rows: [
     { key: 'ירוק', color: G, text: 'ההתראות פעילות במכשיר שלכם' },
-    { key: 'הפעלה', color: Y, text: 'כשהן כבויות, לחיצה אחת מפעילה אותן' },
+    { key: 'הפעלה', color: Y, text: 'לחצו על הטוגל להפעלה' },
   ] },
-  { target: 'notif-tabs', noScroll: true, radius: 12, pad: 4, title: 'שני סוגי קטגוריות התראות', rows: [
+  { target: 'notif-tabs', noScroll: true, radius: 12, pad: 4, title: 'קטגוריות התראות',
+    intro: ['באפשרותכם להגדיר את סוגי קטגוריות ההתראות הבאים:'], rows: [
     { key: 'כללי', color: BLUE, text: 'מתייחס להרכבים, שריקת הסיום וסיכומים' },
     { key: 'LIVE', color: RED, ltr: true, text: 'מתייחס למה שקורה בזמן המשחק' },
   ] },
-  { tab: 'general', target: 'notif-list', noScroll: true, radius: 16, pad: 4, title: 'כללי', subtitle: 'מופיע מתג לכל סוג התראה',
-    intro: ['כל מתג קובע אם לקבל את ההתראה.', 'השינוי נשמר מיד לאחר ההפעלה או הכיבוי.'], rows: [
-    { key: 'הרכבים', color: W, text: 'כשההרכבים יוצאים, כשעה לפני המשחק' },
-    { key: 'שריקת הסיום', color: W, text: 'כמה נקודות קיבלת' },
-    { key: 'סיכומים', color: W, text: 'סיכום ערב המשחקים וסיכום המחזור' },
+  { tab: 'general', target: 'notif-list', noScroll: true, radius: 16, pad: 4, title: 'כללי', lines: [
+    'באפשרותכם לבטל או להפעיל כל התראה על ידי שינוי טוגל ההתראה.',
   ] },
-  { tab: 'live', target: 'notif-minute', noScroll: true, radius: 16, pad: 4, title: 'מאיזו דקה',
-    intro: ['ניתן לבחור שהתראות ה-LIVE יישלחו במהלך המשחקים רק מהדקה שבחרתם.'], rows: [
-    { key: 'כפתורים', color: Y, text: 'מתחילת המשחק, מהמחצית, מדקה 60 או 75' },
-    { key: 'ציר', color: W, text: 'גרירה ובחירה של כל דקה אחרת שתרצו' },
+  { tab: 'general', target: 'notif-list', noScroll: true, radius: 16, pad: 4, title: 'שמירה', lines: [
+    'השינוי נשמר מיד לאחר ההפעלה או הכיבוי, באמצעות חיווי "נשמר".',
   ] },
-  { tab: 'live', target: 'notif-list', noScroll: true, radius: 16, pad: 4, title: 'הודעות LIVE', subtitle: 'בזמן המשחק', rows: [
-    { key: 'גולים', color: G, text: 'גול שהעניק או הרס פגיעה מדויקת' },
-    { key: 'טבלה', color: Y, text: 'עלייה לפסגה, או כשמשתתף אחר עקף אותך' },
-    { key: 'VAR', color: GREY, ltr: true, text: 'גול שבוטל, או שינוי אחר שמשפיע על התוצאה' },
+  { tab: 'live', target: 'notif-minute', noScroll: true, radius: 16, pad: 4, title: 'התראות LIVE',
+    intro: ['ניתן לבחור התראות שיישלחו במהלך משחקי ה-LIVE, רק מהדקה שבחרתם.'], rows: [
+    { key: 'כפתורים', color: Y, text: 'ערכים קבועים מרכזיים' },
+    { key: 'בחירה מדויקת', color: W, text: 'גרירה ובחירה של כל דקה אחרת שתרצו' },
   ] },
-  { summary: true, title: 'מעכשיו אתם שולטים במערכת ההתראות', lines: [
+  { tab: 'live', target: 'notif-list', noScroll: true, radius: 16, pad: 4, title: 'הודעות LIVE', subtitle: 'בזמן שהמשחקים מתקיימים' },
+  { summary: true, title: 'סיכום', lines: [
     'אפשר לחזור לכאן בכל זמן דרך הפעמון.',
   ] },
 ] };
