@@ -1306,6 +1306,7 @@ export default function Predictions() {
           <PredictionSummary
             predictions={predictions}
             roundId={roundId}
+            matches={matches}
             onConfirm={handleConfirmPredictions}
             onCancel={handleCancelPredictions}
             saving={saving} />

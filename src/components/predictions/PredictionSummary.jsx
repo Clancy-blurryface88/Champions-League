@@ -93,16 +93,20 @@ function DayLine({ label }) {
 
 const AURORA_CSS = '@keyframes ps-aurora{0%{transform:translate(-10%,-5%) rotate(0deg)}50%{transform:translate(8%,6%) rotate(12deg)}100%{transform:translate(-10%,-5%) rotate(0deg)}}';
 
-export default function PredictionSummary({ predictions, roundId, onConfirm, onCancel, saving }) {
-  const [matches, setMatches] = useState([]);
-  const [loadingMatches, setLoadingMatches] = useState(true);
+export default function PredictionSummary({ predictions, roundId, matches: given, onConfirm, onCancel, saving }) {
+  // the round page passes the matches it already has: the sheet opens at its full height at once (it
+  // used to rise short, with a loader, and then jump up when its own fetch came back)
+  const sortByDate = (list) => [...list].sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
+  const [matches, setMatches] = useState(() => (given?.length ? sortByDate(given) : []));
+  const [loadingMatches, setLoadingMatches] = useState(() => !given?.length);
   const { controls: grip, sheetProps } = useSheetDrag(() => { if (!saving) onCancel(); });
 
   useEffect(() => {
+    if (given?.length) return;
     setLoadingMatches(true);
     Match.filter({ round_id: roundId })
       .then(fresh => {
-        setMatches(fresh.sort((a, b) => new Date(a.match_date) - new Date(b.match_date)));
+        setMatches(sortByDate(fresh));
       })
       .catch(() => {})
       .finally(() => setLoadingMatches(false));
