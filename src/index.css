@@ -21,6 +21,129 @@
   src: url(https://fonts.gstatic.com/s/bigshouldersstencildisplay/v30/6aeq4LS6U6pR_bp5b_t2ugOhHWFcxSGP9ttD96KCb8xPyviZ0nI5zw.woff2) format('woff2');
   unicode-range: U+0100-024F;
 }
+/* Hebrew everywhere in the app reads in Arimo (option 14): its Hebrew letters are registered under
+   every family name the app uses, limited to the Hebrew range, so only Hebrew changes — English,
+   digits and punctuation keep their own fonts. */
+@font-face {
+  font-family: 'EnStencil';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/arimo/v36/P5sMzZCDf9_T_10bxCF8jA.woff2) format('woff2');
+  unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/arimo/v36/P5sMzZCDf9_T_10bxCF8jA.woff2) format('woff2');
+  unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: 'Syne';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/arimo/v36/P5sMzZCDf9_T_10bxCF8jA.woff2) format('woff2');
+  unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/arimo/v36/P5sMzZCDf9_T_10bxCF8jA.woff2) format('woff2');
+  unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: 'Teko';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/arimo/v36/P5sMzZCDf9_T_10bxCF8jA.woff2) format('woff2');
+  unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: 'Orbitron';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/arimo/v36/P5sMzZCDf9_T_10bxCF8jA.woff2) format('woff2');
+  unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: 'Russo One';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/arimo/v36/P5sMzZCDf9_T_10bxCF8jA.woff2) format('woff2');
+  unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: 'Karantina';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/arimo/v36/P5sMzZCDf9_T_10bxCF8jA.woff2) format('woff2');
+  unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: 'Exo 2';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/arimo/v36/P5sMzZCDf9_T_10bxCF8jA.woff2) format('woff2');
+  unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: 'Bungee Inline';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/arimo/v36/P5sMzZCDf9_T_10bxCF8jA.woff2) format('woff2');
+  unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: 'Bebas Neue';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/arimo/v36/P5sMzZCDf9_T_10bxCF8jA.woff2) format('woff2');
+  unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: 'Big Shoulders Stencil Display';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/arimo/v36/P5sMzZCDf9_T_10bxCF8jA.woff2) format('woff2');
+  unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/arimo/v36/P5sMzZCDf9_T_10bxCF8jA.woff2) format('woff2');
+  unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: 'Black Han Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/arimo/v36/P5sMzZCDf9_T_10bxCF8jA.woff2) format('woff2');
+  unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: 'Doto';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/arimo/v36/P5sMzZCDf9_T_10bxCF8jA.woff2) format('woff2');
+  unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F;
+}
 html {
   font-family: 'EnStencil', ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
