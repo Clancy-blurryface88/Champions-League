@@ -24,7 +24,7 @@ export default function RoundSummaryReveal({ summary, variant, onClose }) {
   const [canClose, setCanClose] = useState(false);
   useEffect(() => { const t = setTimeout(() => setCanClose(true), 2500); return () => clearTimeout(t); }, []);
   return createPortal(
-    <div className="fixed inset-0 z-[300] flex justify-center bg-black">
+    <div data-fc-wait="" className="fixed inset-0 z-[300] flex justify-center bg-black">
       <RevealStage summary={summary} variant={variant} style={{ width: "100%", maxWidth: 480, height: "100dvh" }} />
       <button
         onClick={onClose}

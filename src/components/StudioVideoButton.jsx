@@ -113,6 +113,7 @@ export default function StudioVideoButton({ rounds, onPredict, onVisible }) {
       {createPortal(<AnimatePresence>
         {open && (
           <motion.div
+            data-fc-wait=""
             className="fixed inset-0 bg-black flex items-center justify-center"
             style={{ zIndex: 2147483000 }}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}

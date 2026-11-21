@@ -2,7 +2,7 @@ import React from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, animate, useMotionValue, useTransform } from "framer-motion";
 import { supabase } from "@/api/supabase";
-import { forecastResult } from "@/utils/forecast";
+import { forecastResult, forecastHistory } from "@/utils/forecast";
 
 // The round's score forecast (21.11.2026, designs 68 and 70):
 //  ForecastPopup — after sending the predictions: "received", the forecast with its expected range
@@ -130,7 +130,28 @@ function Stats({ fc, act }) {
       <span style={{ width: NW, textAlign: "center", color: GOLD }}>תחזית</span><span style={{ width: NW, textAlign: "center" }}>בפועל</span></div>
   </div>;
 }
-export function ForecastResult({ r, roundNo, onClose }) {
+// round against round: a pair of bars per finished round (forecast gold, actual green/red), this round lit
+function History({ hist, roundId, d = 0.5 }) {
+  const top = Math.max(1, ...hist.flatMap((h) => [h.fc, h.actual])), H = 70;
+  const beat = hist.filter((h) => h.actual >= h.fc).length;
+  return <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: d }}
+    style={{ marginTop: 12, padding: '10px 12px', borderRadius: 14, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.1)' }}>
+    <div className="text-center" style={{ fontSize: 12.5, fontWeight: 800, color: '#bfdbfe' }}>מחזור מול מחזור</div>
+    <div className="flex justify-around items-end" style={{ height: H + 40, marginTop: 6 }}>
+      {hist.map((h, i) => { const me = h.round_id === roundId, up = h.actual >= h.fc; return <div key={h.round_id} className="flex flex-col items-center" style={{ opacity: me ? 1 : 0.75 }}>
+        <div dir="ltr" className="flex items-end gap-[2px]" style={{ height: H + 16 }}>
+          {[[h.fc, GOLD, 0], [h.actual, up ? GREEN : RED, 0.1]].map(([val, c, dd], j) => <div key={j} className="flex flex-col items-center" style={{ width: 22 }}>
+            <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: d + 0.5 + i * 0.1 }} dir="ltr" style={{ fontFamily: NUM, fontSize: 11.5, color: c, lineHeight: 1, marginBottom: 2 }}>{Math.round(val)}</motion.span>
+            <motion.div style={{ width: 13, borderRadius: '3px 3px 1px 1px', background: c }} initial={{ height: 0 }} animate={{ height: Math.max(2, (val / top) * H) }} transition={{ delay: d + 0.1 + dd + i * 0.1, duration: 0.6, ease }} /></div>)}
+        </div>
+        <div style={{ marginTop: 4, fontSize: 10.5, fontWeight: 800, padding: '1px 6px', borderRadius: 6, background: me ? 'rgba(147,197,253,.22)' : 'transparent', color: me ? '#fff' : 'rgba(255,255,255,.6)' }}>מחזור {h.order}</div>
+      </div>; })}
+    </div>
+    <div className="text-center" style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.75)', marginTop: 6 }}>עקפת את התחזית ב־<b dir="ltr" style={{ color: '#fff' }}>{beat}</b> מתוך <b dir="ltr" style={{ color: '#fff' }}>{hist.length}</b> מחזורים</div>
+  </motion.div>;
+}
+
+export function ForecastResult({ r, roundNo, hist = [], roundId, onClose }) {
   const [open, setOpen] = React.useState(false);
   const fc = Number(r.forecast.fc), act = r.actual, FCR = Math.round(fc);
   const pct = fc > 0 ? Math.round((act / fc) * 100) : 0;
@@ -147,9 +168,9 @@ export function ForecastResult({ r, roundNo, onClose }) {
     <motion.div className="text-center" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 3, type: "spring" }} style={{ marginTop: 12, fontWeight: 900, fontSize: 15, color: v.c }}>{v.t}</motion.div>
     <motion.button type="button" onClick={() => setOpen((o) => !o)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.2 }}
       className="w-full flex items-center justify-center gap-2" style={{ marginTop: 12, height: 40, borderRadius: 12, fontWeight: 800, fontSize: 13.5, background: open ? "rgba(147,197,253,.18)" : "rgba(255,255,255,.07)", border: "1px solid rgba(147,197,253,.35)", color: "#bfdbfe" }}>
-      📊 סטטיסטיקה לפי סוג ניחוש <motion.span animate={{ rotate: open ? 180 : 0 }} style={{ display: "inline-block" }}>▾</motion.span></motion.button>
+      📊 סטטיסטיקה <motion.span animate={{ rotate: open ? 180 : 0 }} style={{ display: "inline-block" }}>▾</motion.span></motion.button>
     <AnimatePresence>{open && <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} style={{ overflow: "hidden" }}>
-      <div style={{ paddingTop: 12 }}><Stats fc={r.forecast.cats || {}} act={r.actCats} /></div></motion.div>}</AnimatePresence>
+      <div style={{ paddingTop: 12 }}><Stats fc={r.forecast.cats || {}} act={r.actCats} />{hist.length >= 2 && <History hist={hist} roundId={roundId} />}</div></motion.div>}</AnimatePresence>
     <CloseBtn onClose={onClose} d={3.4} />
   </Shell>;
 }
@@ -162,15 +183,17 @@ export function ForecastResultGate({ user, rounds }) {
     if (!user?.id || !rounds?.length) return undefined;
     let alive = true;
     (async () => {
-      const { data } = await supabase.from("round_forecasts").select("round_id").eq("user_id", user.id);
-      const have = new Set((data || []).map((x) => x.round_id));
+      const { data } = await supabase.from("round_forecasts").select("round_id,backfill").eq("user_id", user.id);
+      // only forecasts made when the predictions were sent (backfilled rounds feed the history only)
+      const have = new Set((data || []).filter((x) => !x.backfill).map((x) => x.round_id));
       const replay = new URLSearchParams(window.location.search).get("fcresult");
       const cand = [...rounds].sort((a, b) => (b.order || 0) - (a.order || 0)).filter((r) => have.has(r.id) && (replay || !localStorage.getItem(SEEN(r.id))));
       for (const round of cand) {
         const r = await forecastResult(user.id, round.id);
         if (r?.done) {
+          const hist = await forecastHistory(user.id).catch(() => []);
           // after any tour on the screen (the notifications tour opens on the home screen too)
-          const show = () => { if (!alive) return; if (document.querySelector('[data-tour-overlay]')) setTimeout(show, 1000); else setRes({ r, round }); };
+          const show = () => { if (!alive) return; if (document.querySelector('[data-tour-overlay],[data-fc-wait]')) setTimeout(show, 1000); else setRes({ r, round, hist }); };
           setTimeout(show, 1500); return;
         }
       }
@@ -178,5 +201,5 @@ export function ForecastResultGate({ user, rounds }) {
     return () => { alive = false; };
   }, [user?.id, rounds?.length]); // eslint-disable-line react-hooks/exhaustive-deps
   const close = () => { try { localStorage.setItem(SEEN(res.round.id), "1"); } catch {} setRes(null); };
-  return <AnimatePresence>{res && <ForecastResult key="fcr" r={res.r} roundNo={res.round.order} onClose={close} />}</AnimatePresence>;
+  return <AnimatePresence>{res && <ForecastResult key="fcr" r={res.r} roundNo={res.round.order} hist={res.hist} roundId={res.round.id} onClose={close} />}</AnimatePresence>;
 }
