@@ -5,6 +5,7 @@ import OrbitSpinner from "@/components/OrbitSpinner";
 import TeamFlag from "@/components/TeamFlag";
 import LiveLeaderboard from "@/components/LiveLeaderboard";
 import LiveComparisonTable from "@/components/LiveComparisonTable";
+import LiveForecastRow from "@/components/LiveForecastRow";
 import { TOURNAMENT_CODE } from "@/config/tournament";
 
 const FILTERS = [
@@ -341,6 +342,9 @@ export default function LiveDataPanel({ onClose }) {
   const [lastUpdate, setLastUpdate] = useState(null);
   const [filter, setFilter] = useState('LIVE');
   const [showComparison, setShowComparison] = useState(false);
+  const [liveMine, setLiveMine] = useState(null); // from the live table, once it has settled
+  // coming back to the table tab: the row waits for the table to settle again
+  useEffect(() => { if (filter !== 'LB') setLiveMine(null); }, [filter]);
 
   const load = useCallback(async () => {
     if (filter === 'LB') return;
@@ -479,16 +483,8 @@ export default function LiveDataPanel({ onClose }) {
           {/* Compare everyone's live predictions — lives under the טבלה (LB)
               tab, next to the leaderboard itself. The modal's own empty
               state already covers "no live matches right now". */}
-          {filter === 'LB' && (
-            <button
-              onClick={() => setShowComparison(true)}
-              className="w-full mt-3 flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-semibold text-red-300 transition-colors hover:text-white"
-              style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)' }}
-            >
-              <Rows3 className="w-3.5 h-3.5" />
-              השוואת ניחושים בין כולם
-            </button>
-          )}
+          {/* the live forecast and the compare button, in one row, once the table has settled */}
+          {filter === 'LB' && <LiveForecastRow live={liveMine} onCompare={() => setShowComparison(true)} />}
         </div>
 
         {/* Divider */}
@@ -497,7 +493,7 @@ export default function LiveDataPanel({ onClose }) {
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-4 pt-1 pb-4 scrollbar-thin scrollbar-thumb-white/10">
           {filter === 'LB' ? (
-            <LiveLeaderboard />
+            <LiveLeaderboard onLive={setLiveMine} />
           ) : (
           <AnimatePresence mode="wait">
             {loading && matches.length === 0 ? (

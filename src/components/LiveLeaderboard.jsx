@@ -102,7 +102,7 @@ function inPlayCards(matches) {
 // The cell's top bar is the viewer's own prediction for that match right now:
 // green = exact, yellow = right direction, red = neither (or no prediction).
 const GOAL_FLASH_MS = 3500;
-function ScoreboardStrip({ cards, myPreds = [] }) {
+export function ScoreboardStrip({ cards, myPreds = [] }) {
   const prev = useRef({});
   const [flash, setFlash] = useState({});
   useEffect(() => {
@@ -212,11 +212,17 @@ function RankCard({ row, index, total, isInitial, isMe, onOpen }) {
   );
 }
 
-export default function LiveLeaderboard() {
+// onLive({ live, matchIds }) — after every live pass, once the table has settled: what the signed-in
+// participant earns right now in the matches in play (the live forecast row reads it)
+export default function LiveLeaderboard({ onLive } = {}) {
   const [rows, setRows]                   = useState([]);
   // the signed-in participant's rank plate is drawn green→cyan
   const [myId, setMyId]                   = useState(null);
-  useEffect(() => { supabase.auth.getSession().then(({ data }) => setMyId(data.session?.user?.id ?? null)).catch(() => {}); }, []);
+  const myIdRef = useRef(null);
+  useEffect(() => { supabase.auth.getSession().then(({ data }) => { const id = data.session?.user?.id ?? null; myIdRef.current = id; setMyId(id); }).catch(() => {}); }, []);
+  const onLiveRef = useRef(onLive); onLiveRef.current = onLive;
+  // told once the cards have finished moving (their reorder runs about a second)
+  const report = (live, matchIds, wait = 1800) => setTimeout(() => onLiveRef.current?.({ live, matchIds }), wait);
   const [status, setStatus]               = useState('loading');
   const [liveInfo, setLiveInfo]           = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -292,7 +298,7 @@ export default function LiveLeaderboard() {
 
       // Nothing live per the API (e.g. half-time, or a slow feed): keep the cards
       // of matches still within their playing window so the table doesn't jump.
-      if (liveMatches.length === 0) { setLiveInfo(inPlayCards(data.matches)); return; }
+      if (liveMatches.length === 0) { setLiveInfo(inPlayCards(data.matches)); report(0, [], 1500); return; }
 
       // Collect ALL live DB matches (not just the first one)
       const unfinished = data.matches.filter(m => !m.is_finished);
@@ -301,7 +307,7 @@ export default function LiveLeaderboard() {
         const f = findDbMatch(lm, unfinished);
         if (f) liveDbMatches.push({ dbMatch: f, apiMatch: lm });
       }
-      if (liveDbMatches.length === 0) return;
+      if (liveDbMatches.length === 0) { report(0, [], 1500); return; }
       // fixed order here already, so each row's per-match marks (and the exact-hit
       // shake key built from them) keep their order too
       liveDbMatches.sort((x, y) => byKickoffThenHome(x.dbMatch, y.dbMatch));
@@ -356,6 +362,7 @@ export default function LiveLeaderboard() {
 
       setIsInitialLoad(false);  // smooth reorder only, no re-reveal
       setRows(built);
+      report(liveBonusMap[myIdRef.current]?.liveBonus || 0, liveDbMatches.map(({ dbMatch }) => dbMatch.id));
       setLiveInfo(liveDbMatches.map(({ dbMatch, apiMatch }) => ({
         home: dbMatch.team_a, away: dbMatch.team_b,
         homeLogo: dbMatch.team_a_logo ?? null, awayLogo: dbMatch.team_b_logo ?? null,
@@ -364,6 +371,7 @@ export default function LiveLeaderboard() {
       })));
     } catch (e) {
       console.error('[LiveLeaderboard]', e);
+      report(0, [], 1500);
       if (!hasShownInitial.current) setStatus('error');
     }
   }, [getName]);
