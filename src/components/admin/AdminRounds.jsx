@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { LoaderBar } from "../ui/LoaderBar";
+import AdminNewspaper from "./AdminNewspaper";
 
 export default function AdminRounds() {
   const [rounds, setRounds] = useState([]);
@@ -79,6 +80,9 @@ export default function AdminRounds() {
 
   return (
     <div className="space-y-6">
+      {/* "מבט לאלופות": the issues after each night — preview and publish */}
+      <AdminNewspaper />
+
       {/* Add Round Button */}
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold text-white">Manage Rounds</h2>

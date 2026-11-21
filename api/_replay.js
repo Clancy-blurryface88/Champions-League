@@ -15,10 +15,8 @@ function parseScore(s) {
   return m ? [Number(m[1]), Number(m[2])] : null;
 }
 
-export async function replayHandler(req, res) {
-  const { date } = req.query;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date || '')) return res.status(400).json({ error: 'date=YYYY-MM-DD required' });
-  try {
+// the goal timeline of one night: every CL fixture of the date, our match id, its goals in order
+export async function nightTimeline(date) {
     const night = await goal(`/fixtures/date/${date}?leagueId=${CL_LEAGUE}&limit=100`);
     const fixtures = [];
     for (const fx of night) {
@@ -51,6 +49,14 @@ export async function replayHandler(req, res) {
       });
     }
     const done = fixtures.length > 0 && fixtures.every((f) => f.status === 'FINISHED');
+    return { date, done, fixtures };
+}
+
+export async function replayHandler(req, res) {
+  const { date } = req.query;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date || '')) return res.status(400).json({ error: 'date=YYYY-MM-DD required' });
+  try {
+    const { done, fixtures } = await nightTimeline(date);
     res.setHeader('Cache-Control', done ? 's-maxage=86400, stale-while-revalidate=604800' : 'no-store');
     return res.status(200).json({ date, done, fixtures });
   } catch (e) {

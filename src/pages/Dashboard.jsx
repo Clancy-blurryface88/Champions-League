@@ -13,6 +13,7 @@ import { Round } from "@/api/entities"; // NEW: Import Round entity
 import { motion, AnimatePresence } from "framer-motion";
 import LottieAnimation from "@/components/ui/LottieAnimation";
 import StudioVideoButton from "../components/StudioVideoButton";
+import NewspaperButton from "../components/newspaper/NewspaperButton";
 import { ForecastResultGate } from "../components/predictions/RoundForecast";
 
 export default function Dashboard() {
@@ -22,6 +23,8 @@ export default function Dashboard() {
   const [rounds, setRounds] = useState([]);
   // the studio TV takes room at the bottom: when it shows, the page tightens its gaps so it fits without scrolling
   const [hasStudio, setHasStudio] = useState(false);
+  const [hasPaper, setHasPaper] = useState(false);
+  const compact = hasStudio || hasPaper;
   const navigate = useNavigate();
   const location = useLocation(); // the round opens as a sheet over this screen
 
@@ -120,8 +123,8 @@ export default function Dashboard() {
     <div className="min-h-[calc(100vh-7rem)] relative flex flex-col">
       <AppBackground />
 
-      <div className={`relative z-[1] flex-1 flex flex-col items-center justify-center w-full ${hasStudio ? "gap-4 md:gap-10 pt-20 pb-4" : "gap-10 md:gap-16 pt-28 pb-12"}`}>
-        <TournamentHeader compact={hasStudio} />
+      <div className={`relative z-[1] flex-1 flex flex-col items-center justify-center w-full ${compact ? "gap-4 md:gap-10 pt-20 pb-4" : "gap-10 md:gap-16 pt-28 pb-12"}`}>
+        <TournamentHeader compact={compact} />
 
         {/* Rounds Marquee Section */}
         {rounds.length > 0 && (
@@ -133,6 +136,8 @@ export default function Dashboard() {
         {/* The round's studio video, on a small TV at the bottom (only while it is relevant) */}
         {rounds.length > 0 && (
           <div className="w-full px-4">
+            {/* "מבט לאלופות": the newspaper of the last match night, from its publish time */}
+            <NewspaperButton onVisible={setHasPaper} />
             <StudioVideoButton rounds={rounds} onPredict={handleRoundSelect} onVisible={setHasStudio} />
             <ForecastResultGate user={user} rounds={rounds} />
           </div>

@@ -8,6 +8,7 @@ import { adminPushHandler, adminSubscribersHandler } from './_adminPush.js';
 import { replayHandler } from './_replay.js';
 import { oddsHandler } from './_odds.js';
 import { notifPrefsHandler } from './_prefs.js';
+import { newspaperHandler } from './_newspaper.js';
 
 export default async function handler(req, res) {
   if (req.query.source === 'goal-webhook') return goalWebhookHandler(req, res);
@@ -18,6 +19,7 @@ export default async function handler(req, res) {
   if (req.query.source === 'replay') return replayHandler(req, res);
   if (req.query.source === 'odds') return oddsHandler(req, res);
   if (req.query.source === 'notif-prefs') return notifPrefsHandler(req, res);
+  if (req.query.source === 'newspaper') return newspaperHandler(req, res);
 
   const { competition = TOURNAMENT_CODE, filter = 'LIVE', type } = req.query;
 

@@ -49,9 +49,10 @@ async function findSummaryRound(rounds) {
   return { ...latest, video: latest.summary_video_url, kind: "summary", canPredict, day, firstKickoff: until };
 }
 
-// the studio video before a round comes first; otherwise the latest night summary
+// the studio video before a round
 async function findVideo(rounds) {
-  return (await findStudioRound(rounds)) || (await findSummaryRound(rounds));
+  // the night summary video gave way to the newspaper "מבט לאלופות" (22.11.2026); kept for reference
+  return await findStudioRound(rounds);
 }
 
 // the last answer is remembered, so on the next visit the TV is there from the first frame

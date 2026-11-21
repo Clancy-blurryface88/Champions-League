@@ -27,6 +27,7 @@ import { participants, latestPredictions, sendPersonal } from './_personal.js';
 import { PREDICTION_LOCK_MINUTES } from '../src/config/tournament.js';
 import { getLineupsForMatch } from './_uefaContext.js';
 import { autoFinishSweep } from './_autoFinish.js';
+import { newspaperSweep } from './_newspaper.js';
 
 const SITE = 'https://champions-league-2026.vercel.app';
 const TZ = 'Asia/Jerusalem';
@@ -189,11 +190,14 @@ export async function remindersHandler(req, res) {
       const sent = await push({ heading: r.heading, body: r.body, url: r.url, key: r.key, mode, sendAfter: r.at });
       results.push({ key: r.key, at: r.at.toISOString(), sent });
     }
+    // "מבט לאלופות": once a night is all calculated, its issue is built as a draft for the admin (live runs only)
+    const newspaper = mode === 'live' ? await newspaperSweep(now).catch((e) => { console.error('[newspaper]', e.message); return { error: e.message }; }) : undefined;
     return res.status(200).json({
       now: now.toISOString(),
       planned: admin ? all.map((r) => ({ key: r.key, at: r.at.toISOString(), atIsrael: `${ilDate(r.at)} ${ilTime(r.at)}` })) : undefined,
       results,
       autoFinish,
+      newspaper,
     });
   } catch (e) {
     console.error('[reminders]', e.message);
