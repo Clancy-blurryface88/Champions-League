@@ -29,6 +29,8 @@ const H = ({ children, s = 18, style }) => <div style={{ fontFamily: FR, fontWei
 const P = ({ children, style }) => <p style={{ fontFamily: FR, fontSize: 13, lineHeight: 1.55, textAlign: "justify", margin: 0, ...style }}>{children}</p>;
 const Kick = ({ children, c = RED }) => <div style={{ fontFamily: FR, fontSize: 10.5, fontWeight: 900, color: c }}>{children}</div>;
 const Box = ({ children, style }) => <div style={{ border: `1px solid ${INK}`, padding: 8, ...style }}>{children}</div>;
+// a round ink stamp (the user's pick, 22.11): red "מנצח הערב" with the date, green "פגיעה מדויקת" on each hit
+const Stamp = ({ children, s = 86, c = RED, r = -12 }) => <div className="grid place-items-center" style={{ width: s, height: s, borderRadius: "50%", border: `3px solid ${c}`, boxShadow: `inset 0 0 0 4px ${PAPER}, inset 0 0 0 6px ${c}`, color: c, transform: `rotate(${r}deg)`, textAlign: "center", flexShrink: 0, fontFamily: FR, fontWeight: 900, lineHeight: 1.05 }}>{children}</div>;
 const Foot = ({ children }) => <div style={{ marginTop: "auto" }}><Rule /><div style={{ fontFamily: FR, fontSize: 10.5, fontWeight: 700, textAlign: "left" }}>{children}</div></div>;
 const Halftone = ({ m, h = 112, cap }) => <div className="relative" style={{ height: h, border: `1px solid ${INK}`, overflow: "hidden", background: `radial-gradient(circle at 1px 1px, rgba(26,20,16,.33) 1px, transparent 1.4px) 0 0/5px 5px, linear-gradient(135deg,#d8ccb2,#b9ab8e)` }}>
   <div className="absolute inset-0 grid place-items-center"><Score m={m} cs={54} ns={42} /></div>
@@ -73,9 +75,9 @@ function Matrix({ m }) {
 }
 const MatrixNote = () => <div style={{ fontFamily: FR, fontSize: 10.5, fontStyle: "italic", marginBottom: 4 }}>כתום = באותו רגע התוצאה על המגרש הייתה הניחוש שלו. ירוק = פגיעה מדויקת בסיום.</div>;
 // a sentence per goal: Claude's, or one made from the facts
-const autoLine = (g) => `${g.scorer || "שער"} — ${g.score}.${g.took.length ? ` הפגיעה של ${g.took.join(", ")} נעלמה${g.held ? ` אחרי ${g.held} דקות` : ""}.` : ""}${g.gave.length ? ` פגיעה מדויקת ל${g.gave.join(", ")}.` : ""}`;
-const Blog = ({ m, text }) => <div className="grid gap-1.5" style={{ marginTop: 4 }}>{m.goals.map((g, i) => <div key={i} className="flex gap-2" style={{ fontFamily: FR, fontSize: 12.6, lineHeight: 1.45 }}>
-  <span style={{ background: INK, color: PAPER, padding: "0 5px", height: 19, flexShrink: 0 }}><N s={12}>{g.minute}'</N></span><span>{text?.blog?.find((b) => Number(b.minute) === g.minute)?.text || autoLine(g)}</span></div>)}</div>;
+const autoLine = (g, he) => `${he?.[g.scorer] || g.scorer || "שער"} — ${g.score}.${g.took.length ? ` הפגיעה של ${g.took.join(", ")} נעלמה${g.held ? ` אחרי ${g.held} דקות` : ""}.` : ""}${g.gave.length ? ` פגיעה מדויקת ל${g.gave.join(", ")}.` : ""}`;
+const Blog = ({ m, text, he }) => <div className="grid gap-1.5" style={{ marginTop: 4 }}>{m.goals.map((g, i) => <div key={i} className="flex gap-2" style={{ fontFamily: FR, fontSize: 12.6, lineHeight: 1.45 }}>
+  <span style={{ background: INK, color: PAPER, padding: "0 5px", height: 19, flexShrink: 0 }}><N s={12}>{g.minute}'</N></span><span>{text?.blog?.find((b) => Number(b.minute) === g.minute)?.text || autoLine(g, he)}</span></div>)}</div>;
 const Worth = ({ rows }) => <div style={{ border: `1px solid ${INK}` }}><div className="grid" style={{ gridTemplateColumns: "1fr 44px 70px 50px", padding: "4px 6px", fontFamily: FR, fontSize: 10.5, fontWeight: 900, background: `${INK}10` }}><span>מי</span><span className="text-center">ניחש</span><span className="text-center">ניקוד אפשרי</span><span className="text-center">ניקוד בפועל</span></div>
   {rows.map((r, i) => <div key={i} className="grid items-center" style={{ gridTemplateColumns: "1fr 44px 70px 50px", padding: "4px 6px", borderTop: `1px dotted ${INK}55`, fontFamily: FR, fontSize: 12.5 }}><span style={{ fontWeight: 700 }}>{r.names}</span><span className="text-center"><N s={12.5}>{r.score}</N></span><span className="text-center"><N s={12.5} c={GREEN}>{r.worth.toFixed(2)}</N></span><span className="text-center"><N s={12.5} c={RED}>{r.got}</N></span></div>)}</div>;
 const worthRows = (m) => m.holds.filter((h) => !h.survived).map((h) => { const gots = [...new Set(h.got.map((g) => g.pts.toFixed(2)))]; return { names: h.names.join(", "), score: h.score, worth: h.worth, got: gots.join(" / ") }; });
@@ -114,18 +116,22 @@ export default function Newspaper({ issue, top = 100 }) {
     <div style={{ fontFamily: FR, fontWeight: 700, fontSize: 14.5, lineHeight: 1.35, margin: "6px 0 8px" }}>{t.subhead}</div>
     {M[t.photoMatch] && <Halftone m={M[t.photoMatch]} cap={t.photoCaption} />}
     <P style={{ marginTop: 8 }}>{t.lead}</P>
-    <Rule />{winner && <Box><Kick c={INK}>מנצח הערב · {f.day} {f.dm}</Kick><div className="flex items-center justify-between"><H s={21}>{winner.name}</H><N s={17}>{winner.pts.toFixed(2)}</N></div>
-      {second && <div style={{ fontFamily: FR, fontSize: 11, opacity: 0.8, marginTop: 2 }}>במקום השני: {second.name} ({second.pts.toFixed(2)})</div>}</Box>}
+    <Rule />{winner && <div className="flex items-center gap-3" style={{ border: `1px solid ${INK}`, padding: 8 }}>
+      <motion.div initial={{ scale: 2.2, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 1.3, type: "spring", stiffness: 300, damping: 14 }}><Stamp s={74}><span style={{ fontSize: 9.5 }}>מנצח<br />הערב</span><N s={12} c={RED}>{f.dm}</N></Stamp></motion.div>
+      <div><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 24, lineHeight: 1 }}>{winner.name}</div><N s={17}>{winner.pts.toFixed(2)}</N>
+        {second && <div style={{ fontFamily: FR, fontSize: 11, opacity: 0.85 }}>במקום השני: {second.name} ({second.pts.toFixed(2)})</div>}</div></div>}
     <Foot>המשך הכתבה בעמוד {no + 1} ←</Foot></Page>);
 
   // 2 — the lead story goes on: the exact hits of the night, the goals that made them
   pages.push((no) => <Page h={h}><Mast page={`${no} · הכתבה הראשית`} /><Kick>המשך מעמוד 1</Kick>
     {(t.leadMore || []).map((p, i) => <P key={i} style={{ marginTop: i ? 6 : 2 }}>{p}</P>)}
     <Rule /><P style={{ marginBottom: 6 }}>{t.leadHitsIntro}</P>
-    {f.exact?.length ? <div className="grid gap-1.5">{f.exact.map((e, i) => <Box key={i} style={{ padding: 6 }}><div className="flex items-center gap-2"><Score m={M[e.match]} cs={20} ns={15} /><span style={{ flex: 1, fontFamily: FR, fontSize: 12.5, fontWeight: 700 }}>{e.name}</span><N s={16} c={GREEN}>+{e.pts.toFixed(2)}</N></div></Box>)}</div>
+    {f.exact?.length ? <div className="grid gap-2">{f.exact.map((e, i) => <div key={i} className="flex items-center gap-3" style={{ borderBottom: `1px dotted ${INK}66`, paddingBottom: 6 }}>
+      <Stamp s={46} c={GREEN} r={-10}><span style={{ fontSize: 8.5 }}>פגיעה<br />מדויקת</span></Stamp>
+      <div style={{ flex: 1 }}><b style={{ fontFamily: FR, fontSize: 15 }}>{e.name}</b><div><Score m={M[e.match]} cs={16} ns={13} /></div></div><N s={16} c={GREEN}>+{e.pts.toFixed(2)}</N></div>)}</div>
       : <P style={{ fontWeight: 700 }}>אף משתתף לא פגע בתוצאה מדויקת הערב.</P>}
     {f.exactGoals?.length > 0 && <><Rule /><Kick c={INK}>השערים שהעניקו פגיעה מדויקת עד הסוף</Kick>
-      <div className="grid gap-2" style={{ marginTop: 4 }}>{f.exactGoals.map((g, i) => <div key={i} className="flex items-start gap-2" style={{ fontFamily: FR, fontSize: 12.8 }}><N s={15} c={RED}>{g.minute}'</N><div style={{ flex: 1 }}><b>{g.scorer}</b> · <span style={{ display: "inline-block", verticalAlign: "middle" }}><Score m={M[g.match]} cs={14} ns={11} /></span> — פגיעה מדויקת ל{g.names.join(" ול")}</div>{g.pts != null && <N s={13} c={GREEN}>+{g.pts.toFixed(2)}</N>}</div>)}</div></>}
+      <div className="grid gap-2" style={{ marginTop: 4 }}>{f.exactGoals.map((g, i) => <div key={i} className="flex items-start gap-2" style={{ fontFamily: FR, fontSize: 12.8 }}><N s={15} c={RED}>{g.minute}'</N><div style={{ flex: 1 }}><b>{t.scorers?.[g.scorer] || g.scorer}</b> · <span style={{ display: "inline-block", verticalAlign: "middle" }}><Score m={M[g.match]} cs={14} ns={11} /></span> — פגיעה מדויקת ל{g.names.join(" ול")}</div>{g.pts != null && <N s={13} c={GREEN}>+{g.pts.toFixed(2)}</N>}</div>)}</div></>}
     <Foot>בעמוד {no + 1}: {t.dramaTitle || "הפגיעות שנעלמו בדרך"} ←</Foot></Page>);
 
   // 3 — the hits on the way, match by match
@@ -139,7 +145,7 @@ export default function Newspaper({ issue, top = 100 }) {
   // a page per dramatic match: the matrix and the live blog together
   (f.dramas || []).forEach((id, di) => { const m = M[id]; const tx = (t.matches || []).find((x) => x.id === id) || t.matches?.[di];
     if (m) pages.push((no) => <Page h={h}><Mast page={`${no} · הדרמה`} /><Kick>{tx?.kicker}</Kick><H>{tx?.title}</H>
-      <div style={{ margin: "4px 0" }}><Score m={m} cs={22} ns={16} /></div><Matrix m={m} /><MatrixNote /><Blog m={m} text={tx} />
+      <div style={{ margin: "4px 0" }}><Score m={m} cs={22} ns={16} /></div><Matrix m={m} /><MatrixNote /><Blog m={m} text={tx} he={t.scorers} />
       {tx?.closing && <P style={{ marginTop: 6, fontWeight: 700 }}>{tx.closing}</P>}
       <Foot>בעמוד {no + 1} ←</Foot></Page>); });
   // what the vanished hits would have been worth
