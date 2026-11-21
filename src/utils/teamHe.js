@@ -9,3 +9,11 @@ const HE = {
   'Slovan Bratislava': 'סלובן', 'Sporting Lisbon': 'ספורטינג', Stuttgart: 'שטוטגרט', Viking: 'ויקינג', Villarreal: 'ויאריאל',
 };
 export const teamHe = (name = '') => HE[name.trim()] || name.trim();
+
+// Short English names, for the left-to-right version of the same table
+const EN = {
+  'AEK Athens': 'AEK', 'AS Roma': 'Roma', 'Aston villa': 'Aston Villa', 'Atletico Madrid': 'Atlético', 'Bayern Munich': 'Bayern', 'Club Brugge': 'Brugge',
+  'LOSC LIlle': 'Lille', 'Manchaster City': 'Man City', 'Manchester City': 'Man City', 'Manchester United': 'Man Utd', 'RC Lens': 'Lens', 'Real Betis': 'Betis',
+  'Sabah FC': 'Sabah', 'Shakhtar Donetsk': 'Shakhtar', 'Slavia Prague': 'Slavia', 'Slovan Bratislava': 'Slovan', 'Sporting Lisbon': 'Sporting', Fenerbahce: 'Fenerbahçe', Paris: 'PSG',
+};
+export const teamEn = (name = '') => EN[name.trim()] || name.trim();

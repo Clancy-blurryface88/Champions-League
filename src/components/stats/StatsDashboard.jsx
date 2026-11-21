@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Maximize2, X } from "lucide-react";
 import TeamFlag from "@/components/TeamFlag";
+import { useMyTeams, MyTeamsTile, MyTeamsSheet } from "./MyTeams";
 
 // "סטטיסטיקה" tab as a dashboard: small tiles that zoom open into a full
 // screen holding the tab's existing cards. Nothing here computes stats — every
@@ -63,6 +64,7 @@ export default function StatsDashboard({
   panels,
 }) {
   const [open, setOpen] = useState(null);
+  const myTeams = useMyTeams();
 
   // Last round that already has finished matches
   const lastIdx = chartData.reduce((last, d, i) => (d.played ? i : last), -1);
@@ -87,6 +89,7 @@ export default function StatsDashboard({
     pts: { title: "ניקוד וצבירה", icon: "💰" },
     hits: { title: "פגיעות", icon: "🎯" },
     map: { title: "מפת ניחושים", icon: "🗺️" },
+    teams: { title: "הקבוצות שלי", icon: "⚽" },
   };
 
   return (
@@ -182,6 +185,11 @@ export default function StatsDashboard({
         <Tile id="map" {...TILES.map} wide onOpen={() => setOpen("map")}>
           <p className="mt-1 text-[11.5px] text-slate-400">כל משחק כמשבצת: פגיעה, כיוון נכון או שגיאה</p>
         </Tile>
+
+        {/* My teams — which teams' games brought the most points */}
+        <Tile id="teams" {...TILES.teams} wide onOpen={() => setOpen("teams")}>
+          <MyTeamsTile teams={myTeams} />
+        </Tile>
       </div>
 
       {createPortal(
@@ -223,7 +231,7 @@ export default function StatsDashboard({
                   exit={{ opacity: 0, transition: { duration: 0.1 } }}
                   className="mx-auto w-full max-w-2xl flex-1 space-y-4 overflow-y-auto px-4 pb-8 pt-1"
                 >
-                  {panels[open]}
+                  {open === "teams" ? <MyTeamsSheet teams={myTeams} /> : panels[open]}
                 </motion.div>
               </motion.div>
             </>
