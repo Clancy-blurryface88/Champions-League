@@ -118,11 +118,9 @@ export default function Newspaper({ issue, top = 100 }) {
 
   // 1 — the front
   pages.push((no) => <Page h={h}><div className="flex justify-between" style={{ fontFamily: FR, fontSize: 10, fontWeight: 700 }}><span>גיליון {issueNo}</span><span>{f.day ? `בוקר שאחרי ערב ${f.day}` : ""} · {f.dm}</span><span>מחיר: ניחוש אחד</span></div><Rule thick />
-    {/* the masthead with two "ears", like a real front page: the weather on the right, the small ad on the left */}
-    <div className="grid items-center" style={{ gridTemplateColumns: "76px 1fr 76px", gap: 6 }}>
-      <div className="flex flex-col items-center text-center" style={{ border: `1px solid ${INK}`, padding: "3px 2px" }}><div style={{ transform: "scale(.7)", margin: "-6px 0 -8px" }}><WeatherIcon kind={f.weather} /></div><div style={{ fontFamily: FR, fontSize: 9, fontWeight: 900, lineHeight: 1.15 }}>{t.weather?.title}</div></div>
-      <div className="text-center"><div style={{ fontFamily: FR, fontSize: 30, fontWeight: 900, lineHeight: 1 }}>{NAME}</div><div style={{ fontFamily: FR, fontSize: 9.5, fontStyle: "italic", opacity: 0.75, marginTop: 2 }}>העיתון היחיד שקורא את הניחושים שלכם</div></div>
-      {t.rent ? <div style={{ background: "#fff6c8", border: `1px solid ${INK}`, transform: "rotate(2deg)", padding: "3px 4px" }}><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 10.5 }}>{t.rent.head}</div><div style={{ fontFamily: FR, fontSize: 8.5, lineHeight: 1.2 }}>{t.rent.body}</div></div> : <div />}</div><Rule thick />
+    {/* the masthead, clean: the name centred (the small joke ad lives on the notices page — a framed name on the front looked like a death notice) */}
+    <div style={{ fontFamily: FR, fontSize: 40, fontWeight: 900, textAlign: "center", lineHeight: 1 }}>{NAME}</div>
+    <div style={{ fontFamily: FR, fontSize: 10.5, textAlign: "center", fontStyle: "italic", opacity: 0.75 }}>העיתון היחיד שקורא את הניחושים שלכם</div><Rule thick />
     {/* the headline takes the whole width; its size follows its length so it fills the line */}
     <Kick>{t.kicker}</Kick><div style={{ fontFamily: FR, fontSize: (t.headline || "").length <= 9 ? 60 : (t.headline || "").length <= 14 ? 48 : 36, fontWeight: 900, lineHeight: 0.95 }}>{t.headline}</div>
     <div style={{ fontFamily: FR, fontWeight: 700, fontSize: 14.5, lineHeight: 1.35, margin: "6px 0 8px" }}>{t.subhead}</div>
@@ -211,7 +209,8 @@ export default function Newspaper({ issue, top = 100 }) {
 
   // the notices and the weather
   pages.push((no) => <Page h={h}><Mast page={`${no} · מודעות`} /><H s={18} style={{ textAlign: "center" }}>— לוח מודעות —</H>
-    <div className="grid grid-cols-2 gap-2" style={{ marginTop: 6 }}>{(t.ads || []).slice(0, 6).map((a, i) => <div key={i} style={{ border: `1px solid ${INK}`, padding: 6 }}><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 14 }}>{a.head}</div><div style={{ fontFamily: FR, fontSize: 11.5, lineHeight: 1.35 }}>{a.body}</div></div>)}</div><Rule />
+    {/* classifieds, like a real paper: no frames — a bold word, the text, a dotted line between them, two columns */}
+    <div style={{ columnCount: 2, columnGap: 14, columnRule: `1px solid ${INK}66`, marginTop: 6 }}>{(t.ads || []).slice(0, 6).map((a, i) => <div key={i} style={{ breakInside: "avoid", padding: "4px 0 6px", borderBottom: `1px dotted ${INK}77`, fontFamily: FR, fontSize: 11.8, lineHeight: 1.4 }}><b style={{ fontSize: 13 }}>{a.head}.</b> {a.body}</div>)}</div><Rule />
     <div className="flex items-center gap-3" style={{ fontFamily: FR, fontSize: 12.5 }}><WeatherIcon kind={f.weather} /><div><b>מזג האוויר: {t.weather?.title}</b> {t.weather?.text} {t.weather?.forecast && <><b>תחזית:</b> {t.weather.forecast}</>}</div></div>
     <Foot>{NAME} · הגיליון הבא יוצא בבוקר שאחרי ערב המשחקים הבא</Foot></Page>);
 
