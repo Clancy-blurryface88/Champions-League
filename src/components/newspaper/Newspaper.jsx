@@ -9,12 +9,14 @@ import { motion, AnimatePresence } from "framer-motion";
 export const NAME = "מבט לאלופות";
 const INK = "#1a1410", RED = "#b3261e", GREEN = "#166534", PAPER = "#f3ecdc";
 const FR = "'Frank Ruhl Libre', serif", NUMF = "var(--num-font)";
-const paperBg = `radial-gradient(130% 90% at 30% 10%, #faf5e8, ${PAPER} 60%, #e6dcc6)`;
+// newsprint (22.11): grain, a little yellowing at the edges
+const GRAIN = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.06 0 0 0 .18 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
+const paperBg = `${GRAIN}, radial-gradient(140% 100% at 50% 40%, #f3f0e8 55%, #e2dccd)`;
 export function useNewspaperFonts() {
   React.useEffect(() => {
     if (document.getElementById("np-fonts")) return;
     const l = document.createElement("link"); l.id = "np-fonts"; l.rel = "stylesheet";
-    l.href = "https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&display=swap";
+    l.href = "https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&family=Noto+Serif+Hebrew:wght@700;900&display=swap";
     document.head.appendChild(l);
   }, []);
 }
@@ -57,7 +59,9 @@ function Page({ h, children }) {
     fit(); const t = setTimeout(fit, 700); return () => clearTimeout(t);
   }, [h]);
   return <div dir="rtl" style={{ height: h, overflow: "hidden", position: "relative", background: paperBg, color: INK, boxShadow: "0 30px 60px rgba(0,0,0,.55), inset 0 0 60px rgba(120,90,40,.16)" }}>
-    <div ref={inner} className="flex flex-col" style={{ position: "absolute", top: 0, right: 0, width: `${100 / k}%`, minHeight: h / k, padding: "12px 12px 10px", transform: `scale(${k})`, transformOrigin: "top right" }}>{children}</div></div>;
+    <div ref={inner} className="flex flex-col" style={{ position: "absolute", top: 0, right: 0, width: `${100 / k}%`, minHeight: h / k, padding: "12px 12px 10px", transform: `scale(${k})`, transformOrigin: "top right" }}>{children}</div>
+    {/* the horizontal fold of a real paper */}
+    <div className="pointer-events-none absolute inset-x-0" style={{ top: "52%", height: 18, background: "linear-gradient(180deg, transparent, rgba(0,0,0,.06) 45%, rgba(255,255,255,.35) 55%, transparent)" }} /></div>;
 }
 // pages that turn on their spine (button or swipe)
 function Pages({ pages }) {
@@ -116,21 +120,42 @@ export default function Newspaper({ issue, top = 100 }) {
   const winner = f.nightRank?.[0], second = f.nightRank?.[1];
   const pages = []; // each: (page number) => <Page>
 
-  // 1 — the front
-  pages.push((no) => <Page h={h}><div className="flex justify-between" style={{ fontFamily: FR, fontSize: 10, fontWeight: 700 }}><span>גיליון {issueNo}</span><span>{f.day ? `בוקר שאחרי ערב ${f.day}` : ""} · {f.dm}</span><span>מחיר: ניחוש אחד</span></div><Rule thick />
-    {/* the masthead, clean: the name centred (the small joke ad lives on the notices page — a framed name on the front looked like a death notice) */}
-    <div style={{ fontFamily: FR, fontSize: 40, fontWeight: 900, textAlign: "center", lineHeight: 1 }}>{NAME}</div>
-    <div style={{ fontFamily: FR, fontSize: 10.5, textAlign: "center", fontStyle: "italic", opacity: 0.75 }}>העיתון היחיד שקורא את הניחושים שלכם</div><Rule thick />
-    {/* the headline takes the whole width; its size follows its length so it fills the line */}
-    <Kick>{t.kicker}</Kick><div style={{ fontFamily: FR, fontSize: (t.headline || "").length <= 9 ? 60 : (t.headline || "").length <= 14 ? 48 : 36, fontWeight: 900, lineHeight: 0.95 }}>{t.headline}</div>
-    <div style={{ fontFamily: FR, fontWeight: 700, fontSize: 14.5, lineHeight: 1.35, margin: "6px 0 8px" }}>{t.subhead}</div>
-    {M[t.photoMatch] && <Ticket m={M[t.photoMatch]} dm={f.dm} he={t.scorers} />}
-    <P style={{ marginTop: 8 }}>{t.lead}</P>
-    <Rule />{winner && <div className="flex items-center gap-3" style={{ border: `1px solid ${INK}`, padding: 8 }}>
-      <motion.div initial={{ scale: 2.2, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 1.3, type: "spring", stiffness: 300, damping: 14 }}><Stamp s={74}><span style={{ fontSize: 9.5 }}>מנצח<br />הערב</span><N s={12} c={RED}>{f.dm}</N></Stamp></motion.div>
-      <div><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 24, lineHeight: 1 }}>{winner.name}</div><N s={17}>{winner.pts.toFixed(2)}</N>
-        {second && <div style={{ fontFamily: FR, fontSize: 11, opacity: 0.85 }}>במקום השני: {second.name} ({second.pts.toFixed(2)})</div>}</div></div>}
-    <Foot>המשך הכתבה בעמוד {no + 1} ←</Foot></Page>);
+  // 1 — the front (22.11, the user's pick "4+5, version 2, the tables on the left"): a quality broadsheet — the line
+  // above the nameplate, the folio between rules, the headline centred with an italic deck; the story on the right
+  // (photo with a caption, byline, two justified columns with a drop cap, the jump line, the night winner) and on the
+  // left a sports column: the night's results (bold = an exact hit) and the full table. An index box and a barcode below.
+  const photo = M[t.photoMatch];
+  const pg = photo?.goals?.[photo.goals.length - 1];
+  const photoHits = (f.exact || []).filter((e) => e.match === photo?.id).map((e) => e.name);
+  pages.push((no) => <Page h={h}>
+    <div style={{ textAlign: "center", fontFamily: FR, fontSize: 9.5, letterSpacing: ".2em" }}>— העיתון היחיד שקורא את הניחושים שלכם —</div>
+    <div style={{ textAlign: "center", fontFamily: "'Noto Serif Hebrew', serif", fontWeight: 900, fontSize: 40, lineHeight: 1 }}>{NAME}</div>
+    <div className="flex justify-between" style={{ borderTop: `1px solid ${INK}`, borderBottom: `3px double ${INK}`, padding: "2px 0", margin: "4px 0 8px", fontFamily: FR, fontSize: 9.5, fontWeight: 700 }}><span>שנה א׳ · גיליון {issueNo}</span><span>{f.day ? `בוקר שאחרי ערב ${f.day}` : ""} · {f.dm}</span><span>מחיר: ניחוש אחד</span></div>
+    <div style={{ fontFamily: FR, fontWeight: 700, fontSize: (t.headline || "").length <= 10 ? 38 : (t.headline || "").length <= 16 ? 32 : 26, lineHeight: 1, textAlign: "center" }}>{t.headline}</div>
+    <div style={{ fontFamily: FR, fontSize: 12, fontStyle: "italic", textAlign: "center", margin: "4px 10px 8px", lineHeight: 1.35 }}>{t.subhead}</div>
+    <div className="grid" style={{ gridTemplateColumns: "1fr 1px 106px", gap: 8 }}>
+      <div>
+        {photo && <figure style={{ margin: 0 }}><div className="grid place-items-center" style={{ height: 84, background: `radial-gradient(circle at 1px 1px, rgba(20,18,16,.38) .9px, transparent 1.3px) 0 0/4px 4px, linear-gradient(135deg,#cfc6b4,#a89d88)` }}><Score m={photo} cs={32} ns={24} /></div>
+          {pg && <figcaption style={{ fontFamily: FR, fontSize: 9.5, lineHeight: 1.3, marginTop: 3 }}><b>הרגע שהכריע:</b> {t.scorers?.[pg.scorer] || pg.scorer} כובש בדקה {pg.minute}, {photo.a.he} {photo.score} {photo.b.he}{photoHits.length ? ` — ופגיעה מדויקת ל${photoHits.join(" ול")}` : ""}. <span style={{ opacity: 0.6, fontSize: 8.5 }}>(צילום: ארכיון {NAME})</span></figcaption>}</figure>}
+        <div style={{ fontFamily: FR, fontSize: 10, fontWeight: 700, margin: "4px 0" }}>מאת <span style={{ color: RED }}>כתב {NAME}</span> · {f.day} {f.dm}</div>
+        <div style={{ columnCount: 2, columnGap: 10, columnRule: `1px solid ${INK}44`, fontFamily: FR, fontSize: 10.6, lineHeight: 1.42, textAlign: "justify" }}><p style={{ margin: 0 }}><span style={{ float: "right", fontWeight: 900, fontSize: 34, lineHeight: 0.8, marginLeft: 4, marginTop: 2 }}>{(t.lead || " ")[0]}</span>{(t.lead || "").slice(1)}</p></div>
+        <div style={{ fontFamily: FR, fontSize: 10, fontWeight: 700, textAlign: "left", marginTop: 3 }}>(המשך בעמ׳ {no + 1})</div>
+        {winner && <div style={{ borderTop: `2px solid ${INK}`, paddingTop: 3, marginTop: 6 }}><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 12 }}>מנצח הערב</div><div className="flex items-baseline justify-between"><span style={{ fontFamily: FR, fontWeight: 900, fontSize: 18 }}>{winner.name}</span><N s={13}>{winner.pts.toFixed(2)}</N></div>{second && <div style={{ fontFamily: FR, fontSize: 9.5 }}>שני: {second.name} ({second.pts.toFixed(2)})</div>}</div>}
+      </div>
+      <div style={{ background: `${INK}55` }} />
+      <div className="grid gap-2" style={{ alignContent: "start" }}>
+        <div><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 12, borderBottom: `2px solid ${INK}` }}>תוצאות הערב</div>
+          {(f.matches || []).map((mm) => { const hit = (f.exact || []).some((e) => e.match === mm.id); return <div key={mm.id} className="flex items-center justify-between" style={{ fontFamily: FR, fontSize: 9.8, padding: "2px 0", borderBottom: `1px dotted ${INK}55`, fontWeight: hit ? 900 : 400 }}><span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 74 }}>{mm.a.he}–{mm.b.he}</span><N s={9.8} w={hit ? 900 : 700}>{mm.score}</N></div>; })}
+          <div style={{ fontFamily: FR, fontSize: 8.5, fontStyle: "italic", marginTop: 2 }}>מודגש = פגיעה מדויקת</div></div>
+        <div><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 12, borderBottom: `2px solid ${INK}` }}>הטבלה המלאה</div>
+          {(f.table || []).map((r) => <div key={r.name} className="grid items-center" style={{ gridTemplateColumns: "13px 1fr 11px 40px", fontFamily: FR, fontSize: 10, padding: "2px 0", borderTop: `1px dotted ${INK}55`, fontWeight: r.rank === 1 ? 900 : 400 }}><span>{r.rank}</span><span style={{ whiteSpace: "nowrap", overflow: "hidden" }}>{r.name}</span><span style={{ fontSize: 8, opacity: r.move ? 1 : 0 }}>{r.move > 0 ? "▲" : "▼"}</span><span style={{ textAlign: "left" }}><N s={10} w={r.rank === 1 ? 900 : 600}>{r.total.toFixed(1)}</N></span></div>)}
+          <div style={{ fontFamily: FR, fontSize: 9.5, marginTop: 3 }}>הפער בצמרת: <b>{f.gapNow}</b></div></div>
+      </div>
+    </div>
+    <div className="flex items-end justify-between" style={{ borderTop: `1px solid ${INK}`, marginTop: "auto", paddingTop: 4 }}>
+      <div style={{ border: `1px solid ${INK}`, padding: "2px 6px", fontFamily: FR, fontSize: 9, lineHeight: 1.4 }}><b>בגיליון</b><div>הכתבה · 2 · הדרמה · 3 · מודעות · אחרון</div></div>
+      <div className="flex items-end gap-1"><div style={{ display: "flex", height: 22, gap: 1 }}>{[2, 1, 3, 1, 1, 2, 1, 3, 2, 1, 1, 2, 3, 1, 2, 1, 1, 3, 1, 2].map((w, i) => <span key={i} style={{ width: w, background: i % 2 ? "transparent" : INK }} />)}</div><div style={{ fontFamily: NUMF, fontSize: 7.5 }} dir="ltr">7 290000 0{issueNo}2026</div></div>
+    </div></Page>);
 
   // 2 — the lead story goes on: the exact hits of the night, the goals that made them
   pages.push((no) => <Page h={h}><Mast page={`${no} · הכתבה הראשית`} /><Kick>המשך מעמוד 1</Kick>
