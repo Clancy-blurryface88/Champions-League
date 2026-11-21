@@ -64,7 +64,6 @@ const writeCache = (r) => { try { r ? localStorage.setItem(CACHE, JSON.stringify
 export default function StudioVideoButton({ rounds, onPredict, onVisible }) {
   const [round, setRound] = useState(readCache);
   const [open, setOpen] = useState(false);
-  const [ended, setEnded] = useState(false);
 
   // the layout tightens in the same frame the TV appears
   useEffect(() => { onVisible?.(!!round); }, [round]);
@@ -89,7 +88,7 @@ export default function StudioVideoButton({ rounds, onPredict, onVisible }) {
       <motion.button
         type="button"
         dir="ltr"
-        onClick={() => { setEnded(false); setOpen(true); }}
+        onClick={() => setOpen(true)}
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
@@ -124,22 +123,13 @@ export default function StudioVideoButton({ rounds, onPredict, onVisible }) {
               poster="/champions/studio-host.jpg"
               className="h-full w-full object-contain"
               autoPlay playsInline controls
-              onEnded={() => setEnded(true)}
             />
             <button type="button" onClick={() => setOpen(false)} aria-label="סגירה"
               className="absolute top-[max(14px,env(safe-area-inset-top))] left-3.5 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/60 text-white">
               <X className="h-5 w-5" />
             </button>
-            {ended && (!summary || round.canPredict) && (
-              <motion.button
-                type="button"
-                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-                onClick={() => { setOpen(false); onPredict(round); }}
-                className="absolute inset-x-8 bottom-[max(84px,calc(env(safe-area-inset-bottom)+64px))] rounded-2xl bg-gradient-to-br from-yellow-300 to-yellow-500 py-3.5 text-lg font-black text-[#1b1400]"
-              >
-                לנחש עכשיו ⚽
-              </motion.button>
-            )}
+            {/* no "predict now" button at the end (21.11): the player opens the round by themself, and
+                the round's tour starts there */}
           </motion.div>
         )}
       </AnimatePresence>, document.body)}
