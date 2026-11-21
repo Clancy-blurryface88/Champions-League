@@ -32,6 +32,16 @@ const Box = ({ children, style }) => <div style={{ border: `1px solid ${INK}`, p
 // a round ink stamp (the user's pick, 22.11): red "מנצח הערב" with the date, green "פגיעה מדויקת" on each hit
 const Stamp = ({ children, s = 86, c = RED, r = -12 }) => <div className="grid place-items-center" style={{ width: s, height: s, borderRadius: "50%", border: `3px solid ${c}`, boxShadow: `inset 0 0 0 4px ${PAPER}, inset 0 0 0 6px ${c}`, color: c, transform: `rotate(${r}deg)`, textAlign: "center", flexShrink: 0, fontFamily: FR, fontWeight: 900, lineHeight: 1.05 }}>{children}</div>;
 const Foot = ({ children }) => <div style={{ marginTop: "auto" }}><Rule /><div style={{ fontFamily: FR, fontSize: 10.5, fontWeight: 700, textAlign: "left" }}>{children}</div></div>;
+// the front page's "photo" (the user's pick, 22.11): a match ticket — the teams and the score, and on a torn stub the
+// goal that decided it (the last goal: its minute and scorer); a goalless match says so
+const Ticket = ({ m, dm, he, cap }) => { const g = m.goals?.[m.goals.length - 1];
+  return <div><div className="flex" style={{ border: `2px solid ${INK}`, background: "#efe5cf" }}>
+    <div style={{ flex: 1, padding: "7px 12px" }}><div style={{ fontFamily: FR, fontSize: 10, fontWeight: 900, color: RED, letterSpacing: ".1em" }}>כרטיס · ליגת האלופות · {dm}</div>
+      <div className="flex items-center justify-between" dir="ltr" style={{ margin: "3px 0" }}><Crest src={m.a.logo} s={36} /><N s={30} w={900}>{m.score}</N><Crest src={m.b.logo} s={36} /></div>
+      <div style={{ fontFamily: FR, fontSize: 12, fontWeight: 700, textAlign: "center" }}>{m.a.he} – {m.b.he}</div></div>
+    <div className="flex flex-col items-center justify-center" style={{ width: 70, borderInlineStart: `2px dashed ${INK}`, padding: 6, textAlign: "center" }}>
+      {g ? <><div style={{ fontFamily: FR, fontSize: 9 }}>השער המכריע</div><N s={22} c={RED}>{g.minute}'</N><div style={{ fontFamily: FR, fontSize: 9.5, fontWeight: 900 }}>{he?.[g.scorer] || g.scorer}</div></> : <div style={{ fontFamily: FR, fontSize: 11, fontWeight: 900 }}>בלי שערים</div>}</div></div>
+    {cap && <div style={{ fontFamily: FR, fontSize: 10.5, fontStyle: "italic", lineHeight: 1.35, marginTop: 4 }}>{cap}</div>}</div>; };
 const Halftone = ({ m, h = 112, cap }) => <div className="relative" style={{ height: h, border: `1px solid ${INK}`, overflow: "hidden", background: `radial-gradient(circle at 1px 1px, rgba(26,20,16,.33) 1px, transparent 1.4px) 0 0/5px 5px, linear-gradient(135deg,#d8ccb2,#b9ab8e)` }}>
   <div className="absolute inset-0 grid place-items-center"><Score m={m} cs={54} ns={42} /></div>
   {cap && <div className="absolute" style={{ bottom: 0, insetInline: 0, padding: "2px 6px", background: "rgba(243,236,220,.92)", fontFamily: FR, fontSize: 10, fontStyle: "italic", color: INK }}>{cap}</div>}</div>;
@@ -108,13 +118,15 @@ export default function Newspaper({ issue, top = 100 }) {
 
   // 1 — the front
   pages.push((no) => <Page h={h}><div className="flex justify-between" style={{ fontFamily: FR, fontSize: 10, fontWeight: 700 }}><span>גיליון {issueNo}</span><span>{f.day ? `בוקר שאחרי ערב ${f.day}` : ""} · {f.dm}</span><span>מחיר: ניחוש אחד</span></div><Rule thick />
-    <div style={{ fontFamily: FR, fontSize: 40, fontWeight: 900, textAlign: "center", lineHeight: 1 }}>{NAME}</div>
-    <div style={{ fontFamily: FR, fontSize: 10.5, textAlign: "center", fontStyle: "italic", opacity: 0.75 }}>העיתון היחיד שקורא את הניחושים שלכם</div><Rule thick />
-    <div className="grid" style={{ gridTemplateColumns: "1fr 92px", gap: 10 }}>
-      <div><Kick>{t.kicker}</Kick><div style={{ fontFamily: FR, fontSize: (t.headline || "").length > 12 ? 36 : 46, fontWeight: 900, lineHeight: 0.98 }}>{t.headline}</div></div>
-      {t.rent && <Box style={{ background: "#fff6c8", transform: "rotate(2deg)", padding: 6, alignSelf: "start" }}><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 12 }}>{t.rent.head}</div><div style={{ fontFamily: FR, fontSize: 10.5, lineHeight: 1.3 }}>{t.rent.body}</div></Box>}</div>
+    {/* the masthead with two "ears", like a real front page: the weather on the right, the small ad on the left */}
+    <div className="grid items-center" style={{ gridTemplateColumns: "76px 1fr 76px", gap: 6 }}>
+      <div className="flex flex-col items-center text-center" style={{ border: `1px solid ${INK}`, padding: "3px 2px" }}><div style={{ transform: "scale(.7)", margin: "-6px 0 -8px" }}><WeatherIcon kind={f.weather} /></div><div style={{ fontFamily: FR, fontSize: 9, fontWeight: 900, lineHeight: 1.15 }}>{t.weather?.title}</div></div>
+      <div className="text-center"><div style={{ fontFamily: FR, fontSize: 30, fontWeight: 900, lineHeight: 1 }}>{NAME}</div><div style={{ fontFamily: FR, fontSize: 9.5, fontStyle: "italic", opacity: 0.75, marginTop: 2 }}>העיתון היחיד שקורא את הניחושים שלכם</div></div>
+      {t.rent ? <div style={{ background: "#fff6c8", border: `1px solid ${INK}`, transform: "rotate(2deg)", padding: "3px 4px" }}><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 10.5 }}>{t.rent.head}</div><div style={{ fontFamily: FR, fontSize: 8.5, lineHeight: 1.2 }}>{t.rent.body}</div></div> : <div />}</div><Rule thick />
+    {/* the headline takes the whole width; its size follows its length so it fills the line */}
+    <Kick>{t.kicker}</Kick><div style={{ fontFamily: FR, fontSize: (t.headline || "").length <= 9 ? 60 : (t.headline || "").length <= 14 ? 48 : 36, fontWeight: 900, lineHeight: 0.95 }}>{t.headline}</div>
     <div style={{ fontFamily: FR, fontWeight: 700, fontSize: 14.5, lineHeight: 1.35, margin: "6px 0 8px" }}>{t.subhead}</div>
-    {M[t.photoMatch] && <Halftone m={M[t.photoMatch]} cap={t.photoCaption} />}
+    {M[t.photoMatch] && <Ticket m={M[t.photoMatch]} dm={f.dm} he={t.scorers} />}
     <P style={{ marginTop: 8 }}>{t.lead}</P>
     <Rule />{winner && <div className="flex items-center gap-3" style={{ border: `1px solid ${INK}`, padding: 8 }}>
       <motion.div initial={{ scale: 2.2, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 1.3, type: "spring", stiffness: 300, damping: 14 }}><Stamp s={74}><span style={{ fontSize: 9.5 }}>מנצח<br />הערב</span><N s={12} c={RED}>{f.dm}</N></Stamp></motion.div>
