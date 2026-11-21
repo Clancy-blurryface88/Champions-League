@@ -33,6 +33,11 @@ const Kick = ({ children, c = RED }) => <div style={{ fontFamily: FR, fontSize: 
 const Box = ({ children, style }) => <div style={{ border: `1px solid ${INK}`, padding: 8, ...style }}>{children}</div>;
 // a round ink stamp (the user's pick, 22.11): red "מנצח הערב" with the date, green "פגיעה מדויקת" on each hit
 const Stamp = ({ children, s = 86, c = RED, r = -12 }) => <div className="grid place-items-center" style={{ width: s, height: s, borderRadius: "50%", border: `3px solid ${c}`, boxShadow: `inset 0 0 0 4px ${PAPER}, inset 0 0 0 6px ${c}`, color: c, transform: `rotate(${r}deg)`, textAlign: "center", flexShrink: 0, fontFamily: FR, fontWeight: 900, lineHeight: 1.05 }}>{children}</div>;
+// the Champions League's marks (22.11): the logo in the nameplate, the trophy as the headline's watermark, small balls and cups by section heads — printed in ink
+const INKF = "grayscale(1) contrast(1.25) brightness(.55)";
+const Mark = ({ src, h, w, style }) => <img src={src} alt="" style={{ height: h, width: w, objectFit: "contain", filter: INKF, mixBlendMode: "multiply", ...style }} />;
+const Ball = ({ s = 12 }) => <Mark src="/champions/round-ball.png" h={s} w={s} style={{ display: "inline-block", verticalAlign: "-2px" }} />;
+const Cup = ({ s = 16 }) => <Mark src="/champions/ch-trophy.webp" h={s} w={s * 0.8} style={{ display: "inline-block", verticalAlign: "-3px" }} />;
 const Foot = ({ children }) => <div style={{ marginTop: "auto" }}><Rule /><div style={{ fontFamily: FR, fontSize: 10.5, fontWeight: 700, textAlign: "left" }}>{children}</div></div>;
 // the front page's "photo" (the user's pick, 22.11): a match ticket — the teams and the score, and on a torn stub the
 // goal that decided it (the last goal: its minute and scorer); a goalless match says so
@@ -128,11 +133,13 @@ export default function Newspaper({ issue, top = 100 }) {
   const pg = photo?.goals?.[photo.goals.length - 1];
   const photoHits = (f.exact || []).filter((e) => e.match === photo?.id).map((e) => e.name);
   pages.push((no) => <Page h={h}>
-    <div style={{ textAlign: "center", fontFamily: FR, fontSize: 9.5, letterSpacing: ".2em" }}>— העיתון היחיד שקורא את הניחושים שלכם —</div>
-    <div style={{ textAlign: "center", fontFamily: "'Noto Serif Hebrew', serif", fontWeight: 900, fontSize: 40, lineHeight: 1 }}>{NAME}</div>
+    <div className="grid items-center" style={{ gridTemplateColumns: "1fr 1px 118px", gap: 10 }}>
+      <div><div style={{ fontFamily: "'Noto Serif Hebrew', serif", fontWeight: 700, fontSize: 34, lineHeight: 1 }}>{NAME}</div><div style={{ fontFamily: FR, fontSize: 9.5, fontStyle: "italic" }}>העיתון היחיד שקורא את הניחושים שלכם</div></div>
+      <div style={{ background: INK, alignSelf: "stretch" }} /><Mark src="/champions/ch-logo.png" h={46} w="100%" /></div>
     <div className="flex justify-between" style={{ borderTop: `1px solid ${INK}`, borderBottom: `3px double ${INK}`, padding: "2px 0", margin: "4px 0 8px", fontFamily: FR, fontSize: 9.5, fontWeight: 700 }}><span>שנה א׳ · גיליון {issueNo}</span><span>{f.day ? `בוקר שאחרי ערב ${f.day}` : ""} · {f.dm}</span><span>מחיר: ניחוש אחד</span></div>
-    <div style={{ fontFamily: FR, fontWeight: 700, fontSize: (t.headline || "").length <= 10 ? 38 : (t.headline || "").length <= 16 ? 32 : 26, lineHeight: 1, textAlign: "center" }}>{t.headline}</div>
-    <div style={{ fontFamily: FR, fontSize: 12, fontStyle: "italic", textAlign: "center", margin: "4px 10px 8px", lineHeight: 1.35 }}>{t.subhead}</div>
+    <div className="relative"><Mark src="/champions/ch-trophy.webp" h={118} style={{ position: "absolute", left: "50%", top: -14, transform: "translateX(-50%)", opacity: 0.13 }} />
+      <div className="relative"><div style={{ fontFamily: FR, fontWeight: 700, fontSize: (t.headline || "").length <= 10 ? 38 : (t.headline || "").length <= 16 ? 32 : 26, lineHeight: 1, textAlign: "center" }}>{t.headline}</div>
+      <div style={{ fontFamily: FR, fontSize: 12, fontStyle: "italic", textAlign: "center", margin: "4px 10px 8px", lineHeight: 1.35 }}>{t.subhead}</div></div></div>
     <div className="grid" style={{ gridTemplateColumns: "1fr 1px 106px", gap: 8 }}>
       <div>
         {photo && <figure style={{ margin: 0 }}><div className="grid place-items-center" style={{ height: 84, background: `radial-gradient(circle at 1px 1px, rgba(20,18,16,.38) .9px, transparent 1.3px) 0 0/4px 4px, linear-gradient(135deg,#cfc6b4,#a89d88)` }}><Score m={photo} cs={32} ns={24} /></div>
@@ -140,14 +147,14 @@ export default function Newspaper({ issue, top = 100 }) {
         <div style={{ fontFamily: FR, fontSize: 10, fontWeight: 700, margin: "4px 0" }}>מאת <span style={{ color: RED }}>כתב {NAME}</span> · {f.day} {f.dm}</div>
         <div style={{ columnCount: 2, columnGap: 10, columnRule: `1px solid ${INK}44`, fontFamily: FR, fontSize: 10.6, lineHeight: 1.42, textAlign: "justify" }}><p style={{ margin: 0 }}><span style={{ float: "right", fontWeight: 900, fontSize: 34, lineHeight: 0.8, marginLeft: 4, marginTop: 2 }}>{(t.lead || " ")[0]}</span>{(t.lead || "").slice(1)}</p></div>
         <div style={{ fontFamily: FR, fontSize: 10, fontWeight: 700, textAlign: "left", marginTop: 3 }}>(המשך בעמ׳ {no + 1})</div>
-        {winner && <div style={{ borderTop: `2px solid ${INK}`, paddingTop: 3, marginTop: 6 }}><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 12 }}>מנצח הערב</div><div className="flex items-baseline justify-between"><span style={{ fontFamily: FR, fontWeight: 900, fontSize: 18 }}>{winner.name}</span><N s={13}>{winner.pts.toFixed(2)}</N></div>{second && <div style={{ fontFamily: FR, fontSize: 9.5 }}>שני: {second.name} ({second.pts.toFixed(2)})</div>}</div>}
+        {winner && <div style={{ borderTop: `2px solid ${INK}`, paddingTop: 3, marginTop: 6 }}><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 12 }}><Cup /> מנצח הערב</div><div className="flex items-baseline justify-between"><span style={{ fontFamily: FR, fontWeight: 900, fontSize: 18 }}>{winner.name}</span><N s={13}>{winner.pts.toFixed(2)}</N></div>{second && <div style={{ fontFamily: FR, fontSize: 9.5 }}>שני: {second.name} ({second.pts.toFixed(2)})</div>}</div>}
       </div>
       <div style={{ background: `${INK}55` }} />
       <div className="grid gap-2" style={{ alignContent: "start" }}>
-        <div><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 12, borderBottom: `2px solid ${INK}` }}>תוצאות הערב</div>
+        <div><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 12, borderBottom: `2px solid ${INK}` }}><Ball /> תוצאות הערב</div>
           {(f.matches || []).map((mm) => { const hit = (f.exact || []).some((e) => e.match === mm.id); return <div key={mm.id} className="flex items-center justify-between" style={{ fontFamily: FR, fontSize: 9.8, padding: "2px 0", borderBottom: `1px dotted ${INK}55`, fontWeight: hit ? 900 : 400 }}><span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 74 }}>{mm.a.he}–{mm.b.he}</span><N s={9.8} w={hit ? 900 : 700}>{mm.score}</N></div>; })}
           <div style={{ fontFamily: FR, fontSize: 8.5, fontStyle: "italic", marginTop: 2 }}>מודגש = פגיעה מדויקת</div></div>
-        <div><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 12, borderBottom: `2px solid ${INK}` }}>הטבלה המלאה</div>
+        <div><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 12, borderBottom: `2px solid ${INK}` }}><Ball /> הטבלה המלאה</div>
           {(f.table || []).map((r) => <div key={r.name} className="grid items-center" style={{ gridTemplateColumns: "13px 1fr 11px 40px", fontFamily: FR, fontSize: 10, padding: "2px 0", borderTop: `1px dotted ${INK}55`, fontWeight: r.rank === 1 ? 900 : 400 }}><span>{r.rank}</span><span style={{ whiteSpace: "nowrap", overflow: "hidden" }}>{r.name}</span><span style={{ fontSize: 8, opacity: r.move ? 1 : 0 }}>{r.move > 0 ? "▲" : "▼"}</span><span style={{ textAlign: "left" }}><N s={10} w={r.rank === 1 ? 900 : 600}>{r.total.toFixed(1)}</N></span></div>)}
           <div style={{ fontFamily: FR, fontSize: 9.5, marginTop: 3 }}>הפער בצמרת: <b>{f.gapNow}</b></div></div>
       </div>
