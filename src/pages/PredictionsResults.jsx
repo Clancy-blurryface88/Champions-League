@@ -29,6 +29,7 @@ import { calculateScoreByRound } from "../components/utils/calculateScoreByRound
 import { getRoundLeaderboard } from "../components/utils/getRoundLeaderboard"; // NEW: Import frontend version
 import { AnimatedList } from "@/components/magicui/animated-list";
 import ScoreAccuracyVisuals from "@/components/predictions/ScoreAccuracyVisuals";
+import MyRoundTable from "@/components/predictions/MyRoundTable";
 import { calculateMatchMaxPotentialPoints } from "../components/utils/calculateMatchMaxPotentialPoints";
 import OdometerValue from "@/components/OdometerValue";
 import OutlineNumber from "@/components/OutlineNumber";
@@ -1005,139 +1006,14 @@ function MyRoundPredictions({ user, roundStats, loading, loadingLeaderboard, rou
   }
 
   return (
-    <div className="space-y-3">
-      {/* My Round Summary with Ranking */}
-      {hasMyStats && (() => {
-        const earned  = roundStats.summary?.totalRoundPoints || 0;
-        const maxPts  = matches.reduce((acc, m) => acc + calculateMatchMaxPotentialPoints(m), 0);
-        const pct     = maxPts > 0 ? Math.round((earned / maxPts) * 100) : 0;
-        const pctColor = pct >= 80 ? 'text-emerald-400' : pct >= 50 ? 'text-sky-400' : 'text-red-400';
-
-        return (
-          <div
-            className="rounded-2xl p-5 mb-4 flex flex-col items-center gap-3"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
-          >
-            <span className="text-xs uppercase tracking-[0.18em] text-white/60 font-semibold">סיכום ניחושים שלי</span>
-
-            {/* Big score */}
-            <div className="flex flex-col items-center gap-1">
-              <span className="text-5xl font-black tabular-nums leading-none text-white">
-                {earned.toFixed(2)}
-              </span>
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="text-white/65 text-sm">מתוך {maxPts.toFixed(2)} נקודות</span>
-                <span className={`text-sm font-bold tabular-nums ${pctColor}`}>({pct}%)</span>
-              </div>
-              {roundStats.predictionDetails.length > 0 && (
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-white/40 text-xs">ממוצע למשחק</span>
-                  <span className="text-white/70 text-xs font-bold tabular-nums">
-                    {(earned / roundStats.predictionDetails.length).toFixed(2)} pts
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Rank */}
-            {hasLeaderboard && (
-              <div
-                className="flex items-center gap-2 px-4 py-1.5 rounded-full"
-                style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.25)' }}
-              >
-                <span className="text-blue-300 text-xs font-semibold">מקום</span>
-                <span className="text-white font-bold text-sm">{roundLeaderboard.currentUser.rank}</span>
-                <span className="text-blue-300/50 text-xs">מתוך {roundLeaderboard.totalParticipants}</span>
-              </div>
-            )}
-          </div>
-        );
-      })()}
-
-      {/* Individual Match Predictions (My Predictions) */}
-      {hasMyStats &&
-      <>
-          <h4 className="text-white font-semibold mb-3 text-center">הניחושים שלי למשחקי המחזור</h4>
-          <div className="space-y-3">
-            {roundStats.predictionDetails.map((detail, index) => {
-              const match = matches.find((m) => m.id === detail.matchId);
-              if (!match) return null;
-
-              const isFinished = detail.actual !== 'Not finished';
-              const verdictBorder =
-                !isFinished              ? 'border-white/10' :
-                detail.exactScore        ? 'border-emerald-500/40' :
-                detail.correctOutcome    ? 'border-sky-500/35' :
-                                           'border-red-500/30';
-              const verdictGlow =
-                !isFinished              ? '' :
-                detail.exactScore        ? 'shadow-[0_0_16px_rgba(16,185,129,0.15)]' :
-                detail.correctOutcome    ? 'shadow-[0_0_16px_rgba(245,158,11,0.12)]' :
-                                           'shadow-[0_0_16px_rgba(239,68,68,0.10)]';
-              const accentBg  = !isFinished ? 'rgba(100,116,139,0.18)' : detail.exactScore ? 'rgba(16,185,129,0.18)' : detail.correctOutcome ? 'rgba(245,158,11,0.18)' : 'rgba(239,68,68,0.14)';
-              const accentFg  = !isFinished ? '#64748b' : detail.exactScore ? '#10b981' : detail.correctOutcome ? '#f59e0b' : '#ef4444';
-              const matchMax  = calculateMatchMaxPotentialPoints(match);
-              const matchPct  = matchMax > 0 ? Math.round((detail.points / matchMax) * 100) : 0;
-
-              return (
-                <motion.div
-                  key={detail.matchId}
-                  initial={{ opacity: 0, rotateX: 80, y: -30 }}
-                  animate={{ opacity: 1, rotateX: 0, y: 0 }}
-                  transition={{ delay: index * 0.18, duration: 0.5, ease: 'easeOut' }}
-                  className="rounded-2xl p-3 flex gap-3"
-                  style={{ background: '#12181f', border: `1px solid ${accentFg}33` }}
-                >
-                  {/* Left — team names */}
-                  <div className="flex flex-col justify-center gap-1 w-[90px] shrink-0">
-                    <div className="flex items-center gap-1.5">
-                      <TeamFlag logo={match.team_a_logo} name={match.team_a} className="w-4 h-4 shrink-0" rounded="sm" />
-                      <span className="text-white/75 text-[11px] font-semibold leading-tight break-words">{match.team_a}</span>
-                    </div>
-                    <span className="text-white/25 text-[9px] font-bold px-1">vs</span>
-                    <div className="flex items-center gap-1.5">
-                      <TeamFlag logo={match.team_b_logo} name={match.team_b} className="w-4 h-4 shrink-0" rounded="sm" />
-                      <span className="text-white/75 text-[11px] font-semibold leading-tight break-words">{match.team_b}</span>
-                    </div>
-                  </div>
-
-                  {/* Middle — prediction / result grid */}
-                  <div className="flex-1 grid grid-cols-2 gap-2">
-                    <div className="rounded-xl flex flex-col items-center justify-center py-2.5" style={{ background: 'rgba(59,130,246,0.12)' }}>
-                      <span className="text-[8px] text-blue-400 font-bold uppercase tracking-wider mb-1">ניחוש שלך</span>
-                      <span className="text-white font-black text-lg tabular-nums leading-none">{detail.prediction}</span>
-                    </div>
-                    <div className="rounded-xl flex flex-col items-center justify-center py-2.5" style={{ background: accentBg }}>
-                      <span className="text-[8px] font-bold uppercase tracking-wider mb-1" style={{ color: accentFg }}>תוצאה</span>
-                      <span className="text-white font-black text-lg tabular-nums leading-none">{isFinished ? detail.actual : '–'}</span>
-                    </div>
-                  </div>
-
-                  {/* Right — badge */}
-                  <div className="flex flex-col items-center justify-center shrink-0">
-                    {isFinished ? (
-                      <div className="flex items-center rounded-xl overflow-hidden" style={{ border: `1px solid ${accentFg}55`, background: `${accentFg}10` }}>
-                        <span className="px-2 py-1.5 text-[10px] font-black tabular-nums leading-none" style={{ color: accentFg }}>
-                          {detail.points.toFixed(2)} PTS
-                        </span>
-                        <div className="flex items-center justify-center w-6 self-stretch" style={{ background: `${accentFg}28` }}>
-                          {(detail.exactScore || detail.correctOutcome)
-                            ? <Check size={11} strokeWidth={3} style={{ color: accentFg }} />
-                            : <X size={11} strokeWidth={3} style={{ color: accentFg }} />
-                          }
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="text-base leading-none">⏳</span>
-                    )}
-                  </div>
-                </motion.div>
-              );
-          })}
-          </div>
-        </>
-      }
-    </div>);
+    <MyRoundTable
+      details={roundStats.predictionDetails}
+      matches={matches}
+      earned={roundStats.summary?.totalRoundPoints || 0}
+      rank={hasLeaderboard ? roundLeaderboard.currentUser.rank : null}
+      of={hasLeaderboard ? roundLeaderboard.totalParticipants : null}
+    />
+  );
 
 }
 

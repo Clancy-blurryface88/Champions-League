@@ -116,7 +116,11 @@ export const calculateScoreByRound = async ({ userId, roundId, roundName }) => {
                     exactScore: isExactScore,
                     correctOutcome: isCorrectOutcome,
                     bttsCorrect: isBTTSCorrect,
-                    goalRangeCorrect: isGoalRangeCorrect
+                    goalRangeCorrect: isGoalRangeCorrect,
+                    exPts: Number(prediction.exact_score_points_earned) || 0,
+                    ocPts: Number(prediction.correct_outcome_points_earned) || 0,
+                    grPts: Number(prediction.goals_range_points_earned) || 0,
+                    btPts: Number(prediction.both_teams_scored_points_earned) || 0
                 });
             } else {
                 predictionDetails.push({
