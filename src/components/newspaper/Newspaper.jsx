@@ -181,9 +181,11 @@ export default function Newspaper({ issue, top = 100 }) {
   pages.push((no) => <Page h={h}><Mast page={`${no} · הכתבה הראשית`} /><Kick>המשך מעמוד 1</Kick>
     {(t.leadMore || []).map((p, i) => <P key={i} style={{ marginTop: i ? 6 : 2 }}>{p}</P>)}
     <Rule /><P style={{ marginBottom: 6 }}>{t.leadHitsIntro}</P>
-    {f.exact?.length ? <div className="grid gap-2">{f.exact.map((e, i) => <div key={i} className="flex items-center gap-3" style={{ borderBottom: `1px dotted ${INK}66`, paddingBottom: 6 }}>
+    {/* one row per match (22.11): the score and the points once, the names of everyone who hit it together */}
+    {f.exact?.length ? <div className="grid gap-2">{Object.values(f.exact.reduce((acc, e) => { (acc[e.match] ||= { match: e.match, pts: e.pts, names: [] }).names.push(e.name); return acc; }, {})).map((g, i) => <div key={i} className="flex items-center gap-3" style={{ borderBottom: `1px dotted ${INK}66`, paddingBottom: 6 }}>
       <Stamp s={46} c={GREEN} r={-10}><span style={{ fontSize: 8.5 }}>פגיעה<br />מדויקת</span></Stamp>
-      <div style={{ flex: 1 }}><b style={{ fontFamily: FR, fontSize: 15 }}>{e.name}</b><div><Score m={M[e.match]} cs={16} ns={13} /></div></div><N s={16} c={GREEN}>+{e.pts.toFixed(2)}</N></div>)}</div>
+      <div style={{ flex: 1 }}><div><Score m={M[g.match]} cs={18} ns={15} /></div><b style={{ fontFamily: FR, fontSize: 15 }}>{g.names.length > 1 ? `${g.names.slice(0, -1).join(", ")} ו${g.names[g.names.length - 1]}` : g.names[0]}</b></div>
+      <div className="text-center"><N s={16} c={GREEN}>+{g.pts.toFixed(2)}</N>{g.names.length > 1 && <div style={{ fontFamily: FR, fontSize: 9.5 }}>לכל אחד</div>}</div></div>)}</div>
       : <P style={{ fontWeight: 700 }}>אף משתתף לא פגע בתוצאה מדויקת הערב.</P>}
     {f.exactGoals?.length > 0 && <><Rule /><Kick c={INK}>השערים שהעניקו פגיעה מדויקת עד הסוף</Kick>
       <div className="grid gap-2" style={{ marginTop: 4 }}>{f.exactGoals.map((g, i) => <div key={i} className="flex items-start gap-2" style={{ fontFamily: FR, fontSize: 12.8 }}><N s={15} c={RED}>{g.minute}'</N><div style={{ flex: 1 }}><b>{t.scorers?.[g.scorer] || g.scorer}</b> · <span style={{ display: "inline-block", verticalAlign: "middle" }}><Score m={M[g.match]} cs={14} ns={11} /></span> — פגיעה מדויקת ל{g.names.join(" ול")}</div>{g.pts != null && <N s={13} c={GREEN}>+{g.pts.toFixed(2)}</N>}</div>)}</div></>}
