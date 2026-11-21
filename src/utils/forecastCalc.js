@@ -5,7 +5,7 @@
 // history. The usual range is the 20th–80th percentile of simulated rounds.
 
 const CATS = ['oc', 'gr', 'bt', 'ex'];
-const WIDEN = Number(globalThis.__FC_WIDEN__ || 1.6); // ×1.6: 17 of 28 inside on rounds 1–4 (aim: the 60% a 20–80% band means)
+const WIDEN = Number(globalThis.__FC_WIDEN__ || 1.3); // ×1.3, the user's pick (21.11): a tighter band; ×1.6 held 17 of 28 on rounds 1–4
 const SHRINK = 8; // points of history that count as "average skill"
 const n = (x) => (x == null || x === '' ? 0 : Number(x));
 
@@ -64,7 +64,7 @@ export function computeForecast(past, now) {
   sims.sort((x, y) => x - y);
   const q = (p) => sims[Math.floor(p * (sims.length - 1))];
   // real rounds swing more than the simulation (picks are not independent): checked on rounds 1–4, the plain
-  // 20–80% band held the actual only 10 times in 28, so its two sides are widened by WIDEN
+  // 20–80% band held the actual only 10 times in 28, so its two sides are widened by WIDEN (×1.3: 15 of 28)
   const lo = Math.max(0, fc - WIDEN * (fc - q(0.2))), hi = fc + WIDEN * (q(0.8) - fc);
   return { fc: +fc.toFixed(2), lo: Math.round(lo), hi: Math.round(hi), max: +max.toFixed(2), avg: avg == null ? null : +avg.toFixed(2), cats: Object.fromEntries(CATS.map((c) => [c, +cats[c].toFixed(2)])) };
 }
