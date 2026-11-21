@@ -38,8 +38,7 @@ const PRELOAD_IMAGES = ['/champions/ch-logo.png', '/champions/ch-trophy.webp', '
 const INTRO_CLIPS = [
   ['/champions/intro-portrait.mp4', '/champions/intro-landscape.mp4'],
   ['/champions/intro-portrait-2.mp4', '/champions/intro-landscape-2.mp4'],
-  // the starball forming into the logo (landscape: the same clip centred on a blurred copy of itself)
-  ['/champions/intro-portrait-3.mp4', '/champions/intro-landscape-3.mp4'],
+  // (the starball forming into the logo, clip 3, was taken out on 21.11)
   // the starball banner held up on the pitch, in a full stadium (2.1s)
   ['/champions/intro-portrait-4.mp4', '/champions/intro-landscape-4.mp4'],
 ];
