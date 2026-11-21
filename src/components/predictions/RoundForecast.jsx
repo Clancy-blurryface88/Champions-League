@@ -155,15 +155,24 @@ export function ForecastResult({ r, roundNo, hist = [], roundId, onClose }) {
   const [open, setOpen] = React.useState(false);
   const fc = Number(r.forecast.fc), act = r.actual, FCR = Math.round(fc);
   const pct = fc > 0 ? Math.round((act / fc) * 100) : 0;
-  const d = act - fc;
+  const d = act - fc, beat = d >= 0;
   const v = d >= 0 ? { t: `עקפת את התחזית ב־${Math.round(d)} נק׳ 🔥`, c: GREEN } : { t: `נשארת ${Math.round(-d)} נק׳ מתחת לתחזית`, c: RED };
   return <Shell onClose={onClose}>
     <div className="text-center"><div style={{ fontSize: 12, fontWeight: 800, color: "#93c5fd" }}>סיכום המחזור{roundNo ? ` · מחזור ${roundNo}` : ""}</div><div style={{ fontWeight: 900, fontSize: 19, marginTop: 2 }}>הניקוד שלך בפועל מול התחזית</div></div>
     <div dir="ltr" className="flex gap-3 justify-center" style={{ marginTop: 14 }}>
       <Liquid pct={100} color={GOLD} delay={0.2} dur={0.01} style={{ width: 130, height: 150 }}>
         <div className="h-full flex flex-col items-center justify-center"><span style={{ fontFamily: NUM, fontWeight: 800, fontSize: 40, textShadow: "0 2px 8px rgba(0,0,0,.4)" }}>{FCR}</span><span style={{ fontSize: 12, fontWeight: 800 }}>תחזית</span></div></Liquid>
-      <Liquid pct={pct} delay={0.6} style={{ width: 130, height: 150, boxShadow: `0 0 0 1px ${WATER}99, 0 0 22px -2px ${WATER}88` }}>
-        <div className="h-full flex flex-col items-center justify-center"><Count to={act} delay={0.6} dur={2.4} style={{ fontSize: 40, textShadow: "0 2px 8px rgba(0,0,0,.4)" }} /><span style={{ fontSize: 12, fontWeight: 800 }}>בפועל · <span dir="ltr">{pct}%</span></span></div></Liquid>
+      {/* beating the forecast: the water turns green, fills to the brim, and a burst goes off as it lands */}
+      <div className="relative">
+        <Liquid pct={pct} color={beat ? GREEN : WATER} delay={0.6} style={{ width: 130, height: 150, boxShadow: `0 0 0 1px ${beat ? GREEN : WATER}99, 0 0 22px -2px ${beat ? GREEN : WATER}88` }}>
+          <div className="h-full flex flex-col items-center justify-center"><Count to={act} delay={0.6} dur={2.4} style={{ fontSize: 40, textShadow: "0 2px 8px rgba(0,0,0,.4)" }} /><span style={{ fontSize: 12, fontWeight: 800 }}>בפועל · <span dir="ltr">{pct}%</span></span></div></Liquid>
+        {beat && <>
+          {Array.from({ length: 14 }, (_, i) => { const a = (i / 14) * Math.PI * 2; return <motion.span key={i} className="absolute pointer-events-none" style={{ left: 63, top: 6, width: 6, height: 6, borderRadius: 3, background: [GREEN, GOLD, "#fff"][i % 3] }}
+            initial={{ x: 0, y: 0, opacity: 0 }} animate={{ x: Math.cos(a) * 70, y: Math.sin(a) * 50 - 10, opacity: [0, 1, 0] }} transition={{ delay: 3, duration: 1 }} />; })}
+          <motion.span className="absolute grid place-items-center" style={{ right: -10, top: -12, height: 26, padding: "0 9px", borderRadius: 13, background: GREEN, color: "#052e16", fontFamily: NUM, fontWeight: 800, fontSize: 15, boxShadow: "0 4px 12px rgba(0,0,0,.45)" }}
+            initial={{ scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} transition={{ delay: 3.1, type: "spring", stiffness: 400, damping: 11 }}><span dir="ltr">+{Math.round(d)}</span></motion.span>
+        </>}
+      </div>
     </div>
     <motion.div className="text-center" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 3, type: "spring" }} style={{ marginTop: 12, fontWeight: 900, fontSize: 15, color: v.c }}>{v.t}</motion.div>
     <motion.button type="button" onClick={() => setOpen((o) => !o)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.2 }}
