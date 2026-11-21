@@ -39,7 +39,7 @@ const Explain = ({ children, d }) => <motion.div initial={{ opacity: 0 }} animat
 </motion.div>;
 const pts = (s = 12) => <span style={{ fontSize: s, fontWeight: 700, color: "rgba(255,255,255,.6)", marginInlineStart: 4 }}>נק׳</span>;
 function Shell({ onClose, children, frame = false }) {
-  return createPortal(<motion.div className="fixed inset-0 flex items-center justify-center px-4" style={{ zIndex: 120, background: "rgba(2,6,23,.72)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
+  return createPortal(<motion.div className="fixed inset-0 flex items-center justify-center px-4" style={{ zIndex: 120, background: "rgba(2,6,23,.86)" }}
     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
     <style>{CSS}</style>
     <motion.div dir="rtl" initial={{ y: 30, scale: 0.94, opacity: 0 }} animate={{ y: 0, scale: 1, opacity: 1 }} exit={{ y: 20, opacity: 0 }} transition={{ type: "spring", stiffness: 300, damping: 26 }}

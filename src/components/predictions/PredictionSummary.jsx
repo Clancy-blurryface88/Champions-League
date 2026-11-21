@@ -18,7 +18,7 @@ const ROW_H = Math.round(DIGIT * 1.15);
 const ease = [0.23, 1, 0.32, 1];
 const at = (i, plus = 0) => 0.15 + i * 0.045 + plus; // the row's own moment
 const CARD_GLASS = 'linear-gradient(135deg,rgba(255,255,255,.18) 0%,rgba(255,255,255,.02) 40%,rgba(255,255,255,.1) 60%,rgba(255,255,255,.02) 100%)';
-const BLOCK_GLASS = 'linear-gradient(135deg,rgba(255,255,255,.4) 0%,rgba(255,255,255,.08) 45%,rgba(255,255,255,.22) 60%,rgba(255,255,255,.06) 100%), rgba(10,22,56,.55)';
+const BLOCK_GLASS = 'linear-gradient(135deg,rgba(255,255,255,.4) 0%,rgba(255,255,255,.08) 45%,rgba(255,255,255,.22) 60%,rgba(255,255,255,.06) 100%), rgba(16,32,76,.82)';
 // a thick crest: five one-pixel steps in deep navy, then a soft shadow
 const THICK = 'drop-shadow(1px 1px 0 #0a1636) drop-shadow(1px 1px 0 #08122c) drop-shadow(1px 1px 0 #060e22) drop-shadow(1px 1px 0 #050b1c) drop-shadow(1px 1px 0 #040918) drop-shadow(4px 6px 6px rgba(0,0,0,.7))';
 
@@ -51,8 +51,7 @@ function Row({ match, prediction, i }) {
       {/* the card, opening from its middle */}
       <motion.div initial={{ scaleX: 0, opacity: 0.4 }} animate={{ scaleX: 1, opacity: 1 }} transition={{ delay: at(i), duration: 0.7, ease }}
         className="absolute inset-x-0 overflow-hidden"
-        style={{ top: (BLOCK_H - CARD_H) / 2, height: CARD_H, skewX: SKEW, borderRadius: 10, background: CARD_GLASS,
-          backdropFilter: 'blur(14px) saturate(160%)', WebkitBackdropFilter: 'blur(14px) saturate(160%)', border: '1px solid rgba(255,255,255,.16)' }}>
+        style={{ top: (BLOCK_H - CARD_H) / 2, height: CARD_H, skewX: SKEW, borderRadius: 10, background: `${CARD_GLASS}, rgba(30,48,96,.35)`, border: '1px solid rgba(255,255,255,.16)' }}>
         <div className="absolute inset-0" style={{ transform: `skewX(${-SKEW}deg)` }}>
           <Crest logo={match.team_a_logo} side="a" /><Crest logo={match.team_b_logo} side="b" />
         </div>
@@ -63,8 +62,7 @@ function Row({ match, prediction, i }) {
       {/* the score, taller than the card, standing out of it */}
       <motion.div initial={{ opacity: 0, scale: 0.6, y: 6 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ delay: at(i, 0.45), type: 'spring', stiffness: 380, damping: 20 }}
         className="absolute top-0 z-[2] grid place-items-center"
-        style={{ left: '50%', height: BLOCK_H, width: BLOCK_W, marginLeft: -BLOCK_W / 2, skewX: SKEW, borderRadius: 12, background: BLOCK_GLASS,
-          backdropFilter: 'blur(12px) saturate(170%)', WebkitBackdropFilter: 'blur(12px) saturate(170%)', border: '1px solid rgba(255,255,255,.4)',
+        style={{ left: '50%', height: BLOCK_H, width: BLOCK_W, marginLeft: -BLOCK_W / 2, skewX: SKEW, borderRadius: 12, background: BLOCK_GLASS, border: '1px solid rgba(255,255,255,.4)',
           boxShadow: 'inset 0 1px 0 rgba(255,255,255,.55), 0 10px 22px rgba(0,0,0,.5)' }}>
         <span className="inline-flex items-center tabular-nums" style={{ transform: `skewX(${-SKEW}deg)`, gap: 5, color: '#fff', fontFamily: 'var(--num-font)', fontWeight: 800, fontSize: DIGIT, letterSpacing: 1 }}>
           <RollDigit value={prediction.predicted_score_a} delay={at(i, 0.3)} />
@@ -140,7 +138,7 @@ export default function PredictionSummary({ predictions, roundId, matches: given
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-      style={{ background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}
+      style={{ background: 'rgba(2,6,18,0.9)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
     >
       <motion.div
@@ -166,8 +164,8 @@ export default function PredictionSummary({ predictions, roundId, matches: given
         {/* a slow aurora behind everything */}
         <style>{AURORA_CSS}</style>
         <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
-          <div style={{ position: 'absolute', width: '140%', height: '70%', left: '-20%', top: '5%', background: 'radial-gradient(closest-side,rgba(59,130,246,.45),transparent), radial-gradient(closest-side at 70% 60%,rgba(45,212,191,.35),transparent)', filter: 'blur(30px)', animation: 'ps-aurora 14s ease-in-out infinite' }} />
-          <div style={{ position: 'absolute', width: '120%', height: '60%', left: '-10%', bottom: '-10%', background: 'radial-gradient(closest-side,rgba(139,92,246,.35),transparent)', filter: 'blur(30px)', animation: 'ps-aurora 18s ease-in-out infinite reverse' }} />
+          <div style={{ position: 'absolute', width: '140%', height: '70%', left: '-20%', top: '5%', background: 'radial-gradient(closest-side,rgba(59,130,246,.45),transparent), radial-gradient(closest-side at 70% 60%,rgba(45,212,191,.35),transparent)', animation: 'ps-aurora 14s ease-in-out infinite', willChange: 'transform' }} />
+          <div style={{ position: 'absolute', width: '120%', height: '60%', left: '-10%', bottom: '-10%', background: 'radial-gradient(closest-side,rgba(139,92,246,.35),transparent)', animation: 'ps-aurora 18s ease-in-out infinite reverse', willChange: 'transform' }} />
         </div>
 
         {/* Drag handle – mobile */}
