@@ -21,6 +21,7 @@ export function useNewspaperFonts() {
   }, []);
 }
 
+const r2n = (x) => Math.round(x * 100) / 100;
 const N = ({ children, s = 13, c, w = 800 }) => <span dir="ltr" style={{ fontFamily: NUMF, fontWeight: w, fontSize: s, color: c, whiteSpace: "nowrap" }}>{children}</span>;
 const Crest = ({ src, s = 20, gray = true }) => (src ? <img src={src} alt="" style={{ width: s, height: s, objectFit: "contain", filter: gray ? "grayscale(1) contrast(1.15)" : "none", mixBlendMode: gray ? "multiply" : "normal" }} /> : null);
 // a match as crest · score · crest, always home on the left
@@ -129,6 +130,14 @@ export default function Newspaper({ issue, top = 100 }) {
   // above the nameplate, the folio between rules, the headline centred with an italic deck; the story on the right
   // (photo with a caption, byline, two justified columns with a drop cap, the jump line, the night winner) and on the
   // left a sports column: the night's results (bold = an exact hit) and the full table. An index box and a barcode below.
+  // "more from the night" under the winner: the biggest climb in the table, who closed the most on the one above him,
+  // and the night's biggest single hit (an exact hit if there was one, otherwise the best-paying prediction)
+  const nightOf = Object.fromEntries((f.nightRank || []).map((r) => [r.name, r.pts]));
+  const climb = [...(f.table || [])].filter((r) => r.move > 0).sort((a, b) => b.move - a.move)[0];
+  const closed = (() => { const tb = f.table || []; let best = null;
+    tb.forEach((r, i) => { if (!i) return; const up = tb[i - 1]; const before = (r.total - (nightOf[r.name] || 0)), upBefore = (up.total - (nightOf[up.name] || 0)); const gain = r2n((upBefore - before) - (up.total - r.total)); if (gain > 0 && (!best || gain > best.gain)) best = { name: r.name, over: up.name, gain }; });
+    return best; })();
+  const bestHit = (f.exact || []).length ? [...f.exact].sort((a, b) => b.pts - a.pts)[0] : (() => { let b = null; (f.matches || []).forEach((mm) => (mm.picks || []).forEach((p) => { if (!b || p.pts > b.pts) b = { name: p.name, match: mm.id, pts: p.pts, pick: p.pick }; })); return b; })();
   const photo = M[t.photoMatch];
   const pg = photo?.goals?.[photo.goals.length - 1];
   const photoHits = (f.exact || []).filter((e) => e.match === photo?.id).map((e) => e.name);
@@ -148,6 +157,10 @@ export default function Newspaper({ issue, top = 100 }) {
         <div style={{ columnCount: 2, columnGap: 10, columnRule: `1px solid ${INK}44`, fontFamily: FR, fontSize: 10.6, lineHeight: 1.42, textAlign: "justify" }}><p style={{ margin: 0 }}><span style={{ float: "right", fontWeight: 900, fontSize: 34, lineHeight: 0.8, marginLeft: 4, marginTop: 2 }}>{(t.lead || " ")[0]}</span>{(t.lead || "").slice(1)}</p></div>
         <div style={{ fontFamily: FR, fontSize: 10, fontWeight: 700, textAlign: "left", marginTop: 3 }}>(המשך בעמ׳ {no + 1})</div>
         {winner && <div style={{ borderTop: `2px solid ${INK}`, paddingTop: 3, marginTop: 6 }}><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 12 }}><Cup /> מנצח הערב</div><div className="flex items-baseline justify-between"><span style={{ fontFamily: FR, fontWeight: 900, fontSize: 18 }}>{winner.name}</span><N s={13}>{winner.pts.toFixed(2)}</N></div>{second && <div style={{ fontFamily: FR, fontSize: 9.5 }}>שני: {second.name} ({second.pts.toFixed(2)})</div>}</div>}
+        {(climb || closed || bestHit) && <div style={{ borderTop: `1px solid ${INK}`, marginTop: 6, paddingTop: 3 }}><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 12 }}><Ball /> עוד מהערב</div>
+          {[climb && ["הקפיצה של הערב", <><b>{climb.name}</b> עלה {climb.move === 1 ? "מקום אחד" : `${climb.move} מקומות`}, למקום {climb.rank}</>],
+            closed && ["סגר פער", <><b>{closed.name}</b> צמצם ב־<N s={10.5}>{closed.gain.toFixed(2)}</N> נק׳ את הפער מ{closed.over}</>],
+            bestHit && [(f.exact || []).length ? "הפגיעה הגדולה" : "הניחוש המשתלם", <><b>{bestHit.name}</b> · {M[bestHit.match]?.a.he}–{M[bestHit.match]?.b.he} <N s={10.5}>{M[bestHit.match]?.score}</N> · <N s={10.5} c={GREEN}>+{bestHit.pts.toFixed(2)}</N></>]].filter(Boolean).map(([k, v]) => <div key={k} style={{ fontFamily: FR, fontSize: 10.5, lineHeight: 1.35, padding: "3px 0", borderBottom: `1px dotted ${INK}55` }}><span style={{ fontWeight: 900, color: RED }}>{k}: </span>{v}</div>)}</div>}
       </div>
       <div style={{ background: `${INK}55` }} />
       <div className="grid gap-2" style={{ alignContent: "start" }}>
