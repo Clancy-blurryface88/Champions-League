@@ -13,6 +13,7 @@ import { Round } from "@/api/entities"; // NEW: Import Round entity
 import { motion, AnimatePresence } from "framer-motion";
 import LottieAnimation from "@/components/ui/LottieAnimation";
 import StudioVideoButton from "../components/StudioVideoButton";
+import { ForecastResultGate } from "../components/predictions/RoundForecast";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -133,6 +134,7 @@ export default function Dashboard() {
         {rounds.length > 0 && (
           <div className="w-full px-4">
             <StudioVideoButton rounds={rounds} onPredict={handleRoundSelect} onVisible={setHasStudio} />
+            <ForecastResultGate user={user} rounds={rounds} />
           </div>
         )}
 

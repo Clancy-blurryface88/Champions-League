@@ -18,6 +18,8 @@ import "moment/locale/he";
 import ScoreInput from "../components/predictions/ScoreInput";
 import { LiquidGlassCard } from "../components/ui/liquid-glass";
 import PredictionSummary from "../components/predictions/PredictionSummary";
+import { ForecastPopup } from "../components/predictions/RoundForecast";
+import { forecastAndSave } from "@/utils/forecast";
 import { GlowButton } from "../components/ui/GlowButton";
 import { BgAnimateButton } from "../components/ui/bg-animate-button";
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -84,6 +86,7 @@ export default function Predictions() {
   const [showSummary, setShowSummary] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showSubmissionSuccess, setShowSubmissionSuccess] = useState(false);
+  const [forecast, setForecast] = useState(null); // the round's score forecast, shown once the predictions are sent
   // NEW: Add state for scoring rules modal
   const [showScoringRulesModal, setShowScoringRulesModal] = useState(false);
   const [rulesOriginRect, setRulesOriginRect] = useState(null);
@@ -651,6 +654,15 @@ export default function Predictions() {
       await Promise.all(predictionPromises);
 
       console.log("✅ Predictions saved successfully, starting animation");
+
+      // the round's score forecast from all of this round's picks (stored for the round's end); if it
+      // can't be made, the old success animation shows instead
+      let fc = null;
+      try {
+        const picks = matches.map((m) => ({ match_id: m.id, a: predictions[m.id]?.predicted_score_a, b: predictions[m.id]?.predicted_score_b })).filter((p) => p.a != null && p.b != null);
+        fc = await forecastAndSave(user.id, roundId, picks);
+      } catch (e) { console.warn('forecast', e); }
+      if (fc) { setSaving(false); setShowSummary(false); setForecast(fc); return; }
 
       // Reset saving state first
       setSaving(false);
@@ -1365,6 +1377,11 @@ export default function Predictions() {
             brief={briefs[selectedMatchForBrief.id] || null}
             onClose={() => setSelectedMatchForBrief(null)} />
         )}
+
+        {/* the score forecast after sending (designs 68) — closing it goes home, like the old animation */}
+        <AnimatePresence>
+          {forecast && <ForecastPopup key="fc" f={forecast} onClose={() => { setForecast(null); navigate(createPageUrl("Dashboard")); }} />}
+        </AnimatePresence>
 
         {/* --- SUCCESS ANIMATION OVERLAY --- */}
         <AnimatePresence>

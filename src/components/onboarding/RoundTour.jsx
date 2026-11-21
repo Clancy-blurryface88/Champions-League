@@ -397,7 +397,7 @@ export function Tour({ steps: allSteps, onDone, badge, z = 120 }) {
   ] : [];
 
   return createPortal(
-    <div dir="rtl" style={{ position: 'fixed', inset: 0, zIndex: z, pointerEvents: step.tap ? 'none' : 'auto' }} onClick={stop}>
+    <div data-tour-overlay="" dir="rtl" style={{ position: 'fixed', inset: 0, zIndex: z, pointerEvents: step.tap ? 'none' : 'auto' }} onClick={stop}>
       {blocks.map((b, k) => <div key={k} onClick={stop} onPointerDown={stop} style={{ position: 'fixed', ...b, pointerEvents: 'auto' }} />)}
       {badge && (
         <span style={{ position: 'fixed', top: 'max(10px, env(safe-area-inset-top))', left: '50%', transform: 'translateX(-50%)', padding: '4px 12px', borderRadius: 999, font: '800 11px Outfit, system-ui', color: '#1a1405', background: 'linear-gradient(135deg,#fde047,#eab308)', boxShadow: '0 4px 14px rgba(0,0,0,.4)', zIndex: 1, pointerEvents: 'none' }}>{badge}</span>
