@@ -119,7 +119,7 @@ export function RoundsMarquee({ rounds, user, onRoundClick }) {
   // Auto-scroll animation - always moving left
   useAnimationFrame((time) => {
     if (!isDragging && !pauseAnimation) {
-      const speed = 50;
+      const speed = 35; // a little slower than it was (50)
       const x = baseX.get();
       const newX = x - (speed / 60);
       
