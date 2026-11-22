@@ -17,7 +17,11 @@ const splitRoundName = (name = "") => {
 const SKEW = 13.5; // deg — 12px of slant over the 50px plate height
 const unskew = `skewX(${SKEW}deg)`;
 
-const RoundCard = ({ round, onClick, isNext }) => {
+// The ball in the plate rolls as the strip moves, slowly: a sixth of a real roll for the distance travelled
+// (a 78px ball rolling on the floor turns 360/(π·78) degrees a pixel).
+const ROLL_PER_PX = (360 / (Math.PI * 78)) / 6;
+
+const RoundCard = ({ round, onClick, isNext, roll }) => {
   const { label, num } = splitRoundName(round.name);
 
   return (
@@ -39,13 +43,17 @@ const RoundCard = ({ round, onClick, isNext }) => {
             padding: num ? "0 20px 0 60px" : "0 28px 0 60px",
           }}
         >
-          <img
-            src="/champions/round-ball.png"
-            alt=""
-            draggable={false}
+          <span
             className="absolute pointer-events-none select-none"
-            style={{ height: 78, left: -20, top: "50%", transform: `translateY(-50%) ${unskew}`, opacity: 0.75 }}
-          />
+            style={{ height: 78, left: -20, top: "50%", transform: `translateY(-50%) ${unskew}`, opacity: 0.75, display: "flex" }}
+          >
+            <motion.img
+              src="/champions/round-ball.png"
+              alt=""
+              draggable={false}
+              style={{ height: 78, rotate: roll }}
+            />
+          </span>
           <span className="relative whitespace-nowrap" style={{ transform: unskew }}>{label}</span>
         </span>
         {num && (
@@ -71,6 +79,16 @@ export function RoundsMarquee({ rounds, user, onRoundClick }) {
   const navigate = useNavigate();
   const location = useLocation(); // the round opens as a sheet over this screen
   const baseX = useMotionValue(0);
+  // the balls' turn, following the strip's movement (the jump back to the start is skipped, not rolled)
+  const roll = useMotionValue(0);
+  useEffect(() => {
+    let prev = baseX.get();
+    return baseX.on("change", (v) => {
+      const dx = v - prev;
+      prev = v;
+      if (Math.abs(dx) < 100) roll.set(roll.get() + dx * ROLL_PER_PX);
+    });
+  }, [baseX, roll]);
   const [isDragging, setIsDragging] = useState(false);
   const [pauseAnimation, setPauseAnimation] = useState(false);
   const [matches, setMatches] = useState([]);
@@ -106,7 +124,7 @@ export function RoundsMarquee({ rounds, user, onRoundClick }) {
     return (
       <div className="relative flex w-full flex-col items-center justify-center overflow-hidden bg-transparent py-4">
         <div className="flex justify-center">
-          <RoundCard round={displayedRounds[0]} onClick={handleRoundClick} isNext={displayedRounds[0].id === nextRoundId} />
+          <RoundCard round={displayedRounds[0]} onClick={handleRoundClick} isNext={displayedRounds[0].id === nextRoundId} roll={roll} />
         </div>
       </div>
     );
@@ -188,7 +206,7 @@ export function RoundsMarquee({ rounds, user, onRoundClick }) {
           >
             {repeatedRounds.map((round, index) => (
               <div key={`${round.id}-${index}`} className="flex-shrink-0">
-                <RoundCard round={round} onClick={handleRoundClick} isNext={round.id === nextRoundId} />
+                <RoundCard round={round} onClick={handleRoundClick} isNext={round.id === nextRoundId} roll={roll} />
               </div>
             ))}
           </motion.div>
