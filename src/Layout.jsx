@@ -101,6 +101,36 @@ function LiveMatchesChipList({ liveMatches }) {
   );
 }
 
+// The header capsule's bell: while notifications are on it gives a short "ding" (shakes and swells) every
+// few seconds; off, it's a still, greyed bell with a line through it.
+function RingingBell({ on }) {
+  if (!on) return <BellOff style={{ width: 17, height: 17, color: 'rgba(255,255,255,0.45)' }} />;
+  return (
+    <motion.div
+      animate={{ rotate: [0, -12, 12, -12, 12, 0], scale: [1, 1.12, 1.12, 1.12, 1.12, 1] }}
+      transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 4, ease: 'easeInOut' }}
+      style={{ transformOrigin: '50% 10%', display: 'flex' }}
+    >
+      <Bell style={{ width: 17, height: 17, color: '#f5c518' }} />
+    </motion.div>
+  );
+}
+
+// The user's photo in the header capsule, with a slow gold-and-blue ring turning round it.
+function HaloAvatar({ src }) {
+  return (
+    <div style={{ position: 'relative', width: 29, height: 29, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+      <motion.span
+        animate={{ rotate: 360 }}
+        transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
+        style={{ position: 'absolute', inset: -3.5, borderRadius: '50%', background: 'conic-gradient(#f5c518, transparent 35%, transparent 60%, #3b9bff, transparent 85%, #f5c518)', filter: 'blur(1px)' }}
+      />
+      <span style={{ position: 'absolute', inset: -1, borderRadius: '50%', background: '#0b1630' }} />
+      <img src={src} alt="User Profile" style={{ position: 'relative', width: 29, height: 29, borderRadius: '50%', objectFit: 'cover' }} />
+    </div>
+  );
+}
+
 export default function Layout({ children, currentPageName }) {
   const [user, setUser] = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -1149,64 +1179,54 @@ export default function Layout({ children, currentPageName }) {
 
         {/* User Info & Admin Button */}
         {user &&
-        <div className="fixed top-[44px] right-4 z-40 flex items-start gap-2">
+        // One glass capsule (design 52ב): the bell (its own button: the notifications) and the name (its own
+        // button: the user's menu). The LIVE chip sits under the name part only — column 2 of this grid, whose
+        // column 1 is exactly the bell's part (3.5 padding + 38 bell + 3 gap).
+        <div className="fixed top-[44px] right-4 z-40" dir="ltr" style={{ display: 'grid', gridTemplateColumns: '44.5px auto', rowGap: 16 }}>
 
+          <div
+            style={{
+              gridColumn: '1 / -1', display: 'flex', alignItems: 'center', height: 45, padding: 3.5, gap: 3, borderRadius: 999,
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(8,20,50,0.55) 100%)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(28px) saturate(1.6)',
+              WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
+              boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.3), 0 4px 18px rgba(0,0,0,0.45)',
+            }}
+          >
             {/* Notification Bell — opens the notifications menu (NotificationsSheet):
-                this device's status with "הפעלה", then what to receive. */}
+                this device's status with "הפעלה", then what to receive. A raised round button set into the
+                capsule; while notifications are on it rings ("ding") every few seconds. */}
             <motion.button
-              whileTap={{ scale: 0.92 }}
+              whileTap={{ scale: 0.9 }}
               aria-label="התראות"
               data-tour="bell"
               onClick={() => { if (notifTour === 'notif-tap') setNotifTour('notif'); setShowNotifSheet(true); }}
-              // mt: centered on the 42px name pill beside it (36px bell)
-              className="mt-[3px] flex items-center justify-center rounded-full w-9 h-9 transition-all duration-200"
+              className="flex items-center justify-center rounded-full flex-shrink-0"
               style={{
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(8,20,50,0.55) 100%)',
-                border: `1px solid ${notifPermission === 'granted' ? 'rgba(245,197,24,0.6)' : 'rgba(255,255,255,0.15)'}`,
-                backdropFilter: 'blur(28px) saturate(1.6)',
-                WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
+                width: 38, height: 38, border: 0, padding: 0,
+                background: 'linear-gradient(160deg,#2a3d66,#101c38)',
                 boxShadow: notifPermission === 'granted'
-                  ? 'inset 0 1px 0 rgba(255,255,255,0.25), 0 0 10px rgba(245,197,24,0.35)'
-                  : 'inset 0 1px 0 rgba(255,255,255,0.15)',
+                  ? 'inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 6px rgba(0,0,0,0.5), 0 0 0 1.5px rgba(245,197,24,0.7)'
+                  : 'inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 6px rgba(0,0,0,0.5)',
               }}
             >
-              {notifPermission === 'granted'
-                ? <Bell className="w-4 h-4" style={{ color: '#f5c518' }} />
-                : <BellOff className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.45)' }} />
-              }
+              <RingingBell on={notifPermission === 'granted'} />
             </motion.button>
-
-            {/* Name pill + LIVE chip share a CSS grid column so they stretch
-                to the exact same width (grid's default justify-items is
-                stretch) — no JS measurement, so there's no timing/box-model
-                gap between them regardless of how long the display name is. */}
-            <div className="grid gap-5">
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <motion.button
-                whileTap={{ scale: 0.97 }}
-                className="cursor-pointer bg-transparent border-none p-0">
+                whileTap={{ scale: 0.95, backgroundColor: 'rgba(255,255,255,0.1)' }}
+                className="cursor-pointer bg-transparent border-none flex items-center rounded-full"
+                style={{ height: 38, padding: '0 7px 0 12px' }}>
 
-                  {/* Replaced AnimatedBorderButton with a simple div as per outline */}
-                  <div
-                    className="flex items-center gap-2.5 rounded-full px-3 py-1.5 transition-all duration-200"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(8,20,50,0.55) 100%)',
-                      border: '1px solid rgba(9, 122, 220,0.35)',
-                      backdropFilter: 'blur(28px) saturate(1.6)',
-                      WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
-                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), 0 4px 20px rgba(0,0,0,0.5)',
-                    }}
-                  >
-                    <img
+                  <div dir="rtl" className="flex items-center" style={{ gap: 10 }}>
+                    <HaloAvatar
                       src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/8e94debbc_ssmvtnogc7ue0jufjd03h6mj89.png"
-                      alt="User Profile"
-                      className="w-7 h-7 rounded-full object-cover flex-shrink-0"
-                      style={{ boxShadow: '0 0 0 2px #097adc' }}
                     />
                     <span
-                      className="text-white text-sm font-semibold"
+                      className="text-white text-sm font-semibold whitespace-nowrap"
                       style={{ fontFamily: "'EnStencil', 'Outfit', sans-serif" }}
                     >
                       {user.display_name || user.full_name}
@@ -1272,8 +1292,9 @@ export default function Layout({ children, currentPageName }) {
                 </motion.div>
               </DropdownMenuContent>
             </DropdownMenu>
+          </div>
 
-            <div style={{ position: 'relative' }}>
+            <div style={{ gridColumn: 2, position: 'relative' }}>
             <AnimatePresence>
               {hasLiveMatch && !showLiveIntro && (location.pathname === '/' || location.pathname.includes('Dashboard')) && (
                 <motion.button
@@ -1347,7 +1368,6 @@ export default function Layout({ children, currentPageName }) {
             </AnimatePresence>
             </div>
 
-            </div>
           </div>
         }
 
