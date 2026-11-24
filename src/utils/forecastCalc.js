@@ -10,7 +10,7 @@ const SHRINK = 8; // points of history that count as "average skill"
 const n = (x) => (x == null || x === '' ? 0 : Number(x));
 
 // the points of the player's pick in each kind, and the pick's chance from the odds
-function pick(m, a, b) {
+export function pick(m, a, b) {
   const t = a + b;
   const inv = (arr) => arr.reduce((s, v) => s + (v > 0 ? 1 / v : 0), 0);
   const so = m.score_odds && Object.keys(m.score_odds).length ? m.score_odds : null;

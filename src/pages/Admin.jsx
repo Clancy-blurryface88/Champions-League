@@ -30,6 +30,7 @@ import AdminOddsPull from "../components/admin/AdminOddsPull";
 import AdminLiveIntroPreview from "../components/admin/AdminLiveIntroPreview";
 import AdminRoundSummary from "../components/admin/AdminRoundSummary";
 import AdminTour from "../components/admin/AdminTour";
+import AdminForecasts from "../components/admin/AdminForecasts";
 import { LoaderBar } from "../components/ui/LoaderBar";
 
 // Sidebar Navigation Item Component
@@ -102,6 +103,7 @@ export default function Admin() {
       case 'live-intro': return <AdminLiveIntroPreview />;
       case 'round-summary': return <AdminRoundSummary />;
       case 'tour': return <AdminTour />;
+      case 'forecasts': return <AdminForecasts />;
       default: return <AdminRounds />;
     }
   };
@@ -130,6 +132,7 @@ export default function Admin() {
     { id: 'live-intro', label: '🎬 תצוגת כניסת לייב', icon: Radio },
     { id: 'round-summary', label: '🏆 סיכום מחזור', icon: Trophy },
     { id: 'tour', label: '🧭 הדרכת מחזור', icon: Eye },
+    { id: 'forecasts', label: '🔮 תחזיות המחזור', icon: BarChart3 },
   ];
 
   return (
