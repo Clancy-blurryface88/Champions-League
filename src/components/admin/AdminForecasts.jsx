@@ -99,7 +99,7 @@ function ShareImage({ round, rows, exact, evening, compare }) {
 
 // the sheet's picture: always there and made again whenever what it shows changes (the old one stays until then)
 function LivePicture({ id, round, rows, exact, evening, compare }) {
-  const [img, setImg] = useState(null); // { id, url, file }
+  const [img, setImg] = useState(null); // { id, url }
   const [msg, setMsg] = useState("");
   const last = useRef(null);
   const key = JSON.stringify([id, rows, exact, compare]);
@@ -109,7 +109,7 @@ function LivePicture({ id, round, rows, exact, evening, compare }) {
       if (off) return;
       if (last.current) URL.revokeObjectURL(last.current);
       last.current = URL.createObjectURL(blob);
-      setImg({ id, url: last.current, file: new File([blob], `forecast-round-${round}.png`, { type: "image/png" }) });
+      setImg({ id, url: last.current });
       setMsg("");
     }).catch((e) => { if (!off) setMsg(`שגיאה: ${e.message || e}`); });
     return () => { off = true; };
@@ -117,17 +117,7 @@ function LivePicture({ id, round, rows, exact, evening, compare }) {
   useEffect(() => () => { if (last.current) URL.revokeObjectURL(last.current); }, []);
   if (msg) return <div className="text-sm text-red-400">{msg}</div>;
   if (!img || img.id !== id) return <div className="flex justify-center py-16"><OrbitSpinner size={40} /></div>;
-  const canShare = typeof navigator.canShare === "function" && navigator.canShare({ files: [img.file] });
-  const share = () => navigator.share({ files: [img.file] }).catch(() => {});
-  return (
-    <>
-      <img src={img.url} alt="תחזית" className="block w-full rounded-xl" style={{ border: "1px solid rgba(255,255,255,.18)" }} />
-      <div className="flex gap-2">
-        {canShare && <button type="button" onClick={share} className="flex-1 rounded-xl py-3 font-bold" style={{ background: GOLD_BG, color: "#1a1405" }}>שיתוף</button>}
-        <a href={img.url} download={img.file.name} className="flex-1 rounded-xl py-3 font-bold text-white text-center" style={{ background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.22)" }}>שמירה</a>
-      </div>
-    </>
-  );
+  return <img src={img.url} alt="תחזית" className="block w-full rounded-xl" style={{ border: "1px solid rgba(255,255,255,.18)" }} />;
 }
 
 export default function AdminForecasts({ sheet = false }) {

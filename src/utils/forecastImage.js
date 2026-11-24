@@ -40,7 +40,7 @@ export async function forecastImage({ round, rows, exact, evening, compare }) {
   c.fillRect(W / 2 - 170, evening || compare ? 258 : 274, 340, 3);
 
   // columns, right to left: the name, the forecast, its range (a bar under the forecast in the comparison), (what was earned,) outcomes
-  const col = compare ? { fc: 456, act: 290, dir: 56 } : { fc: 530, rng: 254, dir: 82 }, cw = compare ? { fc: 284, act: 158, dir: 228 } : { fc: 186, rng: 284, dir: 180 };
+  const col = compare ? { fc: 484, act: 316, dir: 56 } : { fc: 530, rng: 254, dir: 82 }, cw = compare ? { fc: 284, act: 158, dir: 254 } : { fc: 186, rng: 284, dir: 180 };
   const head = `800 29px ${OUT}`;
   [[compare ? 'תחזית וטווח' : 'תחזית', col.fc + cw.fc / 2], ...(compare ? [[compare.live ? 'עכשיו' : 'בפועל', col.act + cw.act / 2]] : [['טווח', col.rng + cw.rng / 2]]), [compare ? 'כיוונים' : 'צפי כיוונים', col.dir + cw.dir / 2]].forEach(([s, x]) => text(s, x, TOP - 44, head, '#9fc3ff'));
   text('משתתף', W - PAD - 34, TOP - 44, head, '#9fc3ff', 'right');
@@ -90,7 +90,7 @@ export async function forecastImage({ round, rows, exact, evening, compare }) {
       if (cap) text(cap, x + w / 2, mid + 28, `700 23px ${OUT}`, ink);
     };
     if (compare) {
-      plate(col.dir + 120, 108, [[0, '#fde047'], [1, '#e0a300']], Math.round(r.dir), 'צפי', '#1a1405');
+      plate(col.dir + 120, 134, [[0, '#fde047'], [1, '#e0a300']], Math.round(r.dir), 'תחזית', '#1a1405');
       plate(col.dir, 134, [[0, '#7dd3fc'], [1, '#0b84d8']], r.adir, compare.live ? 'עכשיו' : 'בפועל', '#04203a');
     } else plate(col.dir, cw.dir, [[0, '#f8fafc'], [1, '#9fb0c6']], Math.round(r.dir), null, '#0f172a');
   });
