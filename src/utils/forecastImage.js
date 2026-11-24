@@ -39,10 +39,10 @@ export async function forecastImage({ round, rows, exact, evening, compare }) {
   c.fillStyle = grad(c, W / 2 - 170, 0, W / 2 + 170, 0, [[0, 'rgba(250,204,21,0)'], [0.5, '#facc15'], [1, 'rgba(250,204,21,0)']]);
   c.fillRect(W / 2 - 170, evening || compare ? 258 : 274, 340, 3);
 
-  // columns, right to left: the name, the forecast, its range (under the forecast in the comparison), (what was earned,) outcomes
-  const col = compare ? { fc: 548, act: 318, dir: 82 } : { fc: 530, rng: 254, dir: 82 }, cw = compare ? { fc: 190, act: 224, dir: 230 } : { fc: 186, rng: 284, dir: 180 };
+  // columns, right to left: the name, the forecast, its range (a bar under the forecast in the comparison), (what was earned,) outcomes
+  const col = compare ? { fc: 456, act: 290, dir: 56 } : { fc: 530, rng: 254, dir: 82 }, cw = compare ? { fc: 284, act: 158, dir: 228 } : { fc: 186, rng: 284, dir: 180 };
   const head = `800 29px ${OUT}`;
-  [['תחזית', col.fc + cw.fc / 2], ...(compare ? [[compare.live ? 'עכשיו' : 'בפועל', col.act + cw.act / 2]] : [['טווח', col.rng + cw.rng / 2]]), [compare ? 'כיוונים' : 'צפי כיוונים', col.dir + cw.dir / 2]].forEach(([s, x]) => text(s, x, TOP - 44, head, '#9fc3ff'));
+  [[compare ? 'תחזית וטווח' : 'תחזית', col.fc + cw.fc / 2], ...(compare ? [[compare.live ? 'עכשיו' : 'בפועל', col.act + cw.act / 2]] : [['טווח', col.rng + cw.rng / 2]]), [compare ? 'כיוונים' : 'צפי כיוונים', col.dir + cw.dir / 2]].forEach(([s, x]) => text(s, x, TOP - 44, head, '#9fc3ff'));
   text('משתתף', W - PAD - 34, TOP - 44, head, '#9fc3ff', 'right');
 
   rows.forEach((r, i) => {
@@ -55,12 +55,21 @@ export async function forecastImage({ round, rows, exact, evening, compare }) {
     let fs = 46; c.font = `800 ${fs}px ${OUT}`;
     while (c.measureText(r.name).width > 230 && fs > 24) c.font = `800 ${--fs}px ${OUT}`;
     text(r.name, W - PAD - 40, mid, `800 ${fs}px ${OUT}`, '#ffffff', 'right');
-    // the forecast on a gold plate, its range beside it
-    slant(c, col.fc, y + 8, cw.fc, h - 16);
-    c.fillStyle = grad(c, 0, y, 0, y + h, [[0, '#fde047'], [1, '#e0a300']]); c.fill();
-    text(String(Math.round(r.fc)), col.fc + cw.fc / 2, compare ? mid - 18 : mid, `800 ${compare ? 56 : 64}px ${NUM}`, '#1a1405', 'center', 'ltr');
-    if (compare) text(`${r.lo}–${r.hi}`, col.fc + cw.fc / 2, mid + 28, `800 36px ${NUM}`, '#3a2c05', 'center', 'ltr');
-    else {
+    // the forecast: in the comparison a gold number over its range's bar (the dot is the forecast's place in it);
+    // otherwise on a gold plate, the range beside it
+    if (compare) {
+      const x0 = col.fc + 54, x1 = col.fc + cw.fc - 54, by = mid + 31, at = x0 + (x1 - x0) * Math.max(0, Math.min(1, (r.fc - r.lo) / (r.hi - r.lo || 1)));
+      const bar = (w, fill) => { c.beginPath(); c.roundRect(x0, by - 6, w, 12, 6); c.fillStyle = fill; c.fill(); };
+      text(String(Math.round(r.fc)), (x0 + x1) / 2, mid - 18, `800 64px ${NUM}`, '#fde047', 'center', 'ltr');
+      bar(x1 - x0, 'rgba(250,204,21,.28)');
+      bar(at - x0, '#eab308');
+      c.beginPath(); c.arc(at, by, 11, 0, 7); c.fillStyle = '#ffffff'; c.fill(); c.strokeStyle = '#b98500'; c.lineWidth = 4; c.stroke();
+      text(String(r.lo), x0 - 24, by + 1, `800 38px ${NUM}`, '#fde68a', 'center', 'ltr');
+      text(String(r.hi), x1 + 24, by + 1, `800 38px ${NUM}`, '#fde68a', 'center', 'ltr');
+    } else {
+      slant(c, col.fc, y + 8, cw.fc, h - 16);
+      c.fillStyle = grad(c, 0, y, 0, y + h, [[0, '#fde047'], [1, '#e0a300']]); c.fill();
+      text(String(Math.round(r.fc)), col.fc + cw.fc / 2, mid, `800 64px ${NUM}`, '#1a1405', 'center', 'ltr');
       slant(c, col.rng, y + 8, cw.rng, h - 16);
       c.fillStyle = 'rgba(250,204,21,.14)'; c.fill(); c.strokeStyle = 'rgba(250,204,21,.75)'; c.lineWidth = 3; c.stroke();
       text(`${r.lo}–${r.hi}`, col.rng + cw.rng / 2, mid, `800 56px ${NUM}`, '#fde68a', 'center', 'ltr');
@@ -78,11 +87,11 @@ export async function forecastImage({ round, rows, exact, evening, compare }) {
       slant(c, x, y + 8, w, h - 16);
       c.fillStyle = grad(c, 0, y, 0, y + h, stops); c.fill();
       text(String(num), x + w / 2, cap ? mid - 16 : mid, `800 ${cap ? 50 : 48}px ${NUM}`, ink, 'center', 'ltr');
-      if (cap) text(cap, x + w / 2, mid + 28, `700 24px ${OUT}`, ink);
+      if (cap) text(cap, x + w / 2, mid + 28, `700 23px ${OUT}`, ink);
     };
     if (compare) {
-      plate(col.dir + 108, 122, [[0, '#fde047'], [1, '#e0a300']], Math.round(r.dir), 'צפי', '#1a1405');
-      plate(col.dir - 26, 148, [[0, '#7dd3fc'], [1, '#0b84d8']], r.adir, compare.live ? 'עכשיו' : 'בפועל', '#04203a');
+      plate(col.dir + 120, 108, [[0, '#fde047'], [1, '#e0a300']], Math.round(r.dir), 'צפי', '#1a1405');
+      plate(col.dir, 134, [[0, '#7dd3fc'], [1, '#0b84d8']], r.adir, compare.live ? 'עכשיו' : 'בפועל', '#04203a');
     } else plate(col.dir, cw.dir, [[0, '#f8fafc'], [1, '#9fb0c6']], Math.round(r.dir), null, '#0f172a');
   });
   if (exact != null) {
