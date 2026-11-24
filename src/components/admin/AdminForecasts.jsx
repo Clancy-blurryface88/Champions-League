@@ -120,7 +120,7 @@ function LivePicture({ id, round, rows, exact, evening, compare }) {
   return <img src={img.url} alt="תחזית" className="block w-full rounded-xl" style={{ border: "1px solid rgba(255,255,255,.18)" }} />;
 }
 
-export default function AdminForecasts({ sheet = false }) {
+export default function AdminForecasts({ sheet = false, onTitle }) {
   const [base, setBase] = useState(null); // rounds, matches, users
   const [roundId, setRoundId] = useState(null);
   const [rows, setRows] = useState(null);
@@ -143,6 +143,7 @@ export default function AdminForecasts({ sheet = false }) {
   }, []);
 
   useEffect(() => { setRows(null); setEve(null); setError(""); }, [roundId]);
+  useEffect(() => { if (rows) onTitle?.(eve ? "תחזית נקודות לערב המשחקים" : "תחזית נקודות למחזור המשחקים"); }, [!!rows, eve]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // while the round is being played: its matches, points and the live scores, every minute
   useEffect(() => {
@@ -401,15 +402,16 @@ export default function AdminForecasts({ sheet = false }) {
 
 // the picture over the app, from the header's button (admins only, on the round's days)
 export function ForecastSheet({ onClose }) {
+  const [title, setTitle] = useState("");
   return (
     <motion.div className="fixed inset-0 z-[70] overflow-y-auto" style={{ background: "linear-gradient(170deg,#12286b,#081230 45%,#040818)", padding: "max(14px, env(safe-area-inset-top)) 14px 40px" }}
       initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", stiffness: 260, damping: 32 }}>
       <div className="mx-auto max-w-2xl">
         <div dir="rtl" className="flex items-center justify-between mb-3">
-          <span className="text-xl font-extrabold text-white">תחזית</span>
+          <span className="text-xl font-extrabold text-white">{title}</span>
           <button type="button" onClick={onClose} aria-label="סגירה" className="grid place-items-center text-white text-lg" style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.2)" }}>✕</button>
         </div>
-        <AdminForecasts sheet />
+        <AdminForecasts sheet onTitle={setTitle} />
       </div>
     </motion.div>
   );

@@ -7,8 +7,8 @@ const NUM = "'Big Shoulders Stencil Display', 'Teko', sans-serif", OUT = 'Outfit
 const loadImg = (src) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; });
 
 // a parallelogram with slightly rounded corners
-function slant(c, x, y, w, h, r = 8) {
-  const p = [[x + SK, y], [x + w, y], [x + w - SK, y + h], [x, y + h]];
+function slant(c, x, y, w, h, r = 8, sk = SK) {
+  const p = [[x + sk, y], [x + w, y], [x + w - sk, y + h], [x, y + h]];
   c.beginPath();
   c.moveTo((p[0][0] + p[1][0]) / 2, y);
   for (let i = 1; i <= 4; i++) { const a = p[i % 4], b = p[(i + 1) % 4]; c.arcTo(a[0], a[1], b[0], b[1], r); }
@@ -39,10 +39,14 @@ export async function forecastImage({ round, rows, exact, evening, compare }) {
   c.fillStyle = grad(c, W / 2 - 170, 0, W / 2 + 170, 0, [[0, 'rgba(250,204,21,0)'], [0.5, '#facc15'], [1, 'rgba(250,204,21,0)']]);
   c.fillRect(W / 2 - 170, evening || compare ? 258 : 274, 340, 3);
 
-  // columns, right to left: the name, the forecast, its range (a bar under the forecast in the comparison), (what was earned,) outcomes
-  const col = compare ? { fc: 484, act: 316, dir: 56 } : { fc: 530, rng: 254, dir: 82 }, cw = compare ? { fc: 284, act: 158, dir: 254 } : { fc: 186, rng: 284, dir: 180 };
+  // columns, right to left: the name, the forecast, its range, outcomes; in the comparison the forecast and what was
+  // earned side by side, with the range framed under both
+  const col = compare ? { both: 344, dir: 56 } : { fc: 530, rng: 254, dir: 82 }, cw = compare ? { both: 404, dir: 254 } : { fc: 186, rng: 284, dir: 180 };
   const head = `800 29px ${OUT}`;
-  [[compare ? 'תחזית וטווח' : 'תחזית', col.fc + cw.fc / 2], ...(compare ? [[compare.live ? 'עכשיו' : 'בפועל', col.act + cw.act / 2]] : [['טווח', col.rng + cw.rng / 2]]), [compare ? 'כיוונים' : 'צפי כיוונים', col.dir + cw.dir / 2]].forEach(([s, x]) => text(s, x, TOP - 44, head, '#9fc3ff'));
+  const pw = cw.both / 2, rx = col.both + pw + 2, lx = col.both + 10; // the comparison's two plates
+  const heads = compare ? [['תחזית', rx + pw / 2], [compare.live ? 'עכשיו' : 'בפועל', lx + pw / 2], ['כיוונים', col.dir + cw.dir / 2]]
+    : [['תחזית', col.fc + cw.fc / 2], ['טווח', col.rng + cw.rng / 2], ['צפי כיוונים', col.dir + cw.dir / 2]];
+  heads.forEach(([s, x]) => text(s, x, TOP - 44, head, '#9fc3ff'));
   text('משתתף', W - PAD - 34, TOP - 44, head, '#9fc3ff', 'right');
 
   rows.forEach((r, i) => {
@@ -55,17 +59,24 @@ export async function forecastImage({ round, rows, exact, evening, compare }) {
     let fs = 46; c.font = `800 ${fs}px ${OUT}`;
     while (c.measureText(r.name).width > 230 && fs > 24) c.font = `800 ${--fs}px ${OUT}`;
     text(r.name, W - PAD - 40, mid, `800 ${fs}px ${OUT}`, '#ffffff', 'right');
-    // the forecast: in the comparison a gold number over its range's bar (the dot is the forecast's place in it);
-    // otherwise on a gold plate, the range beside it
+    // the comparison: forecast (gold) and what was earned — green when the forecast was reached, red when not (grey
+    // while it can still be) — on two plates, and under them the range framed in the result's colour. Otherwise the
+    // forecast on a gold plate, the range beside it
     if (compare) {
-      const x0 = col.fc + 54, x1 = col.fc + cw.fc - 54, by = mid + 31, at = x0 + (x1 - x0) * Math.max(0, Math.min(1, (r.fc - r.lo) / (r.hi - r.lo || 1)));
-      const bar = (w, fill) => { c.beginPath(); c.roundRect(x0, by - 6, w, 12, 6); c.fillStyle = fill; c.fill(); };
-      text(String(Math.round(r.fc)), (x0 + x1) / 2, mid - 18, `800 64px ${NUM}`, '#fde047', 'center', 'ltr');
-      bar(x1 - x0, 'rgba(250,204,21,.28)');
-      bar(at - x0, '#eab308');
-      c.beginPath(); c.arc(at, by, 11, 0, 7); c.fillStyle = '#ffffff'; c.fill(); c.strokeStyle = '#b98500'; c.lineWidth = 4; c.stroke();
-      text(String(r.lo), x0 - 24, by + 1, `800 38px ${NUM}`, '#fde68a', 'center', 'ltr');
-      text(String(r.hi), x1 + 24, by + 1, `800 38px ${NUM}`, '#fde68a', 'center', 'ltr');
+      const ok = Math.round(r.actual) >= Math.round(r.fc), open = compare.live || compare.partial;
+      const [a, b, tone] = ok ? ['#4ade80', '#12994a', '#4ade80'] : open ? ['#64748b', '#334155', '#94a3b8'] : ['#f87171', '#b91c1c', '#fb7185'];
+      const x0 = col.both, w = cw.both, t0 = y + 8, ph = 54;
+      [[rx, r.fc, '#fde047', '#e0a300', '#1a1405'], [lx, r.actual, a, b, '#ffffff']].forEach(([x, v, c0, c1, ink]) => {
+        slant(c, x, t0, pw - 5, ph, 8, 15);
+        c.fillStyle = grad(c, 0, t0, 0, t0 + ph, [[0, c0], [1, c1]]); c.fill();
+        text(String(Math.round(v)), x + pw / 2 - 2, t0 + 30, `800 50px ${NUM}`, ink, 'center', 'ltr');
+      });
+      slant(c, x0 + 1, t0 + 63, w - 18, 34, 8, 10);
+      c.fillStyle = 'rgba(4,10,30,.45)'; c.fill(); c.strokeStyle = tone; c.lineWidth = 2.5; c.stroke();
+      c.fillStyle = grad(c, x0 + 76, 0, x0 + w - 92, 0, [[0, 'rgba(255,255,255,0)'], [0.5, tone], [1, 'rgba(255,255,255,0)']]);
+      c.fillRect(x0 + 76, t0 + 79, w - 168, 3);
+      text(String(r.lo), x0 + 42, t0 + 82, `800 34px ${NUM}`, '#ffffff', 'center', 'ltr');
+      text(String(r.hi), x0 + w - 60, t0 + 82, `800 34px ${NUM}`, '#ffffff', 'center', 'ltr');
     } else {
       slant(c, col.fc, y + 8, cw.fc, h - 16);
       c.fillStyle = grad(c, 0, y, 0, y + h, [[0, '#fde047'], [1, '#e0a300']]); c.fill();
@@ -73,14 +84,6 @@ export async function forecastImage({ round, rows, exact, evening, compare }) {
       slant(c, col.rng, y + 8, cw.rng, h - 16);
       c.fillStyle = 'rgba(250,204,21,.14)'; c.fill(); c.strokeStyle = 'rgba(250,204,21,.75)'; c.lineWidth = 3; c.stroke();
       text(`${r.lo}–${r.hi}`, col.rng + cw.rng / 2, mid, `800 56px ${NUM}`, '#fde68a', 'center', 'ltr');
-    }
-    if (compare) {
-      // what was earned: green when the forecast was reached, red when not (grey while it can still be), the difference under it
-      const d = Math.round(r.actual) - Math.round(r.fc), ok = d >= 0;
-      slant(c, col.act, y + 8, cw.act, h - 16);
-      c.fillStyle = grad(c, 0, y, 0, y + h, ok ? [[0, '#4ade80'], [1, '#12994a']] : compare.live || compare.partial ? [[0, '#64748b'], [1, '#334155']] : [[0, '#f87171'], [1, '#b91c1c']]); c.fill();
-      text(String(Math.round(r.actual)), col.act + cw.act / 2, mid - 18, `800 56px ${NUM}`, '#ffffff', 'center', 'ltr');
-      text(d > 0 ? `+${d}` : String(d), col.act + cw.act / 2, mid + 28, `800 34px ${NUM}`, 'rgba(255,255,255,.9)', 'center', 'ltr');
     }
     // outcomes: expected; in the comparison two plates — expected (gold, like the forecast) and what came (blue)
     const plate = (x, w, stops, num, cap, ink) => {
