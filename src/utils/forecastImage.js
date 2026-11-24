@@ -1,5 +1,6 @@
 // The share picture of a round's forecasts (admin): a 1080px table drawn on a canvas — player, forecast with its
 // range, expected correct outcomes — and one number for everyone together, the exact scores expected in the round.
+// With `compare` (after the evening or round was calculated) it sets the forecast against what was really earned.
 // Returned as a PNG blob.
 const W = 1080, ROW = 118, TOP = 400, PAD = 46, SK = 26; // SK: the plates' slant in px
 const NUM = "'Big Shoulders Stencil Display', 'Teko', sans-serif", OUT = 'Outfit, system-ui, sans-serif';
@@ -15,12 +16,13 @@ function slant(c, x, y, w, h, r = 8) {
 }
 const grad = (c, x0, y0, x1, y1, stops) => { const g = c.createLinearGradient(x0, y0, x1, y1); stops.forEach(([o, col]) => g.addColorStop(o, col)); return g; };
 
-// rows: [{ name, fc, lo, hi, dir }], already in the order to show
-export async function forecastImage({ round, rows, exact, evening }) {
+// rows: [{ name, fc, lo, hi, dir }], already in the order to show; with compare each also has { actual, adir }, and
+// compare is { exact: the exact hits that really came }
+export async function forecastImage({ round, rows, exact, evening, compare }) {
   await Promise.all([`800 60px ${NUM}`, `800 40px ${OUT}`].map((f) => document.fonts.load(f, 'א1').catch(() => {})));
   await document.fonts.ready;
   const [logo, ball] = await Promise.all([loadImg('/champions/ch-logo.png'), loadImg('/champions/round-ball.png')]);
-  const H = TOP + rows.length * ROW + (exact == null ? 96 : 232);
+  const H = TOP + rows.length * ROW + (exact == null ? 96 : compare ? 286 : 232);
   const cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
   const c = cv.getContext('2d');
@@ -32,14 +34,14 @@ export async function forecastImage({ round, rows, exact, evening }) {
 
   c.textBaseline = 'middle';
   const text = (s, x, y, font, color, align = 'center', dir = 'rtl') => { c.direction = dir; c.font = font; c.fillStyle = color; c.textAlign = align; c.fillText(s, x, y); };
-  if (evening) { text(`תחזית ${evening}`, W / 2, 212, `900 58px ${OUT}`, '#ffffff'); text(`מחזור ${round}`, W / 2, 298, `700 30px ${OUT}`, '#9fc3ff'); } else text(`תחזית מחזור ${round}`, W / 2, 226, `900 64px ${OUT}`, '#ffffff');
+  if (evening || compare) { text(compare ? 'תחזית מול בפועל' : `תחזית ${evening}`, W / 2, 212, `900 58px ${OUT}`, '#ffffff'); text(compare && evening ? `${evening} · מחזור ${round}` : `מחזור ${round}`, W / 2, 298, `700 30px ${OUT}`, '#9fc3ff'); } else text(`תחזית מחזור ${round}`, W / 2, 226, `900 64px ${OUT}`, '#ffffff');
   c.fillStyle = grad(c, W / 2 - 170, 0, W / 2 + 170, 0, [[0, 'rgba(250,204,21,0)'], [0.5, '#facc15'], [1, 'rgba(250,204,21,0)']]);
-  c.fillRect(W / 2 - 170, evening ? 258 : 274, 340, 3);
+  c.fillRect(W / 2 - 170, evening || compare ? 258 : 274, 340, 3);
 
-  // columns, right to left: the name, the forecast, outcomes
-  const col = { fc: 400, dir: 82 }, cw = { fc: 280, dir: 270 };
+  // columns, right to left: the name, the forecast, (what was earned,) outcomes
+  const col = compare ? { fc: 548, act: 318, dir: 82 } : { fc: 400, dir: 82 }, cw = compare ? { fc: 190, act: 224, dir: 230 } : { fc: 280, dir: 270 };
   const head = `800 29px ${OUT}`;
-  [['תחזית', col.fc + cw.fc / 2], ['צפי כיוונים', col.dir + cw.dir / 2]].forEach(([s, x]) => text(s, x, TOP - 44, head, '#9fc3ff'));
+  [['תחזית', col.fc + cw.fc / 2], ...(compare ? [['בפועל', col.act + cw.act / 2]] : []), [compare ? 'כיוונים' : 'צפי כיוונים', col.dir + cw.dir / 2]].forEach(([s, x]) => text(s, x, TOP - 44, head, '#9fc3ff'));
   text('משתתף', W - PAD - 34, TOP - 44, head, '#9fc3ff', 'right');
 
   rows.forEach((r, i) => {
@@ -50,28 +52,45 @@ export async function forecastImage({ round, rows, exact, evening }) {
     c.strokeStyle = 'rgba(255,255,255,.26)'; c.lineWidth = 2; c.stroke();
     // the name, shrunk if it's long
     let fs = 46; c.font = `800 ${fs}px ${OUT}`;
-    while (c.measureText(r.name).width > 250 && fs > 24) c.font = `800 ${--fs}px ${OUT}`;
+    while (c.measureText(r.name).width > (compare ? 215 : 250) && fs > 24) c.font = `800 ${--fs}px ${OUT}`;
     text(r.name, W - PAD - 40, mid, `800 ${fs}px ${OUT}`, '#ffffff', 'right');
     // the forecast on a gold plate, its range small under it
     slant(c, col.fc, y + 8, cw.fc, h - 16);
     c.fillStyle = grad(c, 0, y, 0, y + h, [[0, '#fde047'], [1, '#e0a300']]); c.fill();
     text(String(Math.round(r.fc)), col.fc + cw.fc / 2, mid - 14, `800 54px ${NUM}`, '#1a1405', 'center', 'ltr');
     text(`${r.lo}–${r.hi}`, col.fc + cw.fc / 2, mid + 25, `800 25px ${NUM}`, 'rgba(26,20,5,.75)', 'center', 'ltr');
-    // expected outcomes
+    if (compare) {
+      // what was earned: green when the forecast was reached, red when not, with the difference under it
+      const d = Math.round(r.actual) - Math.round(r.fc), ok = d >= 0;
+      slant(c, col.act, y + 8, cw.act, h - 16);
+      c.fillStyle = grad(c, 0, y, 0, y + h, ok ? [[0, '#4ade80'], [1, '#12994a']] : [[0, '#f87171'], [1, '#b91c1c']]); c.fill();
+      text(String(Math.round(r.actual)), col.act + cw.act / 2, mid - 14, `800 54px ${NUM}`, '#ffffff', 'center', 'ltr');
+      text(d > 0 ? `+${d}` : String(d), col.act + cw.act / 2, mid + 25, `800 27px ${NUM}`, 'rgba(255,255,255,.9)', 'center', 'ltr');
+    }
+    // outcomes: expected, or how many came with the expected number small under it
     slant(c, col.dir, y + 8, cw.dir, h - 16);
     c.fillStyle = grad(c, 0, y, 0, y + h, [[0, '#f8fafc'], [1, '#9fb0c6']]); c.fill();
-    text(String(Math.round(r.dir)), col.dir + cw.dir / 2, mid, `800 48px ${NUM}`, '#0f172a', 'center', 'ltr');
+    if (compare) {
+      text(String(r.adir), col.dir + cw.dir / 2, mid - 14, `800 54px ${NUM}`, '#0f172a', 'center', 'ltr');
+      text(`צפי ${Math.round(r.dir)}`, col.dir + cw.dir / 2, mid + 25, `700 24px ${OUT}`, 'rgba(15,23,42,.75)');
+    } else text(String(Math.round(r.dir)), col.dir + cw.dir / 2, mid, `800 48px ${NUM}`, '#0f172a', 'center', 'ltr');
   });
   if (exact != null) {
     const y = TOP + rows.length * ROW + 22, h = 116, mid = y + h / 2 + 3;
     slant(c, PAD - 8, y, W - 2 * PAD + 16, h, 12);
     c.fillStyle = grad(c, W, 0, 0, 0, [[0, 'rgba(34,197,94,.34)'], [1, 'rgba(0,200,232,.2)']]); c.fill();
     c.strokeStyle = 'rgba(74,222,200,.7)'; c.lineWidth = 2; c.stroke();
-    text(evening ? 'צפי פגיעות מדויקות בערב' : 'צפי פגיעות מדויקות של כולם', W - PAD - 40, mid, `800 42px ${OUT}`, '#ffffff', 'right');
+    text(compare ? 'פגיעות מדויקות של כולם' : evening ? 'צפי פגיעות מדויקות בערב' : 'צפי פגיעות מדויקות של כולם', W - PAD - 40, mid, `800 42px ${OUT}`, '#ffffff', 'right');
     slant(c, 82, y + 9, 190, h - 18);
     c.fillStyle = grad(c, 0, y, 0, y + h, [[0, '#34e0a1'], [1, '#0ea5c6']]); c.fill();
-    text(String(exact), 82 + 95, mid, `800 64px ${NUM}`, '#04201d', 'center', 'ltr');
+    if (compare) {
+      text(String(compare.exact), 82 + 95, mid - 14, `800 58px ${NUM}`, '#04201d', 'center', 'ltr');
+      text(`צפי ${exact}`, 82 + 95, mid + 28, `700 25px ${OUT}`, 'rgba(4,32,29,.8)');
+      const inRange = rows.filter((r) => r.lo <= Math.round(r.actual) && Math.round(r.actual) <= r.hi).length;
+      const miss = (r) => Math.abs(r.actual - r.fc), best = [...rows].sort((a, b) => miss(a) - miss(b))[0];
+      text(`בתוך הטווח: ${inRange} מתוך ${rows.length} · התחזית הכי קרובה: ${best.name}`, W / 2, y + h + 48, `800 32px ${OUT}`, '#ffffff');
+    } else text(String(exact), 82 + 95, mid, `800 64px ${NUM}`, '#04201d', 'center', 'ltr');
   }
-  text('התחזית והטווח בנקודות · צפי כיוונים לכל משתתף', W / 2, H - 46, `600 25px ${OUT}`, 'rgba(255,255,255,.6)');
+  text(compare ? 'ירוק: עבר את התחזית · אדום: מתחת לתחזית' : 'התחזית והטווח בנקודות · צפי כיוונים לכל משתתף', W / 2, H - 46, `600 25px ${OUT}`, 'rgba(255,255,255,.6)');
   return new Promise((ok, no) => cv.toBlob((b) => (b ? ok(b) : no(new Error('התמונה לא נוצרה'))), 'image/png'));
 }

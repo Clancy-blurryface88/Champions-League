@@ -10,7 +10,8 @@ import { forecastImage } from "@/utils/forecastImage";
 // outcomes and exact scores are expected from their picks. Nobody's picks are shown.
 // A round still in play is calculated here for everyone by the current formula (some may have sent before it
 // changed); a finished round shows what was stored. The round can be read whole or one evening at a time (the
-// evenings add up to the round). "תמונה לשיתוף" makes a table picture of what is shown, for WhatsApp.
+// evenings add up to the round). Once everything shown is calculated, it can be switched to the forecast against
+// what was really earned. "תמונה לשיתוף" makes a table picture of what is shown, for WhatsApp.
 const NUM = { fontFamily: "var(--num-font)", fontWeight: 800 };
 const r0 = (v) => (v == null ? "—" : Math.round(Number(v)));
 const sign = (v) => (v > 0 ? `+${v}` : `${v}`);
@@ -28,7 +29,7 @@ function Cell({ t, children, c = "#fff" }) {
 }
 
 // the picture, made on demand: shown first, then shared (the phone's share sheet) or saved
-function ShareImage({ round, rows, exact, evening }) {
+function ShareImage({ round, rows, exact, evening, compare }) {
   const [img, setImg] = useState(null); // { url, file }
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
@@ -36,8 +37,8 @@ function ShareImage({ round, rows, exact, evening }) {
   const make = async () => {
     setBusy(true); setMsg("");
     try {
-      const blob = await forecastImage({ round, rows, exact, evening });
-      setImg({ url: URL.createObjectURL(blob), file: new File([blob], `forecast-round-${round}${evening ? "-evening" : ""}.png`, { type: "image/png" }) });
+      const blob = await forecastImage({ round, rows, exact, evening, compare });
+      setImg({ url: URL.createObjectURL(blob), file: new File([blob], `forecast-round-${round}${evening ? "-evening" : ""}${compare ? "-result" : ""}.png`, { type: "image/png" }) });
     } catch (e) { setMsg(`שגיאה: ${e.message || e}`); }
     setBusy(false);
   };
@@ -46,7 +47,7 @@ function ShareImage({ round, rows, exact, evening }) {
   return (
     <div className="space-y-2">
       <button type="button" onClick={make} disabled={busy} className="w-full rounded-xl py-3 font-bold" style={{ background: "linear-gradient(135deg,#fde047,#eab308)", color: "#1a1405" }}>
-        {busy ? "יוצר תמונה…" : img ? "↻ ליצור מחדש" : "🖼️ תמונה לשיתוף"}
+        {busy ? "יוצר תמונה…" : img ? "↻ ליצור מחדש" : compare ? "🖼️ תמונה לשיתוף: תחזית מול בפועל" : "🖼️ תמונה לשיתוף"}
       </button>
       {msg && <div className="text-sm text-red-400">{msg}</div>}
       {img && (
@@ -67,6 +68,7 @@ export default function AdminForecasts() {
   const [roundId, setRoundId] = useState(null);
   const [rows, setRows] = useState(null);
   const [eve, setEve] = useState(null); // the evening shown (null: the whole round)
+  const [cmp, setCmp] = useState(false); // forecast against actual (only once everything shown is calculated)
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -104,17 +106,18 @@ export default function AdminForecasts() {
         const past = theirs.filter(before).map((p) => ({ match: all[p.match_id], prediction: p }));
         const picks = mine.map((p) => ({ match: byId[p.match_id], a: Number(p.predicted_score_a) || 0, b: Number(p.predicted_score_b) || 0, p }));
         const odds = (L) => L.reduce((s, x) => { const k = pick(x.match, x.a, x.b); return { dir: s.dir + k.oc[1], ex: s.ex + k.ex[1] }; }, { dir: 0, ex: 0 });
+        const came = (L) => ({ dir: L.filter((x) => Number(x.p.correct_outcome_points_earned) > 0).length, ex: L.filter((x) => Number(x.p.exact_score_points_earned) > 0).length });
         const earnedIn = (L) => (L.some((x) => x.match.is_score_calculated) ? L.reduce((s, x) => s + (x.match.is_score_calculated ? Number(x.p.points_earned) || 0 : 0), 0) : null);
         const stored = fs.data.find((x) => x.user_id === u.id) || null;
-        const f = done === ms.length || !mine.length ? stored : { ...computeForecast3(past, picks, base.matches, everyone), updated_at: stored?.updated_at };
+        const f = done === ms.length || !mine.length || (done > 0 && stored?.cats?.v === 3) ? stored : { ...computeForecast3(past, picks, base.matches, everyone), updated_at: stored?.updated_at };
         const exp = odds(picks);
         const onDay = (day) => picks.filter((x) => eveningOf(x.match.match_date) === day);
         const split = !f ? {} : forecastEvenings({ fc: Number(f.fc), dir: f.cats?.v >= 2 ? f.cats.dir : exp.dir }, past, Object.fromEntries(days.map((d) => [d, onDay(d)])), base.matches, (m) => eveningOf(m.match_date));
         const evenings = Object.fromEntries(days.map((day) => {
           const part = onDay(day);
-          return [day, { f: split[day] || null, sent: part.length, exp: odds(part), actual: earnedIn(part) }];
+          return [day, { f: split[day] || null, sent: part.length, exp: odds(part), actual: earnedIn(part), came: came(part) }];
         }));
-        return { id: u.id, name: base.names[u.id], f, sent: mine.length, exp, actual: earnedIn(picks), evenings };
+        return { id: u.id, name: base.names[u.id], f, sent: mine.length, exp, actual: earnedIn(picks), came: came(picks), evenings };
       }).sort((a, b) => (Number(b.f?.fc) || -1) - (Number(a.f?.fc) || -1));
       // the exact scores expected from everyone together: half what the group hit a round so far, half what this round's picks expect
       const pastRounds = new Set(everyone.map((x) => x.match.round_id)).size;
@@ -137,6 +140,12 @@ export default function AdminForecasts() {
   // a stored row from the first formula has no expected hits, so they come from the odds
   const dirOf = (f, exp) => (eve ? f.dir : f.cats?.v >= 2 ? f.cats.dir : exp.dir);
   const shareRows = list.filter((r) => r.f).map(({ name, f, exp }) => ({ name, fc: f.fc, lo: f.lo, hi: f.hi, dir: dirOf(f, exp) }));
+  const compare = over && cmp;
+  const results = list.filter((r) => r.f && r.sent && r.actual != null).sort((x, y) => y.actual - x.actual);
+  const exactCame = results.reduce((s, r) => s + r.came.ex, 0);
+  const resultRows = results.map(({ name, f, exp, actual, came }) => ({ name, fc: f.fc, lo: f.lo, hi: f.hi, dir: dirOf(f, exp), actual, adir: came.dir }));
+  const inRange = resultRows.filter((r) => r.lo <= Math.round(r.actual) && Math.round(r.actual) <= r.hi).length;
+  const miss = resultRows.length ? resultRows.reduce((s, r) => s + Math.abs(r.actual - r.fc), 0) / resultRows.length : 0;
   const chip = (on) => ({ background: on ? "#facc15" : "rgba(255,255,255,.08)", color: on ? "#1a1405" : "#fff" });
 
   return (
@@ -167,6 +176,48 @@ export default function AdminForecasts() {
           <div className="text-sm text-slate-300">
             {at.done === 0 ? (eve ? "הערב עוד לא חושב" : "המחזור עוד לא חושב") : over ? (eve ? "הערב הסתיים" : "המחזור הסתיים") : <>חושבו <span dir="ltr" style={NUM}>{at.done}/{at.total}</span> משחקים</>}
           </div>
+          {over && results.length > 0 && (
+            <div className="flex gap-2">
+              {[[false, "תחזית"], [true, "תחזית מול בפועל"]].map(([v, t]) => (
+                <button key={t} type="button" onClick={() => setCmp(v)} className="flex-1 rounded-lg py-2 text-sm font-bold" style={chip(v === cmp)}>{t}</button>
+              ))}
+            </div>
+          )}
+          {compare ? (<>
+            <ShareImage key={`${roundId}-${eve}-cmp`} round={order} rows={resultRows} exact={at.exact} evening={eve ? eveningName(eve) : null} compare={{ exact: exactCame }} />
+            <div className="grid grid-cols-3 gap-2 rounded-xl bg-slate-800 border border-slate-700 px-2 py-2.5">
+              <Cell t="בתוך הטווח">{inRange}/{resultRows.length}</Cell>
+              <Cell t="פספוס ממוצע">{miss.toFixed(1)}</Cell>
+              <Cell t="מדויקות (צפי)">{exactCame}<span style={{ fontSize: 13, color: "#94a3b8" }}> ({at.exact})</span></Cell>
+            </div>
+            <div className="space-y-2">
+              {results.map(({ id, name, f, exp, actual, came }) => {
+                const d = Math.round(actual) - Math.round(f.fc), top = Math.max(f.hi, actual, 1) * 1.06, x = (v) => `${Math.min(100, (v / top) * 100)}%`;
+                const inside = f.lo <= Math.round(actual) && Math.round(actual) <= f.hi;
+                return (
+                  <div key={id} className="rounded-xl bg-slate-800 border border-slate-700 px-3 py-2.5">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-bold text-white">{name}</span>
+                      <span className="text-xs font-bold" style={{ color: inside ? "#4ade80" : "#94a3b8" }}>{inside ? "בתוך הטווח" : actual > f.hi ? "מעל הטווח" : "מתחת לטווח"}</span>
+                    </div>
+                    {/* the range, the forecast (gold line) and what was earned (dot) */}
+                    <div dir="ltr" className="relative mb-3" style={{ height: 18 }}>
+                      <div className="absolute inset-x-0" style={{ top: 6, height: 6, borderRadius: 3, background: "rgba(255,255,255,.08)" }} />
+                      <div className="absolute" style={{ top: 5, height: 8, left: x(f.lo), width: `calc(${x(f.hi)} - ${x(f.lo)})`, borderRadius: 4, background: "rgba(250,204,21,.35)" }} />
+                      <div className="absolute" style={{ top: 0, height: 18, width: 3, marginLeft: -1, left: x(f.fc), borderRadius: 2, background: "#facc15" }} />
+                      <div className="absolute" style={{ top: 3, height: 12, width: 12, marginLeft: -6, left: x(actual), borderRadius: "50%", background: gapColor(d), border: "2px solid #0f172a" }} />
+                    </div>
+                    <div className="grid grid-cols-4 gap-x-1">
+                      <Cell t="תחזית" c="#facc15">{r0(f.fc)}</Cell>
+                      <Cell t="בפועל" c={gapColor(d)}>{r0(actual)}<span style={{ fontSize: 12 }}> ({sign(d)})</span></Cell>
+                      <Cell t="כיוונים (צפי)">{came.dir}<span style={{ fontSize: 13, color: "#94a3b8" }}> ({Math.round(dirOf(f, exp))})</span></Cell>
+                      <Cell t="מדויקות">{came.ex}</Cell>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>) : (<>
           <div className="text-sm text-slate-300">{eve ? "צפי פגיעות מדויקות של כולם בערב: " : "צפי פגיעות מדויקות של כולם: "}<span dir="ltr" style={{ ...NUM, fontSize: 18, color: "#4ade80" }}>{at.exact}</span></div>
           {shareRows.length > 0 && <ShareImage key={`${roundId}-${eve}`} round={order} rows={shareRows} exact={at.exact} evening={eve ? eveningName(eve) : null} />}
           <div className="space-y-2">
@@ -216,6 +267,7 @@ export default function AdminForecasts() {
               );
             })}
           </div>
+          </>)}
         </>
       )}
     </div>
