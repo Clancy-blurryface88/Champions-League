@@ -108,7 +108,7 @@ export default function AdminOddsPull() {
     <div className="space-y-4" dir="rtl">
       <div className="rounded-2xl p-4" style={box}>
         <h3 className="text-white font-bold mb-1">📥 משיכת יחסים</h3>
-        <div className="text-xs text-slate-400 mb-3">תוצאה מדויקת מ-888sport (תוצאה שלא בטבלה = כל תוצאה אחרת, 200). 1X2, שתי הקבוצות מבקיעות וטווח שערים מ-bwin (גיבוי: 888sport, Coral, Ladbrokes). יחס לא עגול מעוגל למעלה ל-0.05. "תצוגה מקדימה" לא שומרת כלום. משחק שכבר התחיל לא נמשך.</div>
+        <div className="text-xs text-slate-400 mb-3">תוצאה מדויקת מ-888sport (תוצאה שלא בטבלה = כל תוצאה אחרת, 200). 1X2, שתי הקבוצות מבקיעות וטווח שערים מ-bwin (גיבוי: 888sport, Coral, Ladbrokes). יחס לא עגול מעוגל למעלה ל-0.05. שתי הקבוצות מבקיעות (כן / לא): עד 2.5. "תצוגה מקדימה" לא שומרת כלום. משחק שכבר התחיל לא נמשך.</div>
         <div className="flex flex-wrap gap-2 items-center">
           <select value={roundId} onChange={(e) => setRoundId(e.target.value)} disabled={!!busy} className="bg-slate-900 border border-white/15 text-white text-sm rounded-md px-2 py-1.5">
             {rounds.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}

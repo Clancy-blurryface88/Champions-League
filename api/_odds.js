@@ -80,6 +80,9 @@ export function findEvent(m, fixtures) {
   return best;
 }
 
+// The group's rule (24.11.2026): both teams score, yes or no, is worth 2.5 at most.
+const BTTS_MAX = 2.5;
+
 // The card's fields from one fixture's odds; a category no bookmaker has is listed in `missing`.
 export function fieldsFrom(fx, swapped) {
   const price = (book, market, outcome) => {
@@ -125,6 +128,7 @@ export function fieldsFrom(fx, swapped) {
     Object.entries(got.v).forEach(([f, x]) => { values[f] = typeof x === 'number' ? roundUp05(x) : x; });
     sources[cat] = NAMES[got.from] || got.from;
   }
+  for (const f of ['btts_yes_points', 'btts_no_points']) if (values[f] > BTTS_MAX) values[f] = BTTS_MAX;
   return { values, sources, missing };
 }
 
