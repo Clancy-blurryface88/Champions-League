@@ -20,6 +20,7 @@ import ExactHitsPanel from "./components/ExactHitsPanel";
 import { createPageUrl } from "@/utils";
 import LoadingScreen from "./components/LoadingScreen";
 import TodayMatches from "./components/TodayMatches";
+import { roundTonight } from "@/utils/forecastRound";
 const ForecastSheet = React.lazy(() => import("./components/admin/AdminForecasts").then((m) => ({ default: m.ForecastSheet })));
 import AppBackground from "./components/AppBackground";
 import { TOURNAMENT_CODE } from "@/config/tournament";
@@ -183,9 +184,18 @@ export default function Layout({ children, currentPageName }) {
   );
   const [showDateSheet, setShowDateSheet] = useState(false);
   const [showForecasts, setShowForecasts] = useState(false); // the admin's forecasts sheet
+  const [roundOn, setRoundOn] = useState(false); // a round is being played these days (admin's forecast button)
   const [touchEndY, setTouchEndY] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+  useEffect(() => {
+    if (!user?.is_admin) return undefined;
+    let off = false;
+    const check = () => { if (!document.hidden) Promise.all([Round.list('order'), Match.list()]).then(([r, m]) => { if (!off) setRoundOn(!!roundTonight(r, m)); }).catch(() => {}); };
+    check();
+    document.addEventListener('visibilitychange', check);
+    return () => { off = true; document.removeEventListener('visibilitychange', check); };
+  }, [user?.id, user?.is_admin, location.pathname]);
 
 
   // Animation variants for dropdown - עדכון למהירות איטית יותר
@@ -1336,8 +1346,8 @@ export default function Layout({ children, currentPageName }) {
             </AnimatePresence>
             </div>
 
-            {/* Admin: everyone's forecasts — the LIVE chip's twin under it (in its place when nothing is live) */}
-            {user.is_admin && (location.pathname === '/' || location.pathname.includes('Dashboard')) && !showLiveMatchesList && (
+            {/* Admin: everyone's forecasts — on the days a round is played: the LIVE chip's twin under it (in its place when nothing is live) */}
+            {user.is_admin && roundOn && (location.pathname === '/' || location.pathname.includes('Dashboard')) && !showLiveMatchesList && (
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 aria-label="תחזיות הניקוד"

@@ -8,6 +8,7 @@ import { forecastImage } from "@/utils/forecastImage";
 import { calculateScore } from "@/utils/scoring";
 import { findDbMatch } from "@/components/LiveLeaderboard";
 import { TOURNAMENT_CODE } from "@/config/tournament";
+import { eveningOf, roundTonight, tonightIs } from "@/utils/forecastRound";
 
 // Everyone's round forecast, for the admin only (round_forecasts' RLS lets only admins read all rows):
 // the forecast with its range, beside the player's round average and what was really earned, and how many
@@ -16,11 +17,12 @@ import { TOURNAMENT_CODE } from "@/config/tournament";
 // changed); a finished round shows what was stored. The round can be read whole or one evening at a time (the
 // evenings add up to the round). Three tabs: the forecast; against live — matches in play count by their score right
 // now (refreshed every minute, scored like the live table); against actual — calculated matches only, and the final
-// comparison once all of them are. In the admin panel, and as a sheet from the header's button (ForecastSheet). "תמונה לשיתוף" makes a table picture of what is shown, for WhatsApp.
+// comparison once all of them are. "תמונה לשיתוף" makes a table picture of what is shown, for WhatsApp.
+// From the header's button (ForecastSheet) only the picture is shown, for the round being played: the forecast before
+// kick-off, against live while matches are played, against actual after them — by itself, with no tabs.
 const NUM = { fontFamily: "var(--num-font)", fontWeight: 800 };
 const r0 = (v) => (v == null ? "—" : Math.round(Number(v)));
 const sign = (v) => (v > 0 ? `+${v}` : `${v}`);
-const eveningOf = (d) => new Date(d).toLocaleDateString("en-CA", { timeZone: "Asia/Jerusalem" });
 const eveningName = (key) => { const d = new Date(`${key}T12:00:00Z`); return `${d.toLocaleDateString("he-IL", { weekday: "long", timeZone: "UTC" })} ${d.getUTCDate()}.${d.getUTCMonth() + 1}`; };
 const gapColor = (v) => (v > 0 ? "#4ade80" : v < 0 ? "#f87171" : "#cbd5e1");
 
@@ -95,6 +97,39 @@ function ShareImage({ round, rows, exact, evening, compare }) {
   );
 }
 
+// the sheet's picture: always there and made again whenever what it shows changes (the old one stays until then)
+function LivePicture({ id, round, rows, exact, evening, compare }) {
+  const [img, setImg] = useState(null); // { id, url, file }
+  const [msg, setMsg] = useState("");
+  const last = useRef(null);
+  const key = JSON.stringify([id, rows, exact, compare]);
+  useEffect(() => {
+    let off = false;
+    forecastImage({ round, rows, exact, evening, compare }).then((blob) => {
+      if (off) return;
+      if (last.current) URL.revokeObjectURL(last.current);
+      last.current = URL.createObjectURL(blob);
+      setImg({ id, url: last.current, file: new File([blob], `forecast-round-${round}.png`, { type: "image/png" }) });
+      setMsg("");
+    }).catch((e) => { if (!off) setMsg(`שגיאה: ${e.message || e}`); });
+    return () => { off = true; };
+  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => { if (last.current) URL.revokeObjectURL(last.current); }, []);
+  if (msg) return <div className="text-sm text-red-400">{msg}</div>;
+  if (!img || img.id !== id) return <div className="flex justify-center py-16"><OrbitSpinner size={40} /></div>;
+  const canShare = typeof navigator.canShare === "function" && navigator.canShare({ files: [img.file] });
+  const share = () => navigator.share({ files: [img.file] }).catch(() => {});
+  return (
+    <>
+      <img src={img.url} alt="תחזית" className="block w-full rounded-xl" style={{ border: "1px solid rgba(255,255,255,.18)" }} />
+      <div className="flex gap-2">
+        {canShare && <button type="button" onClick={share} className="flex-1 rounded-xl py-3 font-bold" style={{ background: GOLD_BG, color: "#1a1405" }}>שיתוף</button>}
+        <a href={img.url} download={img.file.name} className="flex-1 rounded-xl py-3 font-bold text-white text-center" style={{ background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.22)" }}>שמירה</a>
+      </div>
+    </>
+  );
+}
+
 export default function AdminForecasts({ sheet = false }) {
   const [base, setBase] = useState(null); // rounds, matches, users
   const [roundId, setRoundId] = useState(null);
@@ -113,7 +148,7 @@ export default function AdminForecasts({ sheet = false }) {
       const names = {};
       users.forEach((u) => { names[u.id] = profiles.find((p) => p.user_id === u.id)?.display_name || u.display_name || u.full_name || "—"; });
       setBase({ rounds: withMatches, matches, users, names, preds });
-      setRoundId(withMatches[withMatches.length - 1]?.id || null);
+      setRoundId(((sheet && roundTonight(withMatches, matches)) || withMatches[withMatches.length - 1])?.id || null);
     })().catch((e) => setError(e.message || String(e)));
   }, []);
 
@@ -204,7 +239,7 @@ export default function AdminForecasts({ sheet = false }) {
       // a round opens on tonight's evening, and on the tab that fits what is going on
       if (opened.current !== roundId) {
         opened.current = roundId;
-        const today = days.find((d) => d === eveningOf(new Date())) || null, c = today ? byDay[today] : count(ms);
+        const today = days.find((d) => d === tonightIs()) || null, c = today ? byDay[today] : count(ms);
         setEve(today);
         setMode(ms.some((m) => !m.is_score_calculated && m.match_date <= new Date().toISOString() && (!today || eveningOf(m.match_date) === today)) ? "live" : c.done === c.total && c.total ? "act" : "fc");
       }
@@ -223,8 +258,10 @@ export default function AdminForecasts({ sheet = false }) {
   // a stored row from the first formula has no expected hits, so they come from the odds
   const dirOf = (f, exp) => (eve ? f.dir : f.cats?.v >= 2 ? f.cats.dir : exp.dir);
   const shareRows = list.filter((r) => r.f).map(({ name, f, exp }) => ({ name, fc: f.fc, lo: f.lo, hi: f.hi, dir: dirOf(f, exp) }));
-  const isLive = mode === "live", final = mode === "act" && over;
-  const compare = !!at && (isLive ? at.live > 0 : mode === "act" && at.done > 0) && list.some((r) => r.f && r.sent); // there is something to set the forecast against
+  // the sheet has no tabs: the state of the matches shown decides
+  const tab = !sheet || !at ? mode : over ? "act" : at.live > 0 ? "live" : at.done > 0 ? "act" : "fc";
+  const isLive = tab === "live", final = tab === "act" && over;
+  const compare = !!at && (isLive ? at.live > 0 : tab === "act" && at.done > 0) && list.some((r) => r.f && r.sent); // there is something to set the forecast against
   const results = list.map((r) => (isLive ? { ...r, actual: r.liveActual, came: r.liveCame } : r)).filter((r) => r.f && r.sent && r.actual != null).sort((x, y) => y.actual - x.actual);
   const exactCame = results.reduce((s, r) => s + r.came.ex, 0);
   const resultRows = results.map(({ name, f, exp, actual, came }) => ({ name, fc: f.fc, lo: f.lo, hi: f.hi, dir: dirOf(f, exp), actual, adir: came.dir }));
@@ -233,12 +270,29 @@ export default function AdminForecasts({ sheet = false }) {
   const clock = new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
   const miss = resultRows.length ? resultRows.reduce((s, r) => s + Math.abs(r.actual - r.fc), 0) / resultRows.length : 0;
 
+  const against = { exact: exactCame, live: isLive ? clock : null, partial: !isLive && !over ? `${at?.done} מתוך ${at?.total}` : null };
+  if (sheet) {
+    if (!rows) return <div className="flex justify-center py-16"><OrbitSpinner size={40} /></div>;
+    const pic = compare ? resultRows : shareRows;
+    return (
+      <div dir="rtl" className="space-y-3">
+        {rows.days.length > 1 && (
+          <div className="flex gap-2 px-1">
+            {[null, ...rows.days].map((day) => <Plate key={day || "all"} on={day === eve} onClick={() => setEve(day)}>{day ? eveningName(day).replace("יום ", "") : "כל המחזור"}</Plate>)}
+          </div>
+        )}
+        {pic.length === 0 ? <div className="text-center text-slate-300 py-16">עוד אין תחזיות</div>
+          : <LivePicture id={`${eve}-${compare ? tab : "fc"}`} round={order} rows={pic} exact={at.exact} evening={eve ? eveningName(eve) : null} compare={compare ? against : null} />}
+      </div>
+    );
+  }
+
   return (
     <div dir="rtl" className="space-y-4 max-w-2xl">
-      {!sheet && <div>
+      <div>
         <h2 className="text-xl font-bold text-white">תחזיות הניקוד של כולם</h2>
         <p className="text-sm text-slate-400">לאדמין בלבד, בלי הניחושים עצמם</p>
-      </div>}
+      </div>
       <div className="flex flex-wrap gap-2 px-1">
         {base.rounds.map((r) => (
           <Plate key={r.id} on={r.id === roundId} onClick={() => setRoundId(r.id)}>מחזור {r.order}</Plate>
@@ -264,7 +318,7 @@ export default function AdminForecasts({ sheet = false }) {
             </div>
           )}
           {compare ? (<>
-            <ShareImage key={`${roundId}-${eve}-${mode}-${final}`} round={order} rows={resultRows} exact={at.exact} evening={eve ? eveningName(eve) : null} compare={{ exact: exactCame, live: isLive ? clock : null, partial: !isLive && !over ? `${at.done} מתוך ${at.total}` : null }} />
+            <ShareImage key={`${roundId}-${eve}-${mode}-${final}`} round={order} rows={resultRows} exact={at.exact} evening={eve ? eveningName(eve) : null} compare={against} />
             <div className="grid grid-cols-3 gap-2 rounded-xl bg-white/5 border border-white/10 px-2 py-2.5">
               {final ? <Cell t="בתוך הטווח">{inRange}/{resultRows.length}</Cell> : <Cell t="עברו את התחזית">{passed}/{resultRows.length}</Cell>}
               {final ? <Cell t="פספוס ממוצע">{miss.toFixed(1)}</Cell> : isLive ? <Cell t="עודכן">{clock}</Cell> : <Cell t="משחקים שחושבו">{at.done}/{at.total}</Cell>}
@@ -355,14 +409,14 @@ export default function AdminForecasts({ sheet = false }) {
   );
 }
 
-// the same screen over the app, from the header's button (admins only)
+// the picture over the app, from the header's button (admins only, on the round's days)
 export function ForecastSheet({ onClose }) {
   return (
     <motion.div className="fixed inset-0 z-[70] overflow-y-auto" style={{ background: "linear-gradient(170deg,#12286b,#081230 45%,#040818)", padding: "max(14px, env(safe-area-inset-top)) 14px 40px" }}
       initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", stiffness: 260, damping: 32 }}>
       <div className="mx-auto max-w-2xl">
-        <div dir="rtl" className="flex items-center justify-between mb-4">
-          <span className="text-xl font-extrabold text-white">תחזיות הניקוד</span>
+        <div dir="rtl" className="flex items-center justify-between mb-3">
+          <span className="text-xl font-extrabold text-white">תחזית</span>
           <button type="button" onClick={onClose} aria-label="סגירה" className="grid place-items-center text-white text-lg" style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.2)" }}>✕</button>
         </div>
         <AdminForecasts sheet />
