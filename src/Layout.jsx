@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { User, UserStats, Match, Prediction, GeneralQuestion, GeneralPrediction, Round, PublicProfile, AppSettings } from "@/api/entities";
-import { Settings, LogOut, PlayCircle, Bell, BellOff, X, Trophy } from "lucide-react";
+import { Settings, LogOut, PlayCircle, Bell, BellOff, X, Trophy, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MatchesByDateSheet from "./components/MatchesByDateSheet";
 import {
@@ -20,6 +20,7 @@ import ExactHitsPanel from "./components/ExactHitsPanel";
 import { createPageUrl } from "@/utils";
 import LoadingScreen from "./components/LoadingScreen";
 import TodayMatches from "./components/TodayMatches";
+const ForecastSheet = React.lazy(() => import("./components/admin/AdminForecasts").then((m) => ({ default: m.ForecastSheet })));
 import AppBackground from "./components/AppBackground";
 import { TOURNAMENT_CODE } from "@/config/tournament";
 import LiveDataPanel from "./components/LiveDataPanel"; // Added: Import LiveDataPanel
@@ -181,6 +182,7 @@ export default function Layout({ children, currentPageName }) {
     typeof Notification !== 'undefined' ? Notification.permission : 'default'
   );
   const [showDateSheet, setShowDateSheet] = useState(false);
+  const [showForecasts, setShowForecasts] = useState(false); // the admin's forecasts sheet
   const [touchEndY, setTouchEndY] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -1334,6 +1336,22 @@ export default function Layout({ children, currentPageName }) {
             </AnimatePresence>
             </div>
 
+            {/* Admin: everyone's forecasts — the LIVE chip's twin under it (in its place when nothing is live) */}
+            {user.is_admin && (location.pathname === '/' || location.pathname.includes('Dashboard')) && !showLiveMatchesList && (
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                aria-label="תחזיות הניקוד"
+                onClick={() => setShowForecasts(true)}
+                className="relative flex overflow-hidden"
+                style={{ gridColumn: 2, width: '100%', minWidth: 0, height: 34, borderRadius: 999, border: '1px solid rgba(255,255,255,0.2)', padding: 0, marginTop: hasLiveMatch && !showLiveIntro ? -6 : -16 }}
+              >
+                <span className="flex items-center pl-3 pr-2 h-full" style={{ background: 'linear-gradient(135deg,#fde047,#eab308)' }}>
+                  <TrendingUp className="w-4 h-4" strokeWidth={3} style={{ color: '#1a1405' }} />
+                </span>
+                <span className="flex-1 flex items-center justify-center h-full pr-1 text-[13px] font-bold" style={{ background: '#0a1235', color: '#fde047', minWidth: 0 }}>תחזית</span>
+              </motion.button>
+            )}
+
           </div>
         }
 
@@ -1439,6 +1457,10 @@ export default function Layout({ children, currentPageName }) {
           {showFinalResults && (
             <FinalResultsOverlay onClose={() => setShowFinalResults(false)} />
           )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showForecasts && <React.Suspense fallback={null}><ForecastSheet onClose={() => setShowForecasts(false)} /></React.Suspense>}
         </AnimatePresence>
 
         <MatchTickerBar onClick={() => setShowDateSheet(true)} />

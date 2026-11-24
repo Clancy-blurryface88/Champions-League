@@ -17,7 +17,8 @@ function slant(c, x, y, w, h, r = 8) {
 const grad = (c, x0, y0, x1, y1, stops) => { const g = c.createLinearGradient(x0, y0, x1, y1); stops.forEach(([o, col]) => g.addColorStop(o, col)); return g; };
 
 // rows: [{ name, fc, lo, hi, dir }], already in the order to show; with compare each also has { actual, adir }, and
-// compare is { exact: the exact hits that came, live: 'HH:MM' while matches are still played (null: final) }
+// compare is { exact: the exact hits that came, live: 'HH:MM' for the live tab, partial: 'X מתוך Y'
+// while only some matches are calculated; neither: final }
 export async function forecastImage({ round, rows, exact, evening, compare }) {
   await Promise.all([`800 60px ${NUM}`, `800 40px ${OUT}`].map((f) => document.fonts.load(f, 'א1').catch(() => {})));
   await document.fonts.ready;
@@ -34,7 +35,7 @@ export async function forecastImage({ round, rows, exact, evening, compare }) {
 
   c.textBaseline = 'middle';
   const text = (s, x, y, font, color, align = 'center', dir = 'rtl') => { c.direction = dir; c.font = font; c.fillStyle = color; c.textAlign = align; c.fillText(s, x, y); };
-  if (evening || compare) { text(compare ? (compare.live ? 'תחזית מול לייב' : 'תחזית מול בפועל') : `תחזית ${evening}`, W / 2, 212, `900 58px ${OUT}`, '#ffffff'); text([compare && evening, `מחזור ${round}`, compare?.live && `נכון ל־${compare.live}`].filter(Boolean).join(' · '), W / 2, 298, `700 30px ${OUT}`, '#9fc3ff'); } else text(`תחזית מחזור ${round}`, W / 2, 226, `900 64px ${OUT}`, '#ffffff');
+  if (evening || compare) { text(compare ? (compare.live ? 'תחזית מול לייב' : 'תחזית מול בפועל') : `תחזית ${evening}`, W / 2, 212, `900 58px ${OUT}`, '#ffffff'); text([compare && evening, `מחזור ${round}`, compare?.live && `נכון ל־${compare.live}`, compare?.partial && `חושבו ${compare.partial} משחקים`].filter(Boolean).join(' · '), W / 2, 298, `700 30px ${OUT}`, '#9fc3ff'); } else text(`תחזית מחזור ${round}`, W / 2, 226, `900 64px ${OUT}`, '#ffffff');
   c.fillStyle = grad(c, W / 2 - 170, 0, W / 2 + 170, 0, [[0, 'rgba(250,204,21,0)'], [0.5, '#facc15'], [1, 'rgba(250,204,21,0)']]);
   c.fillRect(W / 2 - 170, evening || compare ? 258 : 274, 340, 3);
 
@@ -68,7 +69,7 @@ export async function forecastImage({ round, rows, exact, evening, compare }) {
       // what was earned: green when the forecast was reached, red when not (grey while it can still be), the difference under it
       const d = Math.round(r.actual) - Math.round(r.fc), ok = d >= 0;
       slant(c, col.act, y + 8, cw.act, h - 16);
-      c.fillStyle = grad(c, 0, y, 0, y + h, ok ? [[0, '#4ade80'], [1, '#12994a']] : compare.live ? [[0, '#64748b'], [1, '#334155']] : [[0, '#f87171'], [1, '#b91c1c']]); c.fill();
+      c.fillStyle = grad(c, 0, y, 0, y + h, ok ? [[0, '#4ade80'], [1, '#12994a']] : compare.live || compare.partial ? [[0, '#64748b'], [1, '#334155']] : [[0, '#f87171'], [1, '#b91c1c']]); c.fill();
       text(String(Math.round(r.actual)), col.act + cw.act / 2, mid - 18, `800 56px ${NUM}`, '#ffffff', 'center', 'ltr');
       text(d > 0 ? `+${d}` : String(d), col.act + cw.act / 2, mid + 28, `800 34px ${NUM}`, 'rgba(255,255,255,.9)', 'center', 'ltr');
     }
@@ -98,9 +99,9 @@ export async function forecastImage({ round, rows, exact, evening, compare }) {
       const inRange = rows.filter((r) => r.lo <= Math.round(r.actual) && Math.round(r.actual) <= r.hi).length;
       const miss = (r) => Math.abs(r.actual - r.fc), best = [...rows].sort((a, b) => miss(a) - miss(b))[0];
       const passed = rows.filter((r) => Math.round(r.actual) >= Math.round(r.fc));
-      text(compare.live ? `עברו את התחזית: ${passed.length} מתוך ${rows.length} · מוביל/ה: ${rows[0].name}` : `בתוך הטווח: ${inRange} מתוך ${rows.length} · התחזית הכי קרובה: ${best.name}`, W / 2, y + h + 48, `800 32px ${OUT}`, '#ffffff');
+      text(compare.live || compare.partial ? `עברו את התחזית: ${passed.length} מתוך ${rows.length} · מוביל/ה: ${rows[0].name}` : `בתוך הטווח: ${inRange} מתוך ${rows.length} · התחזית הכי קרובה: ${best.name}`, W / 2, y + h + 48, `800 32px ${OUT}`, '#ffffff');
     } else text(String(exact), 82 + 95, mid, `800 64px ${NUM}`, '#04201d', 'center', 'ltr');
   }
-  text(compare ? (compare.live ? 'ירוק: עבר את התחזית · אפור: עוד לא · הניקוד משתנה עם כל שער' : 'ירוק: עבר את התחזית · אדום: מתחת לתחזית') : 'התחזית והטווח בנקודות · צפי כיוונים: כמה כיוונים נכונים', W / 2, H - 46, `600 25px ${OUT}`, 'rgba(255,255,255,.6)');
+  text(compare ? (compare.live || compare.partial ? `ירוק: עבר את התחזית · אפור: עוד לא${compare.live ? ' · הניקוד משתנה עם כל שער' : ''}` : 'ירוק: עבר את התחזית · אדום: מתחת לתחזית') : 'התחזית והטווח בנקודות · צפי כיוונים: כמה כיוונים נכונים', W / 2, H - 46, `600 25px ${OUT}`, 'rgba(255,255,255,.6)');
   return new Promise((ok, no) => cv.toBlob((b) => (b ? ok(b) : no(new Error('התמונה לא נוצרה'))), 'image/png'));
 }
