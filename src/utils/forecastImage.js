@@ -78,11 +78,11 @@ export async function forecastImage({ round, rows, exact, evening, compare }) {
       slant(c, x, y + 8, w, h - 16);
       c.fillStyle = grad(c, 0, y, 0, y + h, stops); c.fill();
       text(String(num), x + w / 2, cap ? mid - 16 : mid, `800 ${cap ? 50 : 48}px ${NUM}`, ink, 'center', 'ltr');
-      if (cap) text(cap, x + w / 2, mid + 28, `700 26px ${OUT}`, ink);
+      if (cap) text(cap, x + w / 2, mid + 28, `700 24px ${OUT}`, ink);
     };
     if (compare) {
       plate(col.dir + 108, 122, [[0, '#fde047'], [1, '#e0a300']], Math.round(r.dir), 'צפי', '#1a1405');
-      plate(col.dir, 122, [[0, '#7dd3fc'], [1, '#0b84d8']], r.adir, compare.live ? 'עכשיו' : 'בפועל', '#04203a');
+      plate(col.dir - 26, 148, [[0, '#7dd3fc'], [1, '#0b84d8']], r.adir, compare.live ? 'עכשיו' : 'בפועל', '#04203a');
     } else plate(col.dir, cw.dir, [[0, '#f8fafc'], [1, '#9fb0c6']], Math.round(r.dir), null, '#0f172a');
   });
   if (exact != null) {
