@@ -69,3 +69,105 @@ export function computeForecast(past, now) {
   return { fc: +fc.toFixed(2), lo: Math.round(lo), hi: Math.round(hi), max: +max.toFixed(2), avg: avg == null ? null : +avg.toFixed(2), cats: Object.fromEntries(CATS.map((c) => [c, +cats[c].toFixed(2)])) };
 }
 
+
+// ── the second formula (24.11.2026) ──
+// The first one multiplied a pick's chance by its points; the points are the odds, so that came out nearly the
+// same for any pick, and only the player's past (their round average) told players apart. Here every match gets
+// its own chance for every score — the odds' score table, set to the 1X2 odds, moved by the teams' form this
+// season (goals for and against, compared with what the odds expected of them) — and every pick is paid by the
+// app's rules on each score. The player's past points are used only for the chance of passing their average.
+const FORM_PRIOR = 5; // matches of "as the odds expected" that a team's form is pulled toward
+const SCORE_KEY = /^\d+:\d+$/;
+const side = (a, b) => (a > b ? 0 : a === b ? 1 : 2);
+const range = (t) => (t <= 2 ? 0 : t <= 4 ? 1 : 2);
+
+// the odds' chance of every score in the table: [{ x, y, p }], or null when the match has no table
+function scoreTable(m) {
+  const L = Object.entries(m.score_odds || {}).filter(([k, v]) => SCORE_KEY.test(k) && n(v) > 0)
+    .map(([k, v]) => { const [x, y] = k.split(':').map(Number); return { x, y, p: 1 / n(v) }; });
+  const odds = [n(m.home_win_points), n(m.draw_points), n(m.away_win_points)];
+  if (L.length < 10 || odds.some((o) => o <= 0)) return null;
+  const want = odds.map((o) => 1 / o), sum = want.reduce((q, v) => q + v, 0), have = [0, 0, 0];
+  for (const l of L) have[side(l.x, l.y)] += l.p;
+  if (have.some((h) => h <= 0)) return null;
+  for (const l of L) l.p *= want[side(l.x, l.y)] / sum / have[side(l.x, l.y)];
+  return L;
+}
+const goals = (L) => L.reduce((g, l) => [g[0] + l.p * l.x, g[1] + l.p * l.y], [0, 0]);
+const team = (s) => String(s || '').trim();
+
+// how many goals more or less than the odds expected each team scores and concedes, from the matches given
+function teamForm(matches) {
+  const f = {};
+  const add = (t, scored, conceded) => { const o = (f[t] = f[t] || { s: 0, c: 0, n: 0 }); o.s += scored; o.c += conceded; o.n += 1; };
+  for (const m of matches) {
+    if (!m.is_score_calculated || m.actual_score_a == null || m.actual_score_b == null) continue;
+    const L = scoreTable(m);
+    if (!L) continue;
+    const [h, a] = goals(L), dh = n(m.actual_score_a) - h, da = n(m.actual_score_b) - a;
+    add(team(m.team_a), dh, da);
+    add(team(m.team_b), da, dh);
+  }
+  return (t, k) => (f[t] ? f[t][k] / (f[t].n + FORM_PRIOR) : 0);
+}
+
+// past: the player's calculated matches of other rounds [{ match, prediction }]; now: the round's picks
+// [{ match, a, b }]; matches: every match of the season (the form is read from the other rounds only)
+export function computeForecast2(past, now, matches) {
+  const rounds = new Set(now.map((x) => x.match.round_id));
+  const form = teamForm(matches.filter((m) => !rounds.has(m.round_id)));
+  const byRound = {};
+  for (const { match, prediction } of past) byRound[match.round_id] = (byRound[match.round_id] || 0) + n(prediction.points_earned);
+  const totals = Object.values(byRound);
+  const avg = totals.length ? totals.reduce((q, v) => q + v, 0) / totals.length : null;
+
+  let fc = 0, max = 0, dir = 0, exact = 0;
+  const cats = { oc: 0, gr: 0, bt: 0, ex: 0 };
+  const games = now.map(({ match, a, b }) => {
+    const k = pick(match, a, b);
+    for (const c of CATS) max += k[c][0];
+    const base = scoreTable(match);
+    if (!base) { // no score table: each kind on its own chance
+      for (const c of CATS) { cats[c] += k[c][0] * k[c][1]; fc += k[c][0] * k[c][1]; }
+      dir += k.oc[1]; exact += k.ex[1];
+      return { k };
+    }
+    const [h, v] = goals(base), H = team(match.team_a), A = team(match.team_b);
+    const h2 = Math.max(0.3, h + form(H, 's') + form(A, 'c')), v2 = Math.max(0.2, v + form(A, 's') + form(H, 'c'));
+    const L = base.map((l) => ({ ...l, p: l.p * (h2 / h) ** l.x * (v2 / v) ** l.y }));
+    const tot = L.reduce((q, l) => q + l.p, 0);
+    for (const l of L) {
+      l.p /= tot;
+      const hit = { oc: side(l.x, l.y) === side(a, b), gr: range(l.x + l.y) === range(a + b), bt: (l.x > 0 && l.y > 0) === (a > 0 && b > 0), ex: l.x === a && l.y === b };
+      l.pts = 0;
+      for (const c of CATS) if (hit[c]) { l.pts += k[c][0]; cats[c] += l.p * k[c][0]; }
+      if (hit.oc) dir += l.p;
+      if (hit.ex) exact += l.p;
+      fc += l.p * l.pts;
+    }
+    return { L };
+  });
+
+  // simulated rounds, drawn from the same tables; each side widened like the first formula's range
+  const rand = rng(Math.round(fc * 1000) + now.length);
+  const sims = [];
+  for (let s = 0; s < 3000; s++) {
+    let t = 0;
+    for (const g of games) {
+      if (g.k) { for (const c of CATS) if (rand() < g.k[c][1]) t += g.k[c][0]; continue; }
+      let z = rand();
+      for (const l of g.L) { z -= l.p; if (z <= 0) { t += l.pts; break; } }
+    }
+    sims.push(Math.max(0, fc + WIDEN * (t - fc)));
+  }
+  sims.sort((x, y) => x - y);
+  const q = (p) => sims[Math.floor(p * (sims.length - 1))];
+  const beat = avg == null ? null : Math.round((100 * sims.filter((t) => t > avg).length) / sims.length);
+  const r2 = (x) => +x.toFixed(2);
+  return {
+    fc: r2(fc), lo: Math.round(Math.min(q(0.2), fc)), hi: Math.round(Math.max(q(0.8), fc)), max: r2(max), avg: avg == null ? null : r2(avg),
+    // v: which formula made the row; dir / exact: expected correct outcomes and exact scores;
+    // beat: the chance (%) of passing the average; n: how many matches were predicted
+    cats: { ...Object.fromEntries(CATS.map((c) => [c, r2(cats[c])])), v: 2, dir: r2(dir), exact: r2(exact), beat, n: now.length },
+  };
+}

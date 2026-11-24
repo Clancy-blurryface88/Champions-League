@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Users } from "lucide-react";
 import { supabase } from "@/api/supabase";
 import { Match, Prediction } from "@/api/entities";
-import { computeForecast } from "@/utils/forecastCalc";
+import { computeForecast, computeForecast2 } from "@/utils/forecastCalc";
 
 // The live forecast row in the live table tab (21.11.2026, design 106): the compare button on the right
 // (red-pink glass, three-people icon), and beside it the round's forecast in play — the points so far
@@ -37,15 +37,15 @@ async function loadRound(userId) {
   if (!roundId) return null;
   const roundMatches = matches.filter((m) => m.round_id === roundId);
   if (roundMatches.every((m) => m.is_score_calculated)) return null; // the round is over: its result shows on the home screen
-  const { data: f } = await supabase.from("round_forecasts").select("fc").eq("user_id", userId).eq("round_id", roundId).maybeSingle();
+  const { data: f } = await supabase.from("round_forecasts").select("fc,cats").eq("user_id", userId).eq("round_id", roundId).maybeSingle();
   if (!f) return null;
   const byId = Object.fromEntries(matches.map((m) => [m.id, m]));
   const ids = new Set(roundMatches.map((m) => m.id));
   const myRound = mine.filter((p) => ids.has(p.match_id));
-  // the pace: the same forecast, over only the matches that have kicked off
+  // the pace: the same forecast (by the formula its row was made with), over only the matches that have kicked off
   const past = mine.filter((p) => byId[p.match_id]?.is_score_calculated && !ids.has(p.match_id)).map((p) => ({ match: byId[p.match_id], prediction: p }));
   const startedPicks = myRound.filter((p) => new Date(byId[p.match_id].match_date).getTime() <= now).map((p) => ({ match: byId[p.match_id], a: n(p.predicted_score_a), b: n(p.predicted_score_b) }));
-  const pace = startedPicks.length ? computeForecast(past, startedPicks).fc : 0;
+  const pace = startedPicks.length ? (f.cats?.v === 2 ? computeForecast2(past, startedPicks, matches) : computeForecast(past, startedPicks)).fc : 0;
   return { fc: Number(f.fc), pace, done: myRound.filter((p) => byId[p.match_id].is_score_calculated).map((p) => [p.match_id, n(p.points_earned)]) };
 }
 

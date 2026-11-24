@@ -6,8 +6,8 @@ import { forecastResult, forecastHistory } from "@/utils/forecast";
 
 // The round's score forecast (21.11.2026, designs 68 and 70):
 //  ForecastPopup — after sending the predictions: "received", the forecast with its expected range
-//    (a pointer slides inside it and stops on the forecast), and apart the max potential and the
-//    round average; each part explained under a fine line; a light runs around the frame.
+//    (a pointer slides inside it and stops on the forecast), explained under a fine line, and the numbers
+//    under it as squares (Squares); a light runs around the frame.
 //  ForecastResult — after the round: the actual against the forecast as two glasses filling with
 //    water (like the odds squares), the verdict, and statistics per kind of prediction.
 
@@ -15,9 +15,7 @@ const GOLD = "#facc15", GREEN = "#22c55e", RED = "#f87171", WATER = "#22d3ee";
 const NUM = "var(--num-font)";
 const ease = [0.23, 1, 0.32, 1];
 const TEXT = {
-  fc: "התחזית מחושבת על פי היחסים של הבחירות שלך ומאחוזי הפגיעה בכל סוג ניחוש במחזורים הקודמים, והטווח הוא טווח אפשרי על פי התחזית.",
-  max: "כמות הנקודות שתצבור במידה ותפגע בתוצאה בכל המשחקים.",
-  avg: "הנקודות שצברת על פי הממוצע במחזורים הקודמים.",
+  fc: "התחזית מחושבת על פי הניחושים שלך, היחסים של כל משחק והכושר של הקבוצות העונה, והטווח הוא טווח אפשרי על פי התחזית.",
 };
 const CAT_NAMES = [["oc", "כיוון"], ["bt", "שתי קבוצות כובשות"], ["gr", "טווח שערים"], ["ex", "תוצאה מדויקת"]];
 const CSS = `@property --fa { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
@@ -54,6 +52,34 @@ const CloseBtn = ({ onClose, d }) => <motion.button type="button" onClick={onClo
   className="w-full mt-4" style={{ height: 44, borderRadius: 12, fontWeight: 900, fontSize: 15, color: "#1a1405", background: "linear-gradient(135deg,#fde047,#eab308)", transform: "skewX(-10deg)" }}>
   <span style={{ display: "inline-block", transform: "skewX(10deg)" }}>סגירה</span></motion.button>;
 
+// The numbers under the forecast (design 4, 24.11): the chance of passing the player's average as a ring, and
+// four squares beside it — no explanations, so the whole pop-up is one screen.
+function Squares({ f, d }) {
+  const x = f.cats || {}, R = 44, C = 2 * Math.PI * R;
+  const inn = (i) => ({ initial: { opacity: 0, y: 12, scale: 0.94 }, animate: { opacity: 1, y: 0, scale: 1 }, transition: { delay: d + i * 0.1, type: "spring", stiffness: 260, damping: 22 } });
+  const box = (i, t, val, dec, unit) => <motion.div {...inn(i)} className="flex flex-col items-center justify-center text-center"
+    style={{ borderRadius: 16, padding: "9px 5px", background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.14)" }}>
+    <div className="flex items-center justify-center" style={{ minHeight: 42, fontSize: 11.5, fontWeight: 800, lineHeight: 1.2, color: "#bfdbfe", textWrap: "balance" }}>{t}</div>
+    <div style={{ marginTop: 4 }}>{val == null ? <span style={{ fontSize: 22, fontWeight: 800, color: "rgba(255,255,255,.4)" }}>—</span> : <><Count to={val} dec={dec} delay={d + 0.1 + i * 0.1} style={{ fontSize: 27, lineHeight: 1 }} />{unit && pts(11)}</>}</div>
+  </motion.div>;
+  return <div style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr 1fr", gap: 8, marginTop: 10 }}>
+    <motion.div {...inn(0)} className="flex flex-col items-center justify-center" style={{ gridRow: "span 2", borderRadius: 18, padding: "10px 4px", background: "linear-gradient(170deg,rgba(34,197,94,.2),rgba(0,224,255,.08))", border: "1px solid rgba(34,227,192,.4)" }}>
+      <div className="relative" style={{ width: "100%", maxWidth: 104 }}>
+        <svg viewBox="0 0 104 104" style={{ display: "block", transform: "rotate(-90deg)" }}>
+          <circle cx="52" cy="52" r={R} fill="none" stroke="rgba(255,255,255,.12)" strokeWidth="9" />
+          {x.beat > 0 && <motion.circle cx="52" cy="52" r={R} fill="none" stroke="#22e3c0" strokeWidth="9" strokeLinecap="round" strokeDasharray={C} initial={{ strokeDashoffset: C }} animate={{ strokeDashoffset: C * (1 - x.beat / 100) }} transition={{ delay: d + 0.2, duration: 1.4, ease: "easeOut" }} />}
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center" dir="ltr" style={{ fontSize: 28, fontWeight: 800 }}>{x.beat == null ? <span style={{ color: "rgba(255,255,255,.4)" }}>—</span> : <><Count to={x.beat} delay={d + 0.2} dur={1.4} style={{ lineHeight: 1 }} /><span style={{ fontFamily: NUM, lineHeight: 1 }}>%</span></>}</div>
+      </div>
+      <div className="text-center" style={{ marginTop: 8, fontSize: 12, fontWeight: 800, lineHeight: 1.3, color: "#8ff5df" }}>הסיכוי לעבור<br />את הממוצע</div>
+    </motion.div>
+    {box(1, "תחזית פגיעה בכיוונים", x.dir == null ? null : Math.round(x.dir), 0)}
+    {box(2, "תחזית לפגיעה בתוצאות מדויקות", x.exact, 1)}
+    {box(3, "ממוצע נקודות למחזור", f.avg == null ? null : Math.round(f.avg), 0)}
+    {box(4, "פוטנציאל", Math.round(f.max), 0, true)}
+  </div>;
+}
+
 // ── after sending ──
 export function ForecastPopup({ f, onClose }) {
   const FCR = Math.round(f.fc);
@@ -69,12 +95,6 @@ export function ForecastPopup({ f, onClose }) {
     return () => c.stop();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const left = useTransform(mv, (x) => `${PX(x)}%`);
-  const tile = (t, val, d, text) => <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: d }}
-    style={{ padding: "10px 12px", borderRadius: 14, background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)" }}>
-    <div className="text-center" style={{ fontSize: 12.5, fontWeight: 800, color: "#cbd5e1" }}>{t}</div>
-    <div className="text-center" style={{ marginTop: 2 }}>{val == null ? <span style={{ fontSize: 22, fontWeight: 800, color: "rgba(255,255,255,.4)" }}>—</span> : <><Count to={val} delay={d + 0.1} style={{ fontSize: 28 }} />{pts()}</>}</div>
-    <Explain d={d + 0.3}>{text}</Explain>
-  </motion.div>;
   return <Shell onClose={onClose} frame>
     <div className="flex items-center justify-center gap-2.5"><span style={{ fontWeight: 900, fontSize: 18 }}>הניחושים נקלטו בהצלחה</span><Tick /></div>
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.45, ease }} style={{ marginTop: 16, padding: "12px 14px", borderRadius: 16, background: "rgba(250,204,21,.06)", border: "1px solid rgba(250,204,21,.25)" }}>
@@ -95,10 +115,7 @@ export function ForecastPopup({ f, onClose }) {
         הטווח הצפוי: <span dir="ltr" style={{ fontFamily: NUM, color: "#fff", fontSize: 15 }}>{f.lo}–{f.hi}</span></motion.div>
       <Explain d={3.3}>{TEXT.fc}</Explain>
     </motion.div>
-    <div className="grid grid-cols-2 gap-2" style={{ marginTop: 10 }}>
-      {tile("פוטנציאל מקסימלי", Math.round(f.max), 3.6, TEXT.max)}
-      {tile("הממוצע שלך למחזור", f.avg == null ? null : Math.round(f.avg), 3.75, TEXT.avg)}
-    </div>
+    <Squares f={f} d={3.2} />
     <CloseBtn onClose={onClose} d={4.2} />
   </Shell>;
 }
