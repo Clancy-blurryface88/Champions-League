@@ -207,10 +207,11 @@ export default function AdminForecasts() {
                       <div className="absolute" style={{ top: 0, height: 18, width: 3, marginLeft: -1, left: x(f.fc), borderRadius: 2, background: "#facc15" }} />
                       <div className="absolute" style={{ top: 3, height: 12, width: 12, marginLeft: -6, left: x(actual), borderRadius: "50%", background: gapColor(d), border: "2px solid #0f172a" }} />
                     </div>
-                    <div className="grid grid-cols-4 gap-x-1">
+                    <div className="grid grid-cols-5 gap-x-1">
                       <Cell t="תחזית" c="#facc15">{r0(f.fc)}</Cell>
                       <Cell t="בפועל" c={gapColor(d)}>{r0(actual)}<span style={{ fontSize: 12 }}> ({sign(d)})</span></Cell>
-                      <Cell t="כיוונים (צפי)">{came.dir}<span style={{ fontSize: 13, color: "#94a3b8" }}> ({Math.round(dirOf(f, exp))})</span></Cell>
+                      <Cell t="צפי כיוונים" c="#facc15">{Math.round(dirOf(f, exp))}</Cell>
+                      <Cell t="כיוונים בפועל" c="#38bdf8">{came.dir}</Cell>
                       <Cell t="מדויקות">{came.ex}</Cell>
                     </div>
                   </div>

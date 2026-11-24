@@ -67,13 +67,17 @@ export async function forecastImage({ round, rows, exact, evening, compare }) {
       text(String(Math.round(r.actual)), col.act + cw.act / 2, mid - 14, `800 54px ${NUM}`, '#ffffff', 'center', 'ltr');
       text(d > 0 ? `+${d}` : String(d), col.act + cw.act / 2, mid + 25, `800 27px ${NUM}`, 'rgba(255,255,255,.9)', 'center', 'ltr');
     }
-    // outcomes: expected, or how many came with the expected number small under it
-    slant(c, col.dir, y + 8, cw.dir, h - 16);
-    c.fillStyle = grad(c, 0, y, 0, y + h, [[0, '#f8fafc'], [1, '#9fb0c6']]); c.fill();
+    // outcomes: expected; in the comparison two plates — expected (gold, like the forecast) and what came (blue)
+    const plate = (x, w, stops, num, cap, ink) => {
+      slant(c, x, y + 8, w, h - 16);
+      c.fillStyle = grad(c, 0, y, 0, y + h, stops); c.fill();
+      text(String(num), x + w / 2, cap ? mid - 14 : mid, `800 ${cap ? 50 : 48}px ${NUM}`, ink, 'center', 'ltr');
+      if (cap) text(cap, x + w / 2, mid + 25, `700 23px ${OUT}`, ink);
+    };
     if (compare) {
-      text(String(r.adir), col.dir + cw.dir / 2, mid - 14, `800 54px ${NUM}`, '#0f172a', 'center', 'ltr');
-      text(`צפי ${Math.round(r.dir)}`, col.dir + cw.dir / 2, mid + 25, `700 24px ${OUT}`, 'rgba(15,23,42,.75)');
-    } else text(String(Math.round(r.dir)), col.dir + cw.dir / 2, mid, `800 48px ${NUM}`, '#0f172a', 'center', 'ltr');
+      plate(col.dir + 108, 122, [[0, '#fde047'], [1, '#e0a300']], Math.round(r.dir), 'צפי', '#1a1405');
+      plate(col.dir, 122, [[0, '#7dd3fc'], [1, '#0b84d8']], r.adir, 'בפועל', '#04203a');
+    } else plate(col.dir, cw.dir, [[0, '#f8fafc'], [1, '#9fb0c6']], Math.round(r.dir), null, '#0f172a');
   });
   if (exact != null) {
     const y = TOP + rows.length * ROW + 22, h = 116, mid = y + h / 2 + 3;
