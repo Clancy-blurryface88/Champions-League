@@ -19,6 +19,7 @@ import ExactHitsPanel from "./components/ExactHitsPanel";
 // This import is kept as per outline
 import { createPageUrl } from "@/utils";
 import LoadingScreen from "./components/LoadingScreen";
+import TodayMatches from "./components/TodayMatches";
 import AppBackground from "./components/AppBackground";
 import { TOURNAMENT_CODE } from "@/config/tournament";
 import LiveDataPanel from "./components/LiveDataPanel"; // Added: Import LiveDataPanel
@@ -1427,75 +1428,7 @@ export default function Layout({ children, currentPageName }) {
             LIST_MS. */}
         <AnimatePresence>
           {showNextMatchIntro && upcomingMatches.length > 0 && (
-            <>
-              <motion.div
-                key="next-match-intro-bg"
-                className="fixed inset-0 z-[55]"
-                style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-              />
-              <div className="fixed inset-0 z-[56] flex items-center justify-center pointer-events-none">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{
-                    opacity: 1, scale: 1,
-                    boxShadow: [
-                      '0 0 60px rgba(139,92,246,0.2), 0 20px 60px rgba(0,0,0,0.7)',
-                      '0 0 90px rgba(96,165,250,0.45), 0 20px 60px rgba(0,0,0,0.7)',
-                      '0 0 60px rgba(139,92,246,0.2), 0 20px 60px rgba(0,0,0,0.7)',
-                    ],
-                  }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="rounded-2xl overflow-hidden"
-                  style={{
-                    position: 'relative',
-                    background: 'linear-gradient(135deg, rgba(76,29,149,0.95) 0%, rgba(8,18,32,0.95) 45%, rgba(29,78,216,0.95) 100%)',
-                    border: '1px solid rgba(167,139,250,0.4)',
-                    backdropFilter: 'blur(28px)',
-                    pointerEvents: 'auto',
-                  }}
-                  transition={{
-                    scale: { type: 'spring', stiffness: 180, damping: 26 },
-                    opacity: { type: 'spring', stiffness: 180, damping: 26 },
-                    boxShadow: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' },
-                  }}
-                >
-                  <div className="px-6 py-6 flex flex-col items-center gap-3" style={{ width: 380 }}>
-                    <span className="text-yellow-400 text-xs font-bold tracking-widest uppercase">משחקי היום</span>
-                    <div className="grid grid-cols-3 gap-2 w-full">
-                      {upcomingMatches.map((m, i) => (
-                        <motion.div
-                          key={m.id}
-                          initial={{ opacity: 0, scale: 0.6, filter: 'blur(10px)' }}
-                          animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-                          transition={{ delay: i * 0.1, type: 'spring', stiffness: 260, damping: 20 }}
-                          className="flex flex-col items-center justify-center gap-1.5 px-2 py-2.5 rounded-xl"
-                          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
-                        >
-                            <div className="flex items-center gap-1.5">
-                              <TeamFlag logo={m.team_a_logo} name={m.team_a} className="w-7 h-7 flex-shrink-0" animate={false} />
-                              <TeamFlag logo={m.team_b_logo} name={m.team_b} className="w-7 h-7 flex-shrink-0" animate={false} />
-                            </div>
-                          <span className="text-slate-400 text-[10px] font-bold flex-shrink-0" dir="ltr">
-                            {new Date(m.match_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </motion.div>
-                      ))}
-                    </div>
-
-                    <button
-                      onClick={() => setShowNextMatchIntro(false)}
-                      className="mt-1 w-full py-2.5 rounded-xl text-sm font-semibold bg-white/8 text-white/70 hover:text-white hover:bg-white/15 transition-colors"
-                    >
-                      סגור
-                    </button>
-                  </div>
-                </motion.div>
-              </div>
-            </>
+            <TodayMatches matches={upcomingMatches} onClose={() => setShowNextMatchIntro(false)} />
           )}
         </AnimatePresence>
 
