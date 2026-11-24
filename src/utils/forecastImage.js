@@ -35,9 +35,10 @@ export async function forecastImage({ round, rows, exact, evening, compare }) {
 
   c.textBaseline = 'middle';
   const text = (s, x, y, font, color, align = 'center', dir = 'rtl') => { c.direction = dir; c.font = font; c.fillStyle = color; c.textAlign = align; c.fillText(s, x, y); };
-  if (evening || compare) { text(compare ? (compare.live ? 'תחזית מול לייב' : 'תחזית מול בפועל') : `תחזית ${evening}`, W / 2, 212, `900 58px ${OUT}`, '#ffffff'); text([compare && evening, `מחזור ${round}`, compare?.live && `נכון ל־${compare.live}`, compare?.partial && `חושבו ${compare.partial} משחקים`].filter(Boolean).join(' · '), W / 2, 298, `700 30px ${OUT}`, '#9fc3ff'); } else text(`תחזית מחזור ${round}`, W / 2, 226, `900 64px ${OUT}`, '#ffffff');
+  text(evening ? 'תחזית נקודות לערב המשחקים' : 'תחזית נקודות למחזור המשחקים', W / 2, 212, `900 58px ${OUT}`, '#ffffff');
+  text([evening, `מחזור ${round}`, compare?.live && `נכון ל־${compare.live}`, compare?.partial && `חושבו ${compare.partial} משחקים`].filter(Boolean).join(' · '), W / 2, 298, `700 30px ${OUT}`, '#9fc3ff');
   c.fillStyle = grad(c, W / 2 - 170, 0, W / 2 + 170, 0, [[0, 'rgba(250,204,21,0)'], [0.5, '#facc15'], [1, 'rgba(250,204,21,0)']]);
-  c.fillRect(W / 2 - 170, evening || compare ? 258 : 274, 340, 3);
+  c.fillRect(W / 2 - 170, 258, 340, 3);
 
   // columns, right to left: the name, the forecast, its range, outcomes; in the comparison the forecast and what was
   // earned side by side, with the range framed under both
