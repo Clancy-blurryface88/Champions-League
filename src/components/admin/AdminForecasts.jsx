@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "@/api/supabase";
 import { Match, Prediction, Round, User, PublicProfile } from "@/api/entities";
 import OrbitSpinner from "@/components/OrbitSpinner";
-import { pick, computeForecast2 } from "@/utils/forecastCalc";
+import { pick, computeForecast3 } from "@/utils/forecastCalc";
 import { forecastImage } from "@/utils/forecastImage";
 
 // Everyone's round forecast, for the admin only (round_forecasts' RLS lets only admins read all rows):
@@ -25,7 +25,7 @@ function Cell({ t, children, c = "#fff" }) {
 }
 
 // the picture, made on demand: shown first, then shared (the phone's share sheet) or saved
-function ShareImage({ round, rows }) {
+function ShareImage({ round, rows, exact }) {
   const [img, setImg] = useState(null); // { url, file }
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
@@ -33,7 +33,7 @@ function ShareImage({ round, rows }) {
   const make = async () => {
     setBusy(true); setMsg("");
     try {
-      const blob = await forecastImage({ round, rows });
+      const blob = await forecastImage({ round, rows, exact });
       setImg({ url: URL.createObjectURL(blob), file: new File([blob], `forecast-round-${round}.png`, { type: "image/png" }) });
     } catch (e) { setMsg(`שגיאה: ${e.message || e}`); }
     setBusy(false);
@@ -89,6 +89,7 @@ export default function AdminForecasts() {
       if (fs.error) throw fs.error;
       if (off) return;
       const done = ms.filter((m) => m.is_score_calculated).length;
+      const everyone = base.preds.filter((p) => all[p.match_id]?.is_score_calculated && !byId[p.match_id]).map((p) => ({ match: all[p.match_id], prediction: p }));
       const list = base.users.map((u) => {
         const theirs = base.preds.filter((p) => p.user_id === u.id && all[p.match_id]);
         const mine = theirs.filter((p) => byId[p.match_id]);
@@ -98,9 +99,9 @@ export default function AdminForecasts() {
         }, { dir: 0, ex: 0 });
         const stored = fs.data.find((x) => x.user_id === u.id) || null;
         const f = done === ms.length || !mine.length ? stored : {
-          ...computeForecast2(
+          ...computeForecast3(
             theirs.filter((p) => !byId[p.match_id] && all[p.match_id].is_score_calculated).map((p) => ({ match: all[p.match_id], prediction: p })),
-            mine.map((p) => ({ match: byId[p.match_id], a: Number(p.predicted_score_a) || 0, b: Number(p.predicted_score_b) || 0 })), base.matches),
+            mine.map((p) => ({ match: byId[p.match_id], a: Number(p.predicted_score_a) || 0, b: Number(p.predicted_score_b) || 0 })), base.matches, everyone),
           updated_at: stored?.updated_at,
         };
         return {
@@ -108,7 +109,11 @@ export default function AdminForecasts() {
           actual: done ? mine.reduce((s, p) => s + (byId[p.match_id].is_score_calculated ? Number(p.points_earned) || 0 : 0), 0) : null,
         };
       }).sort((a, b) => (Number(b.f?.fc) || -1) - (Number(a.f?.fc) || -1));
-      setRows({ list, done, total: ms.length });
+      // the exact scores expected from everyone together: half what the group hit a round so far, half what this round's picks expect
+      const pastRounds = new Set(everyone.map((x) => x.match.round_id)).size;
+      const hit = everyone.filter((x) => Number(x.prediction.exact_score_points_earned) > 0).length / (pastRounds || 1);
+      const now = list.reduce((s, r) => s + (r.sent ? r.exp.ex : 0), 0);
+      setRows({ list, done, total: ms.length, exact: Math.round(pastRounds ? (hit + now) / 2 : now) });
     })().catch((e) => { if (!off) setError(e.message || String(e)); });
     return () => { off = true; };
   }, [base, roundId]);
@@ -119,7 +124,7 @@ export default function AdminForecasts() {
   const order = base.rounds.find((r) => r.id === roundId)?.order;
   // everyone's numbers for the picture; a stored row from the first formula has no expected hits, so they come from the odds
   const shareRows = (rows?.list || []).filter((r) => r.f).map(({ name, f, exp }) => ({
-    name, fc: f.fc, lo: f.lo, hi: f.hi, dir: f.cats?.v === 2 ? f.cats.dir : exp.dir, beat: f.cats?.beat ?? null,
+    name, fc: f.fc, lo: f.lo, hi: f.hi, dir: f.cats?.v >= 2 ? f.cats.dir : exp.dir,
   }));
 
   return (
@@ -141,7 +146,8 @@ export default function AdminForecasts() {
           <div className="text-sm text-slate-300">
             {rows.done === 0 ? "המחזור עוד לא חושב" : over ? "המחזור הסתיים" : <>חושבו <span dir="ltr" style={NUM}>{rows.done}/{rows.total}</span> משחקים</>}
           </div>
-          {shareRows.length > 0 && <ShareImage key={roundId} round={order} rows={shareRows} />}
+          <div className="text-sm text-slate-300">צפי פגיעות מדויקות של כולם: <span dir="ltr" style={{ ...NUM, fontSize: 18, color: "#4ade80" }}>{rows.exact}</span></div>
+          {shareRows.length > 0 && <ShareImage key={roundId} round={order} rows={shareRows} exact={rows.exact} />}
           <div className="space-y-2">
             {rows.list.map(({ id, name, f, sent, exp, actual }) => {
               const gap = f?.avg == null ? null : Math.round(f.fc) - Math.round(f.avg);
@@ -161,8 +167,8 @@ export default function AdminForecasts() {
                       <Cell t="ממוצע אישי">{r0(f.avg)}</Cell>
                       <Cell t="תחזית מול ממוצע" c={gap == null ? "#94a3b8" : gapColor(gap)}>{gap == null ? "—" : sign(gap)}</Cell>
                       <Cell t="מקסימום">{r0(f.max)}</Cell>
-                      <Cell t="צפי כיוונים">{f.cats?.v === 2 ? f.cats.dir.toFixed(1) : sent ? exp.dir.toFixed(1) : "—"}</Cell>
-                      <Cell t="צפי מדויקות">{f.cats?.v === 2 ? f.cats.exact.toFixed(1) : sent ? exp.ex.toFixed(1) : "—"}</Cell>
+                      <Cell t="צפי כיוונים">{f.cats?.v >= 2 ? f.cats.dir.toFixed(1) : sent ? exp.dir.toFixed(1) : "—"}</Cell>
+                      <Cell t="צפי מדויקות">{f.cats?.v >= 2 ? f.cats.exact.toFixed(1) : sent ? exp.ex.toFixed(1) : "—"}</Cell>
                       <Cell t={over || actual == null ? "בפועל" : "בינתיים"} c={over && diff != null ? gapColor(diff) : "#fff"}>
                         {actual == null ? "—" : <>{r0(actual)}{over && diff != null && <span style={{ fontSize: 12 }}> ({sign(diff)})</span>}</>}
                       </Cell>

@@ -1,5 +1,6 @@
 // The share picture of a round's forecasts (admin): a 1080px table drawn on a canvas — player, forecast with its
-// range, expected outcomes, the chance of passing their average — returned as a PNG blob.
+// range, expected correct outcomes — and one number for everyone together, the exact scores expected in the round.
+// Returned as a PNG blob.
 const W = 1080, ROW = 118, TOP = 400, PAD = 46, SK = 26; // SK: the plates' slant in px
 const NUM = "'Big Shoulders Stencil Display', 'Teko', sans-serif", OUT = 'Outfit, system-ui, sans-serif';
 const loadImg = (src) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; });
@@ -14,12 +15,12 @@ function slant(c, x, y, w, h, r = 8) {
 }
 const grad = (c, x0, y0, x1, y1, stops) => { const g = c.createLinearGradient(x0, y0, x1, y1); stops.forEach(([o, col]) => g.addColorStop(o, col)); return g; };
 
-// rows: [{ name, fc, lo, hi, dir, beat }], already in the order to show
-export async function forecastImage({ round, rows }) {
+// rows: [{ name, fc, lo, hi, dir }], already in the order to show
+export async function forecastImage({ round, rows, exact }) {
   await Promise.all([`800 60px ${NUM}`, `800 40px ${OUT}`].map((f) => document.fonts.load(f, 'א1').catch(() => {})));
   await document.fonts.ready;
   const [logo, ball] = await Promise.all([loadImg('/champions/ch-logo.png'), loadImg('/champions/round-ball.png')]);
-  const H = TOP + rows.length * ROW + 96;
+  const H = TOP + rows.length * ROW + (exact == null ? 96 : 232);
   const cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
   const c = cv.getContext('2d');
@@ -35,10 +36,10 @@ export async function forecastImage({ round, rows }) {
   c.fillStyle = grad(c, W / 2 - 170, 0, W / 2 + 170, 0, [[0, 'rgba(250,204,21,0)'], [0.5, '#facc15'], [1, 'rgba(250,204,21,0)']]);
   c.fillRect(W / 2 - 170, 274, 340, 3);
 
-  // columns, right to left: the name, the forecast, outcomes, the chance
-  const col = { name: W - PAD - 300, fc: 516, dir: 318, beat: 78 }, cw = { fc: 210, dir: 180, beat: 222 };
+  // columns, right to left: the name, the forecast, outcomes
+  const col = { fc: 400, dir: 82 }, cw = { fc: 280, dir: 270 };
   const head = `800 29px ${OUT}`;
-  [['תחזית', col.fc + cw.fc / 2], ['כיוונים', col.dir + cw.dir / 2], ['לעבור ממוצע', col.beat + cw.beat / 2]].forEach(([s, x]) => text(s, x, TOP - 44, head, '#9fc3ff'));
+  [['תחזית', col.fc + cw.fc / 2], ['צפי כיוונים', col.dir + cw.dir / 2]].forEach(([s, x]) => text(s, x, TOP - 44, head, '#9fc3ff'));
   text('משתתף', W - PAD - 34, TOP - 44, head, '#9fc3ff', 'right');
 
   rows.forEach((r, i) => {
@@ -60,21 +61,17 @@ export async function forecastImage({ round, rows }) {
     slant(c, col.dir, y + 8, cw.dir, h - 16);
     c.fillStyle = grad(c, 0, y, 0, y + h, [[0, '#f8fafc'], [1, '#9fb0c6']]); c.fill();
     text(String(Math.round(r.dir)), col.dir + cw.dir / 2, mid, `800 48px ${NUM}`, '#0f172a', 'center', 'ltr');
-    // the chance, as a plate that fills with it
-    const bw = cw.beat;
-    slant(c, col.beat, y + 8, bw, h - 16);
-    c.fillStyle = 'rgba(0,0,0,.38)'; c.fill();
-    if (r.beat != null) {
-      c.save(); c.clip();
-      c.fillStyle = grad(c, col.beat, 0, col.beat + bw, 0, [[0, '#22c55e'], [1, '#00c8e8']]);
-      c.beginPath(); const x = col.beat + SK + (bw - SK) * (r.beat / 100);
-      c.moveTo(col.beat - SK, y); c.lineTo(x, y); c.lineTo(x - SK, y + h); c.lineTo(col.beat - SK, y + h); c.fill();
-      c.restore();
-    }
-    c.shadowColor = 'rgba(0,0,0,.6)'; c.shadowBlur = 8;
-    text(r.beat == null ? '—' : `${r.beat}%`, col.beat + bw / 2, mid, `800 48px ${NUM}`, '#ffffff', 'center', 'ltr');
-    c.shadowBlur = 0;
   });
-  text('התחזית והטווח בנקודות · כמה כיוונים נכונים צפויים · הסיכוי לעבור את הממוצע האישי', W / 2, H - 46, `600 25px ${OUT}`, 'rgba(255,255,255,.6)');
+  if (exact != null) {
+    const y = TOP + rows.length * ROW + 22, h = 116, mid = y + h / 2 + 3;
+    slant(c, PAD - 8, y, W - 2 * PAD + 16, h, 12);
+    c.fillStyle = grad(c, W, 0, 0, 0, [[0, 'rgba(34,197,94,.34)'], [1, 'rgba(0,200,232,.2)']]); c.fill();
+    c.strokeStyle = 'rgba(74,222,200,.7)'; c.lineWidth = 2; c.stroke();
+    text('צפי פגיעות מדויקות של כולם', W - PAD - 40, mid, `800 42px ${OUT}`, '#ffffff', 'right');
+    slant(c, 82, y + 9, 190, h - 18);
+    c.fillStyle = grad(c, 0, y, 0, y + h, [[0, '#34e0a1'], [1, '#0ea5c6']]); c.fill();
+    text(String(exact), 82 + 95, mid, `800 64px ${NUM}`, '#04201d', 'center', 'ltr');
+  }
+  text('התחזית והטווח בנקודות · צפי כיוונים לכל משתתף', W / 2, H - 46, `600 25px ${OUT}`, 'rgba(255,255,255,.6)');
   return new Promise((ok, no) => cv.toBlob((b) => (b ? ok(b) : no(new Error('התמונה לא נוצרה'))), 'image/png'));
 }

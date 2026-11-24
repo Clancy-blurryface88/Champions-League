@@ -114,6 +114,10 @@ function teamForm(matches) {
 // past: the player's calculated matches of other rounds [{ match, prediction }]; now: the round's picks
 // [{ match, a, b }]; matches: every match of the season (the form is read from the other rounds only)
 export function computeForecast2(past, now, matches) {
+  const { sims, parts, ...row } = core2(past, now, matches);
+  return row;
+}
+function core2(past, now, matches) {
   const rounds = new Set(now.map((x) => x.match.round_id));
   const form = teamForm(matches.filter((m) => !rounds.has(m.round_id)));
   const byRound = {};
@@ -122,6 +126,7 @@ export function computeForecast2(past, now, matches) {
   const avg = totals.length ? totals.reduce((q, v) => q + v, 0) / totals.length : null;
 
   let fc = 0, max = 0, dir = 0, exact = 0;
+  const parts = { oc: 0, gr: 0, bt: 0, ex: 0 }; // expected hits by kind
   const cats = { oc: 0, gr: 0, bt: 0, ex: 0 };
   const games = now.map(({ match, a, b }) => {
     const k = pick(match, a, b);
@@ -130,6 +135,7 @@ export function computeForecast2(past, now, matches) {
     if (!base) { // no score table: each kind on its own chance
       for (const c of CATS) { cats[c] += k[c][0] * k[c][1]; fc += k[c][0] * k[c][1]; }
       dir += k.oc[1]; exact += k.ex[1];
+      for (const c of CATS) parts[c] += k[c][1];
       return { k };
     }
     const [h, v] = goals(base), H = team(match.team_a), A = team(match.team_b);
@@ -140,7 +146,7 @@ export function computeForecast2(past, now, matches) {
       l.p /= tot;
       const hit = { oc: side(l.x, l.y) === side(a, b), gr: range(l.x + l.y) === range(a + b), bt: (l.x > 0 && l.y > 0) === (a > 0 && b > 0), ex: l.x === a && l.y === b };
       l.pts = 0;
-      for (const c of CATS) if (hit[c]) { l.pts += k[c][0]; cats[c] += l.p * k[c][0]; }
+      for (const c of CATS) if (hit[c]) { l.pts += k[c][0]; cats[c] += l.p * k[c][0]; parts[c] += l.p; }
       if (hit.oc) dir += l.p;
       if (hit.ex) exact += l.p;
       fc += l.p * l.pts;
@@ -166,8 +172,79 @@ export function computeForecast2(past, now, matches) {
   const r2 = (x) => +x.toFixed(2);
   return {
     fc: r2(fc), lo: Math.round(Math.min(q(0.2), fc)), hi: Math.round(Math.max(q(0.8), fc)), max: r2(max), avg: avg == null ? null : r2(avg),
+    sims, parts,
     // v: which formula made the row; dir / exact: expected correct outcomes and exact scores;
     // beat: the chance (%) of passing the average; n: how many matches were predicted
     cats: { ...Object.fromEntries(CATS.map((c) => [c, r2(cats[c])])), v: 2, dir: r2(dir), exact: r2(exact), beat, n: now.length },
   };
+}
+
+// ── the third formula (24.11.2026, the user's weighting) ──
+// The chances alone gave everyone nearly the same number, and the past alone gave everyone their own average. So:
+// the anchor is half the player's round average and half a usual round, and three signals of THIS round move it —
+//   picks  what the odds and the teams' form give this round's picks (the second formula), against a usual round
+//   teams  how the player did so far in matches of the teams they now back
+//   hits   their own hits a round × points a hit in each kind, against their average
+// Each signal is put on its own natural scale and capped, so none of them can run away with the number.
+const USUAL = 62; // what the odds give any round of 18 picks
+const SWING = 12; // points that the signals, together, can move the anchor by per unit
+const WEIGHT = { picks: [0.35, 2], teams: [0.35, 6], hits: [0.3, 4] }; // [share, points that count as one unit]
+const mean = (A) => (A.length ? A.reduce((q, v) => q + v, 0) / A.length : 0);
+const median = (A) => { const s = [...A].sort((x, y) => x - y), h = s.length >> 1; return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2; };
+
+// everyone: all players' calculated predictions of the other rounds, the player's own included [{ match, prediction }]
+export function computeForecast3(past, now, matches, everyone) {
+  const two = core2(past, now, matches);
+  const { sims, ...base } = two;
+  if (!past.length || !everyone.length) return computeForecast2(past, now, matches); // no history yet: the odds and form alone
+  const look = ({ match, prediction: p }) => ({ match, k: pick(match, n(p.predicted_score_a), n(p.predicted_score_b)), e: earned(p), pts: n(p.points_earned) });
+  const mine = past.map(look), all = everyone.map(look);
+  const R = new Set(mine.map((x) => x.match.round_id)).size;
+  const playerRounds = new Set(everyone.map((x) => `${x.prediction.user_id}|${x.match.round_id}`)).size;
+  const perRound = now.length / 18; // a partly sent round is scaled
+  const avg = base.avg;
+
+  // hits a round (pulled toward everyone's by one round), tilted by how safe this round's picks are against the
+  // player's usual, × points a hit: half their own, half this round's odds against everyone's usual odds
+  const cats = {}, count = {};
+  let hits = 0;
+  for (const c of CATS) {
+    const own = mine.filter((x) => x.e[c] > 0), others = all.filter((x) => x.e[c] > 0);
+    const gv = mean(others.map((x) => x.e[c])) || 0;
+    const usual = mine.reduce((q, x) => q + x.k[c][1], 0) / R, nowP = base.parts[c];
+    count[c] = ((own.length + others.length / playerRounds) / (R + 1)) * Math.min(1.5, Math.max(0.6, usual > 0 ? nowP / perRound / usual : 1));
+    const ownV = (own.reduce((q, x) => q + x.e[c], 0) + 3 * gv) / (own.length + 3);
+    const style = median(now.map((x) => pick(x.match, x.a, x.b)[c][0])) / (median(all.map((x) => x.k[c][0])) || 1);
+    cats[c] = count[c] * ((ownV + gv * style) / 2);
+    hits += cats[c];
+  }
+
+  // the teams: how far above or below their own average a match the player's points were in each team's matches;
+  // in this round a team counts in full when the pick backs it
+  const perMatch = mean(mine.map((x) => x.pts)), by = {};
+  for (const x of mine) for (const t of [x.match.team_a, x.match.team_b]) (by[team(t)] = by[team(t)] || []).push(x.pts - perMatch);
+  const feel = (t) => { const A = by[team(t)] || []; return A.reduce((q, v) => q + v, 0) / (A.length + 1); };
+  const teams = now.reduce((q, { match, a, b }) => {
+    const wa = a >= b ? 1 : 0.4, wb = b >= a ? 1 : 0.4;
+    return q + (wa * feel(match.team_a) + wb * feel(match.team_b)) / (wa + wb);
+  }, 0);
+
+  const sig = { picks: base.fc / perRound - USUAL, teams: teams / perRound, hits: hits - avg };
+  const move = Object.entries(WEIGHT).reduce((q, [k, [w, unit]]) => q + w * Math.max(-2, Math.min(2, sig[k] / unit)), 0);
+  const fc = (0.5 * avg + 0.5 * USUAL + SWING * move) * perRound;
+  const shift = fc - base.fc, r2 = (x) => +x.toFixed(2);
+  const { parts, ...rest } = base;
+  return {
+    ...rest, fc: r2(fc), lo: Math.max(0, Math.round(base.lo + shift)), hi: Math.round(base.hi + shift),
+    cats: {
+      ...Object.fromEntries(CATS.map((c) => [c, r2((cats[c] / hits) * fc)])), v: 3, dir: r2(count.oc * perRound), exact: r2(count.ex * perRound),
+      beat: Math.round((100 * sims.filter((t) => t + shift > avg * perRound).length) / sims.length), n: now.length,
+    },
+  };
+}
+
+// the live pace: the part of a round's forecast that the matches already kicked off stand for
+export function forecastShare(fc, past, started, all, matches) {
+  if (!started.length || !all.length) return 0;
+  return (fc * core2(past, started, matches).fc) / (core2(past, all, matches).fc || 1);
 }

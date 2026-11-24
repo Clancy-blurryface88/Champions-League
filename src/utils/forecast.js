@@ -3,18 +3,19 @@ import { Match, Prediction, Round } from '@/api/entities';
 
 // The round's score forecast (21.11.2026): the database side — stored on every send, read at the round's end.
 // The calculation itself is in forecastCalc.js.
-import { computeForecast2, earned } from './forecastCalc';
+import { computeForecast3, earned } from './forecastCalc';
 const CATS = ['oc', 'gr', 'bt', 'ex'];
 const n = (x) => (x == null || x === '' ? 0 : Number(x));
 
 // everything from the database for one player and one round, then the forecast, stored for the round's end
 export async function forecastAndSave(userId, roundId, picks) {
-  const [mine, matches] = await Promise.all([Prediction.filter({ user_id: userId }), Match.list()]);
+  const [all, matches] = await Promise.all([Prediction.list(), Match.list()]);
   const byId = Object.fromEntries(matches.map((m) => [m.id, m]));
-  const past = mine.filter((p) => byId[p.match_id]?.is_score_calculated && byId[p.match_id].round_id !== roundId).map((p) => ({ match: byId[p.match_id], prediction: p }));
+  const everyone = all.filter((p) => byId[p.match_id]?.is_score_calculated && byId[p.match_id].round_id !== roundId).map((p) => ({ match: byId[p.match_id], prediction: p }));
+  const past = everyone.filter((x) => x.prediction.user_id === userId);
   const now = picks.filter((x) => byId[x.match_id]).map((x) => ({ match: byId[x.match_id], a: n(x.a), b: n(x.b) }));
   if (!now.length) return null;
-  const f = computeForecast2(past, now, matches);
+  const f = computeForecast3(past, now, matches, everyone);
   try {
     await supabase.from('round_forecasts').upsert({ user_id: userId, round_id: roundId, ...f, updated_at: new Date().toISOString() }, { onConflict: 'user_id,round_id' });
   } catch (e) { console.warn('forecast not saved', e); }
