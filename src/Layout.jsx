@@ -181,7 +181,6 @@ export default function Layout({ children, currentPageName }) {
   );
   const [showDateSheet, setShowDateSheet] = useState(false);
   const [touchEndY, setTouchEndY] = useState(null);
-  const [todayMatchCount, setTodayMatchCount] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -640,13 +639,6 @@ export default function Layout({ children, currentPageName }) {
       return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     })();
     Match.list().then(all => {
-      const count = all.filter(m => {
-        const md = new Date(m.match_date);
-        const k = `${md.getFullYear()}-${String(md.getMonth()+1).padStart(2,'0')}-${String(md.getDate()).padStart(2,'0')}`;
-        return k === todayKey;
-      }).length;
-      setTodayMatchCount(count);
-
       const now = new Date();
       // "משחקי היום" — strictly today's remaining matches. If there's nothing
       // left today, there's nothing to show (no falling back to a future
@@ -967,7 +959,7 @@ export default function Layout({ children, currentPageName }) {
           />
         )}
 
-        {/* כפתור המבורגר + כפתור איצטדיון מתחתיו */}
+        {/* כפתור המבורגר */}
         <div className="fixed top-[38px] left-4 z-40 flex flex-col items-center gap-1">
           <Button
             variant="ghost"
@@ -977,33 +969,6 @@ export default function Layout({ children, currentPageName }) {
               src="/football-field.png"
               alt="Menu" className="mb-2 w-full h-full object-contain rounded-lg" />
           </Button>
-
-          <AnimatePresence>
-            {(location.pathname === '/' || location.pathname.includes('Dashboard')) && todayMatchCount > 0 && !showDateSheet && (
-              <motion.button
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                whileTap={{ scale: 0.88 }}
-                onClick={() => setShowDateSheet(true)}
-                className="relative w-11 h-11 rounded-full flex items-center justify-center shadow-2xl"
-                style={{
-                  background: 'linear-gradient(145deg, #1a3a2a 0%, #0d2018 100%)',
-                  border: '1.5px solid rgba(9, 122, 220,0.5)',
-                  boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
-                }}
-              >
-                <span className="text-xl select-none">🏟️</span>
-                <motion.span
-                  animate={{ scale: [1, 1.15, 1] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                  className="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 rounded-full bg-sky-400 text-black text-[9px] font-bold flex items-center justify-center shadow-md"
-                >
-                  {todayMatchCount}
-                </motion.span>
-              </motion.button>
-            )}
-          </AnimatePresence>
         </div>
 
         {/* Floating Menu Cards */}
