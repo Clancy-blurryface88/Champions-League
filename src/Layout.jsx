@@ -567,7 +567,7 @@ export default function Layout({ children, currentPageName }) {
   // "משחקי היום" shows the day's matches as a typewriter-revealed list right
   // away — no solo "המשחק הקרוב" screen first (the ticker bar already covers
   // that). Auto-dismisses after LIST_MS, closable anytime before that.
-  const LIST_MS = 5000;
+  const LIST_MS = 8000;
   useEffect(() => {
     if (!showNextMatchIntro) return;
     const t = setTimeout(() => setShowNextMatchIntro(false), LIST_MS);
