@@ -45,7 +45,23 @@ import TeamFixturesModal from "@/components/TeamFixturesModal";
 import { loadLeagueTableOverride, applyOverride } from '@/utils/standingsOverride';
 import { calcStandings } from '@/utils/standings';
 import { STAGES, DIRECT_R16_CUTOFF, PLAYOFF_CUTOFF } from '@/config/tournament';
+import { teamEn } from '@/utils/teamHe';
 import { pickWeightedScore } from '@/utils/pickWeightedScore';
+
+// the team names under the crests, one line each: sporty italic capitals, white fading into lemon yellow, with a
+// hard drop shadow. Very long names get a smaller size, and the line's height is fixed, so (Home) / (Away) stay level.
+const TEAM_NAME = {
+  fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontStyle: 'italic', textTransform: 'uppercase', whiteSpace: 'nowrap', lineHeight: '15px',
+  background: 'linear-gradient(180deg,#ffffff,#fde047)', WebkitBackgroundClip: 'text', backgroundClip: 'text',
+  color: 'transparent', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(2px 2px 0 rgba(0,0,0,0.5))',
+  // the italic letters lean past the text box and the gradient only paints inside it: room on both sides
+  padding: '0 5px',
+};
+const TeamName = ({ name }) => {
+  const short = teamEn(name);
+  const size = short.length > 10 ? 10.5 : 11.5;
+  return <span dir="ltr" style={{ ...TEAM_NAME, fontSize: `min(${size}px, ${(size / 3.75).toFixed(2)}vw)`, marginTop: 4, marginBottom: 3 }}>{short}</span>;
+};
 
 // the (Home) / (Away) labels under the crests: Exo 2, italic
 const HOME_AWAY_FONT = { fontFamily: "'Exo 2', sans-serif", fontWeight: 800, fontStyle: 'italic', fontSize: 11, letterSpacing: '0.02em' };
@@ -1069,9 +1085,10 @@ export default function Predictions() {
                           </motion.div>
                         </div>
 
-                        {/* Row 2: home / away label and table position under each crest (no team name: the crest says it) */}
+                        {/* Row 2: team name, home / away label and table position under each crest */}
                         <div data-tour="team-info" style={{ gridColumn: 1, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center">
+                          <TeamName name={match.team_a} />
                           <span className="leading-none text-center" style={{ ...HOME_AWAY_FONT, color: 'rgba(255,255,255,0.78)', textShadow: '0 1px 3px rgba(0,0,0,0.85)' }}>(Home)</span>
                           {teamPositions[match.team_a] && (
                             <RankSheen value={teamPositions[match.team_a].pos} color={teamPositions[match.team_a].color} />
@@ -1079,6 +1096,7 @@ export default function Predictions() {
                         </div>
                         <div style={{ gridColumn: 3, gridRow: 2, alignSelf: 'start' }}
                              className="flex flex-col items-center">
+                          <TeamName name={match.team_b} />
                           <span className="leading-none text-center" style={{ ...HOME_AWAY_FONT, color: 'rgba(255,255,255,0.78)', textShadow: '0 1px 3px rgba(0,0,0,0.85)' }}>(Away)</span>
                           {teamPositions[match.team_b] && (
                             <RankSheen value={teamPositions[match.team_b].pos} color={teamPositions[match.team_b].color} />
