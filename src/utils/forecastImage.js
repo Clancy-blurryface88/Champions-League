@@ -16,7 +16,7 @@ function slant(c, x, y, w, h, r = 8) {
 const grad = (c, x0, y0, x1, y1, stops) => { const g = c.createLinearGradient(x0, y0, x1, y1); stops.forEach(([o, col]) => g.addColorStop(o, col)); return g; };
 
 // rows: [{ name, fc, lo, hi, dir }], already in the order to show
-export async function forecastImage({ round, rows, exact }) {
+export async function forecastImage({ round, rows, exact, evening }) {
   await Promise.all([`800 60px ${NUM}`, `800 40px ${OUT}`].map((f) => document.fonts.load(f, 'א1').catch(() => {})));
   await document.fonts.ready;
   const [logo, ball] = await Promise.all([loadImg('/champions/ch-logo.png'), loadImg('/champions/round-ball.png')]);
@@ -32,9 +32,9 @@ export async function forecastImage({ round, rows, exact }) {
 
   c.textBaseline = 'middle';
   const text = (s, x, y, font, color, align = 'center', dir = 'rtl') => { c.direction = dir; c.font = font; c.fillStyle = color; c.textAlign = align; c.fillText(s, x, y); };
-  text(`תחזית מחזור ${round}`, W / 2, 226, `900 64px ${OUT}`, '#ffffff');
+  if (evening) { text(`תחזית ${evening}`, W / 2, 212, `900 58px ${OUT}`, '#ffffff'); text(`מחזור ${round}`, W / 2, 298, `700 30px ${OUT}`, '#9fc3ff'); } else text(`תחזית מחזור ${round}`, W / 2, 226, `900 64px ${OUT}`, '#ffffff');
   c.fillStyle = grad(c, W / 2 - 170, 0, W / 2 + 170, 0, [[0, 'rgba(250,204,21,0)'], [0.5, '#facc15'], [1, 'rgba(250,204,21,0)']]);
-  c.fillRect(W / 2 - 170, 274, 340, 3);
+  c.fillRect(W / 2 - 170, evening ? 258 : 274, 340, 3);
 
   // columns, right to left: the name, the forecast, outcomes
   const col = { fc: 400, dir: 82 }, cw = { fc: 280, dir: 270 };
@@ -67,7 +67,7 @@ export async function forecastImage({ round, rows, exact }) {
     slant(c, PAD - 8, y, W - 2 * PAD + 16, h, 12);
     c.fillStyle = grad(c, W, 0, 0, 0, [[0, 'rgba(34,197,94,.34)'], [1, 'rgba(0,200,232,.2)']]); c.fill();
     c.strokeStyle = 'rgba(74,222,200,.7)'; c.lineWidth = 2; c.stroke();
-    text('צפי פגיעות מדויקות של כולם', W - PAD - 40, mid, `800 42px ${OUT}`, '#ffffff', 'right');
+    text(evening ? 'צפי פגיעות מדויקות בערב' : 'צפי פגיעות מדויקות של כולם', W - PAD - 40, mid, `800 42px ${OUT}`, '#ffffff', 'right');
     slant(c, 82, y + 9, 190, h - 18);
     c.fillStyle = grad(c, 0, y, 0, y + h, [[0, '#34e0a1'], [1, '#0ea5c6']]); c.fill();
     text(String(exact), 82 + 95, mid, `800 64px ${NUM}`, '#04201d', 'center', 'ltr');

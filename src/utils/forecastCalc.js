@@ -248,3 +248,30 @@ export function forecastShare(fc, past, started, all, matches) {
   if (!started.length || !all.length) return 0;
   return (fc * core2(past, started, matches).fc) / (core2(past, all, matches).fc || 1);
 }
+
+// A round's forecast split between its evenings (they add up to the round): by what the odds and form give each
+// evening's picks, tilted by the player's own past evenings — points and correct outcomes a match on that weekday
+// against all their matches, pulled toward "no difference" by 9 matches (one evening).
+// days: { 'YYYY-MM-DD': the evening's picks }; dayOf(match) gives a match's day in Israel.
+// Each evening also gets the player's averages, put on this evening's number of matches:
+//   all (any evening) and same (the same weekday; null if they never played on it): { pts, dir, exact }
+const EVENING_PRIOR = 9;
+const weekday = (day) => new Date(`${day}T12:00:00Z`).getUTCDay();
+export function forecastEvenings({ fc, dir }, past, days, matches, dayOf) {
+  const keys = Object.keys(days).filter((d) => days[d].length);
+  const P = past.map(({ match, prediction }) => ({ wd: weekday(dayOf(match)), pts: n(prediction.points_earned), e: earned(prediction) }));
+  const rate = (A) => (A.length ? { pts: mean(A.map((x) => x.pts)), dir: mean(A.map((x) => (x.e.oc > 0 ? 1 : 0))), exact: mean(A.map((x) => (x.e.ex > 0 ? 1 : 0))) } : null);
+  const overall = rate(P);
+  const parts = keys.map((d) => {
+    const same = P.filter((x) => x.wd === weekday(d)), r = rate(same);
+    const tilt = (k) => (r && overall[k] > 0 ? (same.length * (r[k] / overall[k]) + EVENING_PRIOR) / (same.length + EVENING_PRIOR) : 1);
+    const c = core2(past, days[d], matches), m = days[d].length;
+    const on = (x) => x && { pts: +(x.pts * m).toFixed(1), dir: +(x.dir * m).toFixed(1), exact: +(x.exact * m).toFixed(1) };
+    return { d, c, pts: c.fc * tilt('pts'), dir: c.parts.oc * tilt('dir'), all: on(overall), same: on(r) };
+  });
+  const tp = parts.reduce((q, x) => q + x.pts, 0) || 1, td = parts.reduce((q, x) => q + x.dir, 0) || 1;
+  return Object.fromEntries(parts.map((x) => {
+    const f = (fc * x.pts) / tp, shift = f - x.c.fc;
+    return [x.d, { fc: +f.toFixed(2), dir: +((dir * x.dir) / td).toFixed(2), lo: Math.max(0, Math.round(x.c.lo + shift)), hi: Math.round(x.c.hi + shift), all: x.all, same: x.same }];
+  }));
+}
