@@ -52,7 +52,7 @@ function normTeam(n = '') {
 // An empty name (e.g. a missing shortName) matches nothing — "x".includes("") is
 // true, which used to tie every live match to the first DB match.
 function teamsMatch(a, b) { const na = normTeam(a), nb = normTeam(b); if (!na || !nb) return false; return na === nb || na.includes(nb) || nb.includes(na); }
-function findDbMatch(apiMatch, dbMatches) {
+export function findDbMatch(apiMatch, dbMatches) {
   const h = apiMatch.homeTeam?.name || '', hS = apiMatch.homeTeam?.shortName || '';
   const a = apiMatch.awayTeam?.name || '', aS = apiMatch.awayTeam?.shortName || '';
   return dbMatches.find(m => (teamsMatch(h, m.team_a) || teamsMatch(hS, m.team_a)) && (teamsMatch(a, m.team_b) || teamsMatch(aS, m.team_b))) || null;

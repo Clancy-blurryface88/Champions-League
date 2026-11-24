@@ -1,17 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { supabase } from "@/api/supabase";
 import { Match, Prediction, Round, User, PublicProfile } from "@/api/entities";
 import OrbitSpinner from "@/components/OrbitSpinner";
 import { pick, computeForecast3, forecastEvenings } from "@/utils/forecastCalc";
 import { forecastImage } from "@/utils/forecastImage";
+import { calculateScore } from "@/utils/scoring";
+import { findDbMatch } from "@/components/LiveLeaderboard";
+import { TOURNAMENT_CODE } from "@/config/tournament";
 
 // Everyone's round forecast, for the admin only (round_forecasts' RLS lets only admins read all rows):
 // the forecast with its range, beside the player's round average and what was really earned, and how many
 // outcomes and exact scores are expected from their picks. Nobody's picks are shown.
 // A round still in play is calculated here for everyone by the current formula (some may have sent before it
 // changed); a finished round shows what was stored. The round can be read whole or one evening at a time (the
-// evenings add up to the round). Once everything shown is calculated, it can be switched to the forecast against
-// what was really earned. "תמונה לשיתוף" makes a table picture of what is shown, for WhatsApp.
+// evenings add up to the round). Once matches have kicked off it can be switched to the forecast against what was
+// earned: matches in play count by their score right now (refreshed every minute, scored like the live table), and
+// when everything is calculated it is the final comparison. "תמונה לשיתוף" makes a table picture of what is shown, for WhatsApp.
 const NUM = { fontFamily: "var(--num-font)", fontWeight: 800 };
 const r0 = (v) => (v == null ? "—" : Math.round(Number(v)));
 const sign = (v) => (v > 0 ? `+${v}` : `${v}`);
@@ -47,7 +51,7 @@ function ShareImage({ round, rows, exact, evening, compare }) {
   return (
     <div className="space-y-2">
       <button type="button" onClick={make} disabled={busy} className="w-full rounded-xl py-3 font-bold" style={{ background: "linear-gradient(135deg,#fde047,#eab308)", color: "#1a1405" }}>
-        {busy ? "יוצר תמונה…" : img ? "↻ ליצור מחדש" : compare ? "🖼️ תמונה לשיתוף: תחזית מול בפועל" : "🖼️ תמונה לשיתוף"}
+        {busy ? "יוצר תמונה…" : img ? "↻ ליצור מחדש" : compare ? `🖼️ תמונה לשיתוף: תחזית מול ${compare.live ? "לייב" : "בפועל"}` : "🖼️ תמונה לשיתוף"}
       </button>
       {msg && <div className="text-sm text-red-400">{msg}</div>}
       {img && (
@@ -68,7 +72,9 @@ export default function AdminForecasts() {
   const [roundId, setRoundId] = useState(null);
   const [rows, setRows] = useState(null);
   const [eve, setEve] = useState(null); // the evening shown (null: the whole round)
-  const [cmp, setCmp] = useState(false); // forecast against actual (only once everything shown is calculated)
+  const [cmp, setCmp] = useState(false); // forecast against actual
+  const [live, setLive] = useState({}); // matches not calculated yet: { id: { a, b } }, the score now (or last seen)
+  const seen = useRef({});
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -82,12 +88,44 @@ export default function AdminForecasts() {
     })().catch((e) => setError(e.message || String(e)));
   }, []);
 
+  useEffect(() => { setRows(null); setEve(null); setError(""); }, [roundId]);
+
+  // while the round is being played: its matches, points and the live scores, every minute
   useEffect(() => {
     if (!base || !roundId) return undefined;
     let off = false;
-    setRows(null);
-    setEve(null);
-    setError("");
+    const tick = async () => {
+      if (document.hidden) return;
+      const now = new Date().toISOString();
+      const { data: ms } = await supabase.from("matches").select("*").eq("round_id", roundId);
+      const open = (ms || []).filter((m) => !m.is_score_calculated && m.match_date <= now);
+      const day = (d) => new Date(d).toLocaleDateString("sv-SE");
+      const [ps, feed] = !ms?.length ? [{}, null] : await Promise.all([
+        supabase.from("predictions").select("*").in("match_id", ms.map((m) => m.id)),
+        open.length ? fetch(`/api/football?competition=${TOURNAMENT_CODE}&filter=LIVE&dateFrom=${day(Date.now() - 864e5)}&dateTo=${day(Date.now())}`).then((r) => r.json()).catch(() => null) : null,
+      ]);
+      if (off) return;
+      for (const lm of feed?.matches || []) {
+        const m = findDbMatch(lm, open);
+        if (m) seen.current[m.id] = { a: lm.score?.fullTime?.home ?? lm.score?.halfTime?.home ?? 0, b: lm.score?.fullTime?.away ?? lm.score?.halfTime?.away ?? 0 };
+      }
+      const next = {};
+      for (const m of open) {
+        if (seen.current[m.id]) next[m.id] = seen.current[m.id];
+        else if (m.actual_score_a != null && m.actual_score_b != null) next[m.id] = { a: m.actual_score_a, b: m.actual_score_b };
+      }
+      setLive(next);
+      if (ps.data) setBase((b) => ({ ...b, matches: [...b.matches.filter((m) => m.round_id !== roundId), ...ms], preds: [...b.preds.filter((x) => !ms.some((m) => m.id === x.match_id)), ...ps.data] }));
+    };
+    const playing = base.matches.some((m) => m.round_id === roundId && !m.is_score_calculated && m.match_date <= new Date().toISOString());
+    if (playing) tick().catch(() => {});
+    const t = setInterval(() => { if (base.matches.some((m) => m.round_id === roundId && !m.is_score_calculated)) tick().catch(() => {}); }, 60000);
+    return () => { off = true; clearInterval(t); };
+  }, [!!base, roundId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!base || !roundId) return undefined;
+    let off = false;
     (async () => {
       const ms = base.matches.filter((m) => m.round_id === roundId);
       const byId = Object.fromEntries(ms.map((m) => [m.id, m]));
@@ -96,6 +134,7 @@ export default function AdminForecasts() {
       if (fs.error) throw fs.error;
       if (off) return;
       const done = ms.filter((m) => m.is_score_calculated).length;
+      const started = ms.some((m) => m.match_date <= new Date().toISOString());
       const start = ms.reduce((d, m) => (m.match_date < d ? m.match_date : d), ms[0]?.match_date || "");
       const before = (p) => all[p.match_id]?.is_score_calculated && !byId[p.match_id] && all[p.match_id].match_date < start;
       const everyone = base.preds.filter(before).map((p) => ({ match: all[p.match_id], prediction: p }));
@@ -106,10 +145,18 @@ export default function AdminForecasts() {
         const past = theirs.filter(before).map((p) => ({ match: all[p.match_id], prediction: p }));
         const picks = mine.map((p) => ({ match: byId[p.match_id], a: Number(p.predicted_score_a) || 0, b: Number(p.predicted_score_b) || 0, p }));
         const odds = (L) => L.reduce((s, x) => { const k = pick(x.match, x.a, x.b); return { dir: s.dir + k.oc[1], ex: s.ex + k.ex[1] }; }, { dir: 0, ex: 0 });
-        const came = (L) => ({ dir: L.filter((x) => Number(x.p.correct_outcome_points_earned) > 0).length, ex: L.filter((x) => Number(x.p.exact_score_points_earned) > 0).length });
-        const earnedIn = (L) => (L.some((x) => x.match.is_score_calculated) ? L.reduce((s, x) => s + (x.match.is_score_calculated ? Number(x.p.points_earned) || 0 : 0), 0) : null);
+        // what a pick earned: the points of a calculated match, or what the score now would give; null before kick-off
+        const got = (x) => {
+          if (x.match.is_score_calculated) return { pts: Number(x.p.points_earned) || 0, dir: Number(x.p.correct_outcome_points_earned) > 0, ex: Number(x.p.exact_score_points_earned) > 0 };
+          const now = live[x.match.id];
+          if (!now) return null;
+          const c = calculateScore(x.p, { ...x.match, actual_score_a: now.a, actual_score_b: now.b });
+          return { pts: Number(c.totalPoints) || 0, dir: c.parts.outcome > 0, ex: c.parts.exact > 0 };
+        };
+        const earnedIn = (L) => { const G = L.map(got).filter(Boolean); return G.length ? G.reduce((s, g) => s + g.pts, 0) : null; };
+        const came = (L) => { const G = L.map(got).filter(Boolean); return { dir: G.filter((g) => g.dir).length, ex: G.filter((g) => g.ex).length }; };
         const stored = fs.data.find((x) => x.user_id === u.id) || null;
-        const f = done === ms.length || !mine.length || (done > 0 && stored?.cats?.v === 3) ? stored : { ...computeForecast3(past, picks, base.matches, everyone), updated_at: stored?.updated_at };
+        const f = done === ms.length || !mine.length || (started && stored?.cats?.v === 3) ? stored : { ...computeForecast3(past, picks, base.matches, everyone), updated_at: stored?.updated_at };
         const exp = odds(picks);
         const onDay = (day) => picks.filter((x) => eveningOf(x.match.match_date) === day);
         const split = !f ? {} : forecastEvenings({ fc: Number(f.fc), dir: f.cats?.v >= 2 ? f.cats.dir : exp.dir }, past, Object.fromEntries(days.map((d) => [d, onDay(d)])), base.matches, (m) => eveningOf(m.match_date));
@@ -123,12 +170,12 @@ export default function AdminForecasts() {
       const pastRounds = new Set(everyone.map((x) => x.match.round_id)).size;
       const hit = everyone.filter((x) => Number(x.prediction.exact_score_points_earned) > 0).length / (pastRounds || 1);
       const group = (of, share) => { const now = list.reduce((s, r) => s + (of(r).sent ? of(r).exp.ex : 0), 0); return pastRounds ? (hit * share + now) / 2 : now; };
-      const count = (L) => ({ done: L.filter((m) => m.is_score_calculated).length, total: L.length });
+      const count = (L) => ({ done: L.filter((m) => m.is_score_calculated).length, live: L.filter((m) => !m.is_score_calculated && live[m.id]).length, total: L.length });
       const byDay = Object.fromEntries(days.map((day) => { const L = ms.filter((m) => eveningOf(m.match_date) === day); return [day, { ...count(L), exact: Math.round(group((r) => r.evenings[day], L.length / ms.length)) }]; }));
       setRows({ list, days, byDay, ...count(ms), exact: Math.round(group((r) => r, 1)) });
     })().catch((e) => { if (!off) setError(e.message || String(e)); });
     return () => { off = true; };
-  }, [base, roundId]);
+  }, [base, roundId, live]);
 
   if (error) return <div dir="rtl" className="text-red-400 text-sm">שגיאה: {error}</div>;
   if (!base) return <div className="flex justify-center py-12"><OrbitSpinner size={40} /></div>;
@@ -140,11 +187,14 @@ export default function AdminForecasts() {
   // a stored row from the first formula has no expected hits, so they come from the odds
   const dirOf = (f, exp) => (eve ? f.dir : f.cats?.v >= 2 ? f.cats.dir : exp.dir);
   const shareRows = list.filter((r) => r.f).map(({ name, f, exp }) => ({ name, fc: f.fc, lo: f.lo, hi: f.hi, dir: dirOf(f, exp) }));
-  const compare = over && cmp;
+  const counted = !!at && at.done + at.live > 0; // something to compare with
+  const compare = counted && cmp;
   const results = list.filter((r) => r.f && r.sent && r.actual != null).sort((x, y) => y.actual - x.actual);
   const exactCame = results.reduce((s, r) => s + r.came.ex, 0);
   const resultRows = results.map(({ name, f, exp, actual, came }) => ({ name, fc: f.fc, lo: f.lo, hi: f.hi, dir: dirOf(f, exp), actual, adir: came.dir }));
   const inRange = resultRows.filter((r) => r.lo <= Math.round(r.actual) && Math.round(r.actual) <= r.hi).length;
+  const passed = resultRows.filter((r) => Math.round(r.actual) >= Math.round(r.fc)).length;
+  const clock = new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
   const miss = resultRows.length ? resultRows.reduce((s, r) => s + Math.abs(r.actual - r.fc), 0) / resultRows.length : 0;
   const chip = (on) => ({ background: on ? "#facc15" : "rgba(255,255,255,.08)", color: on ? "#1a1405" : "#fff" });
 
@@ -174,20 +224,21 @@ export default function AdminForecasts() {
             </div>
           )}
           <div className="text-sm text-slate-300">
-            {at.done === 0 ? (eve ? "הערב עוד לא חושב" : "המחזור עוד לא חושב") : over ? (eve ? "הערב הסתיים" : "המחזור הסתיים") : <>חושבו <span dir="ltr" style={NUM}>{at.done}/{at.total}</span> משחקים</>}
+            {at.done === 0 && at.live === 0 ? (eve ? "הערב עוד לא חושב" : "המחזור עוד לא חושב") : over ? (eve ? "הערב הסתיים" : "המחזור הסתיים") : <>חושבו <span dir="ltr" style={NUM}>{at.done}/{at.total}</span> משחקים</>}
+            {at.live > 0 && <span className="font-bold" style={{ color: "#f87171" }}> · {at.live} בלייב</span>}
           </div>
-          {over && results.length > 0 && (
+          {counted && results.length > 0 && (
             <div className="flex gap-2">
-              {[[false, "תחזית"], [true, "תחזית מול בפועל"]].map(([v, t]) => (
+              {[[false, "תחזית"], [true, over ? "תחזית מול בפועל" : "תחזית מול לייב"]].map(([v, t]) => (
                 <button key={t} type="button" onClick={() => setCmp(v)} className="flex-1 rounded-lg py-2 text-sm font-bold" style={chip(v === cmp)}>{t}</button>
               ))}
             </div>
           )}
           {compare ? (<>
-            <ShareImage key={`${roundId}-${eve}-cmp`} round={order} rows={resultRows} exact={at.exact} evening={eve ? eveningName(eve) : null} compare={{ exact: exactCame }} />
+            <ShareImage key={`${roundId}-${eve}-cmp-${over}`} round={order} rows={resultRows} exact={at.exact} evening={eve ? eveningName(eve) : null} compare={{ exact: exactCame, live: over ? null : clock }} />
             <div className="grid grid-cols-3 gap-2 rounded-xl bg-slate-800 border border-slate-700 px-2 py-2.5">
-              <Cell t="בתוך הטווח">{inRange}/{resultRows.length}</Cell>
-              <Cell t="פספוס ממוצע">{miss.toFixed(1)}</Cell>
+              {over ? <Cell t="בתוך הטווח">{inRange}/{resultRows.length}</Cell> : <Cell t="עברו את התחזית">{passed}/{resultRows.length}</Cell>}
+              {over ? <Cell t="פספוס ממוצע">{miss.toFixed(1)}</Cell> : <Cell t="עודכן">{clock}</Cell>}
               <Cell t="מדויקות (צפי)">{exactCame}<span style={{ fontSize: 13, color: "#94a3b8" }}> ({at.exact})</span></Cell>
             </div>
             <div className="space-y-2">
@@ -198,20 +249,20 @@ export default function AdminForecasts() {
                   <div key={id} className="rounded-xl bg-slate-800 border border-slate-700 px-3 py-2.5">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-bold text-white">{name}</span>
-                      <span className="text-xs font-bold" style={{ color: inside ? "#4ade80" : "#94a3b8" }}>{inside ? "בתוך הטווח" : actual > f.hi ? "מעל הטווח" : "מתחת לטווח"}</span>
+                      <span className="text-xs font-bold" style={{ color: !over ? "#f87171" : inside ? "#4ade80" : "#94a3b8" }}>{!over ? (at.live > 0 ? "בלייב" : "עד כה") : inside ? "בתוך הטווח" : actual > f.hi ? "מעל הטווח" : "מתחת לטווח"}</span>
                     </div>
                     {/* the range, the forecast (gold line) and what was earned (dot) */}
                     <div dir="ltr" className="relative mb-3" style={{ height: 18 }}>
                       <div className="absolute inset-x-0" style={{ top: 6, height: 6, borderRadius: 3, background: "rgba(255,255,255,.08)" }} />
                       <div className="absolute" style={{ top: 5, height: 8, left: x(f.lo), width: `calc(${x(f.hi)} - ${x(f.lo)})`, borderRadius: 4, background: "rgba(250,204,21,.35)" }} />
                       <div className="absolute" style={{ top: 0, height: 18, width: 3, marginLeft: -1, left: x(f.fc), borderRadius: 2, background: "#facc15" }} />
-                      <div className="absolute" style={{ top: 3, height: 12, width: 12, marginLeft: -6, left: x(actual), borderRadius: "50%", background: gapColor(d), border: "2px solid #0f172a" }} />
+                      <div className="absolute" style={{ top: 3, height: 12, width: 12, marginLeft: -6, left: x(actual), borderRadius: "50%", background: over || d >= 0 ? gapColor(d) : "#38bdf8", border: "2px solid #0f172a" }} />
                     </div>
                     <div className="grid grid-cols-5 gap-x-1">
                       <Cell t="תחזית" c="#facc15">{r0(f.fc)}</Cell>
-                      <Cell t="בפועל" c={gapColor(d)}>{r0(actual)}<span style={{ fontSize: 12 }}> ({sign(d)})</span></Cell>
+                      <Cell t={over ? "בפועל" : "עכשיו"} c={over || d >= 0 ? gapColor(d) : "#fff"}>{r0(actual)}<span style={{ fontSize: 12 }}> ({sign(d)})</span></Cell>
                       <Cell t="צפי כיוונים" c="#facc15">{Math.round(dirOf(f, exp))}</Cell>
-                      <Cell t="כיוונים בפועל" c="#38bdf8">{came.dir}</Cell>
+                      <Cell t={over ? "כיוונים בפועל" : "כיוונים עכשיו"} c="#38bdf8">{came.dir}</Cell>
                       <Cell t="מדויקות">{came.ex}</Cell>
                     </div>
                   </div>
