@@ -239,7 +239,7 @@ export default function AdminForecasts({ sheet = false }) {
       // a round opens on tonight's evening, and on the tab that fits what is going on
       if (opened.current !== roundId) {
         opened.current = roundId;
-        const today = days.find((d) => d === tonightIs()) || null, c = today ? byDay[today] : count(ms);
+        const today = (days.length > 1 && days.find((d) => d === tonightIs())) || null, c = today ? byDay[today] : count(ms);
         setEve(today);
         setMode(ms.some((m) => !m.is_score_calculated && m.match_date <= new Date().toISOString() && (!today || eveningOf(m.match_date) === today)) ? "live" : c.done === c.total && c.total ? "act" : "fc");
       }

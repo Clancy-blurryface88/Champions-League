@@ -2,10 +2,13 @@
 // For every pick and every kind of prediction (outcome, goals range, both teams score, exact score): the pick's
 // chance from the odds × its points × the player's skill in that kind. The skill = what they really earned in that
 // kind in the past rounds ÷ what the odds said their picks were worth, pulled toward 1 while there is little
-// history. The usual range is the 20th–80th percentile of simulated rounds.
+// history. The first formula's range is the 20th–80th percentile of simulated rounds; since 25.11 it is a fixed band.
 
 const CATS = ['oc', 'gr', 'bt', 'ex'];
 const WIDEN = Number(globalThis.__FC_WIDEN__ || 1.3); // ×1.3, the user's pick (21.11): a tighter band; ×1.6 held 17 of 28 on rounds 1–4
+// the range shown around the forecast, points each side (the user's numbers, 25.11): a whole round / one evening
+const BAND_ROUND = 12, BAND_EVENING = 7;
+const band = (fc, w) => ({ lo: Math.max(0, Math.round(fc) - w), hi: Math.round(fc) + w });
 const SHRINK = 8; // points of history that count as "average skill"
 const n = (x) => (x == null || x === '' ? 0 : Number(x));
 
@@ -154,7 +157,7 @@ function core2(past, now, matches) {
     return { L };
   });
 
-  // simulated rounds, drawn from the same tables; each side widened like the first formula's range
+  // simulated rounds, drawn from the same tables, for the chance of passing the average
   const rand = rng(Math.round(fc * 1000) + now.length);
   const sims = [];
   for (let s = 0; s < 3000; s++) {
@@ -166,12 +169,10 @@ function core2(past, now, matches) {
     }
     sims.push(Math.max(0, fc + WIDEN * (t - fc)));
   }
-  sims.sort((x, y) => x - y);
-  const q = (p) => sims[Math.floor(p * (sims.length - 1))];
   const beat = avg == null ? null : Math.round((100 * sims.filter((t) => t > avg).length) / sims.length);
   const r2 = (x) => +x.toFixed(2);
   return {
-    fc: r2(fc), lo: Math.round(Math.min(q(0.2), fc)), hi: Math.round(Math.max(q(0.8), fc)), max: r2(max), avg: avg == null ? null : r2(avg),
+    fc: r2(fc), ...band(fc, BAND_ROUND), max: r2(max), avg: avg == null ? null : r2(avg),
     sims, parts,
     // v: which formula made the row; dir / exact: expected correct outcomes and exact scores;
     // beat: the chance (%) of passing the average; n: how many matches were predicted
@@ -235,7 +236,7 @@ export function computeForecast3(past, now, matches, everyone) {
   const shift = fc - base.fc, r2 = (x) => +x.toFixed(2);
   const { parts, ...rest } = base;
   return {
-    ...rest, fc: r2(fc), lo: Math.max(0, Math.round(base.lo + shift)), hi: Math.round(base.hi + shift),
+    ...rest, fc: r2(fc), ...band(fc, BAND_ROUND),
     cats: {
       ...Object.fromEntries(CATS.map((c) => [c, r2((cats[c] / hits) * fc)])), v: 3, dir: r2(count.oc * perRound), exact: r2(count.ex * perRound),
       beat: Math.round((100 * sims.filter((t) => t + shift > avg * perRound).length) / sims.length), n: now.length,
@@ -271,7 +272,7 @@ export function forecastEvenings({ fc, dir }, past, days, matches, dayOf) {
   });
   const tp = parts.reduce((q, x) => q + x.pts, 0) || 1, td = parts.reduce((q, x) => q + x.dir, 0) || 1;
   return Object.fromEntries(parts.map((x) => {
-    const f = (fc * x.pts) / tp, shift = f - x.c.fc;
-    return [x.d, { fc: +f.toFixed(2), dir: +((dir * x.dir) / td).toFixed(2), lo: Math.max(0, Math.round(x.c.lo + shift)), hi: Math.round(x.c.hi + shift), all: x.all, same: x.same }];
+    const f = (fc * x.pts) / tp;
+    return [x.d, { fc: +f.toFixed(2), dir: +((dir * x.dir) / td).toFixed(2), ...band(f, BAND_EVENING), all: x.all, same: x.same }];
   }));
 }
