@@ -5,6 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 // Claude). Like a real paper: pages to turn, each exactly one screen tall (no scrolling, no tap-to-expand);
 // a page that's a bit long on a short phone shrinks to fit. A match with a story gets its matrix (players ×
 // the score after each goal) and its live blog together on one page.
+// An issue may carry a hand-made layout (25.11, the admin's editor): texts.layout.pages = [{ id, name?, html? }] — the
+// pages in order; a page with html is shown as edited, the others are drawn from the facts and texts as always.
+// Page numbers and the "next page" lines stay right by themselves: they are marked data-np and filled on showing.
 
 export const NAME = "מבט לאלופות";
 const INK = "#1a1410", RED = "#b3261e", GREEN = "#166534", PAPER = "#f3ecdc";
@@ -39,7 +42,9 @@ const INKF = "grayscale(1) contrast(1.25) brightness(.55)";
 const Mark = ({ src, h, w, style }) => <img src={src} alt="" style={{ height: h, width: w, objectFit: "contain", filter: INKF, mixBlendMode: "multiply", ...style }} />;
 const Ball = ({ s = 12 }) => <Mark src="/champions/round-ball.png" h={s} w={s} style={{ display: "inline-block", verticalAlign: "-2px" }} />;
 const Cup = ({ s = 16 }) => <Mark src="/champions/ch-trophy.webp" h={s} w={s * 0.8} style={{ display: "inline-block", verticalAlign: "-3px" }} />;
-const Foot = ({ children }) => <div style={{ marginTop: "auto" }}><Rule /><div style={{ fontFamily: FR, fontSize: 10.5, fontWeight: 700, textAlign: "left" }}>{children}</div></div>;
+const footText = (no, nx) => (nx ? `בעמוד ${no + 1}: ${nx} ←` : "");
+const Foot = ({ children, no, nx }) => <div style={{ marginTop: "auto" }}><Rule /><div style={{ fontFamily: FR, fontSize: 10.5, fontWeight: 700, textAlign: "left" }}>{children || <span data-np="foot">{footText(no, nx)}</span>}</div></div>;
+const No = ({ no }) => <span data-np="no">{no}</span>;
 // the front page's "photo" (the user's pick, 22.11): a match ticket — the teams and the score, and on a torn stub the
 // goal that decided it (the last goal: its minute and scorer); a goalless match says so
 const Ticket = ({ m, dm, he, cap }) => { const g = m.goals?.[m.goals.length - 1];
@@ -55,7 +60,7 @@ const Halftone = ({ m, h = 112, cap }) => <div className="relative" style={{ hei
   {cap && <div className="absolute" style={{ bottom: 0, insetInline: 0, padding: "2px 6px", background: "rgba(243,236,220,.92)", fontFamily: FR, fontSize: 10, fontStyle: "italic", color: INK }}>{cap}</div>}</div>;
 
 // one page = one screen; taller content is scaled down to fit
-function Page({ h, children }) {
+function Page({ h, children, html }) {
   const inner = React.useRef(null);
   const [k, setK] = React.useState(1);
   React.useLayoutEffect(() => {
@@ -63,9 +68,10 @@ function Page({ h, children }) {
     // transform doesn't change layout, so scrollHeight is the content's natural height at any scale
     const fit = () => { const need = el.scrollHeight; setK(need > h ? h / need : 1); };
     fit(); const t = setTimeout(fit, 700); return () => clearTimeout(t);
-  }, [h]);
+  }, [h, html]);
+  const inner2 = html == null ? { children } : { dangerouslySetInnerHTML: { __html: html } };
   return <div dir="rtl" style={{ height: h, overflow: "hidden", position: "relative", background: paperBg, color: INK, boxShadow: "0 30px 60px rgba(0,0,0,.55), inset 0 0 60px rgba(120,90,40,.16)" }}>
-    <div ref={inner} className="flex flex-col" style={{ position: "absolute", top: 0, right: 0, width: `${100 / k}%`, minHeight: h / k, padding: "12px 12px 10px", transform: `scale(${k})`, transformOrigin: "top right" }}>{children}</div>
+    <div ref={inner} data-np-inner="" {...inner2} className="flex flex-col" style={{ position: "absolute", top: 0, right: 0, width: `${100 / k}%`, minHeight: h / k, padding: "12px 12px 10px", transform: `scale(${k})`, transformOrigin: "top right" }} />
     {/* the horizontal fold of a real paper */}
     <div className="pointer-events-none absolute inset-x-0" style={{ top: "52%", height: 18, background: "linear-gradient(180deg, transparent, rgba(0,0,0,.06) 45%, rgba(255,255,255,.35) 55%, transparent)" }} /></div>;
 }
@@ -114,17 +120,56 @@ function WeatherIcon({ kind }) {
     {kind === "storm" && <path d="M22 29 l-4 6 h4 l-3 6" stroke={RED} strokeWidth="2.2" fill="none" />}</svg>;
 }
 
+// hand-edited pages: only an admin can write them, and still nothing that runs gets through
+export function cleanHtml(html) {
+  const d = new DOMParser().parseFromString(`<div>${html || ""}</div>`, "text/html");
+  d.querySelectorAll("script,style,iframe,object,embed,link,meta,form,input,button,base").forEach((e) => e.remove());
+  d.querySelectorAll("*").forEach((e) => [...e.attributes].forEach((a) => { if (/^on/i.test(a.name) || a.name === "contenteditable" || (/^(href|src|xlink:href)$/i.test(a.name) && /^\s*(javascript|data:text)/i.test(a.value))) e.removeAttribute(a.name); }));
+  return d.body.firstChild.innerHTML;
+}
+// the numbers and the next-page line of an edited page, by where it stands now
+function fillHtml(html, no, nx) {
+  const d = new DOMParser().parseFromString(`<div>${cleanHtml(html)}</div>`, "text/html");
+  d.querySelectorAll("[data-np=no]").forEach((e) => { e.textContent = no; });
+  d.querySelectorAll("[data-np=next]").forEach((e) => { e.textContent = no + 1; });
+  d.querySelectorAll("[data-np=foot]").forEach((e) => { e.textContent = footText(no, nx); });
+  return d.body.firstChild.innerHTML;
+}
+// the issue's pages as they will be shown: [{ id, name, html?, el(no, nx, h) }]
+export function layoutPages(issue, h, layout = issue.texts?.layout) {
+  const all = buildPages(issue, h);
+  if (!layout?.pages?.length) return all;
+  return layout.pages.map((x) => { const own = all.find((a) => a.id === x.id); return own || x.html != null ? { ...own, ...x, name: x.name || own?.name || "", teaser: x.name || own?.teaser || x.name } : null; }).filter(Boolean);
+}
+export function pageElement(x, i, list, h) {
+  const no = i + 1, nx = list[i + 1]?.teaser;
+  return x.html != null ? <Page h={h} html={fillHtml(x.html, no, nx)} /> : x.el(no, nx);
+}
+// a new empty page's start
+export const BlankPage = ({ no = 1, name, issue }) => { const f = issue.facts || {}; return <><div className="flex justify-between" style={{ fontFamily: FR, fontSize: 10, fontWeight: 700 }}><span><No no={no} /> · {name}</span><span>{NAME}</span><span>{f.round?.name?.replace(/League Phase\s*-\s*/i, "מחזור ")} · {f.dm}</span></div><Rule thick /><H s={24}>כותרת</H><P style={{ marginTop: 6 }}>כאן כותבים את הטקסט.</P><Foot no={no} nx="" /></>; };
+// parts the editor can add
+export const PARTS = {
+  title: () => <H s={20}>כותרת חדשה</H>, text: () => <P style={{ marginTop: 6 }}>פסקה חדשה.</P>, kick: () => <Kick>כותרת קטנה</Kick>, rule: () => <Rule />,
+  box: () => <Box style={{ marginTop: 6 }}><H s={14}>כותרת במסגרת</H><P style={{ fontSize: 12.3 }}>טקסט במסגרת.</P></Box>, col: () => <div><P>טקסט בעמודה החדשה.</P></div>, vline: () => <VLine />,
+};
+
 export default function Newspaper({ issue, top = 100 }) {
   useNewspaperFonts();
-  const f = issue.facts || {}, t = issue.texts || {};
   const [h, setH] = React.useState(() => Math.max(480, window.innerHeight - top - 84));
   React.useEffect(() => { const on = () => setH(Math.max(480, window.innerHeight - top - 84)); window.addEventListener("resize", on); return () => window.removeEventListener("resize", on); }, [top]);
+  const list = layoutPages(issue, h);
+  return <Pages pages={list.map((x, i) => <React.Fragment key={x.id}>{pageElement(x, i, list, h)}</React.Fragment>)} />;
+}
+
+function buildPages(issue, h) {
+  const f = issue.facts || {}, t = issue.texts || {};
   const M = Object.fromEntries((f.matches || []).map((m) => [m.id, m]));
   const isRound = f.kind === "round";
   const issueNo = (f.round?.no || 0) * 2 - ((f.nightsInRound || 2) - (f.nightNo || 1));
   const Mast = ({ page }) => <><div className="flex justify-between" style={{ fontFamily: FR, fontSize: 10, fontWeight: 700 }}><span>{page}</span><span>{NAME}</span><span>{f.round?.name?.replace(/League Phase\s*-\s*/i, "מחזור ")} · {f.dm}</span></div><Rule thick /></>;
   const winner = f.nightRank?.[0], second = f.nightRank?.[1];
-  const pages = []; // each: (page number) => <Page>
+  const pages = []; // each: { id, name (in the editor), teaser (how the page before announces it), el(page number, next teaser) => <Page> }
+  const add = (id, name, teaser, el) => pages.push({ id, name, teaser, el });
 
   // 1 — the front (22.11, the user's pick "4+5, version 2, the tables on the left"): a quality broadsheet — the line
   // above the nameplate, the folio between rules, the headline centred with an italic deck; the story on the right
@@ -141,13 +186,13 @@ export default function Newspaper({ issue, top = 100 }) {
   const photo = M[t.photoMatch];
   const pg = photo?.goals?.[photo.goals.length - 1];
   const photoHits = (f.exact || []).filter((e) => e.match === photo?.id).map((e) => e.name);
-  pages.push((no) => <Page h={h}>
+  add("front", "שער", "השער", (no) => <Page h={h}>
     <div className="grid items-center" style={{ gridTemplateColumns: "1fr 1px 118px", gap: 10 }}>
       <div><div style={{ fontFamily: "'Noto Serif Hebrew', serif", fontWeight: 700, fontSize: 34, lineHeight: 1 }}>{NAME}</div><div style={{ fontFamily: FR, fontSize: 9.5, fontStyle: "italic" }}>העיתון היחיד שקורא את הניחושים שלכם</div></div>
       <div style={{ background: INK, alignSelf: "stretch" }} /><Mark src="/champions/ch-logo.png" h={46} w="100%" /></div>
     <div className="flex justify-between" style={{ borderTop: `1px solid ${INK}`, borderBottom: `3px double ${INK}`, padding: "2px 0", margin: "4px 0 8px", fontFamily: FR, fontSize: 9.5, fontWeight: 700 }}><span>שנה א׳ · גיליון {issueNo}</span><span>{f.day ? `בוקר שאחרי ערב ${f.day}` : ""} · {f.dm}</span><span>מחיר: ניחוש אחד</span></div>
     <div className="relative"><Mark src="/champions/ch-trophy.webp" h={118} style={{ position: "absolute", left: "50%", top: -14, transform: "translateX(-50%)", opacity: 0.13 }} />
-      <div className="relative"><div style={{ fontFamily: FR, fontWeight: 700, fontSize: (t.headline || "").length <= 10 ? 38 : (t.headline || "").length <= 16 ? 32 : 26, lineHeight: 1, textAlign: "center" }}>{t.headline}</div>
+      <div className="relative"><div style={{ fontFamily: FR, fontWeight: 700, fontSize: (t.headline || "").length <= 10 ? 38 : (t.headline || "").length <= 16 ? 32 : 26, lineHeight: 1, textAlign: "center" }} data-np-text="headline">{t.headline}</div>
       <div style={{ fontFamily: FR, fontSize: 12, fontStyle: "italic", textAlign: "center", margin: "4px 10px 8px", lineHeight: 1.35 }}>{t.subhead}</div></div></div>
     <div className="grid" style={{ gridTemplateColumns: "1fr 1px 106px", gap: 8 }}>
       <div>
@@ -155,7 +200,7 @@ export default function Newspaper({ issue, top = 100 }) {
           {pg && <figcaption style={{ fontFamily: FR, fontSize: 9.5, lineHeight: 1.3, marginTop: 3 }}><b>הרגע שהכריע:</b> {t.scorers?.[pg.scorer] || pg.scorer} כובש בדקה {pg.minute}, {photo.a.he} {photo.score} {photo.b.he}{photoHits.length ? ` — ופגיעה מדויקת ל${photoHits.join(" ול")}` : ""}. <span style={{ opacity: 0.6, fontSize: 8.5 }}>(צילום: ארכיון {NAME})</span></figcaption>}</figure>}
         <div style={{ fontFamily: FR, fontSize: 10, fontWeight: 700, margin: "4px 0" }}>מאת <span style={{ color: RED }}>כתב {NAME}</span> · {f.day} {f.dm}</div>
         <div style={{ columnCount: 2, columnGap: 10, columnRule: `1px solid ${INK}44`, fontFamily: FR, fontSize: 10.6, lineHeight: 1.42, textAlign: "justify" }}><p style={{ margin: 0 }}><span style={{ float: "right", fontWeight: 900, fontSize: 34, lineHeight: 0.8, marginLeft: 4, marginTop: 2 }}>{(t.lead || " ")[0]}</span>{(t.lead || "").slice(1)}</p></div>
-        <div style={{ fontFamily: FR, fontSize: 10, fontWeight: 700, textAlign: "left", marginTop: 3 }}>(המשך בעמ׳ {no + 1})</div>
+        <div style={{ fontFamily: FR, fontSize: 10, fontWeight: 700, textAlign: "left", marginTop: 3 }}>(המשך בעמ׳ <span data-np="next">{no + 1}</span>)</div>
         {winner && <div style={{ borderTop: `2px solid ${INK}`, paddingTop: 3, marginTop: 6 }}><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 12 }}><Cup /> מנצח הערב</div><div className="flex items-baseline justify-between"><span style={{ fontFamily: FR, fontWeight: 900, fontSize: 18 }}>{winner.name}</span><N s={13}>{winner.pts.toFixed(2)}</N></div>{second && <div style={{ fontFamily: FR, fontSize: 9.5 }}>שני: {second.name} ({second.pts.toFixed(2)})</div>}</div>}
         {(climb || closed || bestHit) && <div style={{ borderTop: `1px solid ${INK}`, marginTop: 6, paddingTop: 3 }}><div style={{ fontFamily: FR, fontWeight: 900, fontSize: 12 }}><Ball /> עוד מהערב</div>
           {[climb && ["הקפיצה של הערב", <><b>{climb.name}</b> עלה {climb.move === 1 ? "מקום אחד" : `${climb.move} מקומות`}, למקום {climb.rank}</>],
@@ -178,7 +223,7 @@ export default function Newspaper({ issue, top = 100 }) {
     </div></Page>);
 
   // 2 — the lead story goes on: the exact hits of the night, the goals that made them
-  pages.push((no) => <Page h={h}><Mast page={`${no} · הכתבה הראשית`} /><Kick>המשך מעמוד 1</Kick>
+  add("lead", "הכתבה הראשית", "הכתבה הראשית", (no, nx) => <Page h={h}><Mast page={<><No no={no} /> · הכתבה הראשית</>} /><Kick>המשך מעמוד 1</Kick>
     {(t.leadMore || []).map((p, i) => <P key={i} style={{ marginTop: i ? 6 : 2 }}>{p}</P>)}
     <Rule /><P style={{ marginBottom: 6 }}>{t.leadHitsIntro}</P>
     {/* one row per match (22.11): the score and the points once, the names of everyone who hit it together */}
@@ -189,53 +234,53 @@ export default function Newspaper({ issue, top = 100 }) {
       : <P style={{ fontWeight: 700 }}>אף משתתף לא פגע בתוצאה מדויקת הערב.</P>}
     {f.exactGoals?.length > 0 && <><Rule /><Kick c={INK}>השערים שהעניקו פגיעה מדויקת עד הסוף</Kick>
       <div className="grid gap-2" style={{ marginTop: 4 }}>{f.exactGoals.map((g, i) => <div key={i} className="flex items-start gap-2" style={{ fontFamily: FR, fontSize: 12.8 }}><N s={15} c={RED}>{g.minute}'</N><div style={{ flex: 1 }}><b>{t.scorers?.[g.scorer] || g.scorer}</b> · <span style={{ display: "inline-block", verticalAlign: "middle" }}><Score m={M[g.match]} cs={14} ns={11} /></span> — פגיעה מדויקת ל{g.names.join(" ול")}</div>{g.pts != null && <N s={13} c={GREEN}>+{g.pts.toFixed(2)}</N>}</div>)}</div></>}
-    <Foot>בעמוד {no + 1}: {t.dramaTitle || "הפגיעות שנעלמו בדרך"} ←</Foot></Page>);
+    <Foot no={no} nx={nx} /></Page>);
 
   // 3 — the hits on the way, match by match
   const born = (f.matches || []).filter((m) => m.born > 0).sort((a, b) => b.born - a.born);
-  if (born.length) pages.push((no) => <Page h={h}><Mast page={`${no} · הדרמה`} /><Kick>מתוך משחקי הלייב</Kick><H s={24}>{t.dramaTitle}</H>
+  if (born.length) add("drama", "הדרמה", t.dramaTitle || "הפגיעות שנעלמו בדרך", (no, nx) => <Page h={h}><Mast page={<><No no={no} /> · הדרמה</>} /><Kick>מתוך משחקי הלייב</Kick><H s={24}>{t.dramaTitle}</H>
     <P style={{ margin: "4px 0 8px" }}>{t.dramaIntro}</P>
     <div style={{ border: `1px solid ${INK}` }}><div className="grid" style={{ gridTemplateColumns: "1fr 74px 74px", padding: "4px 6px", fontFamily: FR, fontSize: 10.5, fontWeight: 900, background: `${INK}10` }}><span>המשחק</span><span className="text-center">פגעו במהלך המשחק</span><span className="text-center">פגיעה מדויקת בסיום</span></div>
       {born.map((m) => <div key={m.id} className="grid items-center" style={{ gridTemplateColumns: "1fr 74px 74px", padding: "3px 6px", borderTop: `1px dotted ${INK}55` }}><span><Score m={m} cs={17} ns={12.5} /></span><span className="text-center"><N s={13}>{m.born}</N></span><span className="text-center"><N s={13} c={m.survived ? GREEN : RED}>{m.survived}</N></span></div>)}</div>
-    <Foot>{f.dramas?.length ? `בעמוד ${no + 1}: ${t.matches?.[0]?.title || "המשחק הדרמטי"} ←` : `בעמוד ${no + 1} ←`}</Foot></Page>);
+    <Foot no={no} nx={nx} /></Page>);
 
   // a page per dramatic match: the matrix and the live blog together
   (f.dramas || []).forEach((id, di) => { const m = M[id]; const tx = (t.matches || []).find((x) => x.id === id) || t.matches?.[di];
-    if (m) pages.push((no) => <Page h={h}><Mast page={`${no} · הדרמה`} /><Kick>{tx?.kicker}</Kick><H>{tx?.title}</H>
+    if (m) add(`match-${id}`, `${m.a.he}–${m.b.he}`, tx?.title || "המשחק הדרמטי", (no, nx) => <Page h={h}><Mast page={<><No no={no} /> · הדרמה</>} /><Kick>{tx?.kicker}</Kick><H>{tx?.title}</H>
       <div style={{ margin: "4px 0" }}><Score m={m} cs={22} ns={16} /></div><Matrix m={m} /><MatrixNote /><Blog m={m} text={tx} he={t.scorers} />
       {tx?.closing && <P style={{ marginTop: 6, fontWeight: 700 }}>{tx.closing}</P>}
-      <Foot>בעמוד {no + 1} ←</Foot></Page>); });
+      <Foot no={no} nx={nx} /></Page>); });
   // what the vanished hits would have been worth
-  if (f.dramas?.length) pages.push((no) => <Page h={h}><Mast page={`${no} · הדרמה`} /><H s={20}>מה זה עלה להם</H>
+  if (f.dramas?.length) add("cost", "מה זה עלה להם", "מה זה עלה להם", (no, nx) => <Page h={h}><Mast page={<><No no={no} /> · הדרמה</>} /><H s={20}>מה זה עלה להם</H>
     {f.dramas.map((id, di) => { const m = M[id]; const tx = (t.matches || []).find((x) => x.id === id) || t.matches?.[di]; return m ? <div key={id} style={{ marginTop: 8 }}><div className="flex items-center gap-2" style={{ marginBottom: 4 }}><Score m={m} cs={18} ns={13} /><b style={{ fontFamily: FR, fontSize: 13 }}>{tx?.title}</b></div>
       {tx?.costIntro && <P style={{ fontSize: 12.5, marginBottom: 4 }}>{tx.costIntro}</P>}<Worth rows={worthRows(m)} /></div> : null; })}
     <div style={{ fontFamily: FR, fontSize: 10.5, fontStyle: "italic", marginTop: 4 }}>"ניקוד אפשרי" = הנקודות שכל אחד היה מקבל אם המשחק היה נגמר בתוצאה שלו.</div>
-    <Foot>בעמוד {no + 1}: עוד מהמגרשים ←</Foot></Page>);
+    <Foot no={no} nx={nx} /></Page>);
 
   // the biggest score, the most turnarounds, the wisdom of the crowd
-  pages.push((no) => <Page h={h}><Mast page={`${no} · עוד מהמגרשים`} />
+  add("more", "עוד מהמגרשים", "עוד מהמגרשים", (no, nx) => <Page h={h}><Mast page={<><No no={no} /> · עוד מהמגרשים</>} />
     <div className="grid" style={{ gridTemplateColumns: "1fr 1px 1fr", gap: 10 }}>
       <div><Kick>התוצאה הגדולה</Kick><H s={15.5}>{t.bigScore?.title}</H><div style={{ margin: "4px 0" }}><Score m={M[f.biggest]} cs={18} ns={13} /></div><P style={{ fontSize: 12.3 }}>{t.bigScore?.text}</P></div><VLine />
       <div><Kick>הכי הרבה מהפכים</Kick><H s={15.5}>{t.flips?.title}</H><div style={{ margin: "4px 0" }}><Score m={M[f.flips]} cs={18} ns={13} /></div><P style={{ fontSize: 12.3 }}>{t.flips?.text}</P></div></div>
     <Rule /><Kick>ניתוח</Kick><H s={17}>חוכמת ההמונים</H><P style={{ marginTop: 3 }}>{t.crowd?.lead}</P><P style={{ marginTop: 6 }}>{t.crowd?.more}</P>
-    <Foot>בעמוד {no + 1}: {isRound ? "המחזור" : "הערב"} במספרים ←</Foot></Page>);
+    <Foot no={no} nx={nx} /></Page>);
 
   // the group as forecasters (the round issue): what the group predicted against what happened, the season beside it
   const gp = f.groupProfile;
-  if (isRound && gp) pages.push((no) => { const R = gp.round, S = gp.season, pct = (a, b) => (b ? Math.round((100 * a) / b) : 0);
+  if (isRound && gp) add("group", "הקבוצה", t.groupProfile?.title || "הקבוצה", (no, nx) => { const R = gp.round, S = gp.season, pct = (a, b) => (b ? Math.round((100 * a) / b) : 0);
     const w = (x) => Math.round(x), g2 = (x) => Math.round(x * 10) / 10;
     const rows = [["תיקו", w(R.group.D), pct(R.real.D, R.n), w(S.group.D), "%"], ["ניצחון בית", w(R.group.H), pct(R.real.H, R.n), w(S.group.H), "%"], ["ניצחון חוץ", w(R.group.A), pct(R.real.A, R.n), w(S.group.A), "%"], ["שתיהן כובשות", w(R.group.btts), pct(R.real.btts, R.n), w(S.group.btts), "%"], ["שערים למשחק", g2(R.group.goals), g2(R.real.goals), g2(S.group.goals), ""]];
     const st = gp.standouts;
-    return <Page h={h}><Mast page={`${no} · הקבוצה`} /><Kick>הפרופיל של הקבוצה</Kick><H s={23}>{t.groupProfile?.title}</H><P style={{ margin: "4px 0 8px" }}>{t.groupProfile?.text}</P>
+    return <Page h={h}><Mast page={<><No no={no} /> · הקבוצה</>} /><Kick>הפרופיל של הקבוצה</Kick><H s={23}>{t.groupProfile?.title}</H><P style={{ margin: "4px 0 8px" }}>{t.groupProfile?.text}</P>
       <div style={{ border: `1px solid ${INK}` }}><div className="grid" style={{ gridTemplateColumns: "1fr 62px 62px 62px", padding: "4px 6px", fontFamily: FR, fontSize: 10, fontWeight: 900, background: `${INK}10` }}><span /><span className="text-center">ניחוש המשתתפים</span><span className="text-center">בפועל</span><span className="text-center">ניחשו העונה</span></div>
         {rows.map(([l, g, r, s, u]) => <div key={l} className="grid items-center" style={{ gridTemplateColumns: "1fr 62px 62px 62px", padding: "5px 6px", borderTop: `1px dotted ${INK}55`, fontFamily: FR, fontSize: 12.5 }}><b>{l}</b><span className="text-center"><N s={13}>{g}{u}</N></span><span className="text-center"><N s={13} c={RED}>{r}{u}</N></span><span className="text-center"><N s={13} c={`${INK}99`}>{s}{u}</N></span></div>)}</div>
       <Rule /><Kick c={INK}>מי בלט במחזור</Kick>
       <div className="grid grid-cols-2 gap-2" style={{ marginTop: 4 }}>{[["הכי אופטימי בשערים", st.mostGoals.name, `${st.mostGoals.goals} שערים למשחק בממוצע`], ["הכי זהיר", st.fewestGoals.name, `${st.fewestGoals.goals} שערים למשחק בממוצע`], ["מלך התיקו", st.mostDraws.name, `${st.mostDraws.draws} ניחושי תיקו`], ["המנחש המיוחד", st.mostUnique.name, `${st.mostUnique.unique} ניחושים שאף אחד אחר לא ניחש${st.mostUnique.hits ? `, ${st.mostUnique.hits} מהם פגעו` : ""}`]].map(([l, nm, d]) => <Box key={l} style={{ padding: 6 }}><Kick>{l}</Kick><H s={16}>{nm}</H><div style={{ fontFamily: FR, fontSize: 11 }}>{d}</div></Box>)}</div>
-      <Foot>בעמוד {no + 1}: המחזור במספרים ←</Foot></Page>; });
+      <Foot no={no} nx={nx} /></Page>; });
 
   // the numbers, the table, forecast against reality (round) or the night's points (night)
-  pages.push((no) => { const nums = [[String(f.exactCount ?? 0), `פגיעות מדויקות הערב (${f.dir?.of || 0} ניחושים)`], [String(f.dir?.n ?? 0), `ניחושים שצדקו בכיוון — ${f.dir?.of ? Math.round((f.dir.n / f.dir.of) * 100) : 0}%`], [String(f.bornTotal ?? 0), "פגיעות במהלך המשחקים"], [String(f.gapNow ?? 0), "נקודות בין המקום הראשון לשני בטבלה"], [String((f.withoutExact || []).length), "משתתפים בלי פגיעה מדויקת"], [M[f.biggest] ? String(M[f.biggest].goalsTotal) : "0", "שערים בתוצאה הגדולה של הערב"]];
-    return <Page h={h}><Mast page={`${no} · מספרים`} /><H s={23}>{isRound ? "המחזור" : "הערב"} במספרים</H>
+  add("numbers", "מספרים", `${isRound ? "המחזור" : "הערב"} במספרים`, (no, nx) => { const nums = [[String(f.exactCount ?? 0), `פגיעות מדויקות הערב (${f.dir?.of || 0} ניחושים)`], [String(f.dir?.n ?? 0), `ניחושים שצדקו בכיוון — ${f.dir?.of ? Math.round((f.dir.n / f.dir.of) * 100) : 0}%`], [String(f.bornTotal ?? 0), "פגיעות במהלך המשחקים"], [String(f.gapNow ?? 0), "נקודות בין המקום הראשון לשני בטבלה"], [String((f.withoutExact || []).length), "משתתפים בלי פגיעה מדויקת"], [M[f.biggest] ? String(M[f.biggest].goalsTotal) : "0", "שערים בתוצאה הגדולה של הערב"]];
+    return <Page h={h}><Mast page={<><No no={no} /> · מספרים</>} /><H s={23}>{isRound ? "המחזור" : "הערב"} במספרים</H>
       <div className="grid grid-cols-3 gap-2" style={{ margin: "6px 0" }}>{nums.map(([v, l]) => <div key={l} className="text-center" style={{ borderTop: `3px solid ${INK}`, paddingTop: 3 }}><N s={21}>{v}</N><div style={{ fontFamily: FR, fontSize: 10.5, lineHeight: 1.2 }}>{l}</div></div>)}</div><Rule />
       <div className="grid" style={{ gridTemplateColumns: "1fr 1px 1fr", gap: 10 }}>
         <div style={{ fontFamily: FR }}><div style={{ fontSize: 11, fontWeight: 900 }}>הטבלה הכללית</div>
@@ -247,21 +292,21 @@ export default function Newspaper({ issue, top = 100 }) {
           <div style={{ fontSize: 10, fontStyle: "italic", opacity: 0.8, marginTop: 3 }}>{t.forecastNote || "הראשון = מה שצבר, האדום = התחזית."}</div></div>
           : <div style={{ fontFamily: FR }}><div style={{ fontSize: 11, fontWeight: 900 }}>הנקודות של הערב</div>
             <div style={{ border: `1px solid ${INK}`, marginTop: 3 }}>{(f.nightRank || []).map((r, i) => <div key={r.name} className="flex items-center justify-between" style={{ padding: "3px 6px", borderTop: i ? `1px dotted ${INK}55` : "none", fontSize: 12.5, fontWeight: i ? 700 : 900 }}><span>{r.name}</span><N s={12}>{r.pts.toFixed(2)}</N></div>)}</div></div>}</div>
-      <Foot>בעמוד {no + 1}: {f.tonight ? "מה מחכה הערב" : "לוח המודעות"} ←</Foot></Page>; });
+      <Foot no={no} nx={nx} /></Page>; });
 
   // tonight (a night that isn't the round's last)
-  if (f.tonight) pages.push((no) => <Page h={h}><Mast page={`${no} · הערב`} /><Kick>הערב · {f.tonight.day}</Kick><H s={24}>{t.tonight?.title}</H><P style={{ margin: "4px 0 8px" }}>{t.tonight?.text}</P>
+  if (f.tonight) add("tonight", "הערב", "מה מחכה הערב", (no, nx) => <Page h={h}><Mast page={<><No no={no} /> · הערב</>} /><Kick>הערב · {f.tonight.day}</Kick><H s={24}>{t.tonight?.title}</H><P style={{ margin: "4px 0 8px" }}>{t.tonight?.text}</P>
     <div className="grid gap-1.5">{f.tonight.matches.map((m) => <div key={m.id} className="flex items-center gap-2" style={{ fontFamily: FR, fontSize: 12.5, padding: "4px 0", borderBottom: `1px dotted ${INK}55` }}><span dir="ltr" className="inline-flex items-center gap-1.5"><Crest src={m.a.logo} s={18} /><b style={{ fontSize: 12 }}>{m.a.he}</b><span>–</span><b style={{ fontSize: 12 }}>{m.b.he}</b><Crest src={m.b.logo} s={18} /></span><span style={{ flex: 1 }} /><N s={12}>{new Date(m.kickoff).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jerusalem" })}</N></div>)}</div>
-    <Foot>בעמוד {no + 1}: לוח המודעות ←</Foot></Page>);
+    <Foot no={no} nx={nx} /></Page>);
 
   // the notices and the weather
-  pages.push((no) => <Page h={h}><Mast page={`${no} · מודעות`} /><H s={18} style={{ textAlign: "center" }}>— לוח מודעות —</H>
+  add("ads", "מודעות", "לוח המודעות", (no) => <Page h={h}><Mast page={<><No no={no} /> · מודעות</>} /><H s={18} style={{ textAlign: "center" }}>— לוח מודעות —</H>
     {/* classifieds, like a real paper: no frames — a bold word, the text, a dotted line between them, two columns */}
     <div style={{ columnCount: 2, columnGap: 14, columnRule: `1px solid ${INK}66`, marginTop: 6 }}>{(t.ads || []).slice(0, 6).map((a, i) => <div key={i} style={{ breakInside: "avoid", padding: "4px 0 6px", borderBottom: `1px dotted ${INK}77`, fontFamily: FR, fontSize: 11.8, lineHeight: 1.4 }}><b style={{ fontSize: 13 }}>{a.head}.</b> {a.body}</div>)}</div><Rule />
     <div className="flex items-center gap-3" style={{ fontFamily: FR, fontSize: 12.5 }}><WeatherIcon kind={f.weather} /><div><b>מזג האוויר: {t.weather?.title}</b> {t.weather?.text} {t.weather?.forecast && <><b>תחזית:</b> {t.weather.forecast}</>}</div></div>
     <Foot>{NAME} · הגיליון הבא יוצא בבוקר שאחרי ערב המשחקים הבא</Foot></Page>);
 
-  return <Pages pages={pages.map((fn, i) => <React.Fragment key={i}>{fn(i + 1)}</React.Fragment>)} />;
+  return pages;
 }
 
 // the issue spinning in over the screen, with a close button (for the home screen and the admin preview)

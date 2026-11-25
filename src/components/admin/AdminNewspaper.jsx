@@ -1,10 +1,13 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence } from "framer-motion";
 import { supabase } from "@/api/supabase";
 import { NewspaperOverlay, NAME } from "@/components/newspaper/Newspaper";
 
+const NewspaperEditor = React.lazy(() => import("./NewspaperEditor"));
+
 // "מבט לאלופות" in the admin (22.11.2026): every issue — built by itself once a night is all calculated —
-// with its state. Preview it exactly as the participants will see it, build it again, and publish it:
+// with its state. Preview it exactly as the participants will see it, edit it by hand (NewspaperEditor), build it again, and publish it:
 // at 08:00 the morning after (the default) or right now. Nothing reaches the participants before "publish".
 // A rehearsal (a past night, built on demand) is never shown to the participants.
 const STATE = { generating: ["בהכנה…", "#facc15"], draft: ["טיוטה — מחכה לאישור", "#60a5fa"], published: ["פורסם", "#22c55e"], error: ["שגיאה", "#f87171"] };
@@ -15,6 +18,7 @@ const morningAfter = (date) => { for (const h of [5, 6]) { const d = new Date(`$
 export default function AdminNewspaper() {
   const [issues, setIssues] = React.useState([]);
   const [open, setOpen] = React.useState(null);
+  const [edit, setEdit] = React.useState(null);
   const [busy, setBusy] = React.useState("");
   const [date, setDate] = React.useState("");
   const [msg, setMsg] = React.useState("");
@@ -61,9 +65,11 @@ export default function AdminNewspaper() {
             {i.error && <div className="mt-1 text-xs text-red-300">{i.error}</div>}
             <div className="mt-2 flex flex-wrap gap-2 text-xs font-bold">
               {i.facts && i.texts && <button type="button" onClick={() => setOpen(i)} className="rounded-lg bg-amber-400 px-3 py-1.5 text-black">תצוגה מקדימה</button>}
+              {i.facts && i.texts && i.status !== "generating" && <button type="button" onClick={() => setEdit(i)} className="rounded-lg bg-sky-600 px-3 py-1.5">✎ עריכה</button>}
+              {i.texts?.layout && <span className="self-center text-[11px] text-sky-300">נערך ידנית</span>}
               {i.status === "draft" && !i.rehearsal && <><button type="button" onClick={() => publish(i, false)} className="rounded-lg bg-green-600 px-3 py-1.5">פרסם ב־08:00 בבוקר</button><button type="button" onClick={() => publish(i, true)} className="rounded-lg bg-green-900 px-3 py-1.5">פרסם עכשיו</button></>}
               {i.status === "published" && <button type="button" onClick={() => unpublish(i)} className="rounded-lg bg-white/10 px-3 py-1.5">בטל פרסום</button>}
-              {i.status !== "generating" && <button type="button" disabled={!!busy} onClick={() => generate(i.night_date, i.rehearsal)} className="rounded-lg bg-white/10 px-3 py-1.5 disabled:opacity-40">{busy === i.night_date ? "בונה…" : "כתוב מחדש"}</button>}
+              {i.status !== "generating" && <button type="button" disabled={!!busy} onClick={() => { if (!i.texts?.layout || window.confirm("הגיליון נערך ידנית. כתיבה מחדש תמחק את כל העריכות. להמשיך?")) generate(i.night_date, i.rehearsal); }} className="rounded-lg bg-white/10 px-3 py-1.5 disabled:opacity-40">{busy === i.night_date ? "בונה…" : "כתוב מחדש"}</button>}
             </div>
           </div>); })}
         {!issues.length && <div className="text-sm text-slate-400">עדיין אין גיליונות.</div>}
@@ -74,6 +80,7 @@ export default function AdminNewspaper() {
         <button type="button" disabled={!date || !!busy} onClick={() => generate(date, true)} className="rounded-lg bg-white/10 px-3 py-1.5 font-bold disabled:opacity-40">בנה גיליון לבדיקה</button>
       </div>
       {msg && <div className="mt-2 text-xs text-amber-300">{msg}</div>}
+      {createPortal(<AnimatePresence>{edit && <React.Suspense fallback={null}><NewspaperEditor issue={edit} onClose={() => { setEdit(null); load(); }} onSaved={load} /></React.Suspense>}</AnimatePresence>, document.body)}
       <AnimatePresence>{open && <NewspaperOverlay issue={open} onClose={() => setOpen(null)} />}</AnimatePresence>
     </div>
   );
