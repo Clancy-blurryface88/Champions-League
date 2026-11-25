@@ -1,4 +1,4 @@
-// "מבט לאלופות" (22.11.2026) — the newspaper issue after each match night.
+// "ידיעות האלופות" (22.11.2026) — the newspaper issue after each match night.
 // After a night's matches are all calculated, the reminders trigger (every 5 min) builds the night's facts
 // (night winner, the table, exact hits, the goal timeline: which goal gave or took whose exact hit and for how long,
 // what a held score would have been worth, the crowd, the weather…) and Claude writes the texts from them, by the
@@ -167,7 +167,7 @@ export async function buildFacts(date) {
 }
 
 // ── the texts, by Claude ──
-const RULES = `אתה העורך והכתב של "מבט לאלופות" — עיתון יומי מצחיק, חכם ועשיר, שיוצא בבוקר שאחרי כל ערב משחקים של ליגת האלופות, לקבוצה קטנה של חברים שמנחשים תוצאות.
+const RULES = `אתה העורך והכתב של "ידיעות האלופות" — עיתון יומי מצחיק, חכם ועשיר, שיוצא בבוקר שאחרי כל ערב משחקים של ליגת האלופות, לקבוצה קטנה של חברים שמנחשים תוצאות.
 הקוראים הם המשתתפים עצמם. כתוב עליהם בשמם הפרטי, כמו עיתונאי ספורט שמכיר אותם.
 
 כללי כתיבה מחייבים:
@@ -254,7 +254,7 @@ export async function newspaperSweep(now = new Date()) {
       await generateIssue(date);
       // to the admins only (externalIds) — never to everyone
       const admins = await supa('profiles?select=id&is_admin=eq.true');
-      if (admins.length) await push({ heading: '📰 מבט לאלופות — הגיליון מוכן', body: `הגיליון של ערב ${dayHe(date)} מחכה לבדיקה ולאישור באדמין`, url: 'https://champions-league-2026.vercel.app/Admin', key: `newspaper-${date}`, mode: 'live', externalIds: admins.map((a) => a.id) }).catch(() => {});
+      if (admins.length) await push({ heading: '📰 ידיעות האלופות — הגיליון מוכן', body: `הגיליון של ערב ${dayHe(date)} מחכה לבדיקה ולאישור באדמין`, url: 'https://champions-league-2026.vercel.app/Admin', key: `newspaper-${date}`, mode: 'live', externalIds: admins.map((a) => a.id) }).catch(() => {});
       out.push({ date, generated: true });
     } catch (e) { out.push({ date, error: e.message }); }
   }

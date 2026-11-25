@@ -6,7 +6,7 @@ import { NewspaperOverlay, NAME } from "@/components/newspaper/Newspaper";
 
 const NewspaperEditor = React.lazy(() => import("./NewspaperEditor"));
 
-// "מבט לאלופות" in the admin (22.11.2026): every issue — built by itself once a night is all calculated —
+// "ידיעות האלופות" in the admin (22.11.2026): every issue — built by itself once a night is all calculated —
 // with its state. Preview it exactly as the participants will see it, edit it by hand (NewspaperEditor), build it again, and publish it:
 // at 08:00 the morning after (the default) or right now. Nothing reaches the participants before "publish".
 // A rehearsal (a past night, built on demand) is never shown to the participants.

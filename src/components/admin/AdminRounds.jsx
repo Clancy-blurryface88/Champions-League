@@ -80,7 +80,7 @@ export default function AdminRounds() {
 
   return (
     <div className="space-y-6">
-      {/* "מבט לאלופות": the issues after each night — preview and publish */}
+      {/* "ידיעות האלופות": the issues after each night — preview and publish */}
       <AdminNewspaper />
 
       {/* Add Round Button */}

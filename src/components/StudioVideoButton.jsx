@@ -51,7 +51,7 @@ async function findSummaryRound(rounds) {
 
 // the studio video before a round
 async function findVideo(rounds) {
-  // the night summary video gave way to the newspaper "מבט לאלופות" (22.11.2026); kept for reference
+  // the night summary video gave way to the newspaper "ידיעות האלופות" (22.11.2026); kept for reference
   return await findStudioRound(rounds);
 }
 

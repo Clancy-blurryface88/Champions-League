@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/api/supabase";
 import { NAME, NewspaperOverlay, useNewspaperFonts } from "./Newspaper";
 
-// The way into "מבט לאלופות" on the home screen (22.11.2026, the user's pick: design 2 with effect 2ג) — a tiny front
+// The way into "ידיעות האלופות" on the home screen (22.11.2026, the user's pick: design 2 with effect 2ג) — a tiny front
 // page: the round, the paper's name and the date, the headline, and a red rotated stamp "לקריאה ←" with a ring that
 // keeps pinging out. Shown from the issue's publish time (the database lets participants read only published
 // issues whose time has come) for 40 hours, so the next night's issue takes its place.

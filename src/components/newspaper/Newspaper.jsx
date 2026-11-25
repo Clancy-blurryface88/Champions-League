@@ -1,7 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// "מבט לאלופות" (22.11.2026) — one issue, drawn from its facts (computed on the server) and texts (written by
+// "ידיעות האלופות" (22.11.2026) — one issue, drawn from its facts (computed on the server) and texts (written by
 // Claude). Like a real paper: pages to turn, each exactly one screen tall (no scrolling, no tap-to-expand);
 // a page that's a bit long on a short phone shrinks to fit. A match with a story gets its matrix (players ×
 // the score after each goal) and its live blog together on one page.
@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 // pages in order; a page with html is shown as edited, the others are drawn from the facts and texts as always.
 // Page numbers and the "next page" lines stay right by themselves: they are marked data-np and filled on showing.
 
-export const NAME = "מבט לאלופות";
+export const NAME = "ידיעות האלופות";
 const INK = "#1a1410", RED = "#b3261e", GREEN = "#166534", PAPER = "#f3ecdc";
 const FR = "'Frank Ruhl Libre', serif", NUMF = "var(--num-font)";
 // newsprint (22.11): grain, a little yellowing at the edges
@@ -207,7 +207,7 @@ function buildPages(issue, h) {
   const photoHits = (f.exact || []).filter((e) => e.match === photo?.id).map((e) => e.name);
   add("front", "שער", "השער", (no) => <Page h={h}>
     <div className="grid items-center" style={{ gridTemplateColumns: "1fr 1px 118px", gap: 10 }}>
-      <div><div style={{ fontFamily: "'Noto Serif Hebrew', serif", fontWeight: 700, fontSize: 34, lineHeight: 1 }}>{NAME}</div><div style={{ fontFamily: FR, fontSize: 9.5, fontStyle: "italic" }}>העיתון היחיד שקורא את הניחושים שלכם</div></div>
+      <div><div style={{ fontFamily: "'Noto Serif Hebrew', serif", fontWeight: 700, fontSize: 28, lineHeight: 1.1, whiteSpace: "nowrap" }}>{NAME}</div><div style={{ fontFamily: FR, fontSize: 9.5, fontStyle: "italic" }}>העיתון היחיד שקורא את הניחושים שלכם</div></div>
       <div style={{ background: INK, alignSelf: "stretch" }} /><Mark src="/champions/ch-logo.png" h={46} w="100%" /></div>
     <div className="flex justify-between" style={{ borderTop: `1px solid ${INK}`, borderBottom: `3px double ${INK}`, padding: "2px 0", margin: "4px 0 8px", fontFamily: FR, fontSize: 9.5, fontWeight: 700 }}><span>שנה א׳ · גיליון {issueNo}</span><span>{f.day ? `בוקר שאחרי ערב ${f.day}` : ""} · {f.dm}</span><span>מחיר: ניחוש אחד</span></div>
     <div className="relative"><Mark src="/champions/ch-trophy.webp" h={118} style={{ position: "absolute", left: "50%", top: -14, transform: "translateX(-50%)", opacity: 0.13 }} />

@@ -136,7 +136,7 @@ export default function Dashboard() {
         {/* The round's studio video, on a small TV at the bottom (only while it is relevant) */}
         {rounds.length > 0 && (
           <div className="w-full px-4">
-            {/* "מבט לאלופות": the newspaper of the last match night, from its publish time */}
+            {/* "ידיעות האלופות": the newspaper of the last match night, from its publish time */}
             <NewspaperButton onVisible={setHasPaper} />
             <StudioVideoButton rounds={rounds} onPredict={handleRoundSelect} onVisible={setHasStudio} />
             <ForecastResultGate user={user} rounds={rounds} />
