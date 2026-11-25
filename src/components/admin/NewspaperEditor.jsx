@@ -46,6 +46,8 @@ export default function NewspaperEditor({ issue, onClose, onSaved }) {
   const [clip, setClip] = React.useState(null); // a cut or copied part
   const [photo, setPhoto] = React.useState(""); // the picture window: "add" | "change"
   const [menu, setMenu] = React.useState(""); // "add" | "page"
+  const [head, setHead] = React.useState(issue.texts?.headline || ""); // the headline on the home screen's button
+  const headTyped = React.useRef(false); // typed here: no longer follows the front page
   const [dirty, setDirty] = React.useState(false);
   const [msg, setMsg] = React.useState("");
   const [tall, setTall] = React.useState(0);
@@ -235,8 +237,9 @@ export default function NewspaperEditor({ issue, onClose, onSaved }) {
   const layout = () => ({ pages: pages.map((x) => { const o = originals.find((a) => a.id === x.id); return { id: x.id, ...(x.html != null ? { html: x.html } : {}), ...(!o || x.name !== o.name ? { name: x.name } : {}) }; }) });
   const texts = () => {
     const t = { ...issue.texts, layout: layout() };
-    const front = pages.find((x) => x.id === "front")?.html; // the headline is also on the home screen's button
-    if (front) { const d = document.createElement("div"); d.innerHTML = cleanHtml(front); const head = d.querySelector("[data-np-text=headline]")?.textContent.trim(); if (head) t.headline = head; }
+    t.headline = head.trim() || t.headline;
+    const front = pages.find((x) => x.id === "front")?.html; // unless typed, it follows the front page's headline
+    if (front && !headTyped.current) { const d = document.createElement("div"); d.innerHTML = cleanHtml(front); const own = d.querySelector("[data-np-text=headline]")?.textContent.trim(); if (own && own !== issue.texts?.headline) t.headline = own; }
     return t;
   };
   const save = async () => {
@@ -264,6 +267,7 @@ export default function NewspaperEditor({ issue, onClose, onSaved }) {
         <Btn onClick={() => movePage(-1)} disabled={!cur}>→ הקדם</Btn><Btn onClick={() => movePage(1)} disabled={cur === pages.length - 1}>אחר ←</Btn><Btn onClick={copyPage}>שכפל דף</Btn>
         {page?.html != null && originals.some((o) => o.id === page.id) && <Btn onClick={reset}>החזר למקור</Btn>}<Btn danger onClick={dropPage} disabled={pages.length < 2}>הסר דף</Btn>
       </div>
+      <label className="flex items-center gap-2 px-3 pb-2 text-xs text-slate-300"><span className="shrink-0">כותרת בכפתור שבמסך הבית</span><input value={head} onChange={(e) => { headTyped.current = true; setHead(e.target.value); setDirty(true); setMsg(""); }} className="min-w-0 flex-1 rounded-lg px-2 py-1.5 text-[13px] text-white" style={{ background: "rgba(255,255,255,.12)" }} /></label>
       {menu === "page" && <div className="flex flex-wrap gap-1.5 px-3 pb-2"><Btn onClick={newPage}>דף ריק</Btn>{gone.map((o) => <Btn key={o.id} onClick={() => bringBack(o)}>החזר: {o.name}</Btn>)}{!gone.length && <span className="self-center text-xs text-slate-400">אין דפים שהוסרו</span>}</div>}
       <div ref={scroller} className="relative flex-1 overflow-auto" style={{ background: "#060a16", padding: "14px 12px 30px" }} onClick={(e) => { if (e.target === scroller.current) setSel(null); }}>
         <div style={{ width: "min(390px, 100%)", margin: "0 auto", position: "relative" }}>
