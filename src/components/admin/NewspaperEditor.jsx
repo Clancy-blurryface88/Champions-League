@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { flushSync } from "react-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/api/supabase";
-import { NAME, NewspaperOverlay, BlankPage, PARTS, cleanHtml, layoutPages, pageElement, useNewspaperFonts } from "@/components/newspaper/Newspaper";
+import { NAME, NewspaperOverlay, BlankPage, PARTS, allPages, cleanHtml, layoutPages, pageElement, useNewspaperFonts } from "@/components/newspaper/Newspaper";
 
 // Editing an issue by hand (25.11.2026, admin only), on the page itself: tap any text and type; tap any part to select
 // it and move, copy, cut, delete or restyle it, or add a part or a column after it; and above, the issue's pages — add,
@@ -36,7 +36,7 @@ const Btn = ({ onClick, children, on, danger, disabled, title }) => (
 export default function NewspaperEditor({ issue, onClose, onSaved }) {
   useNewspaperFonts();
   const h = 660;
-  const originals = React.useMemo(() => layoutPages(issue, h, { pages: [] }), [issue]);
+  const originals = React.useMemo(() => allPages(issue, h), [issue]);
   const [pages, setPages] = React.useState(() => layoutPages(issue, h).map(({ id, name, teaser, html, el }) => ({ id, name, teaser, html, el })));
   const [cur, setCur] = React.useState(0);
   const [sel, setSel] = React.useState(null); // the selected element

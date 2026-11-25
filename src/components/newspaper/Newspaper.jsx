@@ -135,10 +135,13 @@ function fillHtml(html, no, nx) {
   d.querySelectorAll("[data-np=foot]").forEach((e) => { e.textContent = footText(no, nx); });
   return d.body.firstChild.innerHTML;
 }
+// pages left out of an issue for now (the user, 26.11); the editor can still bring them into one
+const OFF = new Set(["drama", "cost"]);
+export const allPages = (issue, h) => buildPages(issue, h);
 // the issue's pages as they will be shown: [{ id, name, html?, el(no, nx, h) }]
 export function layoutPages(issue, h, layout = issue.texts?.layout) {
   const all = buildPages(issue, h);
-  if (!layout?.pages?.length) return all;
+  if (!layout?.pages?.length) return all.filter((x) => !OFF.has(x.id));
   return layout.pages.map((x) => { const own = all.find((a) => a.id === x.id); return own || x.html != null ? { ...own, ...x, name: x.name || own?.name || "", teaser: x.name || own?.teaser || x.name } : null; }).filter(Boolean);
 }
 export function pageElement(x, i, list, h) {
@@ -218,7 +221,7 @@ function buildPages(issue, h) {
       </div>
     </div>
     <div className="flex items-end justify-between" style={{ borderTop: `1px solid ${INK}`, marginTop: "auto", paddingTop: 4 }}>
-      <div style={{ border: `1px solid ${INK}`, padding: "2px 6px", fontFamily: FR, fontSize: 9, lineHeight: 1.4 }}><b>בגיליון</b><div>הכתבה · 2 · הדרמה · 3 · מודעות · אחרון</div></div>
+      <div style={{ border: `1px solid ${INK}`, padding: "2px 6px", fontFamily: FR, fontSize: 9, lineHeight: 1.4 }}><b>בגיליון</b><div>הכתבה · 2 · {f.dramas?.length ? "הדרמה · 3 · " : ""}מודעות · אחרון</div></div>
       <div className="flex items-end gap-1"><div style={{ display: "flex", height: 22, gap: 1 }}>{[2, 1, 3, 1, 1, 2, 1, 3, 2, 1, 1, 2, 3, 1, 2, 1, 1, 3, 1, 2].map((w, i) => <span key={i} style={{ width: w, background: i % 2 ? "transparent" : INK }} />)}</div><div style={{ fontFamily: NUMF, fontSize: 7.5 }} dir="ltr">7 290000 0{issueNo}2026</div></div>
     </div></Page>);
 
