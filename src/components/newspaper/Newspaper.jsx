@@ -35,14 +35,14 @@ const H = ({ children, s = 18, style }) => <div style={{ fontFamily: FR, fontWei
 const P = ({ children, style }) => <p style={{ fontFamily: FR, fontSize: 13, lineHeight: 1.55, textAlign: "justify", margin: 0, ...style }}>{children}</p>;
 const Kick = ({ children, c = RED }) => <div style={{ fontFamily: FR, fontSize: 10.5, fontWeight: 900, color: c }}>{children}</div>;
 const Box = ({ children, style }) => <div style={{ border: `1px solid ${INK}`, padding: 8, ...style }}>{children}</div>;
-// a round ink stamp (the user's pick, 22.11): red "מנצח הערב" with the date, green "פגיעה מדויקת" on each hit
-const Stamp = ({ children, s = 86, c = RED, r = -12 }) => <div className="grid place-items-center" style={{ width: s, height: s, borderRadius: "50%", border: `3px solid ${c}`, boxShadow: `inset 0 0 0 4px ${PAPER}, inset 0 0 0 6px ${c}`, color: c, transform: `rotate(${r}deg)`, textAlign: "center", flexShrink: 0, fontFamily: FR, fontWeight: 900, lineHeight: 1.05 }}>{children}</div>;
 // the Champions League's marks (22.11): the logo in the nameplate, the trophy as the headline's watermark, small balls and cups by section heads — printed in ink
 const INKF = "grayscale(1) contrast(1.25) brightness(.55)";
 const Mark = ({ src, h, w, style }) => <img src={src} alt="" style={{ height: h, width: w, objectFit: "contain", filter: INKF, mixBlendMode: "multiply", ...style }} />;
 const Ball = ({ s = 12 }) => <Mark src="/champions/round-ball.png" h={s} w={s} style={{ display: "inline-block", verticalAlign: "-2px" }} />;
 const Cup = ({ s = 16 }) => <Mark src="/champions/ch-trophy.webp" h={s} w={s * 0.8} style={{ display: "inline-block", verticalAlign: "-3px" }} />;
 const footText = (no, nx) => (nx ? `בעמוד ${no + 1}: ${nx} ←` : "");
+// the exact hit's mark (the user's pick, 26.11): a full green target
+const Target = ({ s = 18 }) => <svg viewBox="0 0 40 40" width={s} height={s} style={{ display: "block" }}>{[[18, GREEN], [12.5, "#f1ede2"], [7.5, GREEN], [2.6, "#f1ede2"]].map(([r, c]) => <circle key={r} cx="20" cy="20" r={r} fill={c} />)}</svg>;
 const Foot = ({ children, no, nx }) => <div style={{ marginTop: "auto" }}><Rule /><div style={{ fontFamily: FR, fontSize: 10.5, fontWeight: 700, textAlign: "left" }}>{children || <span data-np="foot">{footText(no, nx)}</span>}</div></div>;
 const No = ({ no }) => <span data-np="no">{no}</span>;
 // the front page's "photo" (the user's pick, 22.11): a match ticket — the teams and the score, and on a torn stub the
@@ -240,18 +240,17 @@ function buildPages(issue, h) {
       <div className="flex items-end gap-1"><div style={{ display: "flex", height: 22, gap: 1 }}>{[2, 1, 3, 1, 1, 2, 1, 3, 2, 1, 1, 2, 3, 1, 2, 1, 1, 3, 1, 2].map((w, i) => <span key={i} style={{ width: w, background: i % 2 ? "transparent" : INK }} />)}</div><div style={{ fontFamily: NUMF, fontSize: 7.5 }} dir="ltr">7 290000 0{issueNo}2026</div></div>
     </div></Page>);
 
-  // 2 — the lead story goes on: the exact hits of the night, the goals that made them
+  // 2 — the lead story goes on: the exact hits of the night with the goals that made them
   add("lead", "הכתבה הראשית", "הכתבה הראשית", (no, nx) => <Page h={h}><Mast page={<><No no={no} /> · הכתבה הראשית</>} /><Kick>המשך מעמוד 1</Kick>
     {(t.leadMore || []).map((p, i) => <P key={i} style={{ marginTop: i ? 6 : 2 }}>{p}</P>)}
     <Rule /><P style={{ marginBottom: 6 }}>{t.leadHitsIntro}</P>
-    {/* one row per match (22.11): the score and the points once, the names of everyone who hit it together */}
-    {f.exact?.length ? <div className="grid gap-2">{Object.values(f.exact.reduce((acc, e) => { (acc[e.match] ||= { match: e.match, pts: e.pts, names: [] }).names.push(e.name); return acc; }, {})).map((g, i) => <div key={i} className="flex items-center gap-3" style={{ borderBottom: `1px dotted ${INK}66`, paddingBottom: 6 }}>
-      <Stamp s={46} c={GREEN} r={-10}><span style={{ fontSize: 8.5 }}>פגיעה<br />מדויקת</span></Stamp>
-      <div style={{ flex: 1 }}><div><Score m={M[g.match]} cs={18} ns={15} /></div><b style={{ fontFamily: FR, fontSize: 15 }}>{g.names.length > 1 ? `${g.names.slice(0, -1).join(", ")} ו${g.names[g.names.length - 1]}` : g.names[0]}</b></div>
-      <div className="text-center"><N s={16} c={GREEN}>+{g.pts.toFixed(2)}</N>{g.names.length > 1 && <div style={{ fontFamily: FR, fontSize: 9.5 }}>לכל אחד</div>}</div></div>)}</div>
+    {/* a row per match in three parts (26.11): the goal that set the score (dark), the score and everyone who hit it, the points once */}
+    {f.exact?.length ? <div className="grid gap-1.5">{Object.values(f.exact.reduce((acc, e) => { (acc[e.match] ||= { match: e.match, pts: e.pts, names: [] }).names.push(e.name); return acc; }, {})).map((g) => { const goal = (f.exactGoals || []).find((x) => x.match === g.match); return <div key={g.match} className="flex" style={{ border: `1px solid ${INK}55` }}>
+      <div className="flex flex-col items-center justify-center" style={{ width: 66, flexShrink: 0, background: INK, color: PAPER, fontFamily: FR, fontSize: 11, lineHeight: 1.15, padding: "4px 3px", textAlign: "center" }}>{goal ? <><N s={17} c={PAPER}>{goal.minute}'</N><span>{t.scorers?.[goal.scorer] || goal.scorer}</span></> : <span>{M[g.match]?.score === "0-0" ? "בלי שערים" : "עד הסיום"}</span>}</div>
+      <div className="flex items-center" style={{ padding: "6px 9px" }}><Score m={M[g.match]} cs={20} ns={18} /></div>
+      <div className="flex items-center gap-1.5" style={{ flex: 1, minWidth: 0 }}><span style={{ flexShrink: 0 }}><Target s={14} /></span><b style={{ fontFamily: FR, fontSize: 13, lineHeight: 1.15 }}>{g.names.length > 1 ? `${g.names.slice(0, -1).join(", ")} ו${g.names[g.names.length - 1]}` : g.names[0]}</b></div>
+      <div className="flex flex-col items-center justify-center" style={{ minWidth: 58, padding: "0 6px", background: `${GREEN}1a` }}><N s={14} c={GREEN}>+{g.pts.toFixed(2)}</N>{g.names.length > 1 && <span style={{ fontFamily: FR, fontSize: 9, lineHeight: 1.1 }}>לכל אחד</span>}</div></div>; })}</div>
       : <P style={{ fontWeight: 700 }}>אף משתתף לא פגע בתוצאה מדויקת הערב.</P>}
-    {f.exactGoals?.length > 0 && <><Rule /><Kick c={INK}>השערים שהעניקו פגיעה מדויקת עד הסוף</Kick>
-      <div className="grid gap-2" style={{ marginTop: 4 }}>{f.exactGoals.map((g, i) => <div key={i} className="flex items-start gap-2" style={{ fontFamily: FR, fontSize: 12.8 }}><N s={15} c={RED}>{g.minute}'</N><div style={{ flex: 1 }}><b>{t.scorers?.[g.scorer] || g.scorer}</b> · <span style={{ display: "inline-block", verticalAlign: "middle" }}><Score m={M[g.match]} cs={14} ns={11} /></span> — פגיעה מדויקת ל{g.names.join(" ול")}</div>{g.pts != null && <N s={13} c={GREEN}>+{g.pts.toFixed(2)}</N>}</div>)}</div></>}
     <Foot no={no} nx={nx} /></Page>);
 
   // 3 — the hits on the way, match by match
