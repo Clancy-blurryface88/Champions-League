@@ -164,6 +164,16 @@ export default function Newspaper({ issue, top = 100 }) {
   return <Pages pages={list.map((x, i) => <React.Fragment key={x.id}>{pageElement(x, i, list, h)}</React.Fragment>)} />;
 }
 
+// the notices by their fixed categories (the user, 26.11); a notice of any other kind keeps its own name, at the end
+const AD_CATS = ["להשכרה", "דרוש", "תנחומים", "אבדה", "מכירה", "שיעורים פרטיים"];
+const AD_SAME = { דרושה: "דרוש", דרושים: "דרוש", למכירה: "מכירה", אבד: "אבדה", אבדות: "אבדה" };
+function adGroups(ads) {
+  const by = {};
+  ads.forEach(({ head = "", body }) => { const [first, ...rest] = head.split(":"); const name = first.trim(), cat = AD_SAME[name] || name; const sub = rest.join(":").trim(); (by[cat] ||= []).push(sub ? `${sub}. ${body}` : body); });
+  const names = [...AD_CATS.filter((c) => by[c]), ...Object.keys(by).filter((c) => !AD_CATS.includes(c))];
+  return names.map((c) => [c, by[c]]);
+}
+
 function buildPages(issue, h) {
   const f = issue.facts || {}, t = issue.texts || {};
   const M = Object.fromEntries((f.matches || []).map((m) => [m.id, m]));
@@ -304,8 +314,9 @@ function buildPages(issue, h) {
 
   // the notices and the weather
   add("ads", "מודעות", "לוח המודעות", (no) => <Page h={h}><Mast page={<><No no={no} /> · מודעות</>} /><H s={18} style={{ textAlign: "center" }}>— לוח מודעות —</H>
-    {/* classifieds, like a real paper: no frames — a bold word, the text, a dotted line between them, two columns */}
-    <div style={{ columnCount: 2, columnGap: 14, columnRule: `1px solid ${INK}66`, marginTop: 6 }}>{(t.ads || []).slice(0, 6).map((a, i) => <div key={i} style={{ breakInside: "avoid", padding: "4px 0 6px", borderBottom: `1px dotted ${INK}77`, fontFamily: FR, fontSize: 11.8, lineHeight: 1.4 }}><b style={{ fontSize: 13 }}>{a.head}.</b> {a.body}</div>)}</div><Rule />
+    {/* classifieds, like a real paper: a name band for each category, its notices under it, two columns */}
+    <div style={{ columnCount: 2, columnGap: 14, columnRule: `1px solid ${INK}66`, marginTop: 6 }}>{adGroups((t.ads || []).slice(0, 8)).map(([cat, list]) => <div key={cat} style={{ breakInside: "avoid", paddingBottom: 8 }}><div style={{ background: INK, color: PAPER, fontFamily: FR, fontSize: 13, fontWeight: 900, textAlign: "center", lineHeight: 1.5, marginBottom: 3 }}>{cat}</div>
+      {list.map((x, i) => <div key={i} style={{ fontFamily: FR, fontSize: 11.8, lineHeight: 1.4, padding: "2px 0 4px", borderTop: i ? `1px dotted ${INK}77` : "none" }}>{x}</div>)}</div>)}</div><Rule />
     <div className="flex items-center gap-3" style={{ fontFamily: FR, fontSize: 12.5 }}><WeatherIcon kind={f.weather} /><div><b>מזג האוויר: {t.weather?.title}</b> {t.weather?.text} {t.weather?.forecast && <><b>תחזית:</b> {t.weather.forecast}</>}</div></div>
     <Foot>{NAME} · הגיליון הבא יוצא בבוקר שאחרי ערב המשחקים הבא</Foot></Page>);
 
