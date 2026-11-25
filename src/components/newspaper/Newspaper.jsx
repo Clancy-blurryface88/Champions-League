@@ -150,6 +150,11 @@ export function pageElement(x, i, list, h) {
 }
 // a new empty page's start
 export const BlankPage = ({ no = 1, name, issue }) => { const f = issue.facts || {}; return <><div className="flex justify-between" style={{ fontFamily: FR, fontSize: 10, fontWeight: 700 }}><span><No no={no} /> · {name}</span><span>{NAME}</span><span>{f.round?.name?.replace(/League Phase\s*-\s*/i, "מחזור ")} · {f.dm}</span></div><Rule thick /><H s={24}>כותרת</H><P style={{ marginTop: 6 }}>כאן כותבים את הטקסט.</P><Foot no={no} nx="" /></>; };
+// a picture in the page: its box keeps its shape while loading; "print" lays the paper's grey and dots over it
+export const DOTS = "radial-gradient(circle at 1px 1px, rgba(20,18,16,.42) .9px, transparent 1.3px) 0 0/4px 4px";
+export const Figure = ({ src, ratio = 1, kind, caption }) => { const plain = kind === "crest"; return <figure data-np-fig={plain ? "plain" : "print"} style={{ width: plain ? "26%" : kind === "player" ? "45%" : "70%", margin: "8px auto" }}>
+  <div data-np-box="" style={{ position: "relative", overflow: "hidden", aspectRatio: String(ratio) }}><img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", display: "block", filter: "grayscale(1) contrast(1.15)", mixBlendMode: "multiply" }} />{!plain && <div data-np-dots="" style={{ position: "absolute", inset: 0, background: DOTS, mixBlendMode: "multiply" }} />}</div>
+  {!plain && <figcaption style={{ fontFamily: FR, fontSize: 10.5, fontStyle: "italic", lineHeight: 1.3, marginTop: 3, textAlign: "center" }}>{caption || "כיתוב לתמונה"}</figcaption>}</figure>; };
 // parts the editor can add
 export const PARTS = {
   title: () => <H s={20}>כותרת חדשה</H>, text: () => <P style={{ marginTop: 6 }}>פסקה חדשה.</P>, kick: () => <Kick>כותרת קטנה</Kick>, rule: () => <Rule />,

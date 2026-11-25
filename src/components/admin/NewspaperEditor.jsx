@@ -3,7 +3,8 @@ import { createRoot } from "react-dom/client";
 import { flushSync } from "react-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/api/supabase";
-import { NAME, NewspaperOverlay, BlankPage, PARTS, allPages, cleanHtml, layoutPages, pageElement, useNewspaperFonts } from "@/components/newspaper/Newspaper";
+import PicturePicker from "./PicturePicker";
+import { NAME, NewspaperOverlay, BlankPage, DOTS, Figure, PARTS, allPages, cleanHtml, layoutPages, pageElement, useNewspaperFonts } from "@/components/newspaper/Newspaper";
 
 // Editing an issue by hand (25.11.2026, admin only), on the page itself: tap any text and type; tap any part to select
 // it and move, copy, cut, delete or restyle it, or add a part or a column after it; and above, the issue's pages — add,
@@ -42,6 +43,7 @@ export default function NewspaperEditor({ issue, onClose, onSaved }) {
   const [sel, setSel] = React.useState(null); // the selected element
   const [box, setBox] = React.useState(null); // its place on screen
   const [clip, setClip] = React.useState(null); // a cut or copied part
+  const [photo, setPhoto] = React.useState(""); // the picture window: "add" | "change"
   const [menu, setMenu] = React.useState(""); // "add" | "page"
   const [dirty, setDirty] = React.useState(false);
   const [msg, setMsg] = React.useState("");
@@ -97,6 +99,8 @@ export default function NewspaperEditor({ issue, onClose, onSaved }) {
 
   const pickAt = (e) => {
     let n = e.target; if (!root.current.contains(n) || n === root.current) { setSel(null); return; }
+    const fig = n.closest("[data-np-fig]");
+    if (fig && root.current.contains(fig) && !n.closest("figcaption")) { setSel(fig); return; }
     while (n !== root.current && n.parentElement !== root.current && (isInline(n) || ["IMG", "svg", "path", "circle", "line", "g", "B"].includes(n.tagName))) n = n.parentElement;
     setSel(n === root.current ? null : n);
   };
@@ -155,6 +159,44 @@ export default function NewspaperEditor({ issue, onClose, onSaved }) {
   const textCols = () => change(() => { const n = (Number(sel.style.columnCount) || 1) % 3 + 1; sel.style.columnCount = n; sel.style.columnGap = "10px"; sel.style.columnRule = n > 1 ? `1px solid ${INK}44` : ""; });
   const gap = (d) => change(() => { sel.style.marginTop = `${Math.max(0, (parseFloat(getComputedStyle(sel).marginTop) || 0) + d)}px`; });
 
+  // free moving: the part is shifted from its place (by hand on its handle, or a step at a time); nothing else moves
+  const shiftOf = (n) => (n.style.translate || "").split(/\s+/).map((x) => parseFloat(x) || 0);
+  const shiftTo = (n, x, y) => { if (getComputedStyle(n).display === "inline") n.style.display = "inline-block"; n.style.translate = x || y ? `${Math.round(x)}px ${Math.round(y)}px` : ""; };
+  const nudge = (dx, dy) => change(() => { const [x = 0, y = 0] = shiftOf(sel); shiftTo(sel, x + dx, y + dy); });
+  const drag = React.useRef(null);
+  const dragOn = (e) => { e.preventDefault(); e.stopPropagation(); const [x = 0, y = 0] = shiftOf(sel); drag.current = { px: e.clientX, py: e.clientY, x, y, moved: false, n: sel }; e.currentTarget.setPointerCapture(e.pointerId); };
+  const dragMove = (e) => { const d = drag.current; if (!d) return; if (!d.moved) { if (Math.abs(e.clientX - d.px) + Math.abs(e.clientY - d.py) < 3) return; d.moved = true; remember(); } shiftTo(d.n, d.x + e.clientX - d.px, d.y + e.clientY - d.py); place(); };
+  const dragOff = () => { const d = drag.current; drag.current = null; if (d?.moved) store(); };
+
+  // a picture
+  const fig = sel?.closest?.("[data-np-fig]");
+  const picked = (x) => { const how = photo; setPhoto(""); if (how === "change" && fig) { change(() => { fig.querySelector("img").src = x.src; fig.querySelector("[data-np-box]").style.aspectRatio = String(x.ratio); }); return; } put(nodeOf(<Figure {...x} />)); };
+  const figWide = (d) => change(() => { fig.style.width = `${Math.max(10, Math.min(100, (parseFloat(fig.style.width) || 60) + d))}%`; });
+  const figSide = () => change(() => {
+    if (fig.style.float) { fig.style.float = fig.style.float === "right" ? "left" : "right"; fig.style.margin = fig.style.float === "right" ? "2px 0 6px 10px" : "2px 10px 6px 0"; return; }
+    const L = ["8px auto", "8px 0px 8px auto", "8px auto 8px 0px"]; fig.style.margin = L[(L.indexOf(fig.style.margin) + 1) % 3];
+  });
+  // beside the text that follows it: both go into one block, the picture floating in it; again — back above the text
+  const figBeside = () => change(() => {
+    const P = fig.parentElement;
+    if (fig.style.float) { fig.style.float = ""; fig.style.margin = "8px auto"; if (P.hasAttribute("data-np-wrap")) P.replaceWith(...P.childNodes); return; }
+    const nx = fig.nextElementSibling; if (!nx || nx.style.marginTop === "auto") return;
+    const w = document.createElement("div"); w.setAttribute("data-np-wrap", ""); fig.before(w); w.append(fig, nx);
+    fig.style.float = "right"; fig.style.margin = "2px 0 6px 10px"; if (parseFloat(fig.style.width) > 50) fig.style.width = "45%";
+  });
+  const figShape = async () => {
+    const b = fig.querySelector("[data-np-box]"), i = fig.querySelector("img"), own = i.naturalWidth / i.naturalHeight || 1, L = [own, 1, 4 / 3, 16 / 9];
+    const at = L.findIndex((x) => Math.abs(x - parseFloat(b.style.aspectRatio)) < 0.02); change(() => { b.style.aspectRatio = String(L[(at + 1) % L.length]); });
+  };
+  // the paper's print (grey with dots) → grey → colour
+  const figPrint = () => change(() => {
+    const L = ["print", "plain", "color"], to = L[(L.indexOf(fig.getAttribute("data-np-fig")) + 1) % 3], b = fig.querySelector("[data-np-box]"), i = fig.querySelector("img");
+    fig.setAttribute("data-np-fig", to); b.querySelector("[data-np-dots]")?.remove();
+    i.style.filter = to === "color" ? "" : "grayscale(1) contrast(1.15)"; i.style.mixBlendMode = to === "color" ? "normal" : "multiply";
+    if (to === "print") { const d = document.createElement("div"); d.setAttribute("data-np-dots", ""); d.style.cssText = `position:absolute;inset:0;background:${DOTS};mix-blend-mode:multiply`; b.append(d); }
+  });
+  const figCap = () => change(() => { const x = fig.querySelector("figcaption"); if (x) { x.remove(); return; } const d = nodeOf(<Figure src="" caption="כיתוב לתמונה" />); fig.append(d.querySelector("figcaption")); });
+
   // the pages
   const pagesTo = (L, at) => { setPages(L); setCur(Math.max(0, Math.min(at, L.length - 1))); setSel(null); setMenu(""); setDirty(true); setMsg(""); };
   const newPage = () => { const id = uid(), name = "דף חדש"; const L = [...pages]; L.splice(cur + 1, 0, { id, name, teaser: name, html: htmlOf(<BlankPage no={cur + 2} name={name} issue={issue} />) }); pagesTo(L, cur + 1); };
@@ -206,10 +248,12 @@ export default function NewspaperEditor({ issue, onClose, onSaved }) {
             style={{ minHeight: h, padding: "12px 12px 10px", background: PAPER_BG, color: INK }} />
           {tall > 0 && <div className="pointer-events-none absolute inset-x-0 text-center text-[11px] font-bold" style={{ top: h, borderTop: "2px dashed #dc2626", color: "#dc2626" }}>כאן נגמר מסך רגיל. הדף ארוך ב־{tall}% ויוקטן כדי להיכנס</div>}
         </div>
-        {box && <div className="pointer-events-none absolute" style={{ ...box, outline: "2px solid #2563eb", outlineOffset: 2, background: "rgba(37,99,235,.07)" }} />}
+        {box && <div className="pointer-events-none absolute" style={{ ...box, outline: "2px solid #2563eb", outlineOffset: 2, background: "rgba(37,99,235,.07)" }}>
+          <button type="button" aria-label="גרירת האזור" title="גרירה" onPointerDown={dragOn} onPointerMove={dragMove} onPointerUp={dragOff} onPointerCancel={dragOff} className="pointer-events-auto absolute grid place-items-center rounded-full text-white"
+            style={{ width: 34, height: 34, left: -17, top: -38, background: "#2563eb", border: "2px solid #fff", fontSize: 17, lineHeight: 1, touchAction: "none", cursor: "move" }}>✥</button></div>}
       </div>
       <div style={{ background: "#0f1830", borderTop: "1px solid rgba(255,255,255,.15)", paddingBottom: "calc(env(safe-area-inset-bottom) + 6px)" }}>
-        {menu === "add" && <div className="flex gap-1.5 overflow-x-auto px-3 pt-2" style={{ scrollbarWidth: "none" }}>{[["title", "כותרת"], ["text", "פסקה"], ["kick", "כותרת קטנה"], ["rule", "קו מפריד"], ["box", "מסגרת"]].map(([k, l]) => <Btn key={k} onClick={() => put(nodeOf(PARTS[k]()))}>{l}</Btn>)}<Btn onClick={addCol} disabled={!sel}>עמודה</Btn>{clip && <Btn on onClick={() => put(fresh(clip))}>הדבק</Btn>}</div>}
+        {menu === "add" && <div className="flex gap-1.5 overflow-x-auto px-3 pt-2" style={{ scrollbarWidth: "none" }}>{[["title", "כותרת"], ["text", "פסקה"], ["kick", "כותרת קטנה"], ["rule", "קו מפריד"], ["box", "מסגרת"]].map(([k, l]) => <Btn key={k} onClick={() => put(nodeOf(PARTS[k]()))}>{l}</Btn>)}<Btn onClick={() => { setMenu(""); setPhoto("add"); }}>🖼 תמונה</Btn><Btn onClick={addCol} disabled={!sel}>עמודה</Btn>{clip && <Btn on onClick={() => put(fresh(clip))}>הדבק</Btn>}</div>}
         <div className="flex gap-1.5 overflow-x-auto px-3 pt-2" style={{ scrollbarWidth: "none" }}>
           <Btn on={menu === "add"} onClick={() => setMenu(menu === "add" ? "" : "add")}>＋ הוסף</Btn>
           {sel ? <>
@@ -218,11 +262,16 @@ export default function NewspaperEditor({ issue, onClose, onSaved }) {
             <Btn onClick={dup}>שכפל</Btn><Btn onClick={cut}>גזור</Btn>{clip && <Btn on onClick={() => put(fresh(clip))}>הדבק</Btn>}<Btn danger onClick={remove}>מחק</Btn>
           </> : <span className="self-center text-xs text-slate-400">לחיצה על טקסט כדי לערוך, או על אזור כדי לסדר אותו</span>}
         </div>
+        {fig && <div className="flex gap-1.5 overflow-x-auto px-3 pt-1.5" style={{ scrollbarWidth: "none" }}>
+          <Btn on onClick={() => setPhoto("change")}>החלף תמונה</Btn><Btn onClick={() => figWide(10)}>תמונה +</Btn><Btn onClick={() => figWide(-10)}>תמונה −</Btn><Btn onClick={figSide}>מיקום</Btn><Btn onClick={figBeside}>{fig.style.float ? "מעל הטקסט" : "לצד הטקסט"}</Btn><Btn onClick={figShape}>חיתוך</Btn><Btn onClick={figPrint}>סגנון</Btn><Btn onClick={figCap}>כיתוב</Btn>
+        </div>}
         {sel && <div className="flex gap-1.5 overflow-x-auto px-3 pt-1.5" style={{ scrollbarWidth: "none" }}>
+          <span className="self-center text-xs text-slate-400">הזזה</span><Btn onClick={() => nudge(0, -2)}>↑</Btn><Btn onClick={() => nudge(0, 2)}>↓</Btn><Btn onClick={() => nudge(2, 0)}>→</Btn><Btn onClick={() => nudge(-2, 0)}>←</Btn>{sel.style.translate && <Btn onClick={() => change(() => { sel.style.translate = ""; })}>אפס מיקום</Btn>}
           <Btn onClick={() => size(1)}>א+</Btn><Btn onClick={() => size(-1)}>א−</Btn><Btn onClick={bold}><b>מודגש</b></Btn><Btn onClick={align}>יישור</Btn><Btn onClick={color}>צבע</Btn><Btn onClick={textCols}>עמודות טקסט</Btn><Btn onClick={() => gap(4)}>רווח +</Btn><Btn onClick={() => gap(-4)}>רווח −</Btn>
           <Btn onClick={addCol}>＋ עמודה</Btn>{c && <><Btn onClick={() => widen(0.2)}>עמודה רחבה</Btn><Btn onClick={() => widen(-0.2)}>עמודה צרה</Btn><Btn danger onClick={removeCol}>הסר עמודה</Btn></>}
         </div>}
       </div>
+      {photo && <PicturePicker issue={issue} onPick={picked} onClose={() => setPhoto("")} />}
       {preview && <NewspaperOverlay issue={preview} onClose={() => setPreview(null)} />}
     </motion.div>
   );
