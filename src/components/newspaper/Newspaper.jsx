@@ -85,7 +85,7 @@ function Page({ h, children, html }) {
     {/* the horizontal fold of a real paper */}
     <div className="pointer-events-none absolute inset-x-0" style={{ top: "52%", height: 18, background: "linear-gradient(180deg, transparent, rgba(0,0,0,.06) 45%, rgba(255,255,255,.35) 55%, transparent)" }} /></div>;
 }
-// pages that turn on their spine (button or swipe). A double tap enlarges the page around that spot (or the 🔍
+// pages that unroll like paper (the user's pick, 26.11): the next page unrolls over the one before from its side (button or swipe). A double tap enlarges the page around that spot (or the 🔍
 // button its middle); two fingers pinch from ×1 to ×3. While enlarged a finger moves around the page instead of turning it.
 const ZOOM = 2.2, MAXZ = 3;
 function Pages({ pages }) {
@@ -113,12 +113,15 @@ function Pages({ pages }) {
     if (pan.current) { const P = pan.current; setZ((o) => fit(o.k, P.x + e.clientX - P.x0, P.y + e.clientY - P.y0)); }
   };
   const up = (e) => { pts.current.delete(e.pointerId); if (pts.current.size < 2) pinch.current = null; if (!pts.current.size) pan.current = null; };
-  return <div style={{ perspective: 1400 }}>
-    <AnimatePresence mode="wait" custom={dir}>
-      <motion.div key={i} custom={dir} variants={{ in: (d) => ({ rotateY: d > 0 ? -95 : 95, opacity: 0.4 }), on: { rotateY: 0, opacity: 1 }, out: (d) => ({ rotateY: d > 0 ? 95 : -95, opacity: 0.4 }) }} initial="in" animate="on" exit="out" transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
+  // both pages stand in one grid cell while the new one unrolls: from the left going on, from the right going back
+  const roll = { in: (d) => ({ clipPath: d > 0 ? "inset(0% 100% 0% 0%)" : "inset(0% 0% 0% 100%)", filter: "brightness(.85)", zIndex: 2 }), on: { clipPath: "inset(0% 0% 0% 0%)", filter: "brightness(1)", zIndex: 2 }, out: { zIndex: 1, filter: "brightness(.8)", transition: { duration: 0.55 } } }; // the page below stays until the new one has unrolled
+  const setBox = (el) => { if (el) box.current = el; };
+  return <div style={{ display: "grid" }}>
+    <AnimatePresence initial={false} custom={dir}>
+      <motion.div key={i} custom={dir} variants={roll} initial="in" animate="on" exit="out" transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
         drag={zoomed ? false : "x"} dragConstraints={{ left: 0, right: 0 }} dragElastic={0.15} onDragEnd={(e, inf) => { if (zoomed || pinch.current) return; if (inf.offset.x > 60) go(1); if (inf.offset.x < -60) go(-1); }}
-        style={{ transformOrigin: dir > 0 ? "right center" : "left center", touchAction: "none" }}>
-        <div ref={box} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} style={{ overflow: "hidden", position: "relative", userSelect: "none", WebkitUserSelect: "none" }}>
+        style={{ gridArea: "1 / 1", touchAction: "none" }}>
+        <div ref={setBox} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} style={{ overflow: "hidden", position: "relative", userSelect: "none", WebkitUserSelect: "none" }}>
           <div style={{ transform: `translate(${z.x}px, ${z.y}px) scale(${z.k})`, transformOrigin: "0 0", transition: pan.current || pinch.current ? "none" : "transform .25s ease" }}>{pages[i]}</div></div></motion.div></AnimatePresence>
     {/* right to left whatever the page around it: back on the right, the next page on the left */}
     <div dir="rtl" className="flex items-center justify-between" style={{ marginTop: 8, fontFamily: FR, color: "#fff", fontSize: 12.5, fontWeight: 700 }}>
