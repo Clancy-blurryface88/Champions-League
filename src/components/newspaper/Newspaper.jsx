@@ -67,9 +67,17 @@ function Page({ h, children, html }) {
   const [k, setK] = React.useState(1);
   React.useLayoutEffect(() => {
     const el = inner.current; if (!el) return;
-    // transform doesn't change layout, so scrollHeight is the content's natural height at any scale
-    const fit = () => { const need = el.scrollHeight; setK(need > h ? h / need : 1); };
-    fit(); const t = setTimeout(fit, 700); return () => clearTimeout(t);
+    // the content's own height (without the page's minimum height), at the width it gets once shrunk — measured twice,
+    // since shrinking widens the lines and the text gets shorter; again when fonts or pictures arrive or the frame changes
+    const fit = () => {
+      if (!el.offsetParent || !el.parentElement.offsetWidth) return;
+      const at = (k) => { el.style.minHeight = "0px"; el.style.width = `${100 / k}%`; return el.scrollHeight; };
+      let k = Math.min(1, h / at(1)); k = Math.min(1, h / at(k));
+      el.style.width = `${100 / k}%`; el.style.minHeight = `${h / k}px`; setK(k);
+    };
+    fit(); const t = setTimeout(fit, 700), ro = new ResizeObserver(() => fit()); ro.observe(el.parentElement);
+    el.querySelectorAll("img").forEach((i) => i.addEventListener("load", fit));
+    return () => { clearTimeout(t); ro.disconnect(); };
   }, [h, html]);
   const inner2 = html == null ? { children } : { dangerouslySetInnerHTML: { __html: html } };
   return <div dir="rtl" style={{ height: h, overflow: "hidden", position: "relative", background: paperBg, color: INK, boxShadow: "0 30px 60px rgba(0,0,0,.55), inset 0 0 60px rgba(120,90,40,.16)" }}>
@@ -77,19 +85,46 @@ function Page({ h, children, html }) {
     {/* the horizontal fold of a real paper */}
     <div className="pointer-events-none absolute inset-x-0" style={{ top: "52%", height: 18, background: "linear-gradient(180deg, transparent, rgba(0,0,0,.06) 45%, rgba(255,255,255,.35) 55%, transparent)" }} /></div>;
 }
-// pages that turn on their spine (button or swipe)
+// pages that turn on their spine (button or swipe). A double tap enlarges the page around that spot (or the 🔍
+// button its middle); two fingers pinch from ×1 to ×3. While enlarged a finger moves around the page instead of turning it.
+const ZOOM = 2.2, MAXZ = 3;
 function Pages({ pages }) {
   const [i, setI] = React.useState(0), [dir, setDir] = React.useState(1);
-  const go = (d) => { const j = i + d; if (j < 0 || j >= pages.length) return; setDir(d); setI(j); };
+  const [z, setZ] = React.useState({ k: 1, x: 0, y: 0 });
+  const box = React.useRef(null), tap = React.useRef(0), pts = React.useRef(new Map()), pinch = React.useRef(null), pan = React.useRef(null);
+  const zoomed = z.k > 1.01;
+  // keep the enlarged page covering its frame
+  const fit = (k, x, y) => { const el = box.current, w = el?.offsetWidth || 0, h = el?.offsetHeight || 0; return { k, x: Math.min(0, Math.max(w - w * k, x)), y: Math.min(0, Math.max(h - h * k, y)) }; };
+  const zoomAt = (cx, cy, k) => setZ((o) => { const nk = Math.max(1, Math.min(MAXZ, k)); if (nk === 1) return { k: 1, x: 0, y: 0 }; const px = (cx - o.x) / o.k, py = (cy - o.y) / o.k; return fit(nk, cx - px * nk, cy - py * nk); });
+  const local = (e) => { const r = box.current.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  const go = (d) => { const j = i + d; if (j < 0 || j >= pages.length) return; setZ({ k: 1, x: 0, y: 0 }); setDir(d); setI(j); };
+  const down = (e) => {
+    pts.current.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pts.current.size === 2) { const [p1, p2] = [...pts.current.values()], r = box.current.getBoundingClientRect(); pinch.current = { d: Math.hypot(p1[0] - p2[0], p1[1] - p2[1]), k: z.k, cx: (p1[0] + p2[0]) / 2 - r.left, cy: (p1[1] + p2[1]) / 2 - r.top }; pan.current = null; return; }
+    const now = Date.now();
+    if (now - tap.current < 300) { const [x, y] = local(e); zoomAt(x, y, zoomed ? 1 : ZOOM); tap.current = 0; return; }
+    tap.current = now;
+    if (zoomed) { pan.current = { x0: e.clientX, y0: e.clientY, x: z.x, y: z.y }; e.currentTarget.setPointerCapture?.(e.pointerId); }
+  };
+  const move = (e) => {
+    if (!pts.current.has(e.pointerId)) return;
+    pts.current.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pinch.current && pts.current.size === 2) { const [p1, p2] = [...pts.current.values()], P = pinch.current; zoomAt(P.cx, P.cy, P.k * (Math.hypot(p1[0] - p2[0], p1[1] - p2[1]) / P.d)); return; }
+    if (pan.current) { const P = pan.current; setZ((o) => fit(o.k, P.x + e.clientX - P.x0, P.y + e.clientY - P.y0)); }
+  };
+  const up = (e) => { pts.current.delete(e.pointerId); if (pts.current.size < 2) pinch.current = null; if (!pts.current.size) pan.current = null; };
   return <div style={{ perspective: 1400 }}>
     <AnimatePresence mode="wait" custom={dir}>
       <motion.div key={i} custom={dir} variants={{ in: (d) => ({ rotateY: d > 0 ? -95 : 95, opacity: 0.4 }), on: { rotateY: 0, opacity: 1 }, out: (d) => ({ rotateY: d > 0 ? 95 : -95, opacity: 0.4 }) }} initial="in" animate="on" exit="out" transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
-        drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.15} onDragEnd={(e, inf) => { if (inf.offset.x > 60) go(1); if (inf.offset.x < -60) go(-1); }}
-        style={{ transformOrigin: dir > 0 ? "right center" : "left center", touchAction: "pan-y" }}>{pages[i]}</motion.div></AnimatePresence>
+        drag={zoomed ? false : "x"} dragConstraints={{ left: 0, right: 0 }} dragElastic={0.15} onDragEnd={(e, inf) => { if (zoomed || pinch.current) return; if (inf.offset.x > 60) go(1); if (inf.offset.x < -60) go(-1); }}
+        style={{ transformOrigin: dir > 0 ? "right center" : "left center", touchAction: "none" }}>
+        <div ref={box} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} style={{ overflow: "hidden", position: "relative", userSelect: "none", WebkitUserSelect: "none" }}>
+          <div style={{ transform: `translate(${z.x}px, ${z.y}px) scale(${z.k})`, transformOrigin: "0 0", transition: pan.current || pinch.current ? "none" : "transform .25s ease" }}>{pages[i]}</div></div></motion.div></AnimatePresence>
     {/* right to left whatever the page around it: back on the right, the next page on the left */}
     <div dir="rtl" className="flex items-center justify-between" style={{ marginTop: 8, fontFamily: FR, color: "#fff", fontSize: 12.5, fontWeight: 700 }}>
       <button type="button" onClick={() => go(-1)} style={{ opacity: i ? 1 : 0.3, padding: "6px 10px", borderRadius: 10, background: "rgba(255,255,255,.1)" }}>→ הקודם</button>
-      <span style={{ opacity: 0.75 }}>עמוד {i + 1} מתוך {pages.length}</span>
+      <button type="button" aria-label={zoomed ? "הקטנה" : "הגדלה"} onClick={() => { const el = box.current; zoomAt(el.offsetWidth / 2, el.offsetHeight / 3, zoomed ? 1 : ZOOM); }} style={{ padding: "6px 10px", borderRadius: 10, background: zoomed ? "#fff" : "rgba(255,255,255,.1)", color: zoomed ? INK : "#fff" }}>{zoomed ? "הקטנה" : "🔍 הגדלה"}</button>
+      <span style={{ opacity: 0.75 }}>{i + 1}/{pages.length}</span>
       <button type="button" onClick={() => go(1)} style={{ opacity: i < pages.length - 1 ? 1 : 0.3, padding: "6px 10px", borderRadius: 10, background: RED, color: "#fff" }}>לעמוד הבא ←</button></div></div>;
 }
 
