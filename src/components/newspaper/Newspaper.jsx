@@ -84,7 +84,8 @@ function Pages({ pages }) {
       <motion.div key={i} custom={dir} variants={{ in: (d) => ({ rotateY: d > 0 ? -95 : 95, opacity: 0.4 }), on: { rotateY: 0, opacity: 1 }, out: (d) => ({ rotateY: d > 0 ? 95 : -95, opacity: 0.4 }) }} initial="in" animate="on" exit="out" transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
         drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.15} onDragEnd={(e, inf) => { if (inf.offset.x > 60) go(1); if (inf.offset.x < -60) go(-1); }}
         style={{ transformOrigin: dir > 0 ? "right center" : "left center", touchAction: "pan-y" }}>{pages[i]}</motion.div></AnimatePresence>
-    <div className="flex items-center justify-between" style={{ marginTop: 8, fontFamily: FR, color: "#fff", fontSize: 12.5, fontWeight: 700 }}>
+    {/* right to left whatever the page around it: back on the right, the next page on the left */}
+    <div dir="rtl" className="flex items-center justify-between" style={{ marginTop: 8, fontFamily: FR, color: "#fff", fontSize: 12.5, fontWeight: 700 }}>
       <button type="button" onClick={() => go(-1)} style={{ opacity: i ? 1 : 0.3, padding: "6px 10px", borderRadius: 10, background: "rgba(255,255,255,.1)" }}>→ הקודם</button>
       <span style={{ opacity: 0.75 }}>עמוד {i + 1} מתוך {pages.length}</span>
       <button type="button" onClick={() => go(1)} style={{ opacity: i < pages.length - 1 ? 1 : 0.3, padding: "6px 10px", borderRadius: 10, background: RED, color: "#fff" }}>לעמוד הבא ←</button></div></div>;
